@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server';
+
+export type ErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'RATE_LIMITED'
+  | 'CONFLICT'
+  | 'PI_AUTH_FAILED'
+  | 'PI_PAYMENT_FAILED'
+  | 'INTERNAL_ERROR';
+
+interface ApiError {
+  error: string;
+  code: ErrorCode;
+  details?: unknown;
+}
+
+const STATUS_MAP: Record<ErrorCode, number> = {
+  VALIDATION_ERROR: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  RATE_LIMITED: 429,
+  CONFLICT: 409,
+  PI_AUTH_FAILED: 401,
+  PI_PAYMENT_FAILED: 402,
+  INTERNAL_ERROR: 500,
+};
+
+export function apiError(code: ErrorCode, message: string, details?: unknown): NextResponse<ApiError> {
+  const status = STATUS_MAP[code] ?? 500;
+  return NextResponse.json({ error: message, code, details }, { status });
+}
+
+export function apiSuccess<T>(data: T, status = 200): NextResponse<T> {
+  return NextResponse.json(data, { status });
+}

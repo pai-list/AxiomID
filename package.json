@@ -1,0 +1,77 @@
+{
+  "name": "axiomid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AxiomID - The Human Authorization Protocol. Decentralized identity verification for human-AI collaboration.",
+  "aix": {
+    "stackVersion": "0.369.0",
+    "stackCodename": "Echo369",
+    "spec": "AIX/1.0",
+    "layer": "L0",
+    "layerName": "root-authority",
+    "authority": "axiomid.app"
+  },
+  "author": "Mohamed Abdelaziz <https://github.com/Moeabdelaziz007>",
+  "homepage": "https://axiomid.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Moeabdelaziz007/AxiomID.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Moeabdelaziz007/AxiomID/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": [
+    "decentralized-identity",
+    "human-verification",
+    "ai-authorization",
+    "blockchain",
+    "sybil-resistance",
+    "web3",
+    "nextjs",
+    "typescript",
+    "framer-motion"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "next build && next start",
+    "analyze": "ANALYZE=true next build",
+    "export": "next export",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pinetwork/pi-sdk-js": "^2.0.0",
+    "@prisma/client": "^6.0.0",
+    "@upstash/redis": "^1.38.0",
+    "framer-motion": "^12.38.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "siwe": "^2.3.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "prisma": "^6.0.0",
+    "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}

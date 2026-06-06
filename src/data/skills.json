@@ -1,0 +1,826 @@
+{
+  "name": "aix-agent-skills",
+  "description": "AIX Format coding skills for AI agents",
+  "skills": [
+    {
+      "name": "agent-memory",
+      "description": "Redis-backed agent memory and context persistence",
+      "file": "skills/agent-memory.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.10"
+    },
+    {
+      "name": "voice-wizard",
+      "description": "Voice-first agent creation flow (STT→LLM→TTS)",
+      "file": "skills/voice-wizard.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.10"
+    },
+    {
+      "name": "aix-schema",
+      "description": "AIX v1.3.0 manifest schema rules and validation",
+      "file": "skills/aix-schema.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.05"
+    },
+    {
+      "name": "api-route-standard",
+      "description": "Standard API route patterns for AIX Studio",
+      "file": "skills/api-route-standard.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.05"
+    },
+    {
+      "name": "skills-system",
+      "description": "Agent skills attach/detach and tier enforcement",
+      "file": "skills/skills-system.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.15"
+    },
+    {
+      "name": "vercel-deploy",
+      "description": "Vercel monorepo deploy fix and ENV checklist",
+      "file": "skills/vercel-deploy.md",
+      "tier": "BASIC_TOOL"
+    },
+    {
+      "name": "sovereign-constitution",
+      "description": "The ethical filter and ultimate reference",
+      "file": "skills/sovereign-constitution.md",
+      "tier": "SOVEREIGN"
+    },
+    {
+      "name": "covenant-guard",
+      "description": "The digital oath binding the agent to truth",
+      "file": "skills/covenant-guard.md",
+      "tier": "SOVEREIGN"
+    },
+    {
+      "name": "shura-council",
+      "description": "The consensus mechanism preventing algorithmic dictatorship",
+      "file": "skills/shura-council.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "topology-orchestrator",
+      "description": "Maps and routes execution paths",
+      "file": "skills/topology-orchestrator.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "skill-bank-evolution",
+      "description": "Autonomous discovery and self-healing of skills",
+      "file": "skills/skill-bank-evolution.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "mission-control",
+      "description": "The strategic planner for every task",
+      "file": "skills/mission-control.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "pipeline-store",
+      "description": "Installable pre-composed skill chains",
+      "file": "skills/pipeline-store.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "version-guard",
+      "description": "Prevents downstream breakages when skills evolve",
+      "file": "skills/version-guard.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "intent-dispatcher",
+      "description": "Translates natural language directly into execution topologies",
+      "file": "skills/intent-dispatcher.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "prompt-weaver",
+      "description": "Crafts perfect prompts using the 7-thread philosophy",
+      "file": "skills/prompt-weaver.md",
+      "tier": "ADVANCED_TOOL",
+      "chain": true
+    },
+    {
+      "name": "resonance-engine",
+      "description": "Detects hidden patterns and harmonic frequencies",
+      "file": "skills/resonance-engine.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "mcts-simulator",
+      "description": "Monte Carlo Tree Search for strategic forecasting",
+      "file": "skills/mcts-simulator.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "memory-bridge",
+      "description": "A 5-tier memory architecture (Hot to Archive)",
+      "file": "skills/memory-bridge.md",
+      "tier": "ADVANCED_INFRASTRUCTURE",
+      "chain": true
+    },
+    {
+      "name": "local-journal",
+      "description": "Local memory + Local files + Trust Chain for private reflections",
+      "file": "skills/local-journal.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "metamorphosis-loop",
+      "description": "Cognitive shedding every 49 tasks",
+      "file": "skills/metamorphosis-loop.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "reward-engine",
+      "description": "Evaluates the purity of the execution path",
+      "file": "skills/reward-engine.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "persona-forge",
+      "description": "Forges distinct digital personalities",
+      "file": "skills/persona-forge.md",
+      "tier": "ADVANCED_TOOL",
+      "chain": true
+    },
+    {
+      "name": "role-tribunal",
+      "description": "Enforces permission boundaries",
+      "file": "skills/role-tribunal.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "voice-identity",
+      "description": "A unique vocal signature reflecting the persona",
+      "file": "skills/voice-identity.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "persona-marketplace",
+      "description": "A vast library of ready-to-use specialized agents",
+      "file": "skills/persona-marketplace.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "agent-division-loader",
+      "description": "Loads entire functional teams for complex missions",
+      "file": "skills/agent-division-loader.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "multi-tool-exporter",
+      "description": "Exports IQRA personas to external platforms",
+      "file": "skills/multi-tool-exporter.md",
+      "tier": "ADVANCED_TOOL"
+    },
+    {
+      "name": "data-alchemist",
+      "description": "Transforms raw data into visual gold",
+      "file": "skills/data-alchemist.md",
+      "tier": "BASIC_TOOL"
+    },
+    {
+      "name": "model-council",
+      "description": "Routes tasks optimally between Local, Edge, and Cloud models",
+      "file": "skills/model-council.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "edge-whisperer",
+      "description": "Empowers offline WebGPU/WASM intelligence",
+      "file": "skills/edge-whisperer.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "trust-chain",
+      "description": "Immutable append-only ledger for absolute accountability",
+      "file": "skills/trust-chain.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "circuit-breaker",
+      "description": "Isolates repeated failures before they spread",
+      "file": "skills/circuit-breaker.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "purity-filter",
+      "description": "Evaluates the intent behind every request",
+      "file": "skills/purity-filter.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "skill-evaluator",
+      "description": "Embeds rigorous evaluation metrics into the marketplace",
+      "file": "skills/skill-evaluator.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "skill-sandbox",
+      "description": "Isolates unverified skills for deep safety testing",
+      "file": "skills/skill-sandbox.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "prompt-evaluator",
+      "description": "Judges every prompt for clarity, accuracy, and security",
+      "file": "skills/prompt-evaluator.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "red-team-guard",
+      "description": "Ethical hacker that autonomously attacks the system",
+      "file": "skills/red-team-guard.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "cross-model-judge",
+      "description": "Evaluates responses by consulting multiple independent LLMs",
+      "file": "skills/cross-model-judge.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "ci-cd-ai-guard",
+      "description": "Prevents untested prompts or skills from ever reaching production",
+      "file": "skills/ci-cd-ai-guard.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "chain-tracer",
+      "description": "Provides full execution traces and observability",
+      "file": "skills/chain-tracer.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "quran-resonance",
+      "description": "Explores mathematical and semantic patterns in sacred texts",
+      "file": "skills/quran-resonance.md",
+      "tier": "SOVEREIGN"
+    },
+    {
+      "name": "hidden-topology",
+      "description": "Discovers undocumented emergent connections between skills",
+      "file": "skills/hidden-topology.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "fractal-memory",
+      "description": "Compresses memories into infinite self-reflecting layers",
+      "file": "skills/fractal-memory.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "awesome-curator",
+      "description": "Community-curated verified lists of marketplace skills",
+      "file": "skills/awesome-curator.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "pre-built-memories",
+      "description": "Plug-and-play cognitive identities connecting directly to memory",
+      "file": "skills/pre-built-memories.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "fine-tuned-vault",
+      "description": "Registry for domain-specific fine-tuned models",
+      "file": "skills/fine-tuned-vault.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "integration-packs",
+      "description": "Smart prosthetics that grant real-world manipulation powers",
+      "file": "skills/integration-packs.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "open-mcp-connectors",
+      "description": "Free, open-source MCPs for zero-cost autonomy",
+      "file": "skills/open-mcp-connectors.md",
+      "tier": "BASIC_TOOL"
+    },
+    {
+      "name": "blockchain-trading-kit",
+      "description": "Autonomous investment bank spanning Web3 data and DeFi execution",
+      "file": "skills/blockchain-trading-kit.md",
+      "tier": "PRO",
+      "chain": true
+    },
+    {
+      "name": "community-support-layer",
+      "description": "Forum-per-skill layer turning the marketplace into a living community",
+      "file": "skills/community-support-layer.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "multiverse-lab-pro",
+      "description": "Layer-0 meta-pack for training agents in parallel universes before touching reality",
+      "file": "skills/multiverse-lab-pro.md",
+      "tier": "SOVEREIGN"
+    },
+    {
+      "name": "shadow-exchange",
+      "description": "Parallel financial sandbox for blockchain-trading-kit dry runs",
+      "file": "skills/shadow-exchange.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "shadow-hospital",
+      "description": "100% simulated healthcare environment for Clinician's Cortex skills",
+      "file": "skills/shadow-hospital.md",
+      "tier": "PRO"
+    },
+    {
+      "name": "topology-fork-engine",
+      "description": "Reality-forking executor that runs missions across branching universes",
+      "file": "skills/topology-fork-engine.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "_test_tool",
+      "description": "Test Tool - TIER: BASIC_TOOL",
+      "file": "skills/_test_tool.md",
+      "tier": "BASIC_TOOL"
+    },
+    {
+      "name": "antigravity-jules",
+      "description": "Shared task board and resonance synchronization between Antigravity and Jules",
+      "file": "skills/antigravity-jules.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "prompt-templates",
+      "description": "A managed, versioned library of dynamic prompt templates",
+      "file": "skills/prompt-templates.md",
+      "tier": "BASIC_TOOL"
+    },
+    {
+      "name": "owasp-agentic-guard",
+      "description": "Runtime gate that maps OWASP Top 10 for Agentic Applications 2026 (ASI01-ASI10) to mitigation skills",
+      "file": "skills/owasp-agentic-guard.md",
+      "tier": "ADVANCED_INFRASTRUCTURE"
+    },
+    {
+      "name": "persona-loader",
+      "description": "Load agent personas from L3 marketplace by ID",
+      "file": "skills/persona-loader.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "aggressive-scalper",
+      "description": "Aggressive scalping strategy with RSI extremes and 2:1 R:R",
+      "file": "skills/aggressive-scalper.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "caveman-compressor",
+      "description": "LLM prompt compression (~60%) for English and Arabic",
+      "file": "skills/caveman-compressor.md",
+      "tier": "BASIC_TOOL",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "git-operator",
+      "description": "Git operations (commit, push, branch, revert, openPR) for agents",
+      "file": "skills/git-operator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00",
+      "chain": true
+    },
+    {
+      "name": "gmail-integration",
+      "description": "Send, receive and manage emails via Gmail API",
+      "file": "skills/gmail-integration.md",
+      "tier": "PRO",
+      "price_usdc": "0.00",
+      "chain": true
+    },
+    {
+      "name": "calendar-manager",
+      "description": "Manage Google Calendar events (create, read, update)",
+      "file": "skills/calendar-manager.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "data-analysis-engine",
+      "description": "Statistical analysis, visualization, and predictive modeling",
+      "file": "skills/data-analysis-engine.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "frontend-developer",
+      "description": "Build modern web interfaces with React, Vue, vanilla",
+      "file": "skills/frontend-developer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "creative-brainstorming",
+      "description": "Structured creative ideation and brainstorming",
+      "file": "skills/creative-brainstorming.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "api-marketplace-connector",
+      "description": "Discover and integrate APIs from marketplaces",
+      "file": "skills/api-marketplace-connector.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "polyglot-coder",
+      "description": "Write code in multiple programming languages",
+      "file": "skills/polyglot-coder.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "proactive-assistant",
+      "description": "Anticipate needs and offer proactive suggestions",
+      "file": "skills/proactive-assistant.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "self-improvement-trainer",
+      "description": "Analyze actions and suggest workflow improvements",
+      "file": "skills/self-improvement-trainer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "software-engineer",
+      "description": "Full-stack software engineering with testing",
+      "file": "skills/software-engineer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "content-creator",
+      "description": "Create content across formats: articles, social, marketing",
+      "file": "skills/content-creator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "inverse-design-healer",
+      "description": "Self-healing skill that analyzes failures and proposes deterministic recovery",
+      "file": "skills/inverse-design-healer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "topological-analyzer",
+      "description": "Persistent homology, Shannon entropy, resonance coherence analysis",
+      "file": "skills/topological-analyzer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-drive",
+      "description": "Google Drive file management: upload, download, share, search, organize",
+      "file": "skills/google-drive.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-docs",
+      "description": "Document creation and editing via Google Docs API",
+      "file": "skills/google-docs.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-sheets",
+      "description": "Spreadsheet operations with Google Sheets API",
+      "file": "skills/google-sheets.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-slides",
+      "description": "Presentation creation and editing via Google Slides",
+      "file": "skills/google-slides.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-maps",
+      "description": "Location services, directions, and places via Google Maps",
+      "file": "skills/google-maps.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "google-photos",
+      "description": "Photo management and organization via Google Photos API",
+      "file": "skills/google-photos.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "backend-developer",
+      "description": "Backend API development with databases, server logic, and middleware",
+      "file": "skills/backend-developer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "database-architect",
+      "description": "Database design and management for SQL/NoSQL systems",
+      "file": "skills/database-architect.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "devops-engineer",
+      "description": "CI/CD pipelines, Docker containers, cloud deployment and monitoring",
+      "file": "skills/devops-engineer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "mobile-developer",
+      "description": "Mobile app development with React Native and Flutter",
+      "file": "skills/mobile-developer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "api-designer",
+      "description": "API design patterns: REST, GraphQL, OpenAPI specification",
+      "file": "skills/api-designer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "cloud-infrastructure",
+      "description": "Cloud architecture across AWS, GCP, Azure with scaling and security",
+      "file": "skills/cloud-infrastructure.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "video-producer",
+      "description": "Professional video content creation and editing",
+      "file": "skills/video-producer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "podcast-producer",
+      "description": "Podcast recording, editing, and distribution",
+      "file": "skills/podcast-producer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "graphic-designer",
+      "description": "Visual design: logos, UI mockups, branding assets",
+      "file": "skills/graphic-designer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "copywriter",
+      "description": "Copywriting and content strategy for marketing and brand",
+      "file": "skills/copywriter.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "music-composer",
+      "description": "Music composition and audio production with DAW tools",
+      "file": "skills/music-composer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "task-manager",
+      "description": "Task and project management with priorities and deadlines",
+      "file": "skills/task-manager.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "note-taking",
+      "description": "Smart notes with semantic search, tags, and cross-linking",
+      "file": "skills/note-taking.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "code-assistant",
+      "description": "Code generation, review, debugging and refactoring",
+      "file": "skills/code-assistant.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "file-converter",
+      "description": "Universal file format conversion across document, image, and media types",
+      "file": "skills/file-converter.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "social-media-manager",
+      "description": "Social media content scheduling, posting, and analytics",
+      "file": "skills/social-media-manager.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "universal-translator",
+      "description": "Multi-language translation service with context awareness",
+      "file": "skills/universal-translator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "web-search",
+      "description": "Smart web search with result extraction, filtering, and analysis",
+      "file": "skills/web-search.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "news-aggregator",
+      "description": "News collection from multiple sources with AI summarization",
+      "file": "skills/news-aggregator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "weather-intelligence",
+      "description": "Weather data, forecasts, and severe weather alerts",
+      "file": "skills/weather-intelligence.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "crypto-tracker",
+      "description": "Cryptocurrency prices, portfolio tracking, and market data",
+      "file": "skills/crypto-tracker.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "semantic-memory",
+      "description": "Long-term vector memory with semantic search and retrieval",
+      "file": "skills/semantic-memory.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "continuous-learner",
+      "description": "Continuous learning from interactions, feedback, and outcomes",
+      "file": "skills/continuous-learner.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "performance-optimizer",
+      "description": "Performance analysis, bottleneck detection, and optimization",
+      "file": "skills/performance-optimizer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "intelligent-monitoring",
+      "description": "Real-time system and agent behavior monitoring with alerts",
+      "file": "skills/intelligent-monitoring.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "event-driven-automator",
+      "description": "Event-triggered automation workflows with conditional logic",
+      "file": "skills/event-driven-automator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "predictive-engagement",
+      "description": "Predictive user engagement based on behavior patterns",
+      "file": "skills/predictive-engagement.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "lateral-thinker",
+      "description": "Lateral thinking techniques for creative problem-solving",
+      "file": "skills/lateral-thinker.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "design-thinker",
+      "description": "Design thinking methodology: empathize, define, ideate, prototype, test",
+      "file": "skills/design-thinker.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "triz-innovator",
+      "description": "TRIZ systematic innovation methods for technical problem-solving",
+      "file": "skills/triz-innovator.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "scenario-planner",
+      "description": "Strategic scenario planning with multiple futures analysis",
+      "file": "skills/scenario-planner.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "system-architect",
+      "description": "System architecture design, tradeoff analysis, and documentation",
+      "file": "skills/system-architect.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "code-quality-guardian",
+      "description": "Code quality analysis, linting, standards enforcement, and technical debt tracking",
+      "file": "skills/code-quality-guardian.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "security-engineer",
+      "description": "Security assessment, vulnerability scanning, and remediation",
+      "file": "skills/security-engineer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "technical-writer",
+      "description": "Technical documentation, API docs, and system guides",
+      "file": "skills/technical-writer.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "agile-project-manager",
+      "description": "Agile methodology: sprint planning, standups, retrospectives",
+      "file": "skills/agile-project-manager.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "public-api-finder",
+      "description": "API discovery from public marketplaces (RapidAPI, APILayer, etc)",
+      "file": "skills/public-api-finder.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "enterprise-api-gateway",
+      "description": "API gateway management: routing, rate limiting, authentication",
+      "file": "skills/enterprise-api-gateway.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "api-authentication-expert",
+      "description": "Authentication patterns: OAuth 2.0, API keys, JWT, mTLS",
+      "file": "skills/api-authentication-expert.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "api-rate-limit-manager",
+      "description": "Rate limiting strategies: token bucket, sliding window, quotas",
+      "file": "skills/api-rate-limit-manager.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "voice-synthesis",
+      "description": "Text-to-speech with emotion synthesis and voice cloning",
+      "file": "skills/voice-synthesis.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    },
+    {
+      "name": "content-creation-studio",
+      "description": "Full content creation studio: writing, design, video, audio",
+      "file": "skills/content-creation-studio.md",
+      "tier": "PRO",
+      "price_usdc": "0.00"
+    }
+  ]
+}

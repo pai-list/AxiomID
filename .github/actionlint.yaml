@@ -1,0 +1,25 @@
+# actionlint configuration for the AxiomID L0 authority surface.
+#
+# Blacksmith provides hosted GitHub Actions runners under the
+# `blacksmith-*` label namespace (https://docs.blacksmith.sh). Those labels
+# are not in actionlint's built-in list of GitHub-hosted runners, so we
+# declare them here as self-hosted labels. Without this file actionlint
+# fails with `label "blacksmith-Nvcpu-ubuntu-XXXX" is unknown`.
+
+self-hosted-runner:
+  # Concrete labels currently referenced by workflows in this repo. New
+  # labels (different vCPU tier, ARM variant, etc.) need to be added here
+  # before they will lint cleanly.
+  labels:
+    - blacksmith-2vcpu-ubuntu-2204
+    - blacksmith-2vcpu-ubuntu-2404
+    - blacksmith-2vcpu-ubuntu-2404-arm
+    - blacksmith-4vcpu-ubuntu-2204
+    - blacksmith-4vcpu-ubuntu-2404
+    - blacksmith-4vcpu-ubuntu-2404-arm
+    - blacksmith-8vcpu-ubuntu-2404
+    - blacksmith-8vcpu-ubuntu-2404-arm
+    - blacksmith-16vcpu-ubuntu-2404
+    - blacksmith-16vcpu-ubuntu-2404-arm
+    - blacksmith-32vcpu-ubuntu-2404
+    - blacksmith-32vcpu-ubuntu-2404-arm

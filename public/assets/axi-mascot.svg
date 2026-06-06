@@ -1,0 +1,33 @@
+<svg width="200" height="220" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AXI Mascot · AxiomID L0 · the face of the AIX Sovereign Stack">
+  <title>AXI Mascot · AxiomID L0</title>
+  <desc>The canonical AXI mascot, extracted from axiomid-project as the standalone L0 root-authority avatar of the AIX Sovereign Stack. Native palette: neon green #00ff41 and cyan accent #00d4ff over deep-green-to-black body fill.</desc>
+
+  <defs>
+    <linearGradient id="axiBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ff41"/>
+      <stop offset="100%" stop-color="#00d4ff"/>
+    </linearGradient>
+    <radialGradient id="axiBodyFill" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0a2a1a"/>
+      <stop offset="100%" stop-color="#030d08"/>
+    </radialGradient>
+    <radialGradient id="axiGlow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#00ff41" stop-opacity="0.22"/>
+      <stop offset="70%" stop-color="#00ff41" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#00ff41" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient glow halo (replaces React-side blur-3xl from the source component) -->
+  <ellipse cx="100" cy="110" rx="90" ry="92" fill="url(#axiGlow)"/>
+
+  <!-- Body -->
+  <ellipse cx="100" cy="105" rx="65" ry="68" fill="url(#axiBodyFill)" stroke="url(#axiBodyGrad)" stroke-width="2"/>
+
+  <!-- Eyes (neutral / happy state) -->
+  <ellipse cx="78" cy="98" rx="10" ry="11" fill="#00ff41" opacity="0.8"/>
+  <ellipse cx="122" cy="98" rx="10" ry="11" fill="#00ff41" opacity="0.8"/>
+
+  <!-- Smile -->
+  <path d="M90 120 Q100 130, 110 120" fill="none" stroke="#00ff41" stroke-width="2" stroke-linecap="round"/>
+</svg>
