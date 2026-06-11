@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sign, verify, createPrivateKey, createPublicKey } from 'crypto';
 
 // Default Ed25519 Public Key for local verification referenced in code (Public key is safe to keep as fallback)
@@ -114,7 +115,7 @@ export function issueAgentPassport(
 
   return {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
-    id: `urn:uuid:${crypto.randomUUID ? crypto.randomUUID() : '7c8b91a2-e289-4a3e-b165-27a3a9df8c8a'}`,
+    id: `urn:uuid:${crypto.randomUUID()}`,
     type: ['VerifiableCredential', 'AgentPassportCredential'],
     issuer: 'did:axiom:axiomid.app:root',
     issuanceDate,
