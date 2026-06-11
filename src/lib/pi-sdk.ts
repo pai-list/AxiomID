@@ -2,7 +2,7 @@ const CDN_URL = "https://sdk.minepi.com/pi-sdk.js";
 
 export interface PiAuthResult {
   accessToken: string;
-  user: { uid: string; username: string; name: string };
+  user: { uid: string; username: string; name: string; wallet_address?: string };
 }
 
 type LogFn = (msg: string) => void;
@@ -16,6 +16,15 @@ export function isPiSdkLoaded(): boolean {
   if (typeof window === "undefined") return false;
   const Pi = getWindowPi();
   return !!(Pi?.authenticate);
+}
+
+function isSandboxIframe(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
 }
 
 function loadCdnScript(): Promise<void> {
@@ -33,26 +42,60 @@ function loadCdnScript(): Promise<void> {
   });
 }
 
+function waitForAccessToken(onLog?: LogFn, timeoutMs = 30000): Promise<{ accessToken: string; user: any }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      window.removeEventListener("message", handler);
+      reject(new Error("Pi auth timed out waiting for access token"));
+    }, timeoutMs);
+
+    function handler(event: MessageEvent) {
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (data?.accessToken && data?.backendURL) {
+          clearTimeout(timer);
+          window.removeEventListener("message", handler);
+          onLog?.(`[PI-SDK] Got accessToken from postMessage`);
+          resolve({
+            accessToken: data.accessToken,
+            user: {
+              uid: data.user?.uid || data.uid || "",
+              username: data.user?.username || data.username || "",
+              name: data.user?.name || data.user?.username || "",
+              wallet_address: data.user?.wallet_address || "",
+            },
+          });
+        }
+      } catch {
+        // not our message
+      }
+    }
+
+    window.addEventListener("message", handler);
+  });
+}
+
 export async function ensurePiSdk(onLog?: LogFn): Promise<any> {
-  onLog?.("[PI-SDK] 🔍 Checking Pi SDK availability...");
+  onLog?.("[PI-SDK] Checking Pi SDK availability...");
 
   let Pi = getWindowPi();
   if (Pi?.authenticate) {
-    onLog?.("[PI-SDK] ✅ window.Pi موجود (من الساندبوكس أو Pi Browser)");
+    onLog?.("[PI-SDK] window.Pi found");
     return Pi;
   }
 
-  onLog?.("[PI-SDK] ⏳ window.Pi غير موجود. جاري تحميل CDN script...");
+  onLog?.("[PI-SDK] Loading CDN script...");
   await loadCdnScript();
-  onLog?.("[PI-SDK] ✅ CDN script تم تحميله");
+  onLog?.("[PI-SDK] CDN script loaded");
 
   Pi = getWindowPi();
-  if (!Pi?.authenticate) {
-    onLog?.("[PI-SDK] ❌ window.Pi لا يزال غير متاح بعد تحميل CDN");
-    throw new Error("Pi SDK failed to initialize after loading CDN script");
+  if (Pi?.authenticate) {
+    onLog?.("[PI-SDK] window.Pi ready after CDN load");
+    return Pi;
   }
-  onLog?.("[PI-SDK] ✅ window.Pi جاهز");
-  return Pi;
+
+  onLog?.("[PI-SDK] window.Pi still not available - using postMessage fallback");
+  return null;
 }
 
 export async function connectPi(onLog?: LogFn): Promise<PiAuthResult> {
@@ -60,133 +103,128 @@ export async function connectPi(onLog?: LogFn): Promise<PiAuthResult> {
     throw new Error("Pi SDK only works in browser");
   }
 
+  const inSandbox = isSandboxIframe();
+  onLog?.(`[PI-SDK] Sandbox iframe: ${inSandbox}`);
+
   const Pi = await ensurePiSdk(onLog);
 
-  if (typeof Pi.init === "function") {
-    const isSandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
-    onLog?.(`[PI-SDK] 🔄 Calling Pi.init({ version: "2.0", sandbox: ${isSandbox} })...`);
-    await Pi.init({ version: "2.0", sandbox: isSandbox });
-    onLog?.("[PI-SDK] ✅ Pi.init() completed");
-  } else {
-    onLog?.("[PI-SDK] ⏩ Pi.init() غير متاح — الساندبوكس يدير init بنفسه");
-  }
-
-  onLog?.("[PI-SDK] 🔄 Calling Pi.authenticate(['payments', 'username', 'wallet_address'])...");
-  let authResult: any;
-  try {
-    authResult = await Pi.authenticate(
-      ["payments", "username", "wallet_address"],
-      (payment: any) => {
-        onLog?.(`[PI-SDK] ⚠️ Incomplete payment found: ${payment?.identifier}`);
-      },
-    );
-  } catch (err: any) {
-    onLog?.(`[PI-SDK] ❌ Pi.authenticate() failed: ${err?.message || err}`);
-    throw new Error(`Pi authentication failed: ${err?.message || err}`);
-  }
-
-  onLog?.("[PI-SDK] ✅ Pi.authenticate() succeeded!");
-
-  if (!authResult?.accessToken || !authResult?.user?.uid) {
-    onLog?.("[PI-SDK] ❌ Auth result missing accessToken or user");
-    throw new Error("Pi authentication returned incomplete result");
-  }
-
-  const uid = authResult.user.uid;
-  const username = authResult.user.username || uid;
-
-  onLog?.(`[PI-SDK] 👤 User: ${username} (UID: ${uid})`);
-  onLog?.(`[PI-SDK] 🔑 Access token: ${authResult.accessToken.slice(0, 10)}...${authResult.accessToken.slice(-5)}`);
-  onLog?.("[PI-SDK] ✅ Wallet authentication complete!");
-
-  return {
-    accessToken: authResult.accessToken,
-    user: { uid, username, name: username },
-  };
-}
-
-export async function runWalletTest(onLog: LogFn): Promise<void> {
-  onLog?.("[WALLET-TEST] ====== بدء اختبار المحفظة ======");
-  onLog?.(`[WALLET-TEST] 📅 ${new Date().toLocaleString()}`);
-  onLog?.("[WALLET-TEST] 📋 البيئة: " + (typeof window !== "undefined" ? window.location.href : "SSR"));
-
-  onLog?.("[WALLET-TEST] 🔍 1/7 التحقق من تحميل Pi SDK...");
-  if (typeof window === "undefined") {
-    onLog?.("[WALLET-TEST] ❌ ليس في المتصفح");
-    return;
-  }
-
-  const Pi = getWindowPi();
-  onLog?.(`[WALLET-TEST]    window.Pi: ${Pi ? "موجود ✅" : "غير موجود ❌"}`);
-  onLog?.(`[WALLET-TEST]    window.Pi.init: ${typeof Pi?.init === "function" ? "موجود ✅" : "غير موجود ❌"}`);
-  onLog?.(`[WALLET-TEST]    window.Pi.authenticate: ${typeof Pi?.authenticate === "function" ? "موجود ✅" : "غير موجود ❌"}`);
-  onLog?.(`[WALLET-TEST]    window.Pi.createPayment: ${typeof Pi?.createPayment === "function" ? "موجود ✅" : "غير موجود ❌"}`);
-
-  const isIframe = typeof window !== "undefined" && window.self !== window.top;
-  const isSandboxDetected = Pi?.sandboxMode || isIframe;
-  onLog?.("[WALLET-TEST] 2/7 البيئة:");
-  onLog?.(`    NEXT_PUBLIC_PI_SANDBOX: ${process.env.NEXT_PUBLIC_PI_SANDBOX || "غير معرف"}`);
-  onLog?.(`    داخل iframe: ${isIframe ? "نعم ✅" : "لا"}`);
-  onLog?.(`    Sandbox detected: ${isSandboxDetected ? "نعم ✅" : "لا"}`);
-
-  if (isIframe) {
-    onLog?.("[WALLET-TEST]    origin: " + window.location.origin);
+  if (Pi) {
     try {
-      onLog?.("[WALLET-TEST]    parent origin: " + (document.referrer || "لا يوجد"));
+      if (typeof Pi.init === "function") {
+        const isSandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
+        onLog?.(`[PI-SDK] Calling Pi.init({ version: "2.0", sandbox: ${isSandbox} })...`);
+        await Pi.init({ version: "2.0", sandbox: isSandbox });
+        onLog?.("[PI-SDK] Pi.init() completed");
+      }
+    } catch (err: any) {
+      onLog?.(`[PI-SDK] Pi.init() failed (non-fatal): ${err?.message}`);
+    }
+
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        onLog?.(`[PI-SDK] Pi.authenticate() attempt ${attempt}/5...`);
+        const authResult = await Pi.authenticate(
+          ["payments", "username", "wallet_address"],
+          (payment: any) => {
+            onLog?.(`[PI-SDK] Incomplete payment: ${payment?.identifier}`);
+          },
+        );
+
+        if (authResult?.accessToken && authResult?.user?.uid) {
+          onLog?.(`[PI-SDK] Auth succeeded! User: ${authResult.user.username}`);
+          return {
+            accessToken: authResult.accessToken,
+            user: {
+              uid: authResult.user.uid,
+              username: authResult.user.username || authResult.user.uid,
+              name: authResult.user.username || authResult.user.uid,
+              wallet_address: authResult.user.wallet_address || "",
+            },
+          };
+        }
+        onLog?.(`[PI-SDK] Auth returned incomplete result, retrying...`);
+      } catch (err: any) {
+        lastError = err;
+        const msg = err?.message || String(err);
+        onLog?.(`[PI-SDK] Attempt ${attempt} failed: ${msg}`);
+
+        if (msg.includes("unauthorized_app")) {
+          onLog?.(`[PI-SDK] unauthorized_app - sandbox may need to re-authorize, waiting...`);
+          await new Promise((r) => setTimeout(r, 3000));
+          continue;
+        }
+        if (attempt < 5) {
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
+    }
+  }
+
+  onLog?.("[PI-SDK] Trying direct postMessage approach...");
+  const tokenPromise = waitForAccessToken(onLog, 25000);
+
+  if (Pi) {
+    try {
+      await Pi.authenticate(["payments", "username", "wallet_address"], () => {});
+    } catch {
+      // ignore - we're waiting for postMessage
+    }
+  } else {
+    onLog?.("[PI-SDK] Sending ready message to Pi sandbox parent...");
+    try {
+      window.parent.postMessage({ type: "@pi:app:ready" }, "*");
     } catch {}
   }
 
   try {
-    await ensurePiSdk(onLog);
-  } catch (err: any) {
-    onLog?.(`[WALLET-TEST] ❌ فشل تحميل Pi SDK: ${err?.message || err}`);
-    return;
-  }
-
-  const piReady = getWindowPi();
-  if (!piReady?.authenticate) {
-    onLog?.("[WALLET-TEST] ❌ Pi SDK غير متاح بعد المحاولة.");
-    return;
-  }
-
-  onLog?.("[WALLET-TEST] 3/7 الاتصال بـ Pi.init()...");
-  try {
-    if (typeof piReady.init === "function") {
-      await piReady.init({ version: "2.0" });
-      onLog?.("[WALLET-TEST] ✅ Pi.init() نجح");
-    } else {
-      onLog?.("[WALLET-TEST] ⏩ Pi.init() غير متاح، ننتقل للخطوة التالية");
+    const result = await tokenPromise;
+    if (result.accessToken && result.user.uid) {
+      onLog?.(`[PI-SDK] Got token via postMessage! User: ${result.user.username}`);
+      return result;
     }
   } catch (err: any) {
-    onLog?.(`[WALLET-TEST] ❌ Pi.init() فشل: ${err?.message || err}`);
+    onLog?.(`[PI-SDK] postMessage approach failed: ${err?.message}`);
+  }
+
+  throw new Error("Pi authentication failed after all attempts");
+}
+
+export async function runWalletTest(onLog: LogFn): Promise<void> {
+  onLog?.("[WALLET-TEST] ====== Starting wallet test ======");
+  onLog?.(`[WALLET-TEST] Date: ${new Date().toLocaleString()}`);
+  onLog?.("[WALLET-TEST] URL: " + (typeof window !== "undefined" ? window.location.href : "SSR"));
+
+  if (typeof window === "undefined") {
+    onLog?.("[WALLET-TEST] Not in browser");
     return;
   }
 
-  onLog?.("[WALLET-TEST] 4/7 محاولة المصادقة عبر Pi.authenticate()...");
-  let authResult: any;
+  const Pi = getWindowPi();
+  const inSandbox = isSandboxIframe();
+  onLog?.(`[WALLET-TEST] window.Pi: ${Pi ? "YES" : "NO"}`);
+  onLog?.(`[WALLET-TEST] Sandbox iframe: ${inSandbox}`);
+  onLog?.(`[WALLET-TEST] NEXT_PUBLIC_PI_SANDBOX: ${process.env.NEXT_PUBLIC_PI_SANDBOX || "undefined"}`);
+
   try {
-    authResult = await piReady.authenticate(["payments", "username", "wallet_address"], (payment: any) => {
-      onLog?.(`[WALLET-TEST] ⚠️ دفعة غير مكتملة: ${payment?.identifier}`);
-    });
-    onLog?.("[WALLET-TEST] ✅ Pi.authenticate() نجح!");
+    await ensurePiSdk(onLog);
   } catch (err: any) {
-    onLog?.(`[WALLET-TEST] ❌ Pi.authenticate() فشل: ${err?.message || err}`);
-    onLog?.("[WALLET-TEST]    تحقق من أنك في Pi Browser أو Pi Sandbox");
-    return;
+    onLog?.(`[WALLET-TEST] SDK load failed: ${err?.message}`);
   }
 
-  const uid = authResult?.user?.uid || "غير معروف";
-  const username = authResult?.user?.username || uid;
-  const token = authResult?.accessToken || "";
+  try {
+    onLog?.("[WALLET-TEST] Attempting auth...");
+    const result = await connectPi(onLog);
+    onLog?.(`[WALLET-TEST] Auth SUCCESS!`);
+    onLog?.(`[WALLET-TEST] UID: ${result.user.uid}`);
+    onLog?.(`[WALLET-TEST] Username: ${result.user.username}`);
+    onLog?.(`[WALLET-TEST] Wallet: ${result.user.wallet_address || "N/A"}`);
+    onLog?.(`[WALLET-TEST] Token: ${result.accessToken.substring(0, 20)}...`);
+  } catch (err: any) {
+    onLog?.(`[WALLET-TEST] Auth FAILED: ${err?.message}`);
+  }
 
-  onLog?.("[WALLET-TEST] 5/7 بيانات المستخدم:");
-  onLog?.(`    UID: ${uid}`);
-  onLog?.(`    اسم المستخدم: ${username}`);
-  onLog?.(`    Stellar Wallet: ${authResult?.user?.wallet_address || "غير معروف"}`);
-  onLog?.(`    Pi App Wallet: pi:${uid}`);
-  onLog?.(`    Access Token: ${token.slice(0, 30)}...`);
-
-  onLog?.("[WALLET-TEST] ====== ✅ انتهى الاختبار بنجاح ======");
+  onLog?.("[WALLET-TEST] ====== Test complete ======");
 }
 
 export interface PiPayment {
@@ -201,6 +239,10 @@ export interface PiPayment {
 
 export async function createPiPayment(amount: number, memo: string, metadata?: Record<string, unknown>): Promise<PiPayment> {
   const Pi = await ensurePiSdk();
+
+  if (!Pi?.createPayment) {
+    throw new Error("Pi SDK createPayment not available");
+  }
 
   return new Promise<PiPayment>((resolve, reject) => {
     Pi.createPayment({

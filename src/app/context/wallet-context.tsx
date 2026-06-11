@@ -183,19 +183,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const inPiBrowser = checkPiBrowser();
     setIsPiBrowser(inPiBrowser);
-    setIsLoading(false);
-  }, []);
 
-  useEffect(() => {
-    if (authAttempted.current) return;
-    authAttempted.current = true;
+    const storedWallet = localStorage.getItem("axiomid_wallet");
+    const storedToken = localStorage.getItem("pi_access_token");
 
-    const inPiBrowser = checkPiBrowser();
-
-    if (inPiBrowser) {
-      connectWallet();
+    if (storedWallet || storedToken) {
+      refreshUser().finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-  }, [connectWallet]);
+  }, []);
 
   const claimAction = useCallback(async (actionType: string) => {
     if (!user) return false;
