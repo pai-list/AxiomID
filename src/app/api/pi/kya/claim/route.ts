@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
+import { KyaClaimSchema } from '@/lib/validators';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -16,29 +17,52 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error;
   const { user } = auth;
 
+  let body;
   try {
-    const existing = await prisma.user.findUnique({ where: { id: user.id } });
-    if (!existing) {
-      return apiError('NOT_FOUND', 'User not found');
-    }
+    body = await request.json();
+  } catch {
+    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
+  }
 
-    if (existing.kycStatus && existing.kycStatus !== 'NONE') {
-      return apiSuccess({
-        userId: existing.id,
-        walletAddress: existing.walletAddress,
-        tier: existing.tier,
-        xp: existing.xp,
-        kycStatus: existing.kycStatus,
+  const validation = KyaClaimSchema.safeParse(body);
+  if (!validation.success) {
+    const error = validation.error as any;
+    const issues = error.issues || error.errors;
+    return apiError('VALIDATION_ERROR', issues[0].message);
+  }
+
+  const { username, name } = validation.data;
+
+  try {
+    const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
+
+    if (!existing) {
+      const newUser = await prisma.user.create({
+        data: {
+          piUid: user.piUid,
+          piUsername: username,
+          walletAddress: `pi:${username}`,
+          kycStatus: 'PENDING',
+          did: `did:axiom:${user.piUid}`,
+          name: name || user.piUsername || username,
+        },
       });
+
+      return apiSuccess({
+        userId: newUser.id,
+        walletAddress: newUser.walletAddress,
+        kycStatus: newUser.kycStatus,
+        did: newUser.did,
+      }, 201);
     }
 
     const updated = await prisma.user.update({
-      where: { id: user.id },
+      where: { id: existing.id },
       data: {
         kycStatus: 'PENDING',
         kycProvider: 'pi_network',
-        did: existing.did || `did:axiom:${user.piUsername || user.piUid}`,
-        lastActive: new Date(),
+        did: existing.did || `did:axiom:${user.piUid}`,
+        name: name || existing.piUsername || existing.name,
       },
     });
 
@@ -47,6 +71,8 @@ export async function POST(request: NextRequest) {
       walletAddress: updated.walletAddress,
       kycStatus: updated.kycStatus,
       did: updated.did,
+      tier: updated.tier,
+      xp: updated.xp,
     });
   } catch (error) {
     console.error('[KYA-CLAIM] Database error:', error);

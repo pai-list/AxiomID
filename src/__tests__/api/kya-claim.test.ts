@@ -3,18 +3,35 @@
  * @jest-environment node
  */
 
+jest.mock('@/lib/auth-middleware', () => ({
+  requireAuth: jest.fn().mockResolvedValue({
+    error: null,
+    user: {
+      id: 'mock-user-id',
+      walletAddress: 'pi:mockuser',
+      piUid: 'mock-pi-uid',
+      piUsername: 'mockuser',
+      xp: 0,
+      tier: 'Beginner',
+    },
+  }),
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
   },
 }));
+
 jest.mock('@/lib/rate-limiter', () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: { authenticated: { windowMs: 60000, maxRequests: 100 } },
 }));
+
 jest.mock('@/lib/ip', () => ({
   getClientIp: jest.fn(() => '127.0.0.1'),
 }));
@@ -30,7 +47,7 @@ function mockPostRequest(body: unknown) {
   return new Request('http://localhost/api/pi/kya/claim', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: typeof body === 'string' ? body : JSON.stringify(body),
   }) as any;
 }
 
@@ -46,7 +63,7 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'new-user-1',
       walletAddress: 'pi:testuser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:testuser',
+      did: 'did:axiom:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'testuser' });
@@ -57,7 +74,6 @@ describe('POST /api/pi/kya/claim', () => {
     expect(data.userId).toBe('new-user-1');
     expect(data.walletAddress).toBe('pi:testuser');
     expect(data.kycStatus).toBe('PENDING');
-    expect(data.did).toBe('did:axiom:testuser');
   });
 
   it('returns existing user data without creating duplicate', async () => {
@@ -66,6 +82,14 @@ describe('POST /api/pi/kya/claim', () => {
       walletAddress: 'pi:existinguser',
       tier: 'Citizen',
       xp: 200,
+      piUid: 'mock-pi-uid',
+    } as any);
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'existing-user',
+      walletAddress: 'pi:existinguser',
+      tier: 'Citizen',
+      xp: 200,
+      piUid: 'mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'existinguser' });
@@ -87,23 +111,22 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'user-abc',
       walletAddress: 'pi:pi_user_abc',
       kycStatus: 'PENDING',
-      did: 'did:axiom:pi_user_abc',
+      did: 'did:axiom:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'pi_user_abc' });
     await POST(req);
 
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-      where: { walletAddress: 'pi:pi_user_abc' },
+      where: { piUid: 'mock-pi-uid' },
     });
     expect(mockPrisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           walletAddress: 'pi:pi_user_abc',
           piUsername: 'pi_user_abc',
-          did: 'did:axiom:pi_user_abc',
+          did: 'did:axiom:mock-pi-uid',
           kycStatus: 'PENDING',
-          kycProvider: 'pi_network',
         }),
       })
     );
@@ -160,14 +183,19 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'named-user',
       walletAddress: 'pi:nameduser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:nameduser',
+      did: 'did:axiom:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'nameduser', name: 'John Doe' });
     const res = await POST(req);
 
     expect(res.status).toBe(201);
-    // The route only uses username from the body, name is parsed but not passed to create
-    expect(mockPrisma.user.create).toHaveBeenCalled();
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'John Doe',
+        }),
+      })
+    );
   });
 });

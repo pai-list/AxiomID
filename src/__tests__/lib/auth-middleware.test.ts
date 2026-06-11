@@ -3,6 +3,8 @@
  * @jest-environment node
  */
 
+jest.unmock('@/lib/auth-middleware');
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {

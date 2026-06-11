@@ -54,36 +54,43 @@ describe('pi-sdk', () => {
 
     it('returns false when window.Pi is not set', () => {
       // Simulate browser environment without Pi
-      const originalWindow = global.window;
-      Object.defineProperty(global, 'window', {
-        value: {},
-        writable: true,
-        configurable: true,
-      });
+      const win = (global as any).window || {};
+      const originalPi = win.Pi;
+      win.Pi = undefined;
+
       expect(isPiSdkLoaded()).toBe(false);
-      Object.defineProperty(global, 'window', { value: originalWindow, writable: true, configurable: true });
+
+      if (originalPi !== undefined) {
+        win.Pi = originalPi;
+      }
     });
 
     it('returns true when window.Pi.authenticate is a function', () => {
-      const originalWindow = global.window;
-      Object.defineProperty(global, 'window', {
-        value: { Pi: { authenticate: jest.fn() } },
-        writable: true,
-        configurable: true,
-      });
+      const win = (global as any).window || {};
+      const originalPi = win.Pi;
+      win.Pi = { authenticate: jest.fn() };
+
       expect(isPiSdkLoaded()).toBe(true);
-      Object.defineProperty(global, 'window', { value: originalWindow, writable: true, configurable: true });
+
+      if (originalPi !== undefined) {
+        win.Pi = originalPi;
+      } else {
+        win.Pi = undefined;
+      }
     });
 
     it('returns false when window.Pi.authenticate is not a function', () => {
-      const originalWindow = global.window;
-      Object.defineProperty(global, 'window', {
-        value: { Pi: { authenticate: 'not-a-function' } },
-        writable: true,
-        configurable: true,
-      });
+      const win = (global as any).window || {};
+      const originalPi = win.Pi;
+      win.Pi = { authenticate: 'not-a-function' };
+
       expect(isPiSdkLoaded()).toBe(false);
-      Object.defineProperty(global, 'window', { value: originalWindow, writable: true, configurable: true });
+
+      if (originalPi !== undefined) {
+        win.Pi = originalPi;
+      } else {
+        win.Pi = undefined;
+      }
     });
   });
 
@@ -116,17 +123,18 @@ describe('pi-sdk', () => {
     });
 
     it('resolves with a mock transaction ID when Pi SDK is loaded', async () => {
-      const originalWindow = global.window;
-      Object.defineProperty(global, 'window', {
-        value: { Pi: { authenticate: jest.fn() } },
-        writable: true,
-        configurable: true,
-      });
+      const win = (global as any).window || {};
+      const originalPi = win.Pi;
+      win.Pi = { authenticate: jest.fn() };
 
       const result = await transferPi(1.5, 'GRECIPIENT', 'test memo');
       expect(result).toMatch(/^tx-mock-/);
 
-      Object.defineProperty(global, 'window', { value: originalWindow, writable: true, configurable: true });
+      if (originalPi !== undefined) {
+        win.Pi = originalPi;
+      } else {
+        win.Pi = undefined;
+      }
     }, 1000);
   });
 
