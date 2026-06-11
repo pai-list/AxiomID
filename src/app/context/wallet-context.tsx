@@ -341,37 +341,63 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [user, piAccessToken]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.Pi) {
+      try {
+        window.Pi.init({
+          version: "2.0",
+          sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
+        });
+      } catch (err) {
+        console.error("Failed to initialize Pi SDK:", err);
+      }
+    }
+  }, []);
+
   const initRef = useRef(false);
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
 
-    const storedWallet = localStorage.getItem("axiomid_wallet");
-    const storedToken = localStorage.getItem("pi_access_token");
-    if (!storedWallet && !storedToken) return;
+    const inPiBrowser = checkPiBrowser();
 
-    fetch(`/api/user/status?walletAddress=${storedWallet}`).then(res => {
-      if (!res.ok) {
+    if (inPiBrowser) {
+      setIsLoading(true);
+      connectWallet().finally(() => {
+        setIsLoading(false);
+      });
+    } else {
+      const storedWallet = localStorage.getItem("axiomid_wallet");
+      const storedToken = localStorage.getItem("pi_access_token");
+      if (!storedWallet && !storedToken) {
         setIsLoading(false);
         return;
       }
-      res.json().then(data => {
-        setUser({
-          id: data.userId,
-          walletAddress: data.walletAddress,
-          stellarAddress: data.stellarAddress || null,
-          xp: data.xp,
-          tier: data.tier,
-          trustScore: data.trustScore ?? Math.min(100, Math.floor((data.xp || 0) / 10)),
-          createdAt: data.createdAt || new Date().toISOString(),
-          piUsername: data.piUsername,
-          actions: [],
-          agent: data.agent || null,
-        });
-        setIsLoading(false);
+
+      setIsLoading(true);
+      fetch(`/api/user/status?walletAddress=${storedWallet}`).then(res => {
+        if (!res.ok) {
+          setIsLoading(false);
+          return;
+        }
+        res.json().then(data => {
+          setUser({
+            id: data.userId,
+            walletAddress: data.walletAddress,
+            stellarAddress: data.stellarAddress || null,
+            xp: data.xp,
+            tier: data.tier,
+            trustScore: data.trustScore ?? Math.min(100, Math.floor((data.xp || 0) / 10)),
+            createdAt: data.createdAt || new Date().toISOString(),
+            piUsername: data.piUsername,
+            actions: [],
+            agent: data.agent || null,
+          });
+          setIsLoading(false);
+        }).catch(() => setIsLoading(false));
       }).catch(() => setIsLoading(false));
-    }).catch(() => setIsLoading(false));
-  }, []);
+    }
+  }, [connectWallet]);
 
   return (
     <WalletContext.Provider

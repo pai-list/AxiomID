@@ -42,7 +42,7 @@
     "export": "next export",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watch",
     "type-check": "tsc --noEmit"
   },
