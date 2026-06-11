@@ -206,4 +206,321 @@ describe("WalletProvider & WalletContext", () => {
     expect(localStorage.getItem("pi_access_token")).toBe("pi-token-456");
     expect(localStorage.getItem("axiomid_wallet")).toBe("pi:pi-uid-456");
   });
+
+  it("leaves user null and sets isLoading=false when API returns non-ok on restore", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:badwallet");
+    localStorage.setItem("pi_access_token", "bad-token");
+
+    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue.isLoading).toBe(false);
+    });
+
+    expect(contextValue.user).toBeNull();
+  });
+
+  it("leaves user null and sets isLoading=false when API throws on restore", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:errwallet");
+    localStorage.setItem("pi_access_token", "err-token");
+
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue.isLoading).toBe(false);
+    });
+
+    expect(contextValue.user).toBeNull();
+  });
+
+  it("does not call Pi.init when window.Pi is not defined", async () => {
+    // window.Pi is deleted in beforeEach — just confirm no error and no fetch calls
+    render(
+      <WalletProvider>
+        <div>Test</div>
+      </WalletProvider>
+    );
+
+    // No assertion failure means Pi.init was not called (no window.Pi)
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("connectWallet in external browser creates a demo wallet and stores it in localStorage", async () => {
+    // Respond to the /api/auth/connect request
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          userId: "demo-user-1",
+          walletAddress: "demo:abc12345",
+          xp: 0,
+          tier: "Visitor",
+          trustScore: 0,
+          createdAt: new Date().toISOString(),
+          piUsername: null,
+          actions: [],
+          agent: null,
+        },
+      }),
+    });
+
+    let contextValue: any;
+    const { getByTestId } = render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    await act(async () => {
+      getByTestId("connect-btn").click();
+    });
+
+    await waitFor(() => expect(contextValue.isConnecting).toBe(false));
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/auth/connect",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(localStorage.getItem("axiomid_wallet")).toMatch(/^demo:/);
+    expect(contextValue.user).not.toBeNull();
+  });
+
+  it("connectWallet reuses existing demo wallet from localStorage", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:existing1");
+
+    // Restore call from initRef useEffect
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "existing-user",
+        walletAddress: "demo:existing1",
+        xp: 0,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+        piUsername: null,
+        agent: null,
+      }),
+    });
+
+    // The connect call
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          userId: "existing-user",
+          walletAddress: "demo:existing1",
+          xp: 0,
+          tier: "Visitor",
+          trustScore: 0,
+          createdAt: new Date().toISOString(),
+          piUsername: null,
+          actions: [],
+          agent: null,
+        },
+      }),
+    });
+
+    let contextValue: any;
+    const { getByTestId } = render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    await act(async () => {
+      getByTestId("connect-btn").click();
+    });
+
+    await waitFor(() => expect(contextValue.isConnecting).toBe(false));
+
+    // The connect call should have used the existing "demo:existing1" address
+    const connectCall = mockFetch.mock.calls.find(
+      (call) => call[0] === "/api/auth/connect"
+    );
+    expect(connectCall).toBeDefined();
+    const body = JSON.parse(connectCall![1].body);
+    expect(body.walletAddress).toBe("demo:existing1");
+  });
+
+  it("connectWallet in Pi Browser falls back to demo wallet when connectPi throws NOT_IN_PI_BROWSER", async () => {
+    setUserAgent("Pi Browser; Android; minepi");
+
+    mockConnectPi.mockRejectedValueOnce(new Error("NOT_IN_PI_BROWSER"));
+
+    // auto-connect attempt from initRef (Pi browser path) will call connectWallet
+    // connectWallet -> connectPi throws -> falls back to demo
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          userId: "fallback-demo-user",
+          walletAddress: "demo:fallbackx",
+          xp: 0,
+          tier: "Visitor",
+          trustScore: 0,
+          createdAt: new Date().toISOString(),
+          piUsername: null,
+          actions: [],
+          agent: null,
+        },
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/auth/connect",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(localStorage.getItem("axiomid_wallet")).toMatch(/^demo:/);
+    expect(contextValue.user).not.toBeNull();
+  });
+
+  it("isPiBrowser is true when window.Pi.authenticate is defined", async () => {
+    // window.Pi.authenticate present triggers checkPiBrowser to return true
+    (window as any).Pi = {
+      authenticate: jest.fn(),
+      init: jest.fn(),
+    };
+
+    // Pi browser path: auto-connect runs
+    mockConnectPi.mockResolvedValueOnce({
+      token: "pi-auth-token",
+      user: {
+        uid: "pi-uid-auth",
+        username: "authuser",
+        name: "Auth User",
+        wallet_address: null,
+      },
+      stellarAddress: null,
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-auth",
+        walletAddress: "pi:pi-uid-auth",
+        xp: 5,
+        tier: "Visitor",
+        piUsername: "authuser",
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.isPiBrowser).toBe(true);
+  });
+
+  it("useWallet throws when used outside WalletProvider", () => {
+    // Suppress React's error boundary output
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    function Naked() {
+      useWallet();
+      return null;
+    }
+
+    expect(() => render(<Naked />)).toThrow(
+      "useWallet must be used within a WalletProvider"
+    );
+
+    consoleError.mockRestore();
+  });
+
+  it("buildUserFromApiData uses fallback stellarAddress when API data lacks it", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:stellartest");
+    localStorage.setItem("pi_access_token", "tok");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-stellar",
+        walletAddress: "demo:stellartest",
+        // no stellarAddress in API response
+        xp: 50,
+        tier: "Visitor",
+        // no trustScore in API response — should compute from xp
+        createdAt: "2025-01-01T00:00:00.000Z",
+        piUsername: "stellaruser",
+        agent: null,
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    // trustScore should be computed as Math.min(100, floor(50/10)) = 5
+    expect(contextValue.user.trustScore).toBe(5);
+    expect(contextValue.user.stellarAddress).toBeNull();
+    expect(contextValue.user.createdAt).toBe("2025-01-01T00:00:00.000Z");
+  });
+
+  it("buildUserFromApiData uses explicit trustScore from API when provided", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:trusttest");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-trust",
+        walletAddress: "demo:trusttest",
+        xp: 200,
+        tier: "Bronze",
+        trustScore: 77,
+        createdAt: new Date().toISOString(),
+        piUsername: "trustuser",
+        agent: null,
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    // trustScore should be taken from API, not computed from xp
+    expect(contextValue.user.trustScore).toBe(77);
+  });
 });
