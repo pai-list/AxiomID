@@ -6,6 +6,7 @@ import { createPiPayment } from "@/lib/pi-sdk";
 import { AgentPassport } from "@/components/AgentPassport";
 import { VerificationBadge } from "@/components/VerificationBadge";
 import { TrustScoreGauge } from "@/components/TrustScoreGauge";
+import { PassportSkeleton, StatsSkeleton } from "@/components/Skeleton";
 import Link from "next/link";
 import skillsData from "@/data/skills.json";
 
@@ -171,13 +172,9 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <div className="w-12 h-12 rounded-xl bg-neon-green/10 border border-neon-green/30 flex items-center justify-center animate-pulse">
-              <svg className="w-6 h-6 text-neon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <span className="text-xs font-mono text-gray-500">Loading passport...</span>
+          <div className="flex flex-col gap-6">
+            <PassportSkeleton />
+            <StatsSkeleton />
           </div>
         ) : !user ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
