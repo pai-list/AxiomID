@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Mock 'siwe' before importing the module under test
 jest.mock('siwe', () => ({
   SiweMessage: jest.fn(),

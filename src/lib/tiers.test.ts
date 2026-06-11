@@ -1,9 +1,9 @@
 import test from 'node:test';
-import assert from 'node:assert/strict';
 import { calculateTier, getLevelProgress, getNextLevelXP, TIERS } from './tiers.ts';
 
-test('Tiers Utility', async (t) => {
-  await t.test('calculateTier', (t) => {
+test('Tiers Utility', async () => {
+  await test('calculateTier', async () => {
+    const assert = await import('node:assert/strict');
     assert.strictEqual(calculateTier(0), 'Visitor');
     assert.strictEqual(calculateTier(50), 'Visitor');
     assert.strictEqual(calculateTier(99), 'Visitor');
@@ -22,7 +22,8 @@ test('Tiers Utility', async (t) => {
     assert.strictEqual(calculateTier(-10), 'Visitor');
   });
 
-  await t.test('getLevelProgress', (t) => {
+  await test('getLevelProgress', async () => {
+    const assert = await import('node:assert/strict');
     // Visitor tier (0-100 XP)
     assert.strictEqual(getLevelProgress(0, 'Visitor'), 0);
     assert.strictEqual(getLevelProgress(50, 'Visitor'), 50);
@@ -49,11 +50,11 @@ test('Tiers Utility', async (t) => {
     assert.strictEqual(getLevelProgress(600, 'Citizen'), 100);
   });
 
-  await t.test('getNextLevelXP', (t) => {
+  await test('getNextLevelXP', async () => {
+    const assert = await import('node:assert/strict');
     assert.strictEqual(getNextLevelXP('Visitor'), TIERS.Citizen);
     assert.strictEqual(getNextLevelXP('Citizen'), TIERS.Validator);
     assert.strictEqual(getNextLevelXP('Validator'), TIERS.Sovereign);
     assert.strictEqual(getNextLevelXP('Sovereign'), null);
   });
 });
-

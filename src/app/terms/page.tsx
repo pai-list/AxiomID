@@ -87,7 +87,7 @@ export default function Terms() {
                 Limitation of Liability
               </h2>
               <p>
-                The App is provided <strong className="text-gray-400">"as is"</strong> without warranties of any kind, either express or implied. We are not liable for any damages arising from the use or inability to use the service, including but not limited to loss of reputation score, agent data, or Pi transactions.
+                The App is provided <strong className="text-gray-400">&quot;as is&quot;</strong> without warranties of any kind, either express or implied. We are not liable for any damages arising from the use or inability to use the service, including but not limited to loss of reputation score, agent data, or Pi transactions.
               </p>
             </section>
 
