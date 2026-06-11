@@ -376,7 +376,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
         }).catch(() => setIsLoading(false));
       }).catch(() => setIsLoading(false));
-
+    }
   }, [connectWallet]);
 
   return (

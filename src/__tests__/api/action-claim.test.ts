@@ -36,7 +36,7 @@ jest.mock('@/lib/auth-middleware', () => ({
   }),
 }));
 
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { POST } from '@/app/api/action/claim/route';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-middleware';
