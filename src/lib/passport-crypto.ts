@@ -1,27 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sign, verify, createPrivateKey, createPublicKey } from 'crypto';
-
-// Default Ed25519 Public Key for local verification referenced in code (Public key is safe to keep as fallback)
-const DEV_ISSUER_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAh8yYt7CN72WPCljfc6Uq0x/n3VmfqOTLHBUbhztKwGs=
------END PUBLIC KEY-----`;
 
 /**
  * Gets the Issuer's Private Key for VC signing.
- * Throws a safe error in production if env is missing.
+ * Throws if env is missing — no fallback in production.
  */
 function getIssuerPrivateKey(): string {
   const privateKey = process.env.ISSUER_PRIVATE_KEY;
   if (!privateKey) {
-    throw new Error('Cryptographic Error: ISSUER_PRIVATE_KEY environment variable is not set.');
+    throw new Error(
+      'Cryptographic Error: ISSUER_PRIVATE_KEY environment variable is not set. ' +
+      'Generate Ed25519 keys with: openssl genpkey -algorithm Ed25519 -outform PEM'
+    );
   }
   return privateKey;
 }
 
 /**
  * Gets the Issuer's Public Key for VC validation.
+ * Throws if env is missing — no fallback in production.
  */
 export function getIssuerPublicKey(): string {
-  return process.env.ISSUER_PUBLIC_KEY || DEV_ISSUER_PUBLIC_KEY;
+  const publicKey = process.env.ISSUER_PUBLIC_KEY;
+  if (!publicKey) {
+    throw new Error(
+      'Cryptographic Error: ISSUER_PUBLIC_KEY environment variable is not set. ' +
+      'Extract public key with: openssl pkey -in private.pem -pubout'
+    );
+  }
+  return publicKey;
 }
 
 /**
@@ -114,7 +121,7 @@ export function issueAgentPassport(
 
   return {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
-    id: `urn:uuid:${crypto.randomUUID ? crypto.randomUUID() : '7c8b91a2-e289-4a3e-b165-27a3a9df8c8a'}`,
+    id: `urn:uuid:${crypto.randomUUID()}`,
     type: ['VerifiableCredential', 'AgentPassportCredential'],
     issuer: 'did:axiom:axiomid.app:root',
     issuanceDate,

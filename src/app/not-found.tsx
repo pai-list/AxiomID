@@ -21,7 +21,7 @@ export default function NotFound() {
           <h1 className="text-xl font-bold text-white">Page Not Found</h1>
           <p className="text-sm text-gray-400 max-w-md">
             This route does not exist in the AxiomID namespace. 
-            The identity layer you're looking for has not been provisioned.
+            The identity layer you&apos;re looking for has not been provisioned.
           </p>
         </div>
 

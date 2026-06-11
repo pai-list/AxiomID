@@ -8,10 +8,11 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.polyfills.js', '<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@pinetwork/pi-sdk-js$': '<rootDir>/src/__mocks__/@pinetwork/pi-sdk-js.ts',
   },
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -19,6 +20,10 @@ const customJestConfig = {
     '<rootDir>/src/app/api/score/ip_resolution.test.ts',
     '<rootDir>/src/app/context/dna-context.test.ts',
     '<rootDir>/src/app/api/__tests__/test-harness.ts',
+    '<rootDir>/src/__tests__/api/user-status.test.ts',
+    '<rootDir>/src/__tests__/api/auth-pi.test.ts',
+    '<rootDir>/src/__tests__/lib/validate.test.ts',
+    '<rootDir>/src/__tests__/test-utils.ts',
   ],
 }
 

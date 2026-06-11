@@ -8,6 +8,11 @@ export const PiAuthSchema = z.object({
   stellarAddress: z.string().optional(),
 });
 
+export const KyaClaimSchema = z.object({
+  username: z.string().min(1, 'username is required'),
+  name: z.string().optional(),
+});
+
 export const UserStatusSchema = z.object({
   userId: z.string().min(1).optional(),
   walletAddress: z.string().regex(/^(G[A-Z2-7]{54}|0x[a-fA-F0-9]{40}|pi:[a-zA-Z0-9_-]+|demo:[a-zA-Z0-9-]+)$/, 'Invalid wallet address').optional(),
@@ -16,7 +21,6 @@ export const UserStatusSchema = z.object({
 });
 
 export const ActionClaimSchema = z.object({
-  userId: z.string().min(1, 'userId is required'),
   actionType: z.string().min(1, 'actionType is required').max(100),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
@@ -37,6 +41,7 @@ export const PaymentCompleteSchema = z.object({
 });
 
 export type PiAuthInput = z.infer<typeof PiAuthSchema>;
+export type KyaClaimInput = z.infer<typeof KyaClaimSchema>;
 export type UserStatusInput = z.infer<typeof UserStatusSchema>;
 export type ActionClaimInput = z.infer<typeof ActionClaimSchema>;
 export type WalletConnectInput = z.infer<typeof WalletConnectSchema>;

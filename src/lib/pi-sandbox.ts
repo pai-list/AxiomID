@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function patchPostMessageForSandbox(): void {
   const originalPostMessage = window.postMessage.bind(window);
 
