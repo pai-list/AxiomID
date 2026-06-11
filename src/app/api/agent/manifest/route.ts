@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
+import { createPrivateKey, sign } from "crypto";
+
+function getIssuerPrivateKey(): string {
+  const key = process.env.ISSUER_PRIVATE_KEY;
+  if (!key) throw new Error("ISSUER_PRIVATE_KEY not set");
+  return key;
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("userId") || "anonymous";
+  const issuanceDate = new Date().toISOString();
 
   const manifest = {
     "@context": [
@@ -15,7 +23,7 @@ export async function GET(request: Request) {
       name: "AxiomID Protocol",
       image: "https://axiomid.app/icon-512x512.png",
     },
-    issuanceDate: new Date().toISOString(),
+    issuanceDate,
     credentialSubject: {
       id: `did:axiom:axiomid.app:${userId}`,
       type: "AgentIdentity",
@@ -28,13 +36,6 @@ export async function GET(request: Request) {
         version: "1.0",
         tiers: ["Visitor", "Citizen", "Validator", "Sovereign"],
       },
-    },
-    proof: {
-      type: "Ed25519Signature2020",
-      created: new Date().toISOString(),
-      verificationMethod: "did:axiom:axiomid.app:issuer#key-1",
-      proofPurpose: "assertionMethod",
-      proofValue: `z${Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString("base64")}`,
     },
     metadata: {
       protocol: "AxiomID",
@@ -49,7 +50,31 @@ export async function GET(request: Request) {
     },
   };
 
-  return NextResponse.json(manifest, {
+  let signature = "";
+  try {
+    const dataToSign = JSON.stringify(manifest, null, 0);
+    const key = createPrivateKey({
+      key: getIssuerPrivateKey(),
+      format: "pem",
+      type: "pkcs8",
+    });
+    signature = sign(null, Buffer.from(dataToSign), key).toString("hex");
+  } catch (e) {
+    console.error("Failed to sign manifest:", e);
+  }
+
+  const signedManifest = {
+    ...manifest,
+    proof: {
+      type: "Ed25519Signature2020",
+      created: issuanceDate,
+      verificationMethod: "did:axiom:axiomid.app:issuer#key-1",
+      proofPurpose: "assertionMethod",
+      proofValue: signature || "signature_unavailable",
+    },
+  };
+
+  return NextResponse.json(signedManifest, {
     headers: {
       "Content-Type": "application/ld+json",
       "Access-Control-Allow-Origin": "*",

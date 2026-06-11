@@ -1,0 +1,63 @@
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { apiError, apiSuccess } from '@/lib/errors';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/ip';
+
+interface CreateAgentBody {
+  walletAddress: string;
+  name?: string;
+  description?: string;
+}
+
+export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`agent-create:${ip}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
+  }
+
+  const { walletAddress, name, description } = body as CreateAgentBody;
+  if (!walletAddress) {
+    return apiError('VALIDATION_ERROR', 'walletAddress is required');
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { walletAddress } });
+    if (!user) {
+      return apiError('NOT_FOUND', 'User not found');
+    }
+
+    const existing = await prisma.userAgent.findUnique({ where: { userId: user.id } });
+    if (existing) {
+      return apiError('CONFLICT', 'User already has an agent');
+    }
+
+    const agent = await prisma.userAgent.create({
+      data: {
+        userId: user.id,
+        name: name ?? 'My Agent',
+        description: description ?? null,
+        status: 'INACTIVE',
+        mode: 'AUTONOMOUS',
+      },
+    });
+
+    return apiSuccess({
+      agentId: agent.id,
+      publicId: agent.publicId,
+      name: agent.name,
+      status: agent.status,
+    }, 201);
+  } catch (error) {
+    console.error('[AGENT-CREATE] Database error:', error);
+    return apiError('INTERNAL_ERROR', 'Failed to create agent');
+  }
+}
