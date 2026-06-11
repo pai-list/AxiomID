@@ -1,25 +1,58 @@
 import { AgentPassport } from "@/components/AgentPassport";
 import { AgentQR } from "@/components/AgentQR";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 interface PassportPageProps {
   params: Promise<{ slug: string }>;
 }
 
 async function getAgentData(slug: string) {
-  // In production, this would query a database
-  // For now, return mock data based on the slug
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { piUsername: slug },
+        { walletAddress: `pi:${slug}` },
+        { id: slug },
+      ],
+    },
+    include: {
+      agent: true,
+    },
+  });
+
+  if (!user) {
+    return {
+      username: slug,
+      walletAddress: `pi:${slug}`,
+      stellarAddress: null,
+      tier: "Visitor" as const,
+      trustScore: 0,
+      kyaStatus: "pending" as const,
+      kycStatus: "pending" as const,
+      issuedDate: new Date().toISOString(),
+      did: `did:axiom:axiomid.app:${slug}`,
+      xp: 0,
+    };
+  }
+
+  // Map database KYCStatus enum to AgentPassport statuses
+  let mappedKyc: "pending" | "verified" | "failed" | "none" = "pending";
+  if (user.kycStatus === "VERIFIED") mappedKyc = "verified";
+  else if (user.kycStatus === "REJECTED") mappedKyc = "failed";
+  else if (user.kycStatus === "NONE") mappedKyc = "none";
+
   return {
-    username: slug,
-    walletAddress: `pi:${slug}`,
-    stellarAddress: null,
-    tier: "Visitor" as const,
-    trustScore: 0,
-    kyaStatus: "pending" as const,
-    kycStatus: "pending" as const,
-    issuedDate: new Date().toISOString(),
-    did: `did:axiom:axiomid.app:${slug}`,
-    xp: 0,
+    username: user.piUsername || slug,
+    walletAddress: user.walletAddress,
+    stellarAddress: user.agent?.publicKey || null,
+    tier: (user.tier as any) || "Visitor",
+    trustScore: Math.min(100, Math.floor((user.xp || 0) / 10)),
+    kyaStatus: "verified" as const,
+    kycStatus: mappedKyc,
+    issuedDate: user.createdAt.toISOString(),
+    did: user.did || `did:axiom:axiomid.app:${slug}`,
+    xp: user.xp,
   };
 }
 

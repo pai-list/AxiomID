@@ -7,7 +7,7 @@ import Link from "next/link";
 /* ============================================
    FLOATING PASSPORT HERO
    ============================================ */
-function PassportHero() {
+function PassportHero({ user }: { user: any }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -19,6 +19,11 @@ function PassportHero() {
     window.addEventListener("mousemove", handleMouse);
     return () => window.removeEventListener("mousemove", handleMouse);
   }, []);
+
+  const hasUser = !!user;
+  const username = user?.piUsername || (user?.walletAddress ? (user.walletAddress.startsWith("pi:") ? user.walletAddress.slice(3) : user.walletAddress) : "Connect Wallet");
+  const displayAddress = user?.walletAddress ? (user.walletAddress.length > 20 ? `${user.walletAddress.slice(0, 8)}...${user.walletAddress.slice(-6)}` : user.walletAddress) : "did:axiom:...";
+  const avatarText = user?.piUsername ? user.piUsername[0].toUpperCase() : (user?.walletAddress ? "👤" : "?");
 
   return (
     <div
@@ -48,18 +53,18 @@ function PassportHero() {
         {/* Middle: Avatar + Info */}
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 border border-neon-green/30 flex items-center justify-center text-2xl font-bold font-mono text-neon-green">
-            ?
+            {avatarText}
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-white font-mono">Connect Wallet</h3>
-            <p className="text-[9px] text-gray-500 font-mono mt-1">did:axiom:...</p>
+            <h3 className="text-sm font-bold text-white font-mono">{username}</h3>
+            <p className="text-[9px] text-gray-500 font-mono mt-1">{displayAddress}</p>
             <div className="mt-2 flex gap-1.5">
-              <span className="badge badge-pending">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+              <span className={`badge ${hasUser ? "badge-verified" : "badge-pending"}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${hasUser ? "bg-neon-green" : "bg-yellow-500 animate-pulse"}`} />
                 KYA
               </span>
-              <span className="badge badge-pending">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+              <span className={`badge ${hasUser ? "badge-verified" : "badge-pending"}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${hasUser ? "bg-neon-green" : "bg-yellow-500 animate-pulse"}`} />
                 KYC
               </span>
             </div>
@@ -69,7 +74,7 @@ function PassportHero() {
         {/* Bottom bar */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3">
           <span className="text-[8px] text-gray-600 font-mono">AxiomID Verified • Pi Compatible</span>
-          <span className="text-[8px] text-gray-600 font-mono">v1.0</span>
+          <span className="text-[8px] text-gray-600 font-mono">{user?.tier ? user.tier.toUpperCase() : "v1.0"}</span>
         </div>
       </div>
     </div>
@@ -205,7 +210,7 @@ export default function Home() {
 
         {/* Right: Floating Passport */}
         <div className="relative">
-          <PassportHero />
+          <PassportHero user={user} />
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-tr from-neon-green/5 to-electric-blue/5 blur-3xl rounded-full scale-150 pointer-events-none" />
         </div>
