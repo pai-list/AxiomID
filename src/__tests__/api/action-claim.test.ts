@@ -23,17 +23,18 @@ jest.mock('@/lib/rate-limiter', () => ({
   RATE_LIMITS: { authenticated: { windowMs: 60000, maxRequests: 100 } },
 }));
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type */
 import { POST } from '@/app/api/action/claim/route';
 import { prisma } from '@/lib/prisma';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
-function mockRequest(body: unknown) {
+function mockRequest(body: unknown): Request {
   return new Request('http://localhost/api/action/claim', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  }) as any;
+  });
 }
 
 describe('POST /api/action/claim', () => {
@@ -43,8 +44,8 @@ describe('POST /api/action/claim', () => {
 
   it('claims XP for valid action', async () => {
     mockPrisma.action.findUnique.mockResolvedValue(null);
-    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', xp: 0 } as any);
-    mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
+    mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', xp: 0 } as never);
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: Record<string, any>) => Promise<any>) => {
       const tx = {
         action: { create: jest.fn().mockResolvedValue({ id: 'action-1', type: 'connect_twitter', userId: 'u', xp: 50, metadata: null, timestamp: new Date() }) },
         xpLedger: { create: jest.fn().mockResolvedValue({ id: 'ledger-1' }) },
