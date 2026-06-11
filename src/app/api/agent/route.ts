@@ -24,16 +24,11 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
 
-  const { walletAddress, name, description } = body as CreateAgentBody;
-  if (!walletAddress) {
-    return apiError('VALIDATION_ERROR', 'walletAddress is required');
-  }
+  const { requireUser } = await import('@/lib/auth-middleware');
+  const { error: authError, user } = await requireUser(request);
+  if (authError) return authError;
 
-  try {
-    const user = await prisma.user.findUnique({ where: { walletAddress } });
-    if (!user) {
-      return apiError('NOT_FOUND', 'User not found');
-    }
+  const { name, description } = body as CreateAgentBody;
 
     const existing = await prisma.userAgent.findUnique({ where: { userId: user.id } });
     if (existing) {
