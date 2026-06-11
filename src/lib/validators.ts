@@ -7,20 +7,20 @@ export const PiAuthSchema = z.object({
 });
 
 export const UserStatusSchema = z.object({
-  userId: z.string().uuid().optional(),
-  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address').optional(),
+  userId: z.string().min(1).optional(),
+  walletAddress: z.string().regex(/^(0x[a-fA-F0-9]{40}|pi:[a-zA-Z0-9_-]+|demo:[a-zA-Z0-9-]+)$/, 'Invalid wallet address').optional(),
 }).refine((data) => data.userId || data.walletAddress, {
   message: 'Either userId or walletAddress is required',
 });
 
 export const ActionClaimSchema = z.object({
-  userId: z.string().uuid('Invalid userId'),
+  userId: z.string().min(1, 'userId is required'),
   actionType: z.string().min(1, 'actionType is required').max(100),
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const WalletConnectSchema = z.object({
-  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
+  walletAddress: z.string().regex(/^(0x[a-fA-F0-9]{40}|pi:[a-zA-Z0-9_-]+|demo:[a-zA-Z0-9-]+)$/, 'Invalid wallet address'),
   state: z.string().min(1, 'state token is required'),
   signature: z.string().optional(),
 });

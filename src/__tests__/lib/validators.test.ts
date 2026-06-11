@@ -58,6 +58,20 @@ describe('UserStatusSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts pi: wallet address', () => {
+    const result = UserStatusSchema.safeParse({
+      walletAddress: 'pi:abc123def456',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts demo: wallet address', () => {
+    const result = UserStatusSchema.safeParse({
+      walletAddress: 'demo:abc12345',
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects invalid wallet address format', () => {
     const result = UserStatusSchema.safeParse({
       walletAddress: 'not-a-wallet',
@@ -97,9 +111,17 @@ describe('ActionClaimSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects invalid userId format', () => {
+  it('accepts Pi UID userId', () => {
     const result = ActionClaimSchema.safeParse({
-      userId: 'not-a-uuid',
+      userId: 'pi-user-abc123',
+      actionType: 'connect_twitter',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects empty userId', () => {
+    const result = ActionClaimSchema.safeParse({
+      userId: '',
       actionType: 'connect_twitter',
     });
     expect(result.success).toBe(false);
@@ -111,6 +133,22 @@ describe('WalletConnectSchema', () => {
     const result = WalletConnectSchema.safeParse({
       walletAddress: '0x' + 'a'.repeat(40),
       state: 'base64url-state-token',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts pi: wallet address', () => {
+    const result = WalletConnectSchema.safeParse({
+      walletAddress: 'pi:abc123def456',
+      state: 'state-token',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts demo: wallet address', () => {
+    const result = WalletConnectSchema.safeParse({
+      walletAddress: 'demo:abc12345',
+      state: 'state-token',
     });
     expect(result.success).toBe(true);
   });

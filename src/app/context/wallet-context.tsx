@@ -182,7 +182,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const res = await fetch("/api/action/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: user.walletAddress, actionType }),
+        body: JSON.stringify({ userId: user.id, actionType }),
       });
 
       if (!res.ok) {
@@ -192,7 +192,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await res.json();
-      setUser(data.user);
+      setUser((prev) => prev ? {
+        ...prev,
+        xp: data.newBalance,
+        tier: data.tier,
+        actions: [...(prev.actions || []), { type: actionType, xp: data.xpEarned, timestamp: new Date().toISOString() }],
+      } : prev);
       return true;
     } catch (err) {
       console.error("Claim error:", err);
@@ -206,7 +211,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const res = await fetch(`/api/user/status?walletAddress=${user.walletAddress}`);
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
+        setUser({
+          id: data.userId,
+          walletAddress: data.walletAddress,
+          xp: data.xp,
+          tier: data.tier,
+          piUsername: data.piUsername,
+          actions: user?.actions || [],
+          agent: data.agent || null,
+        });
       }
     } catch (e) {
       console.error(e);
