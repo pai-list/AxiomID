@@ -43,10 +43,7 @@ interface PiInstance {
   ) => Promise<PiPaymentDTO>;
 }
 
-interface PiMeResponse {
-  uid: string;
-  username: string;
-}
+type AnyFn = (...args: unknown[]) => void;
 
 declare global {
   interface Window {
@@ -54,8 +51,8 @@ declare global {
     Pi?: PiInstance;
     ethereum?: {
       request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on: (event: string, handler: (...args: any[]) => void) => void;
-      removeListener: (event: string, handler: (...args: any[]) => void) => void;
+      on: (event: string, handler: AnyFn) => void;
+      removeListener: (event: string, handler: AnyFn) => void;
     };
   }
 }
