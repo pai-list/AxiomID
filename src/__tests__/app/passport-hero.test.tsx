@@ -43,6 +43,7 @@ function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {})
     error: null,
     isPiBrowser: false,
     connectWallet: jest.fn(),
+    logout: jest.fn(),
     claimAction: jest.fn(),
     refreshUser: jest.fn(),
     createAgent: jest.fn(),

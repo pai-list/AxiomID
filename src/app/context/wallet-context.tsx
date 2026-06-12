@@ -29,6 +29,7 @@ interface WalletContextType {
   error: string | null;
   isPiBrowser: boolean;
   connectWallet: () => Promise<void>;
+  logout: () => void;
   claimAction: (actionType: string) => Promise<boolean>;
   refreshUser: () => Promise<void>;
   createAgent: (name?: string) => Promise<boolean>;
@@ -101,6 +102,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearWalletLogs = useCallback(() => setWalletLogs([]), []);
+
+  const logout = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("pi_access_token");
+      localStorage.removeItem("axiomid_wallet");
+    }
+
+    setUser(null);
+    setPiAccessToken(null);
+    setError(null);
+    setIsLoading(false);
+    setIsConnecting(false);
+    console.info("AxiomID wallet logout: cleared saved credentials and signed out user.");
+    pushLog("Logged out: cleared saved wallet credentials.");
+  }, [pushLog]);
 
   const refreshUser = useCallback(async (walletAddress?: string) => {
     const addr = walletAddress || user?.walletAddress;
@@ -383,6 +399,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         error,
         isPiBrowser,
         connectWallet,
+        logout,
         claimAction,
         refreshUser,
         createAgent,

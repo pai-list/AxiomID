@@ -83,7 +83,7 @@ function PassportHero({ user }: { user: any }) {
    MAIN PAGE
    ============================================ */
 export default function Home() {
-  const { user, connectWallet, isConnecting, isPiBrowser } = useWallet();
+  const { user, connectWallet, logout, isConnecting, isPiBrowser } = useWallet();
 
   return (
     <main className="min-h-screen bg-grid flex flex-col items-center relative">
@@ -112,9 +112,17 @@ export default function Home() {
             </span>
           )}
           {user ? (
-            <Link href="/dashboard" className="btn-primary text-xs px-4 py-2">
-              DASHBOARD
-            </Link>
+            <>
+              <Link href="/dashboard" className="btn-primary text-xs px-4 py-2">
+                DASHBOARD
+              </Link>
+              <button
+                onClick={logout}
+                className="btn-ghost text-xs px-4 py-2"
+              >
+                LOGOUT
+              </button>
+            </>
           ) : (
             <button
               onClick={connectWallet}
@@ -178,9 +186,17 @@ export default function Home() {
               </Link>
             </div>
           ) : (
-            <Link href="/dashboard" className="btn-primary flex items-center justify-center gap-2 mt-2 w-fit">
-              ENTER DASHBOARD
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+              <Link href="/dashboard" className="btn-primary flex items-center justify-center gap-2 w-fit">
+                ENTER DASHBOARD
+              </Link>
+              <button
+                onClick={logout}
+                className="btn-ghost w-fit text-center"
+              >
+                LOGOUT
+              </button>
+            </div>
           )}
 
           {/* Trust indicators */}

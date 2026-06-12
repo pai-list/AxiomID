@@ -26,6 +26,7 @@ function TestConsumer({ onUpdate }: { onUpdate: (value: ReturnType<typeof useWal
       <div data-testid="status">{wallet.isLoading ? "loading" : "idle"}</div>
       <div data-testid="user">{wallet.user ? wallet.user.walletAddress : "no-user"}</div>
       <button data-testid="connect-btn" onClick={wallet.connectWallet}>Connect</button>
+      <button data-testid="logout-btn" onClick={wallet.logout}>Logout</button>
     </div>
   );
 }
@@ -154,6 +155,60 @@ describe("WalletProvider & WalletContext", () => {
     expect(contextValue.user).not.toBeNull();
     expect(contextValue.user.walletAddress).toBe("demo:wallet123");
     expect(contextValue.user.piUsername).toBe("testuser");
+  });
+
+
+  it("logout clears persisted credentials and prevents reload restoration in external browsers", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:logout-wallet");
+    localStorage.setItem("pi_access_token", "logout-token");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-logout",
+        walletAddress: "demo:logout-wallet",
+        xp: 100,
+        tier: "Citizen",
+        trustScore: 10,
+        createdAt: new Date().toISOString(),
+        piUsername: "logoutuser",
+      }),
+    });
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    const { getByTestId, unmount } = render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+      expect(contextValue?.user?.walletAddress).toBe("demo:logout-wallet");
+    });
+
+    act(() => {
+      getByTestId("logout-btn").click();
+    });
+
+    expect(localStorage.getItem("pi_access_token")).toBeNull();
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+    expect(contextValue?.user).toBeNull();
+    expect(contextValue?.error).toBeNull();
+
+    unmount();
+    mockFetch.mockClear();
+
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(contextValue?.isLoading).toBe(false));
+
+    expect(contextValue?.user).toBeNull();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it("performs silent auto-connect on mount if inside Pi Browser user-agent", async () => {

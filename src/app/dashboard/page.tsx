@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useWallet } from "../context/wallet-context";
 import skillsData from "@/data/skills.json";
 
@@ -16,10 +17,12 @@ export default function Dashboard() {
     user,
     isLoading,
     connectWallet,
+    logout,
     isConnecting,
     levelProgress,
   } = useWallet();
 
+  const router = useRouter();
   const [logs, setLogs] = useState<string[]>(INITIAL_LOGS);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,12 +39,17 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
   return (
     <main className="min-h-screen bg-grid">
       <div className="scanline" />
 
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 flex items-center justify-center">
               <span className="text-neon-green font-bold text-xl">A</span>
@@ -51,6 +59,14 @@ export default function Dashboard() {
               <p className="text-xs text-gray-400 font-mono">Agent Identity Layer v1.0.0</p>
             </div>
           </div>
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="btn-ghost text-xs px-4 py-2"
+            >
+              LOGOUT
+            </button>
+          )}
         </div>
       </header>
 
