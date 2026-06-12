@@ -3,6 +3,7 @@ import { AgentQR } from "@/components/AgentQR";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { Tier } from "@/lib/tiers";
+import { createAxiomDid } from "@/lib/did";
 
 interface PassportPageProps {
   params: Promise<{ slug: string }>;
@@ -32,7 +33,7 @@ async function getAgentData(slug: string) {
       kyaStatus: "pending" as const,
       kycStatus: "pending" as const,
       issuedDate: new Date().toISOString(),
-      did: `did:axiom:axiomid.app:${slug}`,
+      did: createAxiomDid(`pi:${slug}`),
       xp: 0,
     };
   }
@@ -58,7 +59,7 @@ async function getAgentData(slug: string) {
     kyaStatus: "verified" as const,
     kycStatus: mappedKyc,
     issuedDate: user.createdAt.toISOString(),
-    did: user.did || `did:axiom:axiomid.app:${slug}`,
+    did: user.did || createAxiomDid(`pi:${slug}`),
     xp: user.xp,
   };
 }

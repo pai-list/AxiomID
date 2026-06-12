@@ -58,11 +58,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const existingUser = await prisma.user.findUnique({
-      where: { walletAddress },
-      select: { did: true, kycStatus: true },
-    });
-
     const tier = calculateTier(user.xp);
 
     return apiSuccess({
@@ -70,8 +65,8 @@ export async function POST(request: NextRequest) {
       walletAddress: user.walletAddress,
       tier,
       xp: user.xp,
-      did: existingUser?.did ?? null,
-      kycStatus: existingUser?.kycStatus ?? null,
+      did: user.did ?? null,
+      kycStatus: user.kycStatus ?? null,
       isNewUser: user.createdAt.getTime() === user.updatedAt.getTime(),
     });
   } catch (error) {

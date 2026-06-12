@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         kycProvider: 'pi_network',
         did: existing.did || createAxiomDid(`pi:${user.piUid}`),
         didMethod: 'did:axiom',
-        ...(metadata ? { metadata } : {}),
+        metadata,
       },
     });
 
