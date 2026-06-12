@@ -170,7 +170,7 @@ export default function Dashboard() {
               </p>
               {shouldShowPiBrowserPrompt ? (
                 <div className="mb-6 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-amber-200">
-                  <p className="font-semibold">افتح التطبيق من Pi Browser</p>
+                  <p className="font-semibold">{OPEN_IN_PI_BROWSER_MESSAGE}</p>
                   <p className="mt-1 text-sm text-amber-100/80">
                     Demo wallet is disabled for this deployment.
                   </p>
