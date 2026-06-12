@@ -583,4 +583,229 @@ describe('POST /api/auth/pi', () => {
       }),
     );
   });
+
+  it('buildPiDid produces correct did:axiom format for alphanumeric uid', async () => {
+    const uid = 'abc123-user';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'format-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'formatuser',
+      xp: 0,
+      tier: 'Visitor',
+      did: `did:axiom:axiomid.app:pi:${uid}`,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'formatuser',
+    }));
+
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          did: `did:axiom:axiomid.app:pi:${uid}`,
+        }),
+      }),
+    );
+  });
+
+  it('returns stellarAddress in response when provided by client', async () => {
+    const uid = 'stellar-uid';
+    const stellarAddr = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'stellar-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'stellaruser',
+      xp: 0,
+      tier: 'Visitor',
+      did: `did:axiom:axiomid.app:pi:${uid}`,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    const res = await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'stellaruser',
+      stellarAddress: stellarAddr,
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.stellarAddress).toBe(stellarAddr);
+  });
+
+  it('returns null stellarAddress in response when not provided by client', async () => {
+    const uid = 'no-stellar-uid';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'no-stellar-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'user',
+      xp: 0,
+      tier: 'Visitor',
+      did: `did:axiom:axiomid.app:pi:${uid}`,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    const res = await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'user',
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.stellarAddress).toBeNull();
+  });
+
+  it('includes all required fields in response for a new user', async () => {
+    const uid = 'full-response-uid';
+    const expectedDid = `did:axiom:axiomid.app:pi:${uid}`;
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'full-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'fulluser',
+      xp: 42,
+      tier: 'Visitor',
+      did: expectedDid,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    const res = await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'fulluser',
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data).toMatchObject({
+      userId: 'full-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'fulluser',
+      xp: 42,
+      did: expectedDid,
+      kycStatus: 'NONE',
+      hasAgent: false,
+      stellarAddress: null,
+    });
+    expect(data.tier).toBeDefined();
+  });
+
+  it('repairs DID when existing user has undefined did (falsy)', async () => {
+    const uid = 'undefined-did-uid';
+    const expectedDid = `did:axiom:axiomid.app:pi:${uid}`;
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    // undefined did is falsy - should trigger repair path same as null
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'undefined-did-user',
+      piUid: uid,
+      did: undefined,
+    } as any);
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'undefined-did-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'undefuser',
+      xp: 0,
+      tier: 'Visitor',
+      did: expectedDid,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    const res = await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'undefuser',
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.did).toBe(expectedDid);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ did: expectedDid }),
+      }),
+    );
+  });
+
+  it('sets hasAgent to true when user has an associated agent', async () => {
+    const uid = 'agent-uid';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'agent-user',
+      piUid: uid,
+      did: `did:axiom:axiomid.app:pi:${uid}`,
+    } as any);
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'agent-user',
+      walletAddress: `pi:${uid}`,
+      piUid: uid,
+      piUsername: 'agentuser',
+      xp: 0,
+      tier: 'Visitor',
+      did: `did:axiom:axiomid.app:pi:${uid}`,
+      kycStatus: 'NONE',
+      agent: { id: 'agent-1', name: 'MyAgent' },
+    } as any);
+
+    const res = await POST(mockRequest({
+      accessToken: 'token',
+      uid,
+      username: 'agentuser',
+    }));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.hasAgent).toBe(true);
+  });
 });
