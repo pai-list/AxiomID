@@ -45,7 +45,7 @@
 </p>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Status-Beta_v1.0.0-00ff41?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Status-Beta_V1.0.4-00ff41?style=for-the-badge" alt="Status" />
   <img src="https://img.shields.io/badge/Stack-Next.js_16_|_Prisma_|_PostgreSQL-000000?style=for-the-badge&logo=next.js" alt="Stack" />
   <img src="https://img.shields.io/badge/Aesthetic-Sophisticated_Cyberpunk-00d4ff?style=for-the-badge&logoColor=white" alt="Aesthetic" />
 </div>
@@ -89,7 +89,7 @@ AxiomID uses a progressive trust model. You don't just "have" an ID; you **level
 | **Sovereign** | 1000 | 🟣 Elite | High reputation. Financial stake locked. Vouching power. |
 
 ### 🛠️ Tech Stack
-- **Frontend:** Next.js 15 (App Router), Tailwind CSS, Framer Motion (Bento Grids, Floating Elements).
+- **Frontend:** Next.js 16 (App Router), Tailwind CSS, Framer Motion (Bento Grids, Floating Elements).
 - **Backend:** Next.js API Routes (Serverless).
 - **Database:** PostgreSQL (via **Prisma ORM**).
 - **Auth:** Web3 First (Wallet Connect).

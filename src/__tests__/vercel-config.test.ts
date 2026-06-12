@@ -79,10 +79,12 @@ describe("vercel.json — global security headers on /(.*)", () => {
     expect(findHeader(globalRule, "X-Content-Type-Options")).toBe("nosniff");
   });
 
-  it("sets Content-Security-Policy with frame-ancestors for Pi sandbox", () => {
+  it("sets Content-Security-Policy with frame-ancestors for Pi sandbox and production domains", () => {
     const csp = findHeader(globalRule, "Content-Security-Policy");
     expect(csp).toContain("frame-ancestors");
     expect(csp).toContain("sandbox.minepi.com");
+    expect(csp).toContain("app-cdn.minepi.com");
+    expect(csp).toContain("*.minepi.com");
   });
 
   it("sets Referrer-Policy to strict-origin-when-cross-origin", () => {

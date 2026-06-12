@@ -64,7 +64,7 @@ export default function Terms() {
 
             <section>
               <h2 className="text-white text-lg font-semibold mb-2 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-axiom-gold" />
+                <span className="w-1.5 h-1.5 rounded-full bg-axiom-purple" />
                 AI Agent Verification
               </h2>
               <p>
