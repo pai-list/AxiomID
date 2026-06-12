@@ -24,6 +24,7 @@ const customJestConfig = {
     '<rootDir>/src/__tests__/api/auth-pi.test.ts',
     '<rootDir>/src/__tests__/lib/validate.test.ts',
     '<rootDir>/src/__tests__/test-utils.ts',
+    '<rootDir>/src/__tests__/app/wallet-test-helpers.ts',
   ],
 }
 

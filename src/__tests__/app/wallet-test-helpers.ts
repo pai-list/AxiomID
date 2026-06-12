@@ -1,6 +1,10 @@
-import { useWallet } from "@/app/context/wallet-context";
+import { jest } from "@jest/globals";
 
-export function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {}): ReturnType<typeof useWallet> {
+/**
+ * Shared factory for a default mock WalletContext value.
+ * Import this in component tests that mock `@/app/context/wallet-context`.
+ */
+export function defaultWalletCtx(overrides: Record<string, any> = {}): any {
   return {
     user: null,
     isLoading: false,
@@ -20,5 +24,5 @@ export function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>
     runWalletTest: jest.fn(),
     clearWalletLogs: jest.fn(),
     ...overrides,
-  } as any;
+  };
 }

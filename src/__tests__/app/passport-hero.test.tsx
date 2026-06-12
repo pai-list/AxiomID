@@ -245,8 +245,7 @@ describe("Home page — logout buttons (PR change: logout added to Home)", () =>
   it("shows CONNECT button (not LOGOUT) when there is no user", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null }));
     render(<Home />);
-    const connectButtons = screen.getAllByRole("button", { name: /connect/i });
-    expect(connectButtons.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: /connect/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
   });
 

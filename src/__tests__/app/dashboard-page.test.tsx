@@ -40,6 +40,7 @@ jest.mock("@/data/skills.json", () => ({
   ],
 }));
 
+
 const authenticatedUser = {
   id: "user-dash",
   walletAddress: "demo:dashtest",

@@ -104,8 +104,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const clearWalletLogs = useCallback(() => setWalletLogs([]), []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("pi_access_token");
-    localStorage.removeItem("axiomid_wallet");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("pi_access_token");
+      localStorage.removeItem("axiomid_wallet");
+    }
+
     setUser(null);
     setPiAccessToken(null);
     setError(null);
