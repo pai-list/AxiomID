@@ -134,16 +134,21 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-center gap-8">
             {[
-              { id: "passport", icon: "🆔", label: "Passport" },
-              { id: "actions", icon: "⚡", label: "Actions" },
-              { id: "terminal", icon: "💻", label: "Terminal" },
-              { id: "marketplace", icon: "🛒", label: "Marketplace" },
+              { id: "passport", icon: "🆔", label: "Passport", href: user ? `/passport/${user.piUsername || user.walletAddress}` : undefined },
+              { id: "actions", icon: "⚡", label: "Actions", href: "/" },
+              { id: "terminal", icon: "💻", label: "Terminal", disabled: true },
+              { id: "marketplace", icon: "🛒", label: "Marketplace", disabled: true },
             ].map((tab) => (
               <button
                 key={tab.id}
-                className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all ${tab.id === "passport"
-                  ? "bg-neon-green/20 text-neon-green"
-                  : "text-gray-500 hover:text-white"
+                disabled={tab.disabled}
+                onClick={() => { if (tab.href) window.location.href = tab.href; }}
+                className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all ${
+                  tab.disabled
+                    ? "text-gray-700 cursor-not-allowed"
+                    : tab.id === "passport"
+                      ? "bg-neon-green/20 text-neon-green"
+                      : "text-gray-500 hover:text-white"
                 }`}
               >
                 <span className="text-xl">{tab.icon}</span>

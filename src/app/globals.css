@@ -364,3 +364,52 @@ body {
 .animate-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
 }
+
+/* ============================================
+   ACCESSIBILITY: REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .scanline,
+  .animate-holographic,
+  .animate-glow-pulse,
+  .animate-float,
+  .animate-pulse-slow {
+    animation: none !important;
+  }
+
+  .bento-card:hover,
+  .passport-card:hover {
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY: FOCUS VISIBLE
+   ============================================ */
+:focus-visible {
+  outline: 2px solid var(--neon-green);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--neon-green);
+  outline-offset: 2px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--neon-green);
+  outline-offset: 2px;
+}
+
+.badge:focus-visible {
+  outline: 2px solid var(--neon-green);
+  outline-offset: 2px;
+}

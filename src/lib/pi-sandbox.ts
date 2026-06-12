@@ -4,7 +4,7 @@ export function patchPostMessageForSandbox(): void {
 
   window.postMessage = ((message: any, targetOrigin: string, ...args: any[]) => {
     if (window.parent && window.parent !== window) {
-      (window.parent as any).postMessage(message, "*", ...args);
+      (window.parent as any).postMessage(message, "https://app.minepi.com", ...args);
     } else {
       originalPostMessage(message, targetOrigin, ...args);
     }
@@ -14,6 +14,7 @@ export function patchPostMessageForSandbox(): void {
 export function listenForPiSDKMessages(): void {
   function handlePiMessage(event: MessageEvent) {
     if (typeof event.data !== "string") return;
+    if (event.origin !== "https://app.minepi.com" && event.origin !== "https://sandbox.minepi.com") return;
 
     try {
       const msg = JSON.parse(event.data);

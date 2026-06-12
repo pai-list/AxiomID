@@ -164,12 +164,12 @@ describe('pi-sdk', () => {
         json: async () => ({ success: true, userId: 'u1' }),
       });
 
-      await claimPiKya({ username: 'testuser', stellarAddress: 'GADDR', name: 'Test User' });
+      await claimPiKya({ username: 'testuser', stellarAddress: 'GADDR' });
 
       expect(global.fetch).toHaveBeenCalledWith('/api/pi/kya/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'testuser', stellarAddress: 'GADDR', name: 'Test User' }),
+        body: JSON.stringify({ username: 'testuser', stellarAddress: 'GADDR' }),
       });
     });
 

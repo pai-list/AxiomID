@@ -63,6 +63,7 @@ describe("WalletProvider & WalletContext", () => {
   afterEach(() => {
     jest.restoreAllMocks();
     process.env.NEXT_PUBLIC_PI_SANDBOX = originalSandboxEnv;
+    delete (window as unknown as Record<string, unknown>).Pi;
   });
 
   const setUserAgent = (ua: string) => {
@@ -218,7 +219,7 @@ describe("WalletProvider & WalletContext", () => {
   });
 
   it("sets user correctly from demo auth (flat API response)", async () => {
-    // Not in Pi Browser
+    process.env.NEXT_PUBLIC_PI_SANDBOX = "true";
     setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)");
 
     mockFetch.mockResolvedValueOnce({
@@ -245,7 +246,6 @@ describe("WalletProvider & WalletContext", () => {
       expect(contextValue.isLoading).toBe(false);
     });
 
-    // No auto-connect for external browser, so click the button
     await act(async () => {
       getByTestId("connect-btn").click();
     });
@@ -254,30 +254,17 @@ describe("WalletProvider & WalletContext", () => {
       expect(contextValue.user).not.toBeNull();
     });
 
-    // Should have set the user from flat API response
     expect(contextValue.user.id).toBe("user-demo-1");
     expect(contextValue.user.walletAddress).toBe("demo:abc123");
     expect(contextValue.user.tier).toBe("Visitor");
     expect(contextValue.user.xp).toBe(5);
   });
 
-  it("falls back to demo wallet when Pi SDK fails", async () => {
+  it("rejects auth when Pi SDK fails in production mode", async () => {
     setUserAgent("Pi Browser; Android; minepi");
+    process.env.NEXT_PUBLIC_PI_SANDBOX = "false";
 
     mockConnectPi.mockRejectedValueOnce(new Error("Pi authentication failed: SDK error"));
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        userId: "user-fallback-1",
-        walletAddress: "demo:fallback1",
-        tier: "Visitor",
-        xp: 0,
-        did: null,
-        kycStatus: null,
-        isNewUser: true,
-      }),
-    });
 
     let contextValue: ReturnType<typeof useWallet> | undefined;
     const { getByTestId } = render(
@@ -295,14 +282,11 @@ describe("WalletProvider & WalletContext", () => {
     });
 
     await waitFor(() => {
-      expect(contextValue.user).not.toBeNull();
+      expect(contextValue.error).toBeTruthy();
     });
 
     expect(mockConnectPi).toHaveBeenCalled();
-    expect(mockFetch).toHaveBeenCalledWith("/api/auth/connect", expect.objectContaining({
-      method: "POST",
-    }));
-    expect(contextValue.user.id).toBe("user-fallback-1");
-    expect(contextValue.user.walletAddress).toBe("demo:fallback1");
+    expect(contextValue.user).toBeNull();
+    expect(contextValue.error).toContain("Pi authentication failed");
   });
 });

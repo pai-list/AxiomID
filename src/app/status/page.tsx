@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 interface NetworkStats {
   registeredAgents: number;
   totalTransactions: number;
-  averageTrustScore: number;
+  averageTrustScore: number | null;
   activeUsers: number;
   totalXpEarned: number;
-  verificationRate: number;
+  verificationRate: number | null;
 }
 
 export default function StatusPage() {
@@ -96,7 +96,7 @@ export default function StatusPage() {
               <div className="bento-card p-6 text-center">
                 <span className="text-[10px] font-mono text-gray-500 block mb-2">AVG TRUST SCORE</span>
                 <span className="text-3xl font-bold font-mono text-axiom-purple">
-                  {stats.averageTrustScore.toLocaleString()}%
+                  {stats.averageTrustScore?.toLocaleString() ?? "—"}%
                 </span>
               </div>
               <div className="bento-card p-6 text-center">
@@ -114,7 +114,7 @@ export default function StatusPage() {
               <div className="bento-card p-6 text-center">
                 <span className="text-[10px] font-mono text-gray-500 block mb-2">VERIFICATION RATE</span>
                 <span className="text-3xl font-bold font-mono text-axiom-purple">
-                  {stats.verificationRate.toLocaleString()}%
+                  {stats.verificationRate?.toLocaleString() ?? "—"}%
                 </span>
               </div>
             </div>
