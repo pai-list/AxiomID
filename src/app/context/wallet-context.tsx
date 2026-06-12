@@ -336,18 +336,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       localStorage.setItem("axiomid_wallet", walletAddress);
-      setUser({
-        id: data.userId,
-        walletAddress: data.walletAddress,
-        stellarAddress: stellarAddress,
-        xp: data.xp,
-        tier: data.tier,
-        trustScore: Math.min(100, Math.floor((data.xp || 0) / 10)),
-        createdAt: new Date().toISOString(),
-        piUsername: data.piUsername || piUser.username,
-        actions: [],
-        agent: null,
-      });
+      setUser(buildUserFromApiData(
+        { ...data, piUsername: data.piUsername || piUser.username },
+        { stellarAddress },
+      ));
       pushLog(`✅ تم توثيق المحفظة بنجاح!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
@@ -443,7 +435,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (!storedWallet) {
       setIsLoading(false);
       return;
-
+    }
 
     setIsLoading(true);
     (async () => {
