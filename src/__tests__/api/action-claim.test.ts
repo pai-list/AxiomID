@@ -36,7 +36,7 @@ jest.mock('@/lib/auth-middleware', () => ({
   }),
 }));
 
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { POST } from '@/app/api/action/claim/route';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-middleware';
@@ -53,6 +53,22 @@ function mockRequest(body: unknown): Request {
     },
     body: JSON.stringify(body),
   });
+}
+
+function makeTx(overrides: {
+  action?: { id: string; type: string; userId: string; xp: number; metadata: null; timestamp: Date };
+  ledger?: { id: string };
+  user?: { id: string; xp: number } | null;
+  userUpdate?: { id: string; xp: number; tier: string };
+} = {}) {
+  return {
+    action: { create: jest.fn().mockResolvedValue(overrides.action ?? { id: 'action-1', type: 'connect_twitter', userId: 'user-1', xp: 50, metadata: null, timestamp: new Date() }) },
+    xpLedger: { create: jest.fn().mockResolvedValue(overrides.ledger ?? { id: 'ledger-1' }) },
+    user: {
+      findUnique: jest.fn().mockResolvedValue(overrides.user !== undefined ? overrides.user : { id: 'user-1', xp: 0 }),
+      update: jest.fn().mockResolvedValue(overrides.userUpdate ?? { id: 'user-1', xp: 50, tier: 'Visitor' }),
+    },
+  };
 }
 
 describe('POST /api/action/claim', () => {
@@ -74,14 +90,7 @@ describe('POST /api/action/claim', () => {
   it('claims XP for valid action', async () => {
     mockPrisma.action.findUnique.mockResolvedValue(null);
     mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', xp: 0 } as never);
-    mockPrisma.$transaction.mockImplementation(async (fn: (tx: Record<string, any>) => Promise<any>) => {
-      const tx = {
-        action: { create: jest.fn().mockResolvedValue({ id: 'action-1', type: 'connect_twitter', userId: 'user-1', xp: 50, metadata: null, timestamp: new Date() }) },
-        xpLedger: { create: jest.fn().mockResolvedValue({ id: 'ledger-1' }) },
-        user: { update: jest.fn().mockResolvedValue({ id: 'user-1', xp: 50, tier: 'Visitor' }) },
-      };
-      return fn(tx);
-    });
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: Record<string, any>) => Promise<any>) => fn(makeTx()));
 
     const req = mockRequest({ actionType: 'connect_twitter' });
     const res = await POST(req);
@@ -134,6 +143,7 @@ describe('POST /api/action/claim', () => {
   it('returns 404 if user not found in DB', async () => {
     mockPrisma.action.findUnique.mockResolvedValue(null);
     mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: Record<string, any>) => Promise<any>) => fn(makeTx({ user: null })));
 
     const req = mockRequest({ actionType: 'connect_twitter' });
     const res = await POST(req);
@@ -157,14 +167,12 @@ describe('POST /api/action/claim', () => {
     });
     mockPrisma.action.findUnique.mockResolvedValue(null);
     mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1', xp: 90 } as any);
-    mockPrisma.$transaction.mockImplementation(async (fn: Function) => {
-      const tx = {
-        action: { create: jest.fn().mockResolvedValue({ id: 'action-2', type: 'daily_pow', userId: 'user-1', xp: 20, metadata: null, timestamp: new Date() }) },
-        xpLedger: { create: jest.fn().mockResolvedValue({ id: 'ledger-2' }) },
-        user: { update: jest.fn().mockResolvedValue({ id: 'user-1', xp: 110, tier: 'Citizen' }) },
-      };
-      return fn(tx);
-    });
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: Record<string, any>) => Promise<any>) => fn(makeTx({
+      action: { id: 'action-2', type: 'daily_pow', userId: 'user-1', xp: 20, metadata: null, timestamp: new Date() },
+      ledger: { id: 'ledger-2' },
+      user: { id: 'user-1', xp: 90 },
+      userUpdate: { id: 'user-1', xp: 110, tier: 'Citizen' },
+    })));
 
     const req = mockRequest({ actionType: 'daily_pow' });
     const res = await POST(req);

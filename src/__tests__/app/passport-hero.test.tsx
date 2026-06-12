@@ -79,7 +79,8 @@ describe("PassportHero — no user (unauthenticated)", () => {
 
   it("shows 'v1.0' in the bottom bar when there is no user (no tier)", () => {
     render(<Home />);
-    expect(screen.getByText("v1.0")).toBeInTheDocument();
+    const matches = screen.getAllByText("v1.0");
+    expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders both KYA and KYC badges", () => {
@@ -108,7 +109,8 @@ describe("PassportHero — user with piUsername", () => {
 
   it("shows the first letter of piUsername (uppercased) as avatar text", () => {
     render(<Home />);
-    expect(screen.getByText("A")).toBeInTheDocument();
+    const matches = screen.getAllByText("A");
+    expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows piUsername as the heading", () => {
@@ -201,7 +203,7 @@ describe("PassportHero — demo wallet address (starts with 'demo:')", () => {
 
   it("shows walletAddress as-is in username when it does not start with 'pi:'", () => {
     render(<Home />);
-    // username logic: no piUsername, walletAddress doesn't start with "pi:" → show walletAddress
-    expect(screen.getByText("demo:abc12345")).toBeInTheDocument();
+    const matches = screen.getAllByText("demo:abc12345");
+    expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 });

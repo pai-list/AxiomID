@@ -48,12 +48,12 @@ export async function POST(request: NextRequest) {
       return apiError('CONFLICT', 'This action has already been claimed');
     }
 
-    const user = await prisma.user.findUnique({ where: { id: authUser.id } });
-    if (!user) {
-      return apiError('NOT_FOUND', 'User not found');
-    }
-
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const user = await tx.user.findUnique({ where: { id: authUser.id } });
+      if (!user) {
+        throw new Error('USER_NOT_FOUND');
+      }
+
       const action = await tx.action.create({
         data: {
           userId: authUser.id,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       });
 
       const newTier = calculateTier(newBalance);
-      const updatedUser = await tx.user.update({
+      await tx.user.update({
         where: { id: authUser.id },
         data: {
           xp: newBalance,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return { action, ledgerEntry, updatedUser, newTier, newBalance };
+      return { action, ledgerEntry, newTier, newBalance };
     });
 
     return apiSuccess({
@@ -95,6 +95,9 @@ export async function POST(request: NextRequest) {
       ledgerEntryId: result.ledgerEntry.id,
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'USER_NOT_FOUND') {
+      return apiError('NOT_FOUND', 'User not found');
+    }
     console.error('[ACTION-CLAIM] Database error:', error);
     return apiError('INTERNAL_ERROR', 'Failed to claim action');
   }
