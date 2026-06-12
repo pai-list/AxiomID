@@ -7,7 +7,11 @@ const AUTH_TAG_LENGTH = 16;
 function getKey(): Buffer {
   const raw = process.env.PI_TOKEN_ENCRYPTION_KEY;
   if (!raw) throw new Error('PI_TOKEN_ENCRYPTION_KEY not set');
-  return Buffer.from(raw, 'hex');
+  const key = Buffer.from(raw, 'hex');
+  if (key.length !== 32) {
+    throw new Error('PI_TOKEN_ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
+  }
+  return key;
 }
 
 export function encryptToken(plaintext: string): string {
@@ -21,7 +25,14 @@ export function encryptToken(plaintext: string): string {
 
 export function decryptToken(ciphertext: string): string {
   const key = getKey();
-  const [ivB64, authTagB64, encryptedB64] = ciphertext.split(':');
+  if (!ciphertext || typeof ciphertext !== 'string') {
+    throw new Error('decryptToken: ciphertext must be a non-empty string');
+  }
+  const parts = ciphertext.split(':');
+  if (parts.length !== 3) {
+    throw new Error('decryptToken: malformed ciphertext, expected iv:authTag:encrypted');
+  }
+  const [ivB64, authTagB64, encryptedB64] = parts;
   const iv = Buffer.from(ivB64, 'base64');
   const authTag = Buffer.from(authTagB64, 'base64');
   const encrypted = Buffer.from(encryptedB64, 'base64');

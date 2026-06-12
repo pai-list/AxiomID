@@ -28,17 +28,19 @@ export async function POST(request: NextRequest) {
   } catch {
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
+  if (!body || typeof body !== 'object') {
+    return apiError('VALIDATION_ERROR', 'Invalid request body');
+  }
 
-    const { action, params } = body as AgentMainBody;
-    if (!action || typeof action !== "string") {
-      return apiError("VALIDATION_ERROR", "action is required");
-    }
+  const { action, params } = body as AgentMainBody;
+  if (!action || typeof action !== "string") {
+    return apiError("VALIDATION_ERROR", "action is required");
+  }
 
-    // Sanitize: alphanumeric + underscore/hyphen only, max 100 chars
-    const sanitizedAction = action.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 100);
-    if (sanitizedAction.length === 0) {
-      return apiError("VALIDATION_ERROR", "action contains no valid characters");
-    }
+  if (!/^[a-zA-Z0-9_-]+$/.test(action) || action.length > 100) {
+    return apiError("VALIDATION_ERROR", "action must be alphanumeric, underscores, or hyphens, and max 100 characters");
+  }
+  const sanitizedAction = action;
 
   try {
     const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });

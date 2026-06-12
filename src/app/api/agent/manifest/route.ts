@@ -92,7 +92,16 @@ export async function GET(request: NextRequest) {
   let signature: string;
   let proofType: string;
   try {
-    const dataToSign = JSON.stringify(manifest, null, 0);
+    const canonicalize = (obj: unknown): unknown => {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(canonicalize);
+      const record = obj as Record<string, unknown>;
+      return Object.keys(record).sort().reduce<Record<string, unknown>>((acc, key) => {
+        acc[key] = canonicalize(record[key]);
+        return acc;
+      }, {});
+    };
+    const dataToSign = JSON.stringify(canonicalize(manifest), null, 0);
     const { key: pemKey, alg } = getIssuerPrivateKey();
     const key = createPrivateKey({
       key: pemKey,

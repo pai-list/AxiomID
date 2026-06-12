@@ -13,8 +13,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const did = (credentialId || subjectId || "").replace(/^did:axiom:user-/, "");
-    if (!did) {
-      return apiError("NOT_FOUND", "Invalid DID format");
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(did)) {
+      return apiError("VALIDATION_ERROR", "Invalid DID format or UUID");
     }
 
     const user = await prisma.user.findUnique({ where: { id: did } });

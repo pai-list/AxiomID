@@ -169,7 +169,7 @@ describe("WalletProvider & WalletContext", () => {
   it("connects via Pi SDK when in Pi Browser and connectWallet is called", async () => {
     setUserAgent("Pi Browser; Android; minepi");
     
-    mockConnectPi.mockResolvedValueOnce({
+    mockConnectPi.mockResolvedValue({
       token: "pi-token-456",
       user: {
         uid: "pi-uid-456",
@@ -180,7 +180,7 @@ describe("WalletProvider & WalletContext", () => {
       stellarAddress: "GSTELLAR123",
     });
 
-    mockFetch.mockResolvedValueOnce({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         userId: "user-pi-456",
@@ -272,7 +272,7 @@ describe("WalletProvider & WalletContext", () => {
     setUserAgent("Pi Browser; Android; minepi");
     process.env.NEXT_PUBLIC_PI_SANDBOX = "false";
 
-    mockConnectPi.mockRejectedValueOnce(new Error("Pi authentication failed: SDK error"));
+    mockConnectPi.mockRejectedValue(new Error("Pi authentication failed: SDK error"));
 
     let contextValue: ReturnType<typeof useWallet> | undefined;
     const { getByTestId } = render(

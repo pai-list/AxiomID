@@ -64,6 +64,10 @@ export async function POST(request: NextRequest) {
 
     const paymentData = await piResponse.json();
 
+    if (!auth.user.piUid || paymentData.user_uid !== auth.user.piUid) {
+      return apiError('FORBIDDEN', 'Payment payer UID does not match authenticated user');
+    }
+
     await prisma.piPayment.upsert({
       where: { paymentId },
       update: {

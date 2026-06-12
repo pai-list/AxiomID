@@ -203,18 +203,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const connectDemoWallet = useCallback(async (walletAddress: string) => {
     localStorage.setItem("axiomid_wallet", walletAddress);
-    const res = await fetch("/api/auth/connect", {
+    const stateRes = await fetch("/api/auth/state", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress }),
     });
+    if (!stateRes.ok) throw new Error("Failed to generate state token");
+    const { state } = await stateRes.json();
+
+    const res = await fetch("/api/auth/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ walletAddress, state }),
+    });
     if (!res.ok) throw new Error("Demo auth failed");
     const data = await res.json();
-    setUser({
-      ...data.user,
-      trustScore: data.user.trustScore ?? Math.min(100, Math.floor((data.user.xp || 0) / 10)),
-      createdAt: data.user.createdAt ?? new Date().toISOString(),
-    });
+    const rawUser = data.user || data;
+    setUser(mapApiUser(rawUser));
   }, []);
 
   const connectWallet = useCallback(async () => {

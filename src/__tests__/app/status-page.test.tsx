@@ -8,7 +8,7 @@
  */
 
 import React from "react";
-import { render, waitFor, screen } from "@testing-library/react";
+import { render, waitFor, screen, act } from "@testing-library/react";
 import StatusPage from "@/app/status/page";
 
 // StatusPage is a client component that calls fetch internally
@@ -21,7 +21,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.runOnlyPendingTimers();
+  act(() => {
+    jest.runOnlyPendingTimers();
+  });
   jest.useRealTimers();
 });
 
@@ -152,7 +154,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
     });
 
     // Advance past the 30-second polling interval
-    jest.advanceTimersByTime(30001);
+    act(() => {
+      jest.advanceTimersByTime(30001);
+    });
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
