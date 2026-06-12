@@ -53,7 +53,7 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
-const OPEN_IN_PI_BROWSER_MESSAGE = "افتح التطبيق من Pi Browser";
+export const OPEN_IN_PI_BROWSER_MESSAGE = "افتح التطبيق من Pi Browser";
 function isDemoWalletAllowed(): boolean {
   return (
     process.env.NEXT_PUBLIC_ENABLE_DEMO_WALLET === "true" &&
