@@ -5,6 +5,7 @@
   --neon-green-glow: rgba(0, 255, 65, 0.15);
   --electric-blue: #00d4ff;
   --axiom-purple: #a855f7;
+  --axiom-gold: #f59e0b;
   --bg-deep: #0a0a0a;
   --bg-card: #111118;
   --bg-card-hover: #1a1a2e;
@@ -20,6 +21,7 @@
   --color-neon-green: var(--neon-green);
   --color-electric-blue: var(--electric-blue);
   --color-axiom-purple: var(--axiom-purple);
+  --color-axiom-gold: var(--axiom-gold);
   --color-bg-deep: var(--bg-deep);
   --color-bg-card: var(--bg-card);
   --font-mono: var(--font-mono);
@@ -66,8 +68,8 @@ body {
 }
 
 @keyframes scanline {
-  0% { top: -10%; }
-  100% { top: 110%; }
+  0% { transform: translateY(-10vh); }
+  100% { transform: translateY(110vh); }
 }
 
 /* ============================================

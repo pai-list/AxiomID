@@ -211,22 +211,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connectWallet = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
-    pushLog("بدء الاتصال بالمحفظة...");
+    pushLog("Initializing wallet connection...");
 
     try {
       const inPiBrowser = checkPiBrowser();
       const isSandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
-      pushLog(`حالة Pi Browser: ${inPiBrowser ? "نعم ✅" : "لا"}`);
+      pushLog(`Pi Browser: ${inPiBrowser ? "detected ✅" : "not found"}`);
 
       if (!inPiBrowser && !isSandbox) {
         throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
       }
 
       if (!inPiBrowser && isSandbox) {
-        pushLog("وضع التجربة (sandbox mode)...");
+        pushLog("Sandbox mode active...");
         const walletAddress = `demo:${crypto.randomUUID().slice(0, 8)}`;
         localStorage.setItem("axiomid_wallet", walletAddress);
-        pushLog(`محفظة مؤقتة: ${walletAddress}`);
+        pushLog(`Demo wallet: ${walletAddress}`);
 
         const stateRes = await fetch("/api/auth/state", {
           method: "POST",
@@ -244,12 +244,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
         if (!res.ok) throw new Error("Demo auth failed");
         const data = await res.json();
-        pushLog(`تم تسجيل الدخول بنجاح ✅`);
+        pushLog(`Logged in successfully ✅`);
         setUser(mapApiUser(data));
         return;
       }
 
-      pushLog("جاري التوثيق عبر Pi SDK...");
+      pushLog("Authenticating via Pi SDK...");
       const result = await connectPi(pushLog);
       const { token: accessToken, user: piUser } = result;
 
@@ -260,7 +260,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       pushLog(`Wallet: ${walletAddress}`);
       if (stellarAddress) pushLog(`Stellar Address: ${stellarAddress}`);
 
-      pushLog("جاري التحقق من صحة التوثيق مع السيرفر...");
+      pushLog("Verifying authentication with server...");
       const res = await fetch("/api/auth/pi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -292,11 +292,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         actions: [],
         agent: null,
       });
-      pushLog(`✅ تم توثيق المحفظة بنجاح!`);
+      pushLog(`✅ Wallet authenticated successfully!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
       console.error("Auth error:", message);
-      pushLog(`❌ خطأ: ${message}`);
+      pushLog(`❌ Error: ${message}`);
       setError(message);
       setTimeout(() => setError(null), 8000);
     } finally {
@@ -306,12 +306,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const runTest = useCallback(async () => {
     clearWalletLogs();
-    pushLog("🚀 بدء اختبار المحفظة الشامل...");
+    pushLog("🚀 Starting comprehensive wallet test...");
     try {
       await runWalletTest(pushLog);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      pushLog(`❌ خطأ غير متوقع: ${msg}`);
+      pushLog(`❌ Unexpected error: ${msg}`);
     }
   }, [pushLog, clearWalletLogs]);
 
@@ -384,6 +384,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     fetch(`/api/user/status`, { headers }).then(res => {
       if (!res.ok) {
+        localStorage.removeItem("axiomid_wallet");
+        localStorage.removeItem("pi_access_token");
         setIsLoading(false);
         return;
       }
@@ -401,8 +403,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           agent: data.agent || null,
         });
         setIsLoading(false);
-      }).catch(() => setIsLoading(false));
-    }).catch(() => setIsLoading(false));
+      }).catch(() => {
+        localStorage.removeItem("axiomid_wallet");
+        localStorage.removeItem("pi_access_token");
+        setIsLoading(false);
+      });
+    }).catch(() => {
+      localStorage.removeItem("axiomid_wallet");
+      localStorage.removeItem("pi_access_token");
+      setIsLoading(false);
+    });
   }, []);
 
   return (
