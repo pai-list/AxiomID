@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     const tier = calculateTier(user.xp);
 
-
+    return apiSuccess({
       userId: user.id,
       walletAddress: user.walletAddress,
       stellarAddress: stellarAddress || null,

@@ -123,16 +123,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const createAgent = useCallback(async (name?: string) => {
+  const callAgentRoute = useCallback(async (url: string, body?: Record<string, unknown>) => {
     if (!user) return false;
     try {
-      const res = await fetch("/api/agent", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
-        body: JSON.stringify({ name }),
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       });
       if (!res.ok) return false;
       await refreshUser();
@@ -142,45 +142,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [user, refreshUser, piAccessToken]);
 
-  const activateAgent = useCallback(async () => {
-    if (!user) return false;
-    try {
-      const res = await fetch("/api/agent/activate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [user, refreshUser, piAccessToken]);
-
-  const pauseAgent = useCallback(async () => {
-    if (!user) return false;
-    try {
-      const res = await fetch("/api/agent/pause", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [user, refreshUser, piAccessToken]);
+  const createAgent = useCallback((name?: string) => callAgentRoute("/api/agent", { name }), [callAgentRoute]);
+  const activateAgent = useCallback(() => callAgentRoute("/api/agent/activate"), [callAgentRoute]);
+  const pauseAgent = useCallback(() => callAgentRoute("/api/agent/pause"), [callAgentRoute]);
 
   const connectDemoWallet = useCallback(async (walletAddress: string) => {
     localStorage.setItem("axiomid_wallet", walletAddress);
-    const res = await fetch("/api/auth/connect", {
+
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ walletAddress }),

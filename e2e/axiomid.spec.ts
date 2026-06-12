@@ -7,6 +7,7 @@ const sandboxUsername = process.env.PI_SANDBOX_USERNAME;
 const sandboxWallet = sandboxUid ? `pi:${sandboxUid}` : undefined;
 const databaseUrl = process.env.DATABASE_URL;
 const hasPiSandboxAuth = Boolean(sandboxToken && sandboxUid && sandboxUsername && databaseUrl);
+const SKIP_PI_SANDBOX = 'Pi sandbox credentials and DATABASE_URL are required.';
 
 test.describe.serial('AxiomID Pi sandbox E2E', () => {
   let prisma: PrismaClient | undefined;
@@ -57,7 +58,7 @@ test.describe.serial('AxiomID Pi sandbox E2E', () => {
   });
 
   test('generates a DID and displays it on /passport/[slug]', async ({ page, request }) => {
-    test.skip(!hasPiSandboxAuth, 'Pi sandbox credentials and DATABASE_URL are required.');
+    test.skip(!hasPiSandboxAuth, SKIP_PI_SANDBOX);
 
     authedUser ??= await authenticateWithPiSandbox(request);
     await page.goto(`/passport/${sandboxUsername}`);
@@ -66,7 +67,7 @@ test.describe.serial('AxiomID Pi sandbox E2E', () => {
   });
 
   test('enters /dashboard with persisted local state', async ({ page, request }) => {
-    test.skip(!hasPiSandboxAuth, 'Pi sandbox credentials and DATABASE_URL are required.');
+    test.skip(!hasPiSandboxAuth, SKIP_PI_SANDBOX);
 
     authedUser ??= await authenticateWithPiSandbox(request);
     await seedBrowserSession(page, authedUser);
@@ -76,7 +77,7 @@ test.describe.serial('AxiomID Pi sandbox E2E', () => {
   });
 
   test('claims a real action through the API test database', async ({ request }) => {
-    test.skip(!hasPiSandboxAuth, 'Pi sandbox credentials and DATABASE_URL are required.');
+    test.skip(!hasPiSandboxAuth, SKIP_PI_SANDBOX);
 
     authedUser ??= await authenticateWithPiSandbox(request);
     await prisma!.action.deleteMany({ where: { userId: authedUser.userId, type: 'daily_pow' } });
@@ -98,7 +99,7 @@ test.describe.serial('AxiomID Pi sandbox E2E', () => {
   });
 
   test('runs payment sandbox verification when a sandbox payment is supplied', async ({ request }) => {
-    test.skip(!hasPiSandboxAuth, 'Pi sandbox credentials and DATABASE_URL are required.');
+    test.skip(!hasPiSandboxAuth, SKIP_PI_SANDBOX);
     test.skip(!process.env.PI_API_KEY || !process.env.PI_SANDBOX_PAYMENT_ID, 'Set PI_API_KEY and PI_SANDBOX_PAYMENT_ID to run payment approve; add PI_SANDBOX_PAYMENT_TXID to complete.');
 
     const paymentId = process.env.PI_SANDBOX_PAYMENT_ID!;
@@ -118,7 +119,7 @@ test.describe.serial('AxiomID Pi sandbox E2E', () => {
   });
 
   test('logs out, clears local state, and remains logged out after reload', async ({ page, request }) => {
-    test.skip(!hasPiSandboxAuth, 'Pi sandbox credentials and DATABASE_URL are required.');
+    test.skip(!hasPiSandboxAuth, SKIP_PI_SANDBOX);
 
     authedUser ??= await authenticateWithPiSandbox(request);
     await seedBrowserSession(page, authedUser);
