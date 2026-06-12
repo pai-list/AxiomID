@@ -36,22 +36,7 @@ export async function POST(request: NextRequest) {
     const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
 
     if (!existing) {
-      const newUser = await prisma.user.create({
-        data: {
-          piUid: user.piUid,
-          piUsername: username,
-          walletAddress: `pi:${username}`,
-          kycStatus: 'PENDING',
-          did: `did:axiom:${user.piUid}`,
-        },
-      });
-
-      return apiSuccess({
-        userId: newUser.id,
-        walletAddress: newUser.walletAddress,
-        kycStatus: newUser.kycStatus,
-        did: newUser.did,
-      }, 201);
+      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
     }
 
     const updated = await prisma.user.update({

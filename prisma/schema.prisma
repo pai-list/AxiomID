@@ -18,6 +18,10 @@ model User {
   piUsername    String?  @db.VarChar(100)
   piAccessToken String?  // encrypted at rest (AES-256-GCM)
 
+  // XP & Tier (denormalized from XpLedger for fast reads)
+  xp    Int    @default(0)
+  tier  String @default("Visitor") @db.VarChar(50)
+
   // Sovereign DID
   did       String?  @unique @db.VarChar(255)
   didMethod String?  @default("did:axiom") @db.VarChar(50)

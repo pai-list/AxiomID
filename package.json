@@ -21,6 +21,9 @@
     "url": "https://github.com/Moeabdelaziz007/AxiomID/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [
     "decentralized-identity",
     "human-verification",
@@ -36,7 +39,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "next build && next start",
     "analyze": "ANALYZE=true next build",
     "deploy": "vercel --prod",

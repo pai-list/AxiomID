@@ -4,11 +4,12 @@ import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
+import { z } from 'zod';
 
-interface CreateAgentBody {
-  name?: string;
-  description?: string;
-}
+const AgentCreateSchema = z.object({
+  name: z.string().max(100).optional(),
+  description: z.string().max(500).optional(),
+});
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -28,7 +29,12 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
 
-  const { name, description } = body as CreateAgentBody;
+  const parsed = AgentCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
+  }
+
+  const { name, description } = parsed.data;
 
   // Sanitize: strip HTML, enforce length limits
   const sanitizedName = (name ?? 'My Agent')

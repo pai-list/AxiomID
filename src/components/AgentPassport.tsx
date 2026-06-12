@@ -47,10 +47,10 @@ export function AgentPassport({
   xp,
 }: AgentPassportProps) {
   const tierColor = getTierColor(tier);
-  const displayAddress = stellarAddress || walletAddress;
+  const displayAddress = stellarAddress || walletAddress || '';
   const shortAddress = displayAddress.length > 20
     ? `${displayAddress.slice(0, 10)}...${displayAddress.slice(-8)}`
-    : displayAddress;
+    : displayAddress || 'No address';
 
   return (
     <div className="passport-card p-0 animate-holographic">
