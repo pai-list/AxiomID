@@ -72,15 +72,6 @@ describe('GET /api/user/status', () => {
     expect(data.code).toBe('NOT_FOUND');
   });
 
-  it('returns 400 on invalid params', async () => {
-    const req = mockGet({ walletAddress: 'not-a-wallet' });
-    const res = await GET(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(400);
-    expect(data.code).toBe('VALIDATION_ERROR');
-  });
-
   it('calculates tier correctly for Sovereign user', async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'sovereign',

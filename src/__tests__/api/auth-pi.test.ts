@@ -30,6 +30,22 @@ function mockRequest(body: unknown) {
   }) as any;
 }
 
+function mockCreateReturnsArgs(id: string) {
+  return jest.fn().mockImplementation(async (args: any) => ({
+    id,
+    walletAddress: args.data.walletAddress,
+    stellarAddress: args.data.stellarAddress,
+    piUid: args.data.piUid,
+    piUsername: args.data.piUsername,
+    xp: args.data.xp,
+    tier: args.data.tier,
+    did: args.data.did,
+    didMethod: args.data.didMethod,
+    kycStatus: 'NONE',
+    agent: null,
+  } as any));
+}
+
 describe('POST /api/auth/pi', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,18 +59,19 @@ describe('POST /api/auth/pi', () => {
   it('creates new user on valid Pi auth', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => ({ uid: 'pi-uid-123' }),
+      json: async () => ({ uid: 'pi-uid-123', username: 'testuser' }),
     });
 
     mockPrisma.user.findUnique.mockResolvedValue(null);
     mockPrisma.user.create.mockResolvedValue({
       id: 'user-1',
-      walletAddress: '0xpi-uid-123000000000000000000000000000000',
+      walletAddress: 'pi:pi-uid-123',
+      stellarAddress: null,
       piUid: 'pi-uid-123',
       piUsername: 'testuser',
       xp: 0,
       tier: 'Visitor',
-      did: null,
+      did: 'did:axiom:axiomid.app:pi:pi-uid-123',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -70,27 +87,33 @@ describe('POST /api/auth/pi', () => {
 
     expect(res.status).toBe(200);
     expect(data.userId).toBe('user-1');
-    expect(data.tier).toBe('Visitor');
+    expect(data.walletAddress).toBe('pi:pi-uid-123');
+    expect(data.did).toBe('did:axiom:axiomid.app:pi:pi-uid-123');
   });
 
-  it('updates existing user on return visit', async () => {
+  it('updates existing user on return visit and repairs missing DID', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: async () => ({ uid: 'existing-uid' }),
+      json: async () => ({ uid: 'existing-uid', username: 'updated' }),
     });
 
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'existing-user',
       piUid: 'existing-uid',
+      did: null, // missing DID
+      didMethod: null,
     } as any);
+
     mockPrisma.user.update.mockResolvedValue({
       id: 'existing-user',
-      walletAddress: '0x' + '0'.repeat(40),
+      walletAddress: 'pi:existing-uid',
+      stellarAddress: null,
       piUid: 'existing-uid',
       piUsername: 'updated',
       xp: 100,
       tier: 'Citizen',
-      did: 'did:axiom:test',
+      did: 'did:axiom:axiomid.app:pi:existing-uid',
+      didMethod: 'did:axiom',
       kycStatus: 'VERIFIED',
       agent: { name: 'My Agent' },
     } as any);
@@ -106,7 +129,51 @@ describe('POST /api/auth/pi', () => {
 
     expect(res.status).toBe(200);
     expect(data.userId).toBe('existing-user');
-    expect(data.tier).toBe('Citizen');
+    expect(data.did).toBe('did:axiom:axiomid.app:pi:existing-uid');
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        did: 'did:axiom:axiomid.app:pi:existing-uid',
+        didMethod: 'did:axiom',
+      }),
+    }));
+  });
+
+  it('ignores client-supplied Pi walletAddress and extracts from Pi API response', async () => {
+    const officialStellarAddress = 'GD5T6YZRMCK7O4JRGXNKH2S3W3E42J2DT3R4J33J4H46J4G4H4K4L4M4';
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        uid: 'secure-pi-uid',
+        username: 'secureuser',
+        wallet: { address: officialStellarAddress }
+      }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create = mockCreateReturnsArgs('secure-user');
+
+    const req = mockRequest({
+      accessToken: 'valid-token',
+      uid: 'secure-pi-uid',
+      username: 'secureuser',
+      walletAddress: 'demo:forged-address',
+      stellarAddress: 'GBAD-forged-stellar-address',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        walletAddress: 'pi:secure-pi-uid',
+        stellarAddress: officialStellarAddress,
+        piUid: 'secure-pi-uid',
+        did: 'did:axiom:axiomid.app:pi:secure-pi-uid',
+      }),
+    }));
+    expect(data.walletAddress).toBe('pi:secure-pi-uid');
+    expect(data.stellarAddress).toBe(officialStellarAddress);
   });
 
   it('returns 401 on invalid Pi token', async () => {

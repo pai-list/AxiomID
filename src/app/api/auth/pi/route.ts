@@ -7,6 +7,29 @@ import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
 import { encryptToken } from '@/lib/crypto';
 
+interface PiApiUser {
+  uid: string;
+  username: string;
+  wallet?: {
+    address: string;
+  };
+  // Fallbacks for testing & legacy payloads
+  wallet_address?: string;
+  stellarAddress?: string;
+}
+
+function getVerifiedStellarAddress(piUser: PiApiUser): string | null {
+  const address = piUser.wallet?.address || piUser.wallet_address || piUser.stellarAddress;
+  if (typeof address === 'string' && /^G[A-Z2-7]{55}$/.test(address)) {
+    return address;
+  }
+  return null;
+}
+
+function buildPiDid(uid: string): string {
+  return `did:axiom:axiomid.app:pi:${encodeURIComponent(uid)}`;
+}
+
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`pi-auth:${ip}`, RATE_LIMITS.piAuth);
@@ -26,7 +49,8 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
   }
 
-  const { accessToken, uid, username, walletAddress: clientWalletAddress, stellarAddress } = parsed.data;
+  const { accessToken, uid, username } = parsed.data;
+  let verifiedStellarAddress: string | null = null;
 
   try {
     const piResponse = await fetch('https://api.minepi.com/v2/me', {
@@ -38,10 +62,12 @@ export async function POST(request: NextRequest) {
       return apiError('PI_AUTH_FAILED', 'Invalid Pi access token');
     }
 
-    const piUser = await piResponse.json();
+    const piUser = (await piResponse.json()) as PiApiUser;
     if (piUser.uid !== uid) {
       return apiError('PI_AUTH_FAILED', 'Token UID mismatch');
     }
+
+    verifiedStellarAddress = getVerifiedStellarAddress(piUser);
   } catch {
     return apiError('PI_AUTH_FAILED', 'Failed to verify Pi token');
   }
@@ -52,17 +78,21 @@ export async function POST(request: NextRequest) {
       include: { agent: true },
     });
 
-    const walletAddress = clientWalletAddress || `pi:${uid}`;
+    const walletAddress = `pi:${uid}`;
+    const piDid = buildPiDid(uid);
 
     let user;
     if (existingUser) {
+      const needsDidRepair = !existingUser.did || !existingUser.didMethod;
       user = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
           piUsername: username,
           walletAddress,
+          stellarAddress: verifiedStellarAddress,
           piAccessToken: encryptToken(accessToken),
           lastActive: new Date(),
+          ...(needsDidRepair && { did: piDid, didMethod: 'did:axiom' }),
         },
         include: { agent: true },
       });
@@ -70,9 +100,12 @@ export async function POST(request: NextRequest) {
       user = await prisma.user.create({
         data: {
           walletAddress,
+          stellarAddress: verifiedStellarAddress,
           piUid: uid,
           piUsername: username,
           piAccessToken: encryptToken(accessToken),
+          did: piDid,
+          didMethod: 'did:axiom',
           tier: 'Visitor',
           xp: 0,
         },
@@ -85,12 +118,12 @@ export async function POST(request: NextRequest) {
     return apiSuccess({
       userId: user.id,
       walletAddress: user.walletAddress,
-      stellarAddress: stellarAddress || null,
+      stellarAddress: user.stellarAddress,
       piUid: user.piUid,
       piUsername: user.piUsername,
       tier,
       xp: user.xp,
-      did: user.did,
+      did: user.did || piDid,
       kycStatus: user.kycStatus,
       hasAgent: !!user.agent,
     });
@@ -99,3 +132,4 @@ export async function POST(request: NextRequest) {
     return apiError('INTERNAL_ERROR', 'Failed to create or update user');
   }
 }
+
