@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
             type: true,
             xp: true,
             timestamp: true,
+            metadata: true,
           },
         },
         xpLedger: {
