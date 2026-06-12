@@ -616,4 +616,235 @@ describe("WalletProvider & WalletContext", () => {
     // trustScore should be taken from API, not computed from xp
     expect(contextValue.user.trustScore).toBe(77);
   });
+
+  // -------------------------------------------------------------------------
+  // Tests for new PR additions: isDemoWallet, isDemoWalletEnabled, getStoredWallet
+  // -------------------------------------------------------------------------
+
+  it("isDemoWallet is true when the logged-in user has a demo: wallet address", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_WALLET = "true";
+    localStorage.setItem("axiomid_wallet", "demo:democheck");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-demo",
+        walletAddress: "demo:democheck",
+        xp: 0,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+        piUsername: null,
+        agent: null,
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.isDemoWallet).toBe(true);
+    expect(contextValue.user.walletAddress).toMatch(/^demo:/);
+  });
+
+  it("isDemoWallet is false when the logged-in user has a pi: wallet address", async () => {
+    setUserAgent("Pi Browser; Android; minepi");
+
+    mockConnectPi.mockResolvedValueOnce({
+      token: "pi-token-nodemo",
+      user: {
+        uid: "pi-uid-nodemo",
+        username: "nodemouser",
+        name: "No Demo User",
+        wallet_address: null,
+      },
+      stellarAddress: null,
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "user-pi-nodemo",
+        walletAddress: "pi:pi-uid-nodemo",
+        xp: 0,
+        tier: "Visitor",
+        piUsername: "nodemouser",
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.isDemoWallet).toBe(false);
+    expect(contextValue.user.walletAddress).toBe("pi:pi-uid-nodemo");
+  });
+
+  it("isDemoWalletEnabled is true when NEXT_PUBLIC_ENABLE_DEMO_WALLET=true", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_WALLET = "true";
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.isDemoWalletEnabled).toBe(true);
+  });
+
+  it("isDemoWalletEnabled is false when NEXT_PUBLIC_ENABLE_DEMO_WALLET=false", async () => {
+    // Default in beforeEach is already false
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.isDemoWalletEnabled).toBe(false);
+  });
+
+  it("getStoredWallet strips demo: wallet from localStorage and does not fetch when demo mode is disabled", async () => {
+    // demo mode disabled (default in beforeEach)
+    // Pre-populate localStorage with a demo wallet from a previous session
+    localStorage.setItem("axiomid_wallet", "demo:stale123");
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    // The stale demo wallet should have been removed from localStorage
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+    // No API call should have been made since the wallet was stripped
+    expect(mockFetch).not.toHaveBeenCalled();
+    // User should remain null
+    expect(contextValue.user).toBeNull();
+  });
+
+  it("getStoredWallet retains non-demo wallet address when demo mode is disabled", async () => {
+    // Even with demo mode disabled, a pi: wallet stored in localStorage should be retained
+    // and trigger a status restore fetch
+    localStorage.setItem("axiomid_wallet", "pi:realuser1");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "real-user-1",
+        walletAddress: "pi:realuser1",
+        xp: 50,
+        tier: "Visitor",
+        trustScore: 5,
+        createdAt: new Date().toISOString(),
+        piUsername: "realuser",
+        agent: null,
+      }),
+    });
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(localStorage.getItem("axiomid_wallet")).toBe("pi:realuser1");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/user/status?walletAddress=pi:realuser1",
+    );
+    expect(contextValue.user).not.toBeNull();
+  });
+
+  it("connectWallet in Pi Browser with NOT_IN_PI_BROWSER error and demo disabled sets Arabic error", async () => {
+    // demo mode disabled (default in beforeEach)
+    setUserAgent("Pi Browser; Android; minepi");
+
+    // connectPi throws NOT_IN_PI_BROWSER during auto-connect
+    mockConnectPi.mockRejectedValueOnce(new Error("NOT_IN_PI_BROWSER"));
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    // Should have set the Arabic error message instead of falling back to demo
+    expect(contextValue.error).toBe("افتح التطبيق من Pi Browser");
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+  });
+
+  it("initial isLoading is false when only pi_access_token is stored but no wallet", async () => {
+    // Only token stored, no wallet — the new early-return path should set isLoading=false
+    // without making any fetch calls
+    localStorage.setItem("pi_access_token", "orphan-token");
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.user).toBeNull();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
 });
