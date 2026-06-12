@@ -9,6 +9,8 @@ import { ACTIONS } from '@/lib/actions';
 import { calculateTier } from '@/lib/tiers';
 import { requireAuth } from '@/lib/auth-middleware';
 import { safeJsonStringify } from '@/lib/sanitize';
+import { signSocialCredential } from '@/lib/vc';
+import { createUserDid } from '@/lib/did';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -49,6 +51,30 @@ export async function POST(request: NextRequest) {
       return apiError('CONFLICT', 'This action has already been claimed');
     }
 
+    let finalMetadata = safeJsonStringify(metadata);
+    if (
+      actionType === 'connect_twitter' ||
+      actionType === 'connect_discord' ||
+      actionType === 'connect_google'
+    ) {
+      const handle = (metadata?.handle || metadata?.username || metadata?.email || 'verified_user') as string;
+      const userDid = createUserDid(authUser.id);
+      const platform = actionType.replace('connect_', '');
+      try {
+        const signedVc = signSocialCredential(
+          authUser.id,
+          userDid,
+          platform,
+          handle,
+          authUser.walletAddress
+        );
+        finalMetadata = JSON.stringify(signedVc);
+      } catch (e) {
+        console.error('[ACTION-CLAIM] VC signing failed:', e);
+        return apiError('INTERNAL_ERROR', 'Cryptographic signing failure');
+      }
+    }
+
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const user = await tx.user.findUnique({ where: { id: authUser.id } });
       if (!user) {
@@ -60,7 +86,7 @@ export async function POST(request: NextRequest) {
           userId: authUser.id,
           type: actionType,
           xp: actionDef.xp,
-          metadata: safeJsonStringify(metadata),
+          metadata: finalMetadata,
         },
       });
 
@@ -94,6 +120,7 @@ export async function POST(request: NextRequest) {
       newBalance: result.newBalance,
       tier: result.newTier,
       ledgerEntryId: result.ledgerEntry.id,
+      metadata: result.action.metadata,
     });
   } catch (error) {
     if (error instanceof Error && error.message === 'USER_NOT_FOUND') {

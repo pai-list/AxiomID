@@ -15,7 +15,7 @@ export interface User {
   tier: Tier;
   trustScore: number;
   createdAt: string;
-  actions: { type: string; xp: number; timestamp: string }[];
+  actions: { type: string; xp: number; timestamp: string; metadata?: string | null }[];
   agent?: {
     id: string;
     name: string;
@@ -31,7 +31,7 @@ interface WalletContextType {
   error: string | null;
   isPiBrowser: boolean;
   connectWallet: () => Promise<void>;
-  claimAction: (actionType: string) => Promise<boolean>;
+  claimAction: (actionType: string, metadata?: Record<string, unknown>) => Promise<boolean>;
   refreshUser: () => Promise<void>;
   createAgent: (name?: string) => Promise<boolean>;
   activateAgent: () => Promise<boolean>;
@@ -77,6 +77,7 @@ interface ApiResponse {
   trustScore?: number;
   createdAt?: string;
   agent?: User['agent'];
+  actions?: User['actions'];
 }
 
 function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | null; createdAt?: string; actions?: User["actions"] }): User {
@@ -91,7 +92,7 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
     piUsername: data.piUsername,
     kycStatus: data.kycStatus || null,
     did: data.did || null,
-    actions: fallback?.actions || [],
+    actions: data.actions || fallback?.actions || [],
     agent: data.agent || null,
   };
 }
@@ -334,7 +335,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [pushLog, clearWalletLogs]);
 
-  const claimAction = useCallback(async (actionType: string) => {
+  const claimAction = useCallback(async (actionType: string, metadata?: Record<string, unknown>) => {
     if (!userRef.current) return false;
     try {
       const res = await fetch("/api/action/claim", {
@@ -343,7 +344,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           "Content-Type": "application/json",
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
-        body: JSON.stringify({ actionType }),
+        body: JSON.stringify({ actionType, metadata }),
       });
 
       if (!res.ok) {
@@ -358,7 +359,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         ...prev,
         xp: data.newBalance,
         tier: data.tier,
-        actions: [...(prev.actions || []), { type: actionType, xp: data.xpEarned, timestamp: new Date().toISOString() }],
+        actions: [...(prev.actions || []), { type: actionType, xp: data.xpEarned, timestamp: new Date().toISOString(), metadata: data.metadata }],
       } : prev);
       return true;
     } catch (err) {

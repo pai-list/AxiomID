@@ -8,7 +8,7 @@ import Link from "next/link";
 
 interface PassportData {
   username: string;
-  walletAddress: string;
+  walletAddress: string | null;
   did: string;
   tier: string;
   xp: number;
@@ -74,7 +74,7 @@ export function PassportView() {
         <>
           <AgentPassport
             username={passport.username}
-            walletAddress={passport.walletAddress}
+            walletAddress={passport.walletAddress || undefined}
             tier={passport.tier as "Visitor" | "Citizen" | "Validator" | "Sovereign"}
             trustScore={passport.trustScore}
             kyaStatus={passport.kyaStatus}

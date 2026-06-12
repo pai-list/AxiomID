@@ -29,6 +29,13 @@ export async function GET(request: NextRequest) {
             mode: true,
           },
         },
+        actions: {
+          select: {
+            type: true,
+            xp: true,
+            timestamp: true,
+          },
+        },
         xpLedger: {
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -65,6 +72,7 @@ export async function GET(request: NextRequest) {
       levelProgress: progress,
       nextLevelXP,
       agent: user.agent,
+      actions: user.actions,
       recentLedger: user.xpLedger,
       stats: {
         totalActions: user._count.actions,

@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createIssuerDid } from "@/lib/did";
 
+import { createPublicKey } from "crypto";
+
+const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+function encodeBase58(buffer: Buffer): string {
+  let num = BigInt("0x" + buffer.toString("hex"));
+  let result = "";
+  const zero = BigInt(0);
+  const fiftyEight = BigInt(58);
+  while (num > zero) {
+    const remainder = Number(num % fiftyEight);
+    result = ALPHABET[remainder] + result;
+    num = num / fiftyEight;
+  }
+  for (let i = 0; i < buffer.length; i++) {
+    if (buffer[i] === 0x00) {
+      result = ALPHABET[0] + result;
+    } else {
+      break;
+    }
+  }
+  return result;
+}
+
 function buildDidDocument(did: string, publicKeyPem?: string) {
   const doc: Record<string, unknown> = {
     "@context": [
@@ -12,14 +36,36 @@ function buildDidDocument(did: string, publicKeyPem?: string) {
   };
 
   if (publicKeyPem) {
-    doc.verificationMethod = [
-      {
-        id: `${did}#key-1`,
-        type: "Ed25519VerificationKey2020",
-        controller: did,
-        publicKeyPem,
-      },
-    ];
+    const method: Record<string, unknown> = {
+      id: `${did}#key-1`,
+      controller: did,
+    };
+
+    try {
+      const key = createPublicKey({
+        key: publicKeyPem,
+        format: "pem",
+      });
+
+      if (key.asymmetricKeyType === "ed25519") {
+        const der = key.export({ format: "der", type: "spki" });
+        const rawPublicKey = der.subarray(-32);
+        const multicodecKey = Buffer.concat([Buffer.from([0xed, 0x01]), rawPublicKey]);
+        const publicKeyMultibase = "z" + encodeBase58(multicodecKey);
+
+        method.type = "Ed25519VerificationKey2020";
+        method.publicKeyMultibase = publicKeyMultibase;
+      } else {
+        method.type = "RsaVerificationKey2018";
+        method.publicKeyPem = publicKeyPem;
+      }
+    } catch {
+      // Fallback for tests or invalid PEM format
+      method.type = "Ed25519VerificationKey2020";
+      method.publicKeyPem = publicKeyPem;
+    }
+
+    doc.verificationMethod = [method];
     doc.authentication = [`${did}#key-1`];
     doc.assertionMethod = [`${did}#key-1`];
   }

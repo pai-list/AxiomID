@@ -12,15 +12,44 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const did = (credentialId || subjectId || "").replace(/^did:axiom:user-/, "");
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(did)) {
-      return apiError("VALIDATION_ERROR", "Invalid DID format or UUID");
+    const rawDid = credentialId || subjectId || "";
+    if (!rawDid.startsWith("did:axiom:")) {
+      return apiError("VALIDATION_ERROR", "Invalid DID method");
     }
 
-    const user = await prisma.user.findUnique({ where: { id: did } });
+    const didContent = rawDid.replace(/^did:axiom:/, "");
+
+    if (didContent === "issuer") {
+      return apiSuccess({
+        revoked: false,
+        status: "VALID",
+        subjectId: rawDid,
+        lastUpdated: new Date().toISOString(),
+      });
+    }
+
+    let user = null;
+
+    if (didContent.startsWith("user-")) {
+      const uuid = didContent.replace(/^user-/, "");
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(uuid)) {
+        return apiError("VALIDATION_ERROR", "Invalid user UUID format");
+      }
+      user = await prisma.user.findUnique({ where: { id: uuid } });
+    } else {
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { did: rawDid },
+            { piUsername: didContent },
+          ],
+        },
+      });
+    }
+
     if (!user) {
-      return apiSuccess({ revoked: true, reason: "subject_not_found" }, 200);
+      return apiError("NOT_FOUND", "Subject not found");
     }
 
     const revoked = user.kycStatus === "REJECTED";
