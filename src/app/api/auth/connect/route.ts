@@ -6,6 +6,7 @@ import { verifyState } from '@/lib/oauth-state';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
+import { createAxiomDid } from '@/lib/did';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { walletAddress, state } = parsed.data;
+  const did = createAxiomDid(walletAddress);
 
   // CSRF verification: skip for demo wallets (no state token), verify for real wallets
   if (state) {
@@ -42,9 +44,15 @@ export async function POST(request: NextRequest) {
   try {
     const user = await prisma.user.upsert({
       where: { walletAddress },
-      update: { lastActive: new Date() },
+      update: {
+        lastActive: new Date(),
+        did,
+        didMethod: 'did:axiom',
+      },
       create: {
         walletAddress,
+        did,
+        didMethod: 'did:axiom',
         tier: 'Visitor',
         xp: 0,
       },

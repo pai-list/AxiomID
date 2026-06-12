@@ -2,6 +2,7 @@ import { AgentPassport } from "@/components/AgentPassport";
 import { AgentQR } from "@/components/AgentQR";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import type { Tier } from "@/lib/tiers";
 
 interface PassportPageProps {
   params: Promise<{ slug: string }>;
@@ -37,18 +38,22 @@ async function getAgentData(slug: string) {
   }
 
   // Map database KYCStatus enum to AgentPassport statuses
-  const kycStatusMap: Record<string, "pending" | "verified" | "failed" | "none"> = {
+  const kycStatusMap: Record<string, "pending" | "verified" | "denied"> = {
     VERIFIED: "verified",
-    REJECTED: "failed",
-    NONE: "none",
+    REJECTED: "denied",
+    NONE: "pending",
   };
   const mappedKyc = kycStatusMap[user.kycStatus] ?? "pending";
 
+  const tier = ["Visitor", "Citizen", "Validator", "Sovereign"].includes(user.tier)
+    ? (user.tier as Tier)
+    : "Visitor";
+
   return {
     username: user.piUsername || slug,
-
+    walletAddress: user.walletAddress,
     stellarAddress: user.agent?.publicKey || null,
-    tier: (user.tier as any) || "Visitor",
+    tier,
     trustScore: Math.min(100, Math.floor((user.xp || 0) / 10)),
     kyaStatus: "verified" as const,
     kycStatus: mappedKyc,

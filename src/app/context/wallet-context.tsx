@@ -9,6 +9,7 @@ export interface User {
   walletAddress: string;
   stellarAddress?: string | null;
   piUsername?: string | null;
+  did?: string | null;
   xp: number;
   tier: Tier;
   trustScore: number;
@@ -29,6 +30,7 @@ interface WalletContextType {
   error: string | null;
   isPiBrowser: boolean;
   connectWallet: () => Promise<void>;
+  logout: () => void;
   claimAction: (actionType: string) => Promise<boolean>;
   refreshUser: () => Promise<void>;
   createAgent: (name?: string) => Promise<boolean>;
@@ -71,6 +73,7 @@ function buildUserFromApiData(data: any, fallback?: { stellarAddress?: string | 
     trustScore: data.trustScore ?? Math.min(100, Math.floor((data.xp || 0) / 10)),
     createdAt: data.createdAt || fallback?.createdAt || new Date().toISOString(),
     piUsername: data.piUsername,
+    did: data.did ?? null,
     actions: fallback?.actions || [],
     agent: data.agent || null,
   };
@@ -184,11 +187,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     });
     if (!res.ok) throw new Error("Demo auth failed");
     const data = await res.json();
-    setUser({
-      ...data.user,
-      trustScore: data.user.trustScore ?? Math.min(100, Math.floor((data.user.xp || 0) / 10)),
-      createdAt: data.user.createdAt ?? new Date().toISOString(),
-    });
+    setUser(buildUserFromApiData(data));
   }, []);
 
   const connectWallet = useCallback(async () => {
@@ -268,6 +267,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         trustScore: Math.min(100, Math.floor((data.xp || 0) / 10)),
         createdAt: new Date().toISOString(),
         piUsername: data.piUsername || piUser.username,
+        did: data.did ?? null,
         actions: [],
         agent: null,
       });
@@ -281,6 +281,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setIsConnecting(false);
     }
   }, [pushLog, connectDemoWallet]);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("axiomid_wallet");
+    localStorage.removeItem("pi_access_token");
+    sessionStorage.removeItem("axiomid_wallet");
+    sessionStorage.removeItem("pi_access_token");
+    setPiAccessToken(null);
+    setUser(null);
+    setError(null);
+    pushLog("تم تسجيل الخروج وحذف الحالة المحلية ✅");
+  }, [pushLog]);
 
   const runTest = useCallback(async () => {
     clearWalletLogs();
@@ -383,6 +394,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         error,
         isPiBrowser,
         connectWallet,
+        logout,
         claimAction,
         refreshUser,
         createAgent,

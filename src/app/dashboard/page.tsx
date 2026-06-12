@@ -16,6 +16,8 @@ export default function Dashboard() {
     user,
     isLoading,
     connectWallet,
+    logout,
+    claimAction,
     isConnecting,
     levelProgress,
   } = useWallet();
@@ -73,8 +75,20 @@ export default function Dashboard() {
         ) : user ? (
           <div className="space-y-6">
             <div className="bento-card p-8">
-              <h2 className="text-2xl font-bold text-white mb-2">Welcome back, {user.piUsername}</h2>
-              <p className="text-gray-400">Your agent identity is ready. Level {user.tier} • {user.xp} XP</p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Welcome back, {user.piUsername || user.walletAddress}</h2>
+                  <p className="text-gray-400">Your agent identity is ready. Level {user.tier} • {user.xp} XP</p>
+                  {user.did && <p data-testid="dashboard-did" className="text-xs text-neon-green font-mono mt-2 break-all">{user.did}</p>}
+                </div>
+                <button
+                  data-testid="logout-button"
+                  onClick={logout}
+                  className="px-4 py-2 rounded-lg border border-red-500/30 text-red-300 text-xs font-mono hover:bg-red-500/10 transition-all"
+                >
+                  LOGOUT
+                </button>
+              </div>
               <div className="mt-4 h-2 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-neon-green to-electric-blue transition-all duration-500"
@@ -93,8 +107,15 @@ export default function Dashboard() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">XP</span>
-                    <span className="text-electric-blue font-mono">{user.xp}</span>
+                    <span data-testid="dashboard-xp" className="text-electric-blue font-mono">{user.xp}</span>
                   </div>
+                  <button
+                    data-testid="claim-daily-pow"
+                    onClick={() => void claimAction("daily_pow")}
+                    className="w-full mt-4 px-4 py-2 rounded-lg bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-mono hover:bg-neon-green/20 transition-all"
+                  >
+                    CLAIM DAILY POW
+                  </button>
                 </div>
               </div>
 

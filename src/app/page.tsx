@@ -107,8 +107,8 @@ export default function Home() {
 
         <div className="flex items-center gap-3">
           {isPiBrowser && !user && (
-            <span className="text-[10px] font-mono text-electric-blue px-2 py-1 rounded-full border border-electric-blue/30 bg-electric-blue/5">
-              Pi Browser
+            <span data-testid="pi-browser-cta" className="text-[10px] font-mono text-electric-blue px-2 py-1 rounded-full border border-electric-blue/30 bg-electric-blue/5">
+              Pi Browser Ready
             </span>
           )}
           {user ? (
@@ -121,7 +121,7 @@ export default function Home() {
               disabled={isConnecting}
               className="btn-primary text-xs px-4 py-2"
             >
-              {isConnecting ? "CONNECTING..." : "CONNECT"}
+              {isConnecting ? "CONNECTING..." : isPiBrowser ? "CONNECT WITH PI BROWSER" : "CONNECT"}
             </button>
           )}
         </div>

@@ -1,13 +1,58 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function patchPostMessageForSandbox(): void {
-  const originalPostMessage = window.postMessage.bind(window);
+const PI_MESSAGE_ORIGINS = new Set([
+  "https://app-cdn.minepi.com",
+  "https://sdk.minepi.com",
+  "https://minepi.com",
+  "https://sandbox.minepi.com",
+]);
 
-  window.postMessage = ((message: any, targetOrigin: string, ...args: any[]) => {
-    if (window.parent && window.parent !== window) {
-      (window.parent as any).postMessage(message, "*", ...args);
-    } else {
-      originalPostMessage(message, targetOrigin, ...args);
+const PATCH_FLAG = "__axiomidPiPostMessagePatched";
+
+type PatchedWindow = Window & {
+  [PATCH_FLAG]?: boolean;
+};
+
+function isPiOrigin(origin: string): boolean {
+  return PI_MESSAGE_ORIGINS.has(origin) || /(^|\.)minepi\.com$/.test(new URL(origin).hostname);
+}
+
+function normalizeTargetOrigin(targetOrigin: string): string {
+  if (targetOrigin === "*" || targetOrigin === "/") return targetOrigin;
+
+  try {
+    if (targetOrigin === window.location.origin) return targetOrigin;
+    if (isPiOrigin(targetOrigin)) {
+      return window.location.origin;
     }
+  } catch {
+    // Keep the browser's native validation for malformed non-Pi origins.
+  }
+
+  return targetOrigin;
+}
+
+export function patchPostMessageForSandbox(): void {
+  const patchedWindow = window as PatchedWindow;
+  if (patchedWindow[PATCH_FLAG]) return;
+
+  const originalPostMessage = window.postMessage.bind(window);
+  patchedWindow[PATCH_FLAG] = true;
+
+  window.postMessage = ((message: any, targetOriginOrOptions?: string | WindowPostMessageOptions, ...args: any[]) => {
+    if (typeof targetOriginOrOptions === "string") {
+      originalPostMessage(message, normalizeTargetOrigin(targetOriginOrOptions), ...args);
+      return;
+    }
+
+    if (targetOriginOrOptions?.targetOrigin) {
+      originalPostMessage(message, {
+        ...targetOriginOrOptions,
+        targetOrigin: normalizeTargetOrigin(targetOriginOrOptions.targetOrigin),
+      } as any);
+      return;
+    }
+
+    originalPostMessage(message, targetOriginOrOptions as any, ...args);
   }) as typeof window.postMessage;
 }
 
@@ -30,9 +75,7 @@ export function listenForPiSDKMessages(): void {
             name: msg.payload?.name || "AxiomID",
           },
         };
-        event.source?.postMessage(JSON.stringify(response), {
-          targetOrigin: event.origin,
-        });
+        event.source?.postMessage(JSON.stringify(response), { targetOrigin: event.origin || "*" });
       }
     } catch {
       // Ignore non-JSON messages

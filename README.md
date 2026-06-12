@@ -200,6 +200,41 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Click **"INITIALIZE SEQUENCE"** to connect your wallet (simulated or real).
 
+### 🧪 End-to-end tests (Playwright + Pi Sandbox)
+
+The Playwright suite lives in [`e2e/`](./e2e) and covers the browser path plus the real Pi sandbox/API-backed flows. Auth, action claim, database checks, and optional payment verification intentionally do **not** use internal Pi mocks; they require sandbox credentials and a disposable test database.
+
+```bash
+# Install Playwright browsers after dependencies are installed
+npx playwright install --with-deps chromium
+
+# Run the suite
+npm run test:e2e
+```
+
+Required variables for real Pi sandbox auth/action coverage:
+
+| Variable | Purpose |
+| :--- | :--- |
+| `DATABASE_URL` | Dedicated E2E database used by Prisma during the run. |
+| `PI_SANDBOX_ACCESS_TOKEN` | Access token from a Pi sandbox login. |
+| `PI_SANDBOX_UID` | UID returned by the same Pi sandbox login. |
+| `PI_SANDBOX_USERNAME` | Username returned by the same Pi sandbox login. |
+
+Optional payment sandbox variables:
+
+| Variable | Purpose |
+| :--- | :--- |
+| `PI_API_KEY` | Server-side Pi API key used by payment approve/complete routes. |
+| `PI_SANDBOX_PAYMENT_ID` | Sandbox payment identifier to approve. |
+| `PI_SANDBOX_PAYMENT_TXID` | Optional transaction id used to complete the sandbox payment. |
+
+If these variables are absent, Playwright still verifies `/` and the `window.Pi` CTA, while the real sandbox/database tests are skipped with an explicit reason.
+
+### 🔐 Pi Browser `postMessage` origin compatibility
+
+Pi Browser sandbox iframes can emit messages from `https://app-cdn.minepi.com` while the running app frame is hosted on the app origin, such as `https://axiomid-app.vercel.app`. Browsers reject `window.postMessage` when the supplied `targetOrigin` does not match the receiving window. AxiomID initializes a small sandbox compatibility layer that rewrites known Pi SDK self-window target origins to the current app origin and responds to Pi SDK communication-information requests with the event sender origin. This keeps the browser origin check intact while avoiding the `app-cdn.minepi.com` / app-origin mismatch.
+
 ---
 
 ## 📄 License

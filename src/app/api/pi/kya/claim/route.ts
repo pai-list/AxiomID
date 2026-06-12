@@ -5,6 +5,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
 import { KyaClaimSchema } from '@/lib/validators';
+import { createAxiomDid } from '@/lib/did';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { username, name } = validation.data;
+  const metadata = name ? JSON.stringify({ displayName: name }) : undefined;
 
   try {
     const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
@@ -41,8 +43,10 @@ export async function POST(request: NextRequest) {
           piUsername: username,
           walletAddress: `pi:${username}`,
           kycStatus: 'PENDING',
-          did: `did:axiom:${user.piUid}`,
-          name: name || user.piUsername || username,
+          kycProvider: 'pi_network',
+          did: createAxiomDid(`pi:${user.piUid}`),
+          didMethod: 'did:axiom',
+          metadata,
         },
       });
 
@@ -59,8 +63,9 @@ export async function POST(request: NextRequest) {
       data: {
         kycStatus: 'PENDING',
         kycProvider: 'pi_network',
-        did: existing.did || `did:axiom:${user.piUid}`,
-        name: name || existing.piUsername || existing.name,
+        did: existing.did || createAxiomDid(`pi:${user.piUid}`),
+        didMethod: 'did:axiom',
+        ...(metadata ? { metadata } : {}),
       },
     });
 
