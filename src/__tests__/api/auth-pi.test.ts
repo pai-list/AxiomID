@@ -49,12 +49,12 @@ describe('POST /api/auth/pi', () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
     mockPrisma.user.create.mockResolvedValue({
       id: 'user-1',
-      walletAddress: '0xpi-uid-123000000000000000000000000000000',
+      walletAddress: 'pi:pi-uid-123',
       piUid: 'pi-uid-123',
       piUsername: 'testuser',
       xp: 0,
       tier: 'Visitor',
-      did: null,
+      did: 'did:axiom:axiomid.app:pi:pi-uid-123',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -71,6 +71,15 @@ describe('POST /api/auth/pi', () => {
     expect(res.status).toBe(200);
     expect(data.userId).toBe('user-1');
     expect(data.tier).toBe('Visitor');
+    expect(data.did).toBe('did:axiom:axiomid.app:pi:pi-uid-123');
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          did: 'did:axiom:axiomid.app:pi:pi-uid-123',
+          didMethod: 'did:axiom',
+        }),
+      }),
+    );
   });
 
   it('updates existing user on return visit', async () => {
@@ -82,6 +91,7 @@ describe('POST /api/auth/pi', () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'existing-user',
       piUid: 'existing-uid',
+      did: 'did:axiom:test',
     } as any);
     mockPrisma.user.update.mockResolvedValue({
       id: 'existing-user',
@@ -107,6 +117,89 @@ describe('POST /api/auth/pi', () => {
     expect(res.status).toBe(200);
     expect(data.userId).toBe('existing-user');
     expect(data.tier).toBe('Citizen');
+    expect(data.did).toBe('did:axiom:test');
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({ did: expect.any(String) }),
+      }),
+    );
+  });
+
+  it('repairs missing DID for existing Pi users and keeps it stable across repeated logins', async () => {
+    const uid = 'stable-uid';
+    const did = 'did:axiom:axiomid.app:pi:stable-uid';
+
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid }),
+    });
+
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce({
+        id: 'existing-without-did',
+        piUid: uid,
+        did: null,
+      } as any)
+      .mockResolvedValueOnce({
+        id: 'existing-without-did',
+        piUid: uid,
+        did,
+      } as any);
+
+    mockPrisma.user.update
+      .mockResolvedValueOnce({
+        id: 'existing-without-did',
+        walletAddress: `pi:${uid}`,
+        piUid: uid,
+        piUsername: 'stable',
+        xp: 0,
+        tier: 'Visitor',
+        did,
+        kycStatus: 'NONE',
+        agent: null,
+      } as any)
+      .mockResolvedValueOnce({
+        id: 'existing-without-did',
+        walletAddress: `pi:${uid}`,
+        piUid: uid,
+        piUsername: 'stable',
+        xp: 0,
+        tier: 'Visitor',
+        did,
+        kycStatus: 'NONE',
+        agent: null,
+      } as any);
+
+    const firstRes = await POST(mockRequest({
+      accessToken: 'first-token',
+      uid,
+      username: 'stable',
+    }));
+    const firstData = await firstRes.json();
+
+    const secondRes = await POST(mockRequest({
+      accessToken: 'second-token',
+      uid,
+      username: 'stable',
+    }));
+    const secondData = await secondRes.json();
+
+    expect(firstRes.status).toBe(200);
+    expect(secondRes.status).toBe(200);
+    expect(firstData.did).toBe(did);
+    expect(secondData.did).toBe(did);
+    expect(mockPrisma.user.update).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({ did }),
+      }),
+    );
+    expect(mockPrisma.user.update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.not.objectContaining({ did: expect.any(String) }),
+      }),
+    );
   });
 
   it('returns 401 on invalid Pi token', async () => {

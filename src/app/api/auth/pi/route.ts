@@ -6,6 +6,10 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
 
+function buildPiDid(uid: string) {
+  return `did:axiom:axiomid.app:pi:${encodeURIComponent(uid)}`;
+}
+
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`pi-auth:${ip}`, RATE_LIMITS.piAuth);
@@ -26,6 +30,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { accessToken, uid, username, walletAddress: clientWalletAddress, stellarAddress } = parsed.data;
+  const piDid = buildPiDid(uid);
 
   try {
     const piResponse = await fetch('https://api.minepi.com/v2/me', {
@@ -61,6 +66,7 @@ export async function POST(request: NextRequest) {
           piUsername: username,
           walletAddress,
           lastActive: new Date(),
+          ...(existingUser.did ? {} : { did: piDid }),
         },
         include: { agent: true },
       });
@@ -70,6 +76,8 @@ export async function POST(request: NextRequest) {
           walletAddress,
           piUid: uid,
           piUsername: username,
+          did: piDid,
+          didMethod: 'did:axiom',
           tier: 'Visitor',
           xp: 0,
         },
@@ -87,7 +95,7 @@ export async function POST(request: NextRequest) {
       piUsername: user.piUsername,
       tier,
       xp: user.xp,
-      did: user.did,
+      did: user.did || piDid,
       kycStatus: user.kycStatus,
       hasAgent: !!user.agent,
     });
