@@ -23,6 +23,7 @@ function buildPassportResponse(user: any) {
   return {
     username: user.piUsername || "AxiomID Agent",
     walletAddress: user.walletAddress,
+    stellarAddress: user.stellarAddress || null,
     did,
     tier: user.tier,
     xp: user.xp,

@@ -415,3 +415,36 @@ a:focus-visible {
   outline: 2px solid var(--neon-green);
   outline-offset: 2px;
 }
+
+/* ============================================
+   XP BURST & CONFETTI ANIMATIONS
+   ============================================ */
+@keyframes xp-text-float {
+  0% { transform: translateY(10px) scale(0.8); opacity: 0; }
+  20% { transform: translateY(0px) scale(1.15); opacity: 1; }
+  80% { transform: translateY(-25px) scale(1); opacity: 1; }
+  100% { transform: translateY(-35px) scale(0.9); opacity: 0; }
+}
+
+.animate-xp-text-float {
+  animation: xp-text-float 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes xp-particle {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+}
+
+.animate-xp-particle {
+  animation: xp-particle 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes stamp-unlock {
+  0% { transform: scale(0.9); border-color: rgba(255, 255, 255, 0.05); }
+  50% { transform: scale(1.02); border-color: var(--neon-green); }
+  100% { transform: scale(1); border-color: rgba(0, 255, 65, 0.3); }
+}
+
+.animate-stamp-unlock {
+  animation: stamp-unlock 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

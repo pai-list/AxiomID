@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useWallet } from "../context/wallet-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import skillsData from "@/data/skills.json";
+import { StampBoard } from "@/components/StampBoard";
 
 type TabId = "passport" | "actions" | "terminal" | "marketplace" | "agent";
 
@@ -16,15 +17,7 @@ const INITIAL_LOGS = [
   "SYSTEM: Agentic OS online. Ready for task routing.",
 ];
 
-const DEMO_ACTIONS = [
-  { type: "connect_twitter", label: "Connect Twitter", xp: 50, icon: "🐦" },
-  { type: "connect_discord", label: "Connect Discord", xp: 50, icon: "💬" },
-  { type: "verify_identity", label: "Verify Identity", xp: 100, icon: "🔐" },
-  { type: "daily_pow", label: "Daily Proof of Work", xp: 20, icon: "⛏️" },
-  { type: "wallet_age", label: "Wallet Activity", xp: 300, icon: "💰" },
-  { type: "connect_google", label: "Connect Google", xp: 50, icon: "🔑" },
-  { type: "connect_crypto_wallet", label: "Connect Crypto Wallet", xp: 100, icon: "🦊" },
-];
+
 
 export default function Dashboard() {
   const router = useRouter();
@@ -51,7 +44,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("passport");
   const [showTerminal, setShowTerminal] = useState(false);
   const [logs, setLogs] = useState<string[]>(INITIAL_LOGS);
-  const [claimingAction, setClaimingAction] = useState<string | null>(null);
+
   const [agentName, setAgentName] = useState("");
   const [agentLoading, setAgentLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -110,16 +103,7 @@ export default function Dashboard() {
     setActiveTab(tabId);
   };
 
-  const handleClaim = async (actionType: string) => {
-    if (!user) {
-      connectWallet();
-      return;
-    }
-    setClaimingAction(actionType);
-    const success = await claimAction(actionType);
-    setClaimingAction(null);
-    return success;
-  };
+
 
   const handleCreateAgent = async () => {
     setAgentLoading(true);
@@ -319,30 +303,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bento-card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Available Actions</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DEMO_ACTIONS.map((action) => (
-                  <div
-                    key={action.type}
-                    className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02]"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{action.icon}</span>
-                      <div>
-                        <span className="text-sm text-white font-mono">{action.label}</span>
-                        <span className="text-[10px] text-gray-500 font-mono block">+{action.xp} XP</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={connectWallet}
-                      className="text-[10px] font-mono text-electric-blue px-3 py-1.5 rounded-lg border border-electric-blue/20 hover:bg-electric-blue/10 transition-colors"
-                    >
-                      Connect to Claim
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div className="md:col-span-3">
+              <StampBoard user={null} claimAction={claimAction} connectWallet={connectWallet} />
             </div>
           </div>
         ) : user ? (
@@ -492,44 +454,7 @@ export default function Dashboard() {
             {/* ── ACTIONS TAB ── */}
             {activeTab === "actions" && (
               <div className="space-y-6">
-                <div className="bento-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-white">Available Actions</h3>
-                    <span className="text-xs font-mono text-gray-500">{user.actions.length} claimed</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {DEMO_ACTIONS.map((action) => {
-                      const alreadyClaimed = user.actions.some((a) => a.type === action.type);
-                      return (
-                        <div
-                          key={action.type}
-                          className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02]"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{action.icon}</span>
-                            <div>
-                              <span className="text-sm text-white font-mono">{action.label}</span>
-                              <span className="text-[10px] text-gray-500 font-mono block">+{action.xp} XP</span>
-                            </div>
-                          </div>
-                          {alreadyClaimed ? (
-                            <span className="text-[10px] font-mono text-neon-green px-3 py-1.5 rounded-lg border border-neon-green/20">
-                              ✓ CLAIMED
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleClaim(action.type)}
-                              disabled={claimingAction === action.type}
-                              className="text-[10px] font-mono text-electric-blue px-3 py-1.5 rounded-lg border border-electric-blue/20 hover:bg-electric-blue/10 transition-colors disabled:opacity-50"
-                            >
-                              {claimingAction === action.type ? "CLAIMING..." : "CLAIM"}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                <StampBoard user={user} claimAction={claimAction} connectWallet={connectWallet} />
 
                 {/* Skills marketplace preview */}
                 <div className="bento-card p-6">

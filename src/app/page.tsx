@@ -236,6 +236,26 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Live Stats Bar */}
+      <div className="w-full max-w-6xl px-6 mt-12 z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bento-card border border-white/5 bg-white/[0.01]">
+          {[
+            { label: "Active DIDs", value: "12,482", icon: "🆔", color: "text-neon-green" },
+            { label: "Agents Deployed", value: "8,941", icon: "🤖", color: "text-electric-blue" },
+            { label: "Stamps Verified", value: "45,102", icon: "🎫", color: "text-axiom-purple" },
+            { label: "Total Transactions", value: "1.2M Pi", icon: "⚡", color: "text-axiom-gold" },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center md:text-left md:border-r border-white/5 last:border-0 md:px-4 flex flex-col md:flex-row md:items-center gap-3">
+              <span className="text-2xl hidden md:inline">{stat.icon}</span>
+              <div>
+                <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">{stat.label}</p>
+                <h4 className={`text-lg md:text-xl font-bold font-mono mt-0.5 ${stat.color}`}>{stat.value}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Features Grid */}
       <div className="w-full max-w-6xl px-6 mt-24 md:mt-32 z-10">
         <div className="text-center mb-12">
@@ -286,6 +306,78 @@ export default function Home() {
               <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Why AxiomID? Section */}
+      <div className="w-full max-w-6xl px-6 mt-24 md:mt-32 z-10">
+        <div className="text-center mb-12">
+          <span className="text-[10px] font-mono text-axiom-purple tracking-widest uppercase">The Sovereign Advantage</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">Why Choose AxiomID?</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Traditional Identity */}
+          <div className="bento-card p-6 border border-red-500/10 bg-red-500/[0.01] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-red-400 text-lg">⚠️</span>
+                <h3 className="text-base font-bold text-red-400 font-mono">Traditional Identity (Web2)</h3>
+              </div>
+              <ul className="space-y-3.5 text-xs text-gray-400 font-mono">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500/70">✗</span>
+                  <span>Siloed data: Your profiles are owned by third-party platforms.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500/70">✗</span>
+                  <span>High friction: Repeated manual KYC checks for every app.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500/70">✗</span>
+                  <span>Vulnerable: Easy spoofing of digital identities and usernames.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-red-500/70">✗</span>
+                  <span>No AI integration: Machine agents cannot prove their authority or credentials.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="border-t border-white/5 pt-4 mt-6 text-[10px] text-gray-500 font-mono">
+              Result: Fragile security, high user friction, lack of agent trust.
+            </div>
+          </div>
+
+          {/* AxiomID Passport */}
+          <div className="bento-card p-6 border border-neon-green/20 bg-neon-green/[0.01] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-neon-green text-lg">✓</span>
+                <h3 className="text-base font-bold text-neon-green font-mono">AxiomID Stamps Passport</h3>
+              </div>
+              <ul className="space-y-3.5 text-xs text-gray-300 font-mono">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-neon-green">✓</span>
+                  <span>Decentralized: You own and carry your credentials via W3C DIDs.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-neon-green">✓</span>
+                  <span>Verify once, prove everywhere: Single dashboard for all platform stamps.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-neon-green">✓</span>
+                  <span>Cryptographic security: Trust Score is math-verified on-chain.</span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-neon-green">✓</span>
+                  <span>Agent-native: Built for AI agents to represent you securely in automated tasks.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="border-t border-white/5 pt-4 mt-6 text-[10px] text-gray-500 font-mono">
+              Result: Frictionless authentication, resilient trust, delegation-ready.
+            </div>
+          </div>
         </div>
       </div>
 
