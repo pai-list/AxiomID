@@ -107,6 +107,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("pi_access_token");
       localStorage.removeItem("axiomid_wallet");
+      localStorage.setItem("axiomid_logged_out", "true");
     }
 
     setUser(null);
