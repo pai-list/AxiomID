@@ -30,6 +30,21 @@ function mockRequest(body: unknown) {
   }) as any;
 }
 
+function mockCreateReturnsArgs(id: string) {
+  return jest.fn().mockImplementation(async (args: any) => ({
+    id,
+    walletAddress: args.data.walletAddress,
+    stellarAddress: args.data.stellarAddress,
+    piUid: args.data.piUid,
+    piUsername: args.data.piUsername,
+    xp: args.data.xp,
+    tier: args.data.tier,
+    did: null,
+    kycStatus: 'NONE',
+    agent: null,
+  } as any));
+}
+
 describe('POST /api/auth/pi', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -120,18 +135,7 @@ describe('POST /api/auth/pi', () => {
       });
 
       mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockPrisma.user.create.mockImplementation(async (args: any) => ({
-        id: 'secure-user',
-        walletAddress: args.data.walletAddress,
-        stellarAddress: args.data.stellarAddress,
-        piUid: args.data.piUid,
-        piUsername: args.data.piUsername,
-        xp: args.data.xp,
-        tier: args.data.tier,
-        did: null,
-        kycStatus: 'NONE',
-        agent: null,
-      } as any));
+      mockPrisma.user.create = mockCreateReturnsArgs('secure-user');
 
       const req = mockRequest({
         accessToken: 'valid-token',
@@ -162,18 +166,7 @@ describe('POST /api/auth/pi', () => {
     });
 
     mockPrisma.user.findUnique.mockResolvedValue(null);
-    mockPrisma.user.create.mockImplementation(async (args: any) => ({
-      id: 'stellar-user',
-      walletAddress: args.data.walletAddress,
-      stellarAddress: args.data.stellarAddress,
-      piUid: args.data.piUid,
-      piUsername: args.data.piUsername,
-      xp: args.data.xp,
-      tier: args.data.tier,
-      did: null,
-      kycStatus: 'NONE',
-      agent: null,
-    } as any));
+    mockPrisma.user.create = mockCreateReturnsArgs('stellar-user');
 
     const req = mockRequest({
       accessToken: 'valid-token',

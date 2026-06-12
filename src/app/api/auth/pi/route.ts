@@ -19,26 +19,20 @@ type PiApiUser = {
   stellarAddress?: unknown;
 };
 
-function getVerifiedPiWalletAddress(piUser: PiApiUser, uid: string): string {
-  const candidates = [piUser.walletAddress, piUser.pi_wallet_address, piUser.piAddress];
-  const verifiedAddress = candidates.find(
-    (candidate): candidate is string => typeof candidate === 'string' && PI_WALLET_ADDRESS_REGEX.test(candidate)
-  );
+function findAddressMatch(candidates: unknown[], regex: RegExp): string | null {
+  return candidates.find((c): c is string => typeof c === 'string' && regex.test(c)) ?? null;
+}
 
-  return verifiedAddress ?? `pi:${uid}`;
+function getVerifiedPiWalletAddress(piUser: PiApiUser, uid: string): string {
+  return findAddressMatch([piUser.walletAddress, piUser.pi_wallet_address, piUser.piAddress], PI_WALLET_ADDRESS_REGEX) ?? `pi:${uid}`;
 }
 
 function getVerifiedStellarAddress(piUser: PiApiUser): string | null {
-  const candidates = [piUser.wallet_address, piUser.stellarAddress];
-  const verifiedAddress = candidates.find(
-    (candidate): candidate is string => typeof candidate === 'string' && STELLAR_ADDRESS_REGEX.test(candidate)
-  );
-
-  return verifiedAddress ?? null;
+  return findAddressMatch([piUser.wallet_address, piUser.stellarAddress], STELLAR_ADDRESS_REGEX);
 }
 
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request);
+
   const rateLimit = await checkRateLimit(`pi-auth:${ip}`, RATE_LIMITS.piAuth);
   if (!rateLimit.allowed) {
     return apiError('RATE_LIMITED', 'Too many authentication attempts. Try again later.');
