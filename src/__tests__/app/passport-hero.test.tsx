@@ -19,7 +19,7 @@ import { defaultWalletCtx } from "./wallet-test-helpers";
 
 // Stub next/link so it renders as a plain anchor in jsdom
 jest.mock("next/link", () => {
-  const Link = ({ href, children, className }: any) => (
+  const Link = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
     <a href={href} className={className}>
       {children}
     </a>
@@ -34,7 +34,33 @@ jest.mock("@/app/context/wallet-context", () => ({
 }));
 
 import { useWallet } from "@/app/context/wallet-context";
+import type { Tier } from "@/lib/tiers";
 const mockUseWallet = useWallet as jest.MockedFunction<typeof useWallet>;
+
+function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {}): ReturnType<typeof useWallet> {
+  return {
+    user: null,
+    isLoading: false,
+    isConnecting: false,
+    error: null,
+    isPiBrowser: false,
+    connectWallet: jest.fn(),
+    claimAction: jest.fn(),
+    refreshUser: jest.fn(),
+    createAgent: jest.fn(),
+    activateAgent: jest.fn(),
+    pauseAgent: jest.fn(),
+    claimKya: jest.fn(),
+    levelProgress: 0,
+    nextXP: null,
+    walletLogs: [],
+    runWalletTest: jest.fn(),
+    clearWalletLogs: jest.fn(),
+    logout: jest.fn(),
+    disconnectWallet: jest.fn(),
+    ...overrides,
+  } as ReturnType<typeof useWallet>;
+}
 
 describe("PassportHero — no user (unauthenticated)", () => {
   beforeEach(() => {
@@ -75,7 +101,7 @@ describe("PassportHero — user with piUsername", () => {
     walletAddress: "pi:piuser123",
     piUsername: "alice",
     xp: 100,
-    tier: "Citizen" as any,
+    tier: "Citizen" as Tier,
     trustScore: 10,
     createdAt: new Date().toISOString(),
     actions: [],
@@ -115,7 +141,7 @@ describe("PassportHero — user without piUsername (walletAddress only)", () => 
     walletAddress: "pi:abc123def456",
     piUsername: null,
     xp: 0,
-    tier: "Visitor" as any,
+    tier: "Visitor" as Tier,
     trustScore: 0,
     createdAt: new Date().toISOString(),
     actions: [],
@@ -144,7 +170,7 @@ describe("PassportHero — long wallet address gets truncated", () => {
     walletAddress: "demo:verylongwalletaddressthatexceedstwentycharacters",
     piUsername: null,
     xp: 0,
-    tier: "Visitor" as any,
+    tier: "Visitor" as Tier,
     trustScore: 0,
     createdAt: new Date().toISOString(),
     actions: [],
@@ -169,7 +195,7 @@ describe("PassportHero — demo wallet address (starts with 'demo:')", () => {
     walletAddress: "demo:abc12345",
     piUsername: null,
     xp: 0,
-    tier: "Visitor" as any,
+    tier: "Visitor" as Tier,
     trustScore: 0,
     createdAt: new Date().toISOString(),
     actions: [],
@@ -193,7 +219,7 @@ describe("Home page — logout buttons (PR change: logout added to Home)", () =>
     walletAddress: "pi:logouttest",
     piUsername: "logoutuser",
     xp: 50,
-    tier: "Citizen" as any,
+    tier: "Citizen" as Tier,
     trustScore: 5,
     createdAt: new Date().toISOString(),
     actions: [],

@@ -10,7 +10,6 @@ export const PiAuthSchema = z.object({
 
 export const KyaClaimSchema = z.object({
   username: z.string().min(1, 'username is required'),
-  name: z.string().optional(),
 });
 
 export const UserStatusSchema = z.object({

@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
 import { SandboxProvider } from "./context/sandbox-provider";
+import { Analytics } from "@vercel/analytics/next";
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -118,23 +119,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen overflow-x-hidden`}
       >
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black">
+          Skip to content
+        </a>
         <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
         <SandboxProvider>
           <WalletProvider>
             {children}
           </WalletProvider>
         </SandboxProvider>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+        <Analytics />
       </body>
     </html>
   );

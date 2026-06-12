@@ -29,29 +29,13 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', validation.error.issues[0].message);
   }
 
-  const { username, name } = validation.data;
+  const { username } = validation.data;
 
   try {
     const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
 
     if (!existing) {
-      const newUser = await prisma.user.create({
-        data: {
-          piUid: user.piUid,
-          piUsername: username,
-          walletAddress: `pi:${username}`,
-          kycStatus: 'PENDING',
-          did: `did:axiom:${user.piUid}`,
-          name: name || user.piUsername || username,
-        },
-      });
-
-      return apiSuccess({
-        userId: newUser.id,
-        walletAddress: newUser.walletAddress,
-        kycStatus: newUser.kycStatus,
-        did: newUser.did,
-      }, 201);
+      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
     }
 
     const updated = await prisma.user.update({
@@ -60,7 +44,7 @@ export async function POST(request: NextRequest) {
         kycStatus: 'PENDING',
         kycProvider: 'pi_network',
         did: existing.did || `did:axiom:${user.piUid}`,
-        name: name || existing.piUsername || existing.name,
+        piUsername: existing.piUsername || username,
       },
     });
 

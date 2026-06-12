@@ -5,45 +5,61 @@ import { useState, useEffect } from "react";
 interface NetworkStats {
   registeredAgents: number;
   totalTransactions: number;
-  averageTrustScore: number;
+  averageTrustScore: number | null;
   activeUsers: number;
   totalXpEarned: number;
-  verificationRate: number;
+  verificationRate: number | null;
 }
 
 export default function StatusPage() {
   const [stats, setStats] = useState<NetworkStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
+  const [timeSince, setTimeSince] = useState<number>(0);
+  const network = process.env.NEXT_PUBLIC_NETWORK || "Testnet";
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/status");
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `Failed to fetch status: ${res.status}`);
+      }
+      const data = await res.json();
+      const apiStats = data.stats || {};
+      setStats({
+        registeredAgents: apiStats.totalAgents ?? 0,
+        totalTransactions: apiStats.totalPayments ?? 0,
+        averageTrustScore: apiStats.averageTrustScore ?? 98.4,
+        activeUsers: apiStats.registeredUsers ?? 0,
+        totalXpEarned: apiStats.totalXpEarned ?? 0,
+        verificationRate: apiStats.verificationRate ?? 99.2,
+      });
+      setLastFetchTime(Date.now());
+      setTimeSince(0);
+    } catch (err) {
+      console.error("Failed to fetch network stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch("/api/status");
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || `Failed to fetch status: ${res.status}`);
-        }
-        const data = await res.json();
-        const apiStats = data.stats || {};
-        setStats({
-          registeredAgents: apiStats.totalAgents ?? 0,
-          totalTransactions: apiStats.totalPayments ?? 0,
-          averageTrustScore: apiStats.averageTrustScore ?? 98.4,
-          activeUsers: apiStats.registeredUsers ?? 0,
-          totalXpEarned: apiStats.totalXpEarned ?? 0,
-          verificationRate: apiStats.verificationRate ?? 99.2,
-        });
-      } catch (err) {
-        console.error("Failed to fetch network stats:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // eslint-disable-next-line
     fetchStats();
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (lastFetchTime) {
+      const timer = setInterval(() => {
+        setTimeSince(Math.floor((Date.now() - lastFetchTime) / 1000));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [lastFetchTime]);
 
   return (
     <main className="min-h-screen bg-grid">
@@ -64,9 +80,12 @@ export default function StatusPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Network Status</h2>
-          <p className="text-gray-400">Real-time monitoring of AxiomID protocol and agent network</p>
+        <div className="flex justify-between items-center mb-8">
+            <div>
+                <h2 className="text-3xl font-bold text-white mb-2">Network Status</h2>
+                <p className="text-gray-400">Real-time monitoring of AxiomID protocol and agent network</p>
+            </div>
+            <button onClick={fetchStats} className="btn-primary px-4 py-2 text-sm font-mono">RETRY</button>
         </div>
 
         {loading ? (
@@ -96,7 +115,7 @@ export default function StatusPage() {
               <div className="bento-card p-6 text-center">
                 <span className="text-[10px] font-mono text-gray-500 block mb-2">AVG TRUST SCORE</span>
                 <span className="text-3xl font-bold font-mono text-axiom-purple">
-                  {stats.averageTrustScore.toLocaleString()}%
+                  {stats.averageTrustScore?.toLocaleString() ?? "—"}%
                 </span>
               </div>
               <div className="bento-card p-6 text-center">
@@ -114,7 +133,7 @@ export default function StatusPage() {
               <div className="bento-card p-6 text-center">
                 <span className="text-[10px] font-mono text-gray-500 block mb-2">VERIFICATION RATE</span>
                 <span className="text-3xl font-bold font-mono text-axiom-purple">
-                  {stats.verificationRate.toLocaleString()}%
+                  {stats.verificationRate?.toLocaleString() ?? "—"}%
                 </span>
               </div>
             </div>
@@ -129,11 +148,11 @@ export default function StatusPage() {
                 </div>
                 <div className="flex justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-500">Network</span>
-                  <span className="text-white">Testnet</span>
+                  <span className="text-white">{network}</span>
                 </div>
                 <div className="flex justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-500">Last Updated</span>
-                  <span className="text-neon-green">Just Now</span>
+                  <span className="text-neon-green">{timeSince} seconds ago</span>
                 </div>
                 <div className="flex justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-500">Status</span>
@@ -163,6 +182,7 @@ export default function StatusPage() {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">Unable to Load Status</h2>
             <p className="text-gray-400">Could not fetch network statistics. Please try again later.</p>
+            <button onClick={fetchStats} className="btn-primary mt-4 px-6 py-2 text-sm font-mono">RETRY</button>
           </div>
         )}
       </div>

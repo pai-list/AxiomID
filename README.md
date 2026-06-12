@@ -46,7 +46,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Beta_V1.0.4-00ff41?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Stack-Next.js_16_|_Prisma_|_SQLite-000000?style=for-the-badge&logo=next.js" alt="Stack" />
+  <img src="https://img.shields.io/badge/Stack-Next.js_16_|_Prisma_|_PostgreSQL-000000?style=for-the-badge&logo=next.js" alt="Stack" />
   <img src="https://img.shields.io/badge/Aesthetic-Sophisticated_Cyberpunk-00d4ff?style=for-the-badge&logoColor=white" alt="Aesthetic" />
 </div>
 
@@ -83,15 +83,15 @@ AxiomID uses a progressive trust model. You don't just "have" an ID; you **level
 
 | Tier | XP | Status | Description |
 | :--- | :--- | :--- | :--- |
-| **GHOST** | 0 | 🌑 Locked | Unverified. Lurker status. Limited access. |
-| **SPARK** | 100 | 🟢 Verified | Basic "Proof of Humanity". Social accounts connected. |
-| **PULSE** | 500 | 🔵 Active | Proven history. Active wallet, transaction history. |
-| **AXIOM** | 1000 | 🟣 Elite | High reputation. Financial stake locked. Vouching power. |
+| **Visitor** | 0 | 🌑 Locked | Unverified. Lurker status. Limited access. |
+| **Citizen** | 100 | 🟢 Verified | Basic "Proof of Humanity". Social accounts connected. |
+| **Validator** | 500 | 🔵 Active | Proven history. Active wallet, transaction history. |
+| **Sovereign** | 1000 | 🟣 Elite | High reputation. Financial stake locked. Vouching power. |
 
 ### 🛠️ Tech Stack
 - **Frontend:** Next.js 16 (App Router), Tailwind CSS, Framer Motion (Bento Grids, Floating Elements).
 - **Backend:** Next.js API Routes (Serverless).
-- **Database:** SQLite (via **Prisma ORM**) for rapid MVP execution. Ready for migration to PostgreSQL/Supabase.
+- **Database:** PostgreSQL (via **Prisma ORM**).
 - **Auth:** Web3 First (Wallet Connect).
 
 ### 📂 Project Structure
@@ -99,22 +99,57 @@ AxiomID uses a progressive trust model. You don't just "have" an ID; you **level
 axiomid/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              # 🖥️ The Command Center (Bento Grid)
-│   │   ├── globals.css           # 🎨 Dark Engineering Theme
-│   │   ├── api/                  # ⚡ Backend Logic
-│   │   │   ├── auth/connect/     # Wallet Authentication
-│   │   │   ├── action/claim/     # XP & Tier Logic
-│   │   │   └── user/status/      # Data Fetching
-│   │   └── context/
-│   │       └── wallet-context.tsx # 🧠 Global State Management
-│   └── lib/
-│       ├── prisma.ts             # Database Client
-│       ├── actions.ts            # "Proof of Work" Definitions
-│       └── tiers.ts              # Gamification Logic
+│   │   ├── page.tsx                  # 🖥️ The Command Center (Bento Grid)
+│   │   ├── globals.css               # 🎨 Dark Engineering Theme
+│   │   ├── layout.tsx                # Root layout + providers
+│   │   ├── dashboard/page.tsx        # User dashboard
+│   │   ├── passport/[slug]/page.tsx  # Public agent passport
+│   │   ├── status/page.tsx           # Network status monitor
+│   │   ├── privacy/page.tsx          # Privacy policy
+│   │   ├── terms/page.tsx            # Terms of service
+│   │   ├── context/
+│   │   │   ├── wallet-context.tsx    # 🧠 Global State Management
+│   │   │   └── sandbox-provider.tsx  # Pi Browser sandbox init
+│   │   └── api/                      # ⚡ Backend Logic (13 routes)
+│   │       ├── auth/connect/         # Wallet Authentication
+│   │       ├── auth/pi/              # Pi Network Authentication
+│   │       ├── action/claim/         # XP & Tier Logic
+│   │       ├── agent/                # Agent CRUD
+│   │       ├── agent/activate/       # Agent activation
+│   │       ├── agent/main/           # Agent action execution
+│   │       ├── agent/manifest/       # W3C VC manifest
+│   │       ├── agent/pause/          # Agent pause
+│   │       ├── pi/kya/claim/         # KYA verification
+│   │       ├── pi/payment/approve/   # Payment approval
+│   │       ├── pi/payment/complete/  # Payment completion
+│   │       ├── status/               # Network status
+│   │       └── user/status/          # User status
+│   ├── components/
+│   │   ├── AgentPassport.tsx         # Passport card with verification
+│   │   ├── AgentQR.tsx               # QR code generator
+│   │   ├── TrustScoreGauge.tsx       # SVG trust score ring
+│   │   └── VerificationBadge.tsx     # KYA/KYC status badge
+│   ├── lib/
+│   │   ├── prisma.ts                 # Database Client (Prisma singleton)
+│   │   ├── actions.ts                # "Proof of Work" Definitions
+│   │   ├── tiers.ts                  # Gamification Logic
+│   │   ├── auth-middleware.ts         # Pi token verification + cache
+│   │   ├── errors.ts                 # Standardized API error/success
+│   │   ├── ip.ts                     # Client IP resolver
+│   │   ├── oauth-state.ts            # CSRF state token signing
+│   │   ├── pi-sdk.ts                 # Pi SDK v2.0 integration
+│   │   ├── pi-sandbox.ts             # Pi Browser sandbox compat
+│   │   ├── rate-limiter.ts           # In-memory sliding window
+│   │   └── validators.ts             # Zod schemas for all inputs
+│   ├── data/
+│   │   └── skills.json               # Agent skill registry
+│   ├── middleware.ts                  # Subdomain rewrite + body size limit
+│   └── types/
+│       └── global.d.ts               # Pi Browser global types
 ├── prisma/
-│   ├── schema.prisma             # Database Schema
-│   └── dev.db                    # Local SQLite DB
-└── STRATEGY.md                   # 📜 Competitive Analysis & Future Roadmap
+│   ├── schema.prisma                 # Database Schema (PostgreSQL)
+│   └── migrations/                   # Migration files
+└── STRATEGY.md                       # 📜 Competitive Analysis & Roadmap
 ```
 
 ---
@@ -191,7 +226,7 @@ cd axiomid-project
 # 2. Install dependencies
 npm install
 
-# 3. Initialize Database (SQLite)
+# 3. Initialize Database (PostgreSQL)
 npx prisma db push
 
 # 4. Run development server
@@ -235,10 +270,10 @@ See [`LICENSE`](./LICENSE) for full terms. This repository is private (`package.
 
 | المستوى | XP | الحالة | الوصف |
 | :--- | :--- | :--- | :--- |
-| **GHOST** | 0 | 🌑 شبح | غير موثق. صلاحيات محدودة. |
-| **SPARK** | 100 | 🟢 شرارة | إثبات إنسانية أساسي (حسابات اجتماعية). |
-| **PULSE** | 500 | 🔵 نبض | تاريخ موثق. نشاط محفظة ومعاملات. |
-| **AXIOM** | 1000 | 🟣 بدهية | سمعة عالية. رهان مالي (Stake). قوة التزكية. |
+| **زائر** | 0 | 🌑 شبح | غير موثق. صلاحيات محدودة. |
+| **مواطن** | 100 | 🟢 شرارة | إثبات إنسانية أساسي (حسابات اجتماعية). |
+| **محقق** | 500 | 🔵 نبض | تاريخ موثق. نشاط محفظة ومعاملات. |
+| **سيادي** | 1000 | 🟣 بدهية | سمعة عالية. رهان مالي (Stake). قوة التزكية. |
 
 ## 🚀 البدء السريع
 

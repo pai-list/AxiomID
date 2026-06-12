@@ -38,6 +38,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const payment = await prisma.piPayment.findUnique({
+      where: { paymentId },
+    });
+
+    if (!payment) {
+      return apiError('NOT_FOUND', 'Payment record not found');
+    }
+
+    if (payment.userId !== auth.user.id) {
+      return apiError('FORBIDDEN', 'Payment does not belong to authenticated user');
+    }
+
+    if (payment.status === 'completed') {
+      return apiSuccess({
+        status: 'completed',
+        paymentId,
+        txid: payment.txid || txid,
+        xpEarned: auth.user.xp,
+        tier: auth.user.tier,
+      });
+    }
+
     const piResponse = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
@@ -52,18 +74,6 @@ export async function POST(request: NextRequest) {
       const errorData = await piResponse.json().catch(() => ({}));
       console.error('[PI-PAYMENT] Pi API complete failed:', piResponse.status, errorData);
       return apiError('PI_PAYMENT_FAILED', `Pi API error: ${piResponse.status}`);
-    }
-
-    const payment = await prisma.piPayment.findUnique({
-      where: { paymentId },
-    });
-
-    if (!payment) {
-      return apiError('NOT_FOUND', 'Payment record not found');
-    }
-
-    if (payment.userId !== auth.user.id) {
-      return apiError('FORBIDDEN', 'Payment does not belong to authenticated user');
     }
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {

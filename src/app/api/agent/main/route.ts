@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
+import { safeJsonStringify } from '@/lib/sanitize';
 
 interface AgentMainBody {
   action: string;
@@ -27,11 +28,19 @@ export async function POST(request: NextRequest) {
   } catch {
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
+  if (!body || typeof body !== 'object') {
+    return apiError('VALIDATION_ERROR', 'Invalid request body');
+  }
 
   const { action, params } = body as AgentMainBody;
-  if (!action) {
-    return apiError('VALIDATION_ERROR', 'action is required');
+  if (!action || typeof action !== "string") {
+    return apiError("VALIDATION_ERROR", "action is required");
   }
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(action) || action.length > 100) {
+    return apiError("VALIDATION_ERROR", "action must be alphanumeric, underscores, or hyphens, and max 100 characters");
+  }
+  const sanitizedAction = action;
 
   try {
     const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });
@@ -54,8 +63,8 @@ export async function POST(request: NextRequest) {
         agentId: agent.id,
         level: 'info',
         source: 'agent',
-        message: `Executed action: ${action}`,
-        metadata: params ? JSON.stringify(params) : null,
+        message: `Executed action: ${sanitizedAction}`,
+        metadata: safeJsonStringify(params),
       },
     });
 
@@ -63,8 +72,8 @@ export async function POST(request: NextRequest) {
       agentId: agent.id,
       publicId: agent.publicId,
       status: updatedAgent.status,
-      action,
-      result: `Action '${action}' dispatched to agent '${agent.name}'`,
+      action: sanitizedAction,
+      result: `Action '${sanitizedAction}' dispatched to agent '${agent.name}'`,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

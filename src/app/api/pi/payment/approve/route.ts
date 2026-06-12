@@ -5,6 +5,7 @@ import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
+import { safeJsonStringify } from '@/lib/sanitize';
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -37,6 +38,41 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const existing = await prisma.piPayment.findUnique({
+      where: { paymentId },
+    });
+
+    if (existing) {
+      if (existing.userId !== auth.user.id) {
+        return apiError('FORBIDDEN', 'Payment does not belong to authenticated user');
+      }
+      if (existing.status === 'approved' || existing.status === 'completed') {
+        return apiSuccess({ status: existing.status, paymentId });
+      }
+    }
+
+    // 1. Fetch payment details from Pi Network API to verify ownership
+    const getResponse = await fetch(`https://api.minepi.com/v2/payments/${paymentId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Key ${PI_API_KEY}`,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!getResponse.ok) {
+      console.error('[PI-PAYMENT] Pi API get failed:', getResponse.status);
+      return apiError('PI_PAYMENT_FAILED', `Failed to retrieve payment: ${getResponse.status}`);
+    }
+
+    const paymentData = await getResponse.json();
+
+    // 2. Prevent IDOR by asserting the payment's payer UID matches the authenticated user
+    if (!auth.user.piUid || paymentData.user_uid !== auth.user.piUid) {
+      return apiError('FORBIDDEN', 'Payment payer UID does not match authenticated user');
+    }
+
+    // 3. Now safely approve the payment on Pi Network
     const piResponse = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: {
@@ -52,22 +88,22 @@ export async function POST(request: NextRequest) {
       return apiError('PI_PAYMENT_FAILED', `Pi API error: ${piResponse.status}`);
     }
 
-    const paymentData = await piResponse.json();
+    const approveData = await piResponse.json();
 
     await prisma.piPayment.upsert({
       where: { paymentId },
       update: {
         status: 'approved',
-        amount: paymentData.amount || 0,
-        memo: paymentData.memo || null,
-        metadata: paymentData.metadata ? JSON.stringify(paymentData.metadata) : null,
+        amount: approveData.amount || 0,
+        memo: approveData.memo || null,
+        metadata: safeJsonStringify(approveData.metadata),
       },
       create: {
         paymentId,
         userId: auth.user.id,
-        amount: paymentData.amount || 0,
-        memo: paymentData.memo || null,
-        metadata: paymentData.metadata ? JSON.stringify(paymentData.metadata) : null,
+        amount: approveData.amount || 0,
+        memo: approveData.memo || null,
+        metadata: safeJsonStringify(approveData.metadata),
         status: 'approved',
         network: 'pi',
       },

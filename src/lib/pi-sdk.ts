@@ -16,6 +16,38 @@ export function getLastPiError(): string | null {
 
 export async function connectPi(pushLog?: any): Promise<PiAuthResult> {
   try {
+    // Pi Browser: use injected window.Pi SDK
+    if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
+      pushLog?.("Using Pi Browser SDK...");
+      const result = await Promise.race([
+        window.Pi.authenticate({ scopes: ["username", "payments"] }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Pi authentication timed out")), 15000),
+        ),
+      ]) as { user: { uid: string; username: string; name: string; stellarAddress?: string }; accessToken: string };
+
+      if (!result?.user) {
+        throw new Error("Authentication failed - no user data received");
+      }
+      if (!result.accessToken) {
+        throw new Error("Authentication failed - no token received");
+      }
+      lastError = null;
+      pushLog?.(`Authenticated: ${result.user.name || result.user.uid}`);
+      return {
+        user: {
+          uid: result.user.uid ?? result.user.name,
+          username: result.user.username ?? result.user.name,
+          name: result.user.name,
+          stellarAddress: result.user.stellarAddress,
+        },
+        token: result.accessToken,
+        stellarAddress: result.user.stellarAddress,
+      };
+    }
+
+    // Server-side / Node.js: use PiSdkBase
+    pushLog?.("Using PiSdkBase (server)...");
     const pi = new PiSdkBase();
     await Promise.race([
       pi.connect(),
@@ -65,6 +97,11 @@ function assertPiSdkLoaded(): void {
 export async function runWalletTest(pushLog?: any): Promise<void> {
   assertPiSdkLoaded();
   try {
+    if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
+      const result = await window.Pi.authenticate({ scopes: ["username"] });
+      pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
+      return;
+    }
     const pi = new PiSdkBase();
     await pi.connect();
     const user = PiSdkBase.user ?? PiSdkBase.get_user();
@@ -77,7 +114,11 @@ export async function runWalletTest(pushLog?: any): Promise<void> {
 }
 
 export async function verifyStellarAddress(stellarAddress: string): Promise<boolean> {
-  if (!stellarAddress.startsWith("G")) {
+  // Stellar public keys: 56 base32 characters starting with G or M
+  if (!stellarAddress || stellarAddress.length !== 56) {
+    return false;
+  }
+  if (!/^[GM][A-Z2-7]{55}$/i.test(stellarAddress)) {
     return false;
   }
   return new Promise((resolve) => {
@@ -96,7 +137,6 @@ export async function transferPi(amount: number, recipient: string, memo?: strin
 export async function claimPiKya(data: {
   username: string;
   stellarAddress?: string;
-  name?: string;
 }): Promise<{ success: true; userId: string }> {
   try {
     const response = await fetch("/api/pi/kya/claim", {

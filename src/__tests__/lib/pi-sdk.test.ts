@@ -3,13 +3,13 @@
  * @jest-environment node
  */
 
-// Mock the PiSdkBase module
+// Mock the PiSdkBase module (virtual — no actual package installed)
 jest.mock('@pinetwork/pi-sdk-js', () => ({
   PiSdkBase: jest.fn().mockImplementation(() => ({
     connect: jest.fn(),
     createPayment: jest.fn(),
   })),
-}));
+}), { virtual: true });
 
 import { PiSdkBase } from '@pinetwork/pi-sdk-js';
 import {
@@ -105,13 +105,13 @@ describe('pi-sdk', () => {
       expect(result).toBe(false);
     });
 
-    it('returns true for addresses starting with G', async () => {
-      const result = await verifyStellarAddress('GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+    it('returns true for valid Stellar address (56 chars, starts with G)', async () => {
+      const result = await verifyStellarAddress('G' + 'A'.repeat(55));
       expect(result).toBe(true);
     }, 1000);
 
-    it('returns false for addresses starting with lowercase g', async () => {
-      const result = await verifyStellarAddress('gabc123');
+    it('returns false for short address', async () => {
+      const result = await verifyStellarAddress('Gabc123');
       expect(result).toBe(false);
     });
   });
@@ -164,12 +164,12 @@ describe('pi-sdk', () => {
         json: async () => ({ success: true, userId: 'u1' }),
       });
 
-      await claimPiKya({ username: 'testuser', stellarAddress: 'GADDR', name: 'Test User' });
+      await claimPiKya({ username: 'testuser', stellarAddress: 'GADDR' });
 
       expect(global.fetch).toHaveBeenCalledWith('/api/pi/kya/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'testuser', stellarAddress: 'GADDR', name: 'Test User' }),
+        body: JSON.stringify({ username: 'testuser', stellarAddress: 'GADDR' }),
       });
     });
 
@@ -203,7 +203,7 @@ describe('pi-sdk', () => {
   });
 
   describe('connectPi', () => {
-    it('throws when PiSdkBase.connect fails', async () => {
+    it('throws when PiSdkBase.connect fails (server-side fallback)', async () => {
       const mockInstance = { connect: jest.fn().mockRejectedValue(new Error('Connection error')) };
       MockPiSdkBase.mockImplementationOnce(() => mockInstance as any);
 
@@ -236,7 +236,7 @@ describe('pi-sdk', () => {
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Auth error'));
     });
 
-    it('returns PiAuthResult on successful auth', async () => {
+    it('returns PiAuthResult on successful auth via PiSdkBase', async () => {
       const mockInstance = { connect: jest.fn().mockResolvedValue(undefined) };
       MockPiSdkBase.mockImplementationOnce(() => mockInstance as any);
       (PiSdkBase as any).get_user = jest.fn().mockReturnValue({
@@ -253,6 +253,68 @@ describe('pi-sdk', () => {
       expect(result.user.uid).toBe('uid-123');
       expect(result.user.username).toBe('piuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
+    });
+
+    it('uses window.Pi.authenticate when available (Pi Browser)', async () => {
+      const mockAuthenticate = jest.fn().mockResolvedValue({
+        user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User', stellarAddress: 'GSTELLAR' },
+        accessToken: 'pb-token',
+      });
+      (global as any).window = (global as any).window || {};
+      (global as any).window.Pi = { authenticate: mockAuthenticate };
+
+      const result = await connectPi();
+
+      expect(mockAuthenticate).toHaveBeenCalled();
+      expect(result.token).toBe('pb-token');
+      expect(result.user.uid).toBe('pb-uid');
+      expect(result.user.username).toBe('pbuser');
+      expect(result.stellarAddress).toBe('GSTELLAR');
+
+      delete (global as any).window.Pi;
+    });
+
+    it('throws when window.Pi.authenticate returns no user', async () => {
+      (global as any).window = (global as any).window || {};
+      (global as any).window.Pi = {
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+      };
+
+      await expect(connectPi()).rejects.toThrow('no user data received');
+
+      delete (global as any).window.Pi;
+    });
+
+    it('throws when window.Pi.authenticate returns no accessToken', async () => {
+      (global as any).window = (global as any).window || {};
+      (global as any).window.Pi = {
+        authenticate: jest.fn().mockResolvedValue({
+          user: { uid: 'u1', username: 'u1', name: 'U' },
+          accessToken: null,
+        }),
+      };
+
+      await expect(connectPi()).rejects.toThrow('no token received');
+
+      delete (global as any).window.Pi;
+    });
+
+    it('calls pushLog with user name on successful Pi Browser auth', async () => {
+      (global as any).window = (global as any).window || {};
+      (global as any).window.Pi = {
+        authenticate: jest.fn().mockResolvedValue({
+          user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User' },
+          accessToken: 'pb-token',
+        }),
+      };
+      const pushLog = jest.fn();
+
+      await connectPi(pushLog);
+
+      expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Authenticated'));
+      expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Pi Browser User'));
+
+      delete (global as any).window.Pi;
     });
   });
 });

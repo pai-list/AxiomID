@@ -41,12 +41,14 @@ jest.mock("@/data/skills.json", () => ({
 }));
 
 
+import type { Tier } from "@/lib/tiers";
+
 const authenticatedUser = {
   id: "user-dash",
   walletAddress: "demo:dashtest",
   piUsername: "dashuser",
   xp: 150,
-  tier: "Citizen" as any,
+  tier: "Citizen" as Tier,
   trustScore: 15,
   createdAt: new Date().toISOString(),
   actions: [],
@@ -76,21 +78,25 @@ describe("Dashboard page — logout button (PR change)", () => {
     expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
   });
 
-  it("handleLogout calls logout() when the LOGOUT button is clicked", () => {
-    const logoutFn = jest.fn();
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, logout: logoutFn }));
+  it("handleLogout calls disconnectWallet() when the LOGOUT button is clicked", () => {
+    const disconnectFn = jest.fn();
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
     render(<Dashboard />);
 
     act(() => {
       screen.getByRole("button", { name: /logout/i }).click();
     });
 
-    expect(logoutFn).toHaveBeenCalledTimes(1);
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(disconnectFn).toHaveBeenCalledTimes(1);
   });
 
-  it("handleLogout navigates to '/' after calling logout()", () => {
-    const logoutFn = jest.fn();
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, logout: logoutFn }));
+  it("handleLogout navigates to '/' after calling disconnectWallet()", () => {
+    const disconnectFn = jest.fn();
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
     render(<Dashboard />);
 
     act(() => {
@@ -100,19 +106,23 @@ describe("Dashboard page — logout button (PR change)", () => {
     expect(mockRouterPush).toHaveBeenCalledWith("/");
   });
 
-  it("handleLogout calls logout() before navigating (order check)", () => {
+  it("handleLogout navigates before calling disconnectWallet() (order check)", () => {
     const callOrder: string[] = [];
-    const logoutFn = jest.fn(() => { callOrder.push("logout"); });
+    const disconnectFn = jest.fn(() => { callOrder.push("disconnectWallet"); });
     mockRouterPush.mockImplementation(() => { callOrder.push("navigate"); });
 
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, logout: logoutFn }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
     render(<Dashboard />);
 
     act(() => {
       screen.getByRole("button", { name: /logout/i }).click();
     });
 
-    expect(callOrder).toEqual(["logout", "navigate"]);
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(callOrder).toEqual(["navigate", "disconnectWallet"]);
   });
 });
 

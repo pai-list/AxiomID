@@ -21,6 +21,9 @@
     "url": "https://github.com/Moeabdelaziz007/AxiomID/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [
     "decentralized-identity",
     "human-verification",
@@ -48,6 +51,7 @@
   "dependencies": {
     "@pinetwork/pi-sdk-js": "^2.0.0",
     "@prisma/client": "^6.0.0",
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.40.0",
     "next": "16.2.7",
     "qrcode.react": "^4.2.0",

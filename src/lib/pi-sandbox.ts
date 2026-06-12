@@ -1,10 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+const PI_SDK_MSG_PREFIX = "@pi:app:sdk:";
+
+function isPiSdkMessage(message: any): boolean {
+  if (typeof message === "string") {
+    return message.startsWith(PI_SDK_MSG_PREFIX);
+  }
+  if (typeof message === "object" && message !== null) {
+    return typeof message.type === "string" && message.type.startsWith(PI_SDK_MSG_PREFIX);
+  }
+  return false;
+}
+
 export function patchPostMessageForSandbox(): void {
   const originalPostMessage = window.postMessage.bind(window);
 
   window.postMessage = ((message: any, targetOrigin: string, ...args: any[]) => {
-    if (window.parent && window.parent !== window) {
-      (window.parent as any).postMessage(message, "*", ...args);
+    // Only intercept Pi SDK messages — pass everything else through unchanged
+    if (isPiSdkMessage(message) && window.parent && window.parent !== window) {
+      (window.parent as any).postMessage(message, "https://app.minepi.com", ...args);
     } else {
       originalPostMessage(message, targetOrigin, ...args);
     }
@@ -14,6 +27,7 @@ export function patchPostMessageForSandbox(): void {
 export function listenForPiSDKMessages(): void {
   function handlePiMessage(event: MessageEvent) {
     if (typeof event.data !== "string") return;
+    if (event.origin !== "https://app.minepi.com" && event.origin !== "https://sandbox.minepi.com") return;
 
     try {
       const msg = JSON.parse(event.data);
