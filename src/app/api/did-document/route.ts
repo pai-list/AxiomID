@@ -59,7 +59,8 @@ function buildDidDocument(did: string, publicKeyPem?: string) {
         method.type = "RsaVerificationKey2018";
         method.publicKeyPem = publicKeyPem;
       }
-    } catch {
+    } catch (err) {
+      console.warn("[DID-DOCUMENT] Failed to parse key with createPublicKey, using fallback:", err);
       // Fallback for tests or invalid PEM format
       method.type = "Ed25519VerificationKey2020";
       method.publicKeyPem = publicKeyPem;
