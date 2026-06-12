@@ -272,4 +272,56 @@ describe('POST /api/auth/connect', () => {
 
     expect(data.isNewUser).toBe(false);
   });
+
+  // ----------------------------------------------------------------
+  // Additional regression / boundary tests
+  // ----------------------------------------------------------------
+  it('response includes xp field from the upsert result', async () => {
+    mockPrisma.user.upsert.mockResolvedValue(makeUpsertUser({ xp: 42 }));
+
+    const req = mockRequest({ walletAddress: WALLET });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.xp).toBe(42);
+  });
+
+  it('response includes tier field derived from xp', async () => {
+    // xp=0 → Visitor tier (default)
+    mockPrisma.user.upsert.mockResolvedValue(makeUpsertUser({ xp: 0 }));
+
+    const req = mockRequest({ walletAddress: WALLET });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.tier).toBe('Visitor');
+  });
+
+  it('upsert where clause uses exact wallet address', async () => {
+    const addr = 'pi:exactmatch';
+    const req = mockRequest({ walletAddress: addr });
+    await POST(req);
+
+    expect(mockPrisma.user.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { walletAddress: addr } }),
+    );
+  });
+
+  it('does not call user.findUnique after the upsert (removed extra query)', async () => {
+    const req = mockRequest({ walletAddress: WALLET });
+    await POST(req);
+
+    // The PR removed the separate findUnique call — the upsert result is used directly
+    expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('state verification is case-insensitive for wallet address comparison', async () => {
+    mockVerifyState.mockReturnValue(WALLET.toUpperCase());
+
+    const req = mockRequest({ walletAddress: WALLET, state: 'case-token' });
+    const res = await POST(req);
+
+    // lowercase(WALLET.toUpperCase()) === WALLET — should succeed
+    expect(res.status).toBe(200);
+  });
 });

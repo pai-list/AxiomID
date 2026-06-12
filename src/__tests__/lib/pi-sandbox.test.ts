@@ -319,3 +319,109 @@ describe('initSandboxCompatibility — server-side guard', () => {
     // Not testable in jsdom — requires a Node/server-side environment.
   });
 });
+
+// -----------------------------------------------------------------------
+// Additional boundary / regression tests
+// -----------------------------------------------------------------------
+describe('patchPostMessageForSandbox — data passthrough', () => {
+  let spy: jest.Mock;
+
+  beforeEach(() => {
+    resetPatchFlag();
+    spy = jest.fn();
+    setOriginalPostMessage(spy);
+    patchPostMessageForSandbox();
+  });
+
+  afterEach(() => {
+    resetPatchFlag();
+    Object.defineProperty(window, 'postMessage', {
+      value: jest.fn(),
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  it('forwards message data unchanged for Pi origin rewrite', () => {
+    window.postMessage({ key: 'value' }, 'https://app-cdn.minepi.com');
+    expect(spy).toHaveBeenCalledWith({ key: 'value' }, window.location.origin);
+  });
+
+  it('forwards message data unchanged for non-Pi origin passthrough', () => {
+    window.postMessage({ key: 'other' }, 'https://example.com');
+    expect(spy).toHaveBeenCalledWith({ key: 'other' }, 'https://example.com');
+  });
+
+  it('handles undefined targetOriginOrOptions by passing through to original', () => {
+    // Calling with no second argument — should not throw
+    expect(() => (window.postMessage as any)('msg', undefined)).not.toThrow();
+    expect(spy).toHaveBeenCalledWith('msg', undefined);
+  });
+});
+
+describe('listenForPiSDKMessages — response payload fields', () => {
+  beforeAll(() => {
+    listenForPiSDKMessages();
+  });
+
+  it('response payload includes frontend_url and development_url fields', async () => {
+    const postMessageSpy = jest.fn();
+    const fakeSource = { postMessage: postMessageSpy } as any;
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: JSON.stringify({
+          type: '@pi:app:sdk:communication_information_request',
+          id: 'url-check',
+          payload: {},
+        }),
+        origin: 'https://app-cdn.minepi.com',
+        source: fakeSource,
+      }),
+    );
+
+    await Promise.resolve();
+
+    const parsed = JSON.parse(postMessageSpy.mock.calls[0][0]);
+    expect(parsed.payload).toHaveProperty('frontend_url');
+    expect(parsed.payload).toHaveProperty('development_url');
+  });
+
+  it('echoes the request id in the response', async () => {
+    const postMessageSpy = jest.fn();
+    const fakeSource = { postMessage: postMessageSpy } as any;
+
+    const uniqueId = 'unique-id-42';
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: JSON.stringify({
+          type: '@pi:app:sdk:communication_information_request',
+          id: uniqueId,
+          payload: { slug: 'testslug', name: 'Test App' },
+        }),
+        origin: 'https://sdk.minepi.com',
+        source: fakeSource,
+      }),
+    );
+
+    await Promise.resolve();
+
+    const parsed = JSON.parse(postMessageSpy.mock.calls[0][0]);
+    expect(parsed.id).toBe(uniqueId);
+  });
+
+  it('does not respond when source is null', () => {
+    expect(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: JSON.stringify({
+            type: '@pi:app:sdk:communication_information_request',
+            id: 'null-source',
+          }),
+          origin: 'https://minepi.com',
+          source: null,
+        }),
+      );
+    }).not.toThrow();
+  });
+});

@@ -405,4 +405,64 @@ describe('POST /api/pi/kya/claim', () => {
     const updateCall = mockPrisma.user.update.mock.calls[0][0];
     expect(updateCall.data.metadata).toBeUndefined();
   });
+
+  // ----------------------------------------------------------------
+  // Additional boundary / regression tests
+  // ----------------------------------------------------------------
+  it('new user response includes did, walletAddress, and kycStatus', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'resp-check',
+      walletAddress: 'pi:respcheck',
+      kycStatus: 'PENDING',
+      did: 'did:axiom:axiomid.app:pi-mock-pi-uid',
+    } as any);
+
+    const req = mockPostRequest({ username: 'respcheck' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(201);
+    expect(data.walletAddress).toBe('pi:respcheck');
+    expect(data.kycStatus).toBe('PENDING');
+    expect(data.did).toBe('did:axiom:axiomid.app:pi-mock-pi-uid');
+  });
+
+  it('metadata is valid JSON string containing displayName key', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'json-check',
+      walletAddress: 'pi:jsoncheck',
+      kycStatus: 'PENDING',
+      did: 'did:axiom:axiomid.app:pi-mock-pi-uid',
+    } as any);
+
+    const req = mockPostRequest({ username: 'jsoncheck', name: 'Some Name' });
+    await POST(req);
+
+    const createCall = mockPrisma.user.create.mock.calls[0][0];
+    const parsed = JSON.parse(createCall.data.metadata);
+    expect(parsed).toHaveProperty('displayName', 'Some Name');
+  });
+
+  it('new user walletAddress uses username (pi:<username>), not piUid', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockResolvedValue({
+      id: 'wallet-check',
+      walletAddress: 'pi:walletcheck',
+      kycStatus: 'PENDING',
+      did: 'did:axiom:axiomid.app:pi-mock-pi-uid',
+    } as any);
+
+    const req = mockPostRequest({ username: 'walletcheck' });
+    await POST(req);
+
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          walletAddress: 'pi:walletcheck',
+        }),
+      }),
+    );
+  });
 });

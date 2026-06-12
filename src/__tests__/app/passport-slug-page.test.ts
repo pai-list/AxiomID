@@ -439,3 +439,83 @@ describe("getAgentData (PR updated) — walletAddress in response", () => {
     expect(result.walletAddress).toBe("pi:ghost");
   });
 });
+
+// -------------------------------------------------------------------------
+// Additional regression / boundary tests for PR changes
+// -------------------------------------------------------------------------
+describe("getAgentData (PR updated) — DID fallback for unknown users", () => {
+  it("returns a non-empty DID string for unknown users", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+    const result = await getAgentDataUpdated("unknownslug");
+    expect(typeof result.did).toBe("string");
+    expect(result.did.length).toBeGreaterThan(0);
+  });
+
+  it("returns user.did when it is set (no fallback used)", async () => {
+    const userDid = "did:axiom:axiomid.app:pi-known-user";
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({
+      id: "kd1",
+      piUsername: "knownuser",
+      walletAddress: "pi:knownuser",
+      kycStatus: "VERIFIED",
+      tier: "Citizen",
+      xp: 100,
+      createdAt: new Date(),
+      did: userDid,
+      agent: null,
+    });
+    const result = await getAgentDataUpdated("knownuser");
+    expect(result.did).toBe(userDid);
+  });
+
+  it("uses fallback DID when user.did is null", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({
+      id: "nd1",
+      piUsername: "nodiduser",
+      walletAddress: "pi:nodiduser",
+      kycStatus: "NONE",
+      tier: "Visitor",
+      xp: 0,
+      createdAt: new Date(),
+      did: null,
+      agent: null,
+    });
+    const result = await getAgentDataUpdated("nodiduser");
+    // Fallback DID uses slug: did:axiom:axiomid.app:nodiduser
+    expect(result.did).toContain("nodiduser");
+  });
+});
+
+describe("getAgentData (PR updated) — trustScore calculation", () => {
+  it("caps trustScore at 100 for very high xp", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({
+      id: "ts1",
+      piUsername: "highxpuser",
+      walletAddress: "pi:highxpuser",
+      kycStatus: "VERIFIED",
+      tier: "Sovereign",
+      xp: 9999,
+      createdAt: new Date(),
+      did: null,
+      agent: null,
+    });
+    const result = await getAgentDataUpdated("highxpuser");
+    expect(result.trustScore).toBe(100);
+  });
+
+  it("returns trustScore of 0 for a user with 0 xp", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValue({
+      id: "ts2",
+      piUsername: "zeroxpuser",
+      walletAddress: "pi:zeroxpuser",
+      kycStatus: "NONE",
+      tier: "Visitor",
+      xp: 0,
+      createdAt: new Date(),
+      did: null,
+      agent: null,
+    });
+    const result = await getAgentDataUpdated("zeroxpuser");
+    expect(result.trustScore).toBe(0);
+  });
+});

@@ -145,4 +145,43 @@ describe('createAxiomDid', () => {
     const result = createAxiomDid('café');
     expect(result).toBe('did:axiom:axiomid.app:caf');
   });
+
+  // -------------------------------------------------------------------
+  // Additional boundary / regression cases
+  // -------------------------------------------------------------------
+  it('handles numeric-only subject', () => {
+    expect(createAxiomDid('12345')).toBe('did:axiom:axiomid.app:12345');
+  });
+
+  it('preserves underscore in subject', () => {
+    expect(createAxiomDid('user_name')).toBe('did:axiom:axiomid.app:user_name');
+  });
+
+  it('does not collapse multiple allowed characters (dots, underscores)', () => {
+    expect(createAxiomDid('a.b_c-d')).toBe('did:axiom:axiomid.app:a.b_c-d');
+  });
+
+  it('truncates at exactly 96 chars when input is 97 chars long', () => {
+    const input = 'a'.repeat(97);
+    const result = createAxiomDid(input);
+    const segment = result.replace('did:axiom:axiomid.app:', '');
+    expect(segment.length).toBe(96);
+  });
+
+  it('handles pi: prefix followed by uppercase alphanumeric uid', () => {
+    // Entire subject is lowercased before prefix substitution, so "PI:" won't
+    // match the prefix regex (which expects lowercase "pi:").
+    // Actual pi: prefix is already lowercase in source.
+    expect(createAxiomDid('pi:UPPERUID')).toBe('did:axiom:axiomid.app:pi-upperuid');
+  });
+
+  it('generates unique DIDs for two different wallet addresses', () => {
+    const a = createAxiomDid('pi:user-a');
+    const b = createAxiomDid('pi:user-b');
+    expect(a).not.toBe(b);
+  });
+
+  it('handles demo: prefix with dashes in uid', () => {
+    expect(createAxiomDid('demo:abc-def-123')).toBe('did:axiom:axiomid.app:demo-abc-def-123');
+  });
 });

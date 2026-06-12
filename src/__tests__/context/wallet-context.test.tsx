@@ -803,3 +803,144 @@ describe("WalletProvider — did field on User (PR addition)", () => {
     expect(ctx.user.did).toBeNull();
   });
 });
+
+// -------------------------------------------------------------------------
+// Additional regression / boundary tests for PR changes
+// -------------------------------------------------------------------------
+
+describe("WalletProvider — callAgentRoute refactor (PR addition)", () => {
+  const originalSandboxEnv = process.env.NEXT_PUBLIC_PI_SANDBOX;
+  let mockFetch: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    delete (window as any).Pi;
+    process.env.NEXT_PUBLIC_PI_SANDBOX = "false";
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    process.env.NEXT_PUBLIC_PI_SANDBOX = originalSandboxEnv;
+  });
+
+  function AgentConsumer({ onUpdate }: { onUpdate: (val: ReturnType<typeof useWallet>) => void }) {
+    const wallet = useWallet();
+    React.useEffect(() => { onUpdate(wallet); }, [wallet, onUpdate]);
+    return (
+      <div>
+        <button data-testid="create-agent" onClick={() => void wallet.createAgent("MyAgent")}>
+          Create Agent
+        </button>
+        <button data-testid="activate-agent" onClick={() => void wallet.activateAgent()}>
+          Activate
+        </button>
+        <button data-testid="pause-agent" onClick={() => void wallet.pauseAgent()}>
+          Pause
+        </button>
+      </div>
+    );
+  }
+
+  it("createAgent returns false when user is not logged in", async () => {
+    let ctx: any;
+    render(
+      <WalletProvider>
+        <AgentConsumer onUpdate={(v) => { ctx = v; }} />
+      </WalletProvider>
+    );
+    await waitFor(() => expect(ctx.isLoading).toBe(false));
+
+    const result = await act(async () => ctx.createAgent("TestAgent"));
+    expect(result).toBe(false);
+  });
+
+  it("activateAgent returns false when user is not logged in", async () => {
+    let ctx: any;
+    render(
+      <WalletProvider>
+        <AgentConsumer onUpdate={(v) => { ctx = v; }} />
+      </WalletProvider>
+    );
+    await waitFor(() => expect(ctx.isLoading).toBe(false));
+
+    const result = await act(async () => ctx.activateAgent());
+    expect(result).toBe(false);
+  });
+
+  it("pauseAgent returns false when user is not logged in", async () => {
+    let ctx: any;
+    render(
+      <WalletProvider>
+        <AgentConsumer onUpdate={(v) => { ctx = v; }} />
+      </WalletProvider>
+    );
+    await waitFor(() => expect(ctx.isLoading).toBe(false));
+
+    const result = await act(async () => ctx.pauseAgent());
+    expect(result).toBe(false);
+  });
+});
+
+describe("WalletProvider — logout clears piAccessToken state", () => {
+  const originalSandboxEnv = process.env.NEXT_PUBLIC_PI_SANDBOX;
+  let mockFetch: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
+    delete (window as any).Pi;
+    process.env.NEXT_PUBLIC_PI_SANDBOX = "false";
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    process.env.NEXT_PUBLIC_PI_SANDBOX = originalSandboxEnv;
+    sessionStorage.clear();
+  });
+
+  it("subsequent connectWallet calls after logout do not carry stale pi_access_token in localStorage", async () => {
+    localStorage.setItem("axiomid_wallet", "demo:staletest");
+    localStorage.setItem("pi_access_token", "old-token");
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "stale-user",
+        walletAddress: "demo:staletest",
+        xp: 0,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+        piUsername: null,
+        agent: null,
+      }),
+    });
+
+    let ctx: any;
+    const LogoutCheck = ({ onUpdate }: { onUpdate: (v: any) => void }) => {
+      const wallet = useWallet();
+      React.useEffect(() => { onUpdate(wallet); }, [wallet, onUpdate]);
+      return <button data-testid="lo" onClick={wallet.logout}>Logout</button>;
+    };
+
+    const { getByTestId } = render(
+      <WalletProvider>
+        <LogoutCheck onUpdate={(v) => { ctx = v; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => expect(ctx.user).not.toBeNull());
+
+    await act(async () => { getByTestId("lo").click(); });
+
+    // After logout, localStorage should have both keys removed
+    expect(localStorage.getItem("pi_access_token")).toBeNull();
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+  });
+});

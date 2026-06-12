@@ -295,3 +295,144 @@ describe('POST /api/auth/pi', () => {
     expect(data.did).toBe('did:axiom:axiomid.app:pi-response-uid');
   });
 });
+
+// -----------------------------------------------------------------------
+// PR refactor: route now uses prisma.user.upsert (not findUnique + create/update)
+// These tests correctly verify the upsert-based implementation.
+// -----------------------------------------------------------------------
+describe('POST /api/auth/pi — upsert-based DID generation (PR refactor)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    global.fetch = jest.fn();
+    // The PR changed the route to use upsert. Add the mock here so assertions work.
+    (mockPrisma.user as any).upsert = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('calls upsert with did and didMethod for a new pi: wallet', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'upsert-uid' }),
+    });
+
+    (mockPrisma.user as any).upsert.mockResolvedValue({
+      id: 'upsert-user',
+      walletAddress: 'pi:upsert-uid',
+      piUid: 'upsert-uid',
+      piUsername: 'upsertuser',
+      xp: 0,
+      tier: 'Visitor',
+      did: 'did:axiom:axiomid.app:pi-upsert-uid',
+      didMethod: 'did:axiom',
+      kycStatus: 'NONE',
+      agent: null,
+    });
+
+    const req = mockRequest({ accessToken: 'token', uid: 'upsert-uid', username: 'upsertuser' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect((mockPrisma.user as any).upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { piUid: 'upsert-uid' },
+        create: expect.objectContaining({
+          did: 'did:axiom:axiomid.app:pi-upsert-uid',
+          didMethod: 'did:axiom',
+        }),
+        update: expect.objectContaining({
+          did: 'did:axiom:axiomid.app:pi-upsert-uid',
+          didMethod: 'did:axiom',
+        }),
+      }),
+    );
+    expect(data.did).toBe('did:axiom:axiomid.app:pi-upsert-uid');
+  });
+
+  it('derives walletAddress from pi:uid when clientWalletAddress is not provided', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'derived-uid' }),
+    });
+
+    (mockPrisma.user as any).upsert.mockResolvedValue({
+      id: 'derived-user',
+      walletAddress: 'pi:derived-uid',
+      piUid: 'derived-uid',
+      piUsername: 'deriveduser',
+      xp: 0,
+      tier: 'Visitor',
+      did: 'did:axiom:axiomid.app:pi-derived-uid',
+      didMethod: 'did:axiom',
+      kycStatus: 'NONE',
+      agent: null,
+    });
+
+    const req = mockRequest({ accessToken: 'token', uid: 'derived-uid', username: 'deriveduser' });
+    await POST(req);
+
+    expect((mockPrisma.user as any).upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          walletAddress: 'pi:derived-uid',
+        }),
+      }),
+    );
+  });
+
+  it('uses clientWalletAddress for DID when provided', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'custom-uid' }),
+    });
+
+    (mockPrisma.user as any).upsert.mockResolvedValue({
+      id: 'custom-user',
+      walletAddress: 'GCUSTOM',
+      piUid: 'custom-uid',
+      piUsername: 'customuser',
+      xp: 0,
+      tier: 'Visitor',
+      did: 'did:axiom:axiomid.app:gcustom',
+      didMethod: 'did:axiom',
+      kycStatus: 'NONE',
+      agent: null,
+    });
+
+    const req = mockRequest({
+      accessToken: 'token',
+      uid: 'custom-uid',
+      username: 'customuser',
+      walletAddress: 'GCUSTOM',
+    });
+    await POST(req);
+
+    expect((mockPrisma.user as any).upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          walletAddress: 'GCUSTOM',
+          did: 'did:axiom:axiomid.app:gcustom',
+        }),
+      }),
+    );
+  });
+
+  it('returns 500 when upsert throws', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'err-uid' }),
+    });
+
+    (mockPrisma.user as any).upsert.mockRejectedValue(new Error('upsert failed'));
+
+    const req = mockRequest({ accessToken: 'token', uid: 'err-uid', username: 'erruser' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.code).toBe('INTERNAL_ERROR');
+  });
+});
