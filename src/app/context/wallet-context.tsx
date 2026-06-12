@@ -107,7 +107,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("pi_access_token");
       localStorage.removeItem("axiomid_wallet");
-      localStorage.setItem("axiomid_logged_out", "true");
     }
 
     setUser(null);
@@ -137,16 +136,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const createAgent = useCallback(async (name?: string) => {
+  const callAgentApi = useCallback(async (endpoint: string, body?: object): Promise<boolean> => {
     if (!user) return false;
     try {
-      const res = await fetch("/api/agent", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
-        body: JSON.stringify({ name }),
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       });
       if (!res.ok) return false;
       await refreshUser();
@@ -156,41 +155,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [user, refreshUser, piAccessToken]);
 
-  const activateAgent = useCallback(async () => {
-    if (!user) return false;
-    try {
-      const res = await fetch("/api/agent/activate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [user, refreshUser, piAccessToken]);
-
-  const pauseAgent = useCallback(async () => {
-    if (!user) return false;
-    try {
-      const res = await fetch("/api/agent/pause", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [user, refreshUser, piAccessToken]);
+  const createAgent = useCallback((name?: string) => callAgentApi("/api/agent", { name }), [callAgentApi]);
+  const activateAgent = useCallback(() => callAgentApi("/api/agent/activate"), [callAgentApi]);
+  const pauseAgent = useCallback(() => callAgentApi("/api/agent/pause"), [callAgentApi]);
 
   const connectDemoWallet = useCallback(async (walletAddress: string) => {
     localStorage.setItem("axiomid_wallet", walletAddress);
@@ -276,22 +243,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
       localStorage.setItem("axiomid_wallet", walletAddress);
-      setUser({
-        id: data.userId,
-        walletAddress: data.walletAddress,
-        stellarAddress: stellarAddress,
-        xp: data.xp,
-        tier: data.tier,
-        trustScore: Math.min(100, Math.floor((data.xp || 0) / 10)),
-        createdAt: new Date().toISOString(),
-        piUsername: data.piUsername || piUser.username,
-        actions: [],
-        agent: null,
-      });
+      setUser(buildUserFromApiData(
+        { ...data, piUsername: data.piUsername || piUser.username },
+        { stellarAddress },
+      ));
       pushLog(`✅ تم توثيق المحفظة بنجاح!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
-      console.error("Auth error:", message);
+
       pushLog(`❌ خطأ: ${message}`);
       setError(message);
     } finally {
