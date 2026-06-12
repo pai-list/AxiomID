@@ -68,13 +68,17 @@ function isDemoWalletAddress(walletAddress?: string | null): boolean {
 function getStoredWallet(): string | null {
   if (typeof window === "undefined") return null;
 
-  const walletAddress = localStorage.getItem("axiomid_wallet");
-  if (isDemoWalletAddress(walletAddress) && !isDemoWalletAllowed()) {
-    localStorage.removeItem("axiomid_wallet");
+  try {
+    const walletAddress = localStorage.getItem("axiomid_wallet");
+    if (isDemoWalletAddress(walletAddress) && !isDemoWalletAllowed()) {
+      localStorage.removeItem("axiomid_wallet");
+      return null;
+    }
+    return walletAddress;
+  } catch (e) {
+    console.error("Failed to access localStorage:", e);
     return null;
   }
-
-  return walletAddress;
 }
 
 function createDemoWalletAddress(): string {
