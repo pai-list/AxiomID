@@ -61,6 +61,35 @@ function checkPiBrowser(): boolean {
   return false;
 }
 
+interface ApiResponse {
+  userId: string;
+  walletAddress: string;
+  tier: Tier;
+  xp: number;
+  did?: string | null;
+  kycStatus?: string | null;
+  piUsername?: string | null;
+  stellarAddress?: string | null;
+  trustScore?: number;
+  createdAt?: string;
+  agent?: User['agent'];
+}
+
+function mapApiUser(data: ApiResponse): User {
+  return {
+    id: data.userId,
+    walletAddress: data.walletAddress,
+    stellarAddress: data.stellarAddress || null,
+    xp: data.xp,
+    tier: data.tier,
+    trustScore: Math.min(100, Math.floor((data.xp || 0) / 10)),
+    createdAt: data.createdAt || new Date().toISOString(),
+    piUsername: data.piUsername,
+    actions: [],
+    agent: data.agent || null,
+  };
+}
+
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);

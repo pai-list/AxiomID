@@ -26,12 +26,11 @@ export async function POST(request: NextRequest) {
 
   const validation = KyaClaimSchema.safeParse(body);
   if (!validation.success) {
-    const error = validation.error as any;
-    const issues = error.issues || error.errors;
+    const issues = validation.error.issues;
     return apiError('VALIDATION_ERROR', issues[0].message);
   }
 
-  const { username, name } = validation.data;
+  const { username } = validation.data;
 
   try {
     const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
           walletAddress: `pi:${username}`,
           kycStatus: 'PENDING',
           did: `did:axiom:${user.piUid}`,
-          name: name || user.piUsername || username,
         },
       });
 
@@ -62,7 +60,7 @@ export async function POST(request: NextRequest) {
         kycStatus: 'PENDING',
         kycProvider: 'pi_network',
         did: existing.did || `did:axiom:${user.piUid}`,
-        name: name || existing.piUsername || existing.name,
+        piUsername: existing.piUsername || username,
       },
     });
 

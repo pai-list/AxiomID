@@ -226,7 +226,7 @@ cd axiomid-project
 # 2. Install dependencies
 npm install
 
-# 3. Initialize Database (SQLite)
+# 3. Initialize Database (PostgreSQL)
 npx prisma db push
 
 # 4. Run development server

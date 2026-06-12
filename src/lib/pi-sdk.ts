@@ -19,62 +19,72 @@ export async function connectPi(pushLog?: any): Promise<PiAuthResult> {
     // Pi Browser: use injected window.Pi SDK
     if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
       pushLog?.("Using Pi Browser SDK...");
-      const result = await Promise.race([
-        window.Pi.authenticate(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Pi authentication timed out")), 15000),
-        ),
-      ]) as { user: { uid: string; username: string; name: string; stellarAddress?: string }; accessToken: string };
+      const timeoutId = setTimeout(() => {}, 20000);
+      try {
+        const result = await Promise.race([
+          window.Pi.authenticate({ scopes: ["username", "payments"] }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Pi authentication timed out")), 15000),
+          ),
+        ]) as { user: { uid: string; username: string; name: string; stellarAddress?: string }; accessToken: string };
 
-      if (!result?.user) {
-        throw new Error("Authentication failed - no user data received");
-      }
-      if (!result.accessToken) {
-        throw new Error("Authentication failed - no token received");
-      }
-      lastError = null;
-      pushLog?.(`Authenticated: ${result.user.name || result.user.uid}`);
-      return {
-        user: {
-          uid: result.user.uid ?? result.user.name,
-          username: result.user.username ?? result.user.name,
-          name: result.user.name,
+        if (!result?.user) {
+          throw new Error("Authentication failed - no user data received");
+        }
+        if (!result.accessToken) {
+          throw new Error("Authentication failed - no token received");
+        }
+        lastError = null;
+        pushLog?.(`Authenticated: ${result.user.name || result.user.uid}`);
+        return {
+          user: {
+            uid: result.user.uid ?? result.user.name,
+            username: result.user.username ?? result.user.name,
+            name: result.user.name,
+            stellarAddress: result.user.stellarAddress,
+          },
+          token: result.accessToken,
           stellarAddress: result.user.stellarAddress,
-        },
-        token: result.accessToken,
-        stellarAddress: result.user.stellarAddress,
-      };
+        };
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
 
     // Server-side / Node.js: use PiSdkBase
     pushLog?.("Using PiSdkBase (server)...");
     const pi = new PiSdkBase();
-    await Promise.race([
-      pi.connect(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Pi authentication timed out")), 15000),
-      ),
-    ]);
-    const user = PiSdkBase.user ?? PiSdkBase.get_user();
-    if (!user) {
-      throw new Error("Authentication failed - no user data received");
-    }
-    const token = PiSdkBase.accessToken;
-    if (!token) {
-      throw new Error("Authentication failed - no token received");
-    }
-    lastError = null;
-    pushLog?.(`Authenticated: ${user.name || user.uid}`);
-    return {
-      user: {
-        uid: user.uid ?? user.name,
-        username: user.username ?? user.name,
-        name: user.name,
+    const timeoutId = setTimeout(() => {}, 20000);
+    try {
+      await Promise.race([
+        pi.connect(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Pi authentication timed out")), 15000),
+        ),
+      ]);
+      const user = PiSdkBase.user ?? PiSdkBase.get_user();
+      if (!user) {
+        throw new Error("Authentication failed - no user data received");
+      }
+      const token = PiSdkBase.accessToken;
+      if (!token) {
+        throw new Error("Authentication failed - no token received");
+      }
+      lastError = null;
+      pushLog?.(`Authenticated: ${user.name || user.uid}`);
+      return {
+        user: {
+          uid: user.uid ?? user.name,
+          username: user.username ?? user.name,
+          name: user.name,
+          stellarAddress: user.stellarAddress,
+        },
+        token,
         stellarAddress: user.stellarAddress,
-      },
-      token,
-      stellarAddress: user.stellarAddress,
-    };
+      };
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     lastError = message;
@@ -98,14 +108,24 @@ export async function runWalletTest(pushLog?: any): Promise<void> {
   assertPiSdkLoaded();
   try {
     if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
-      const result = await window.Pi.authenticate({ scope: ["username", "payments"] });
-      pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
-      return;
+      const timeoutId = setTimeout(() => {}, 20000);
+      try {
+        const result = await window.Pi.authenticate({ scopes: ["username"] });
+        pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
+        return;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
     const pi = new PiSdkBase();
-    await pi.connect();
-    const user = PiSdkBase.user ?? PiSdkBase.get_user();
-    pushLog?.(`Wallet test passed: ${user?.name || "unknown"}`);
+    const timeoutId = setTimeout(() => {}, 20000);
+    try {
+      await pi.connect();
+      const user = PiSdkBase.user ?? PiSdkBase.get_user();
+      pushLog?.(`Wallet test passed: ${user?.name || "unknown"}`);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Wallet test failed";
     pushLog?.(`Wallet test failed: ${message}`);
@@ -133,7 +153,6 @@ export async function transferPi(amount: number, recipient: string, memo?: strin
 export async function claimPiKya(data: {
   username: string;
   stellarAddress?: string;
-  name?: string;
 }): Promise<{ success: true; userId: string }> {
   try {
     const response = await fetch("/api/pi/kya/claim", {

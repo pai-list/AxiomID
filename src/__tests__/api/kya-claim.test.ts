@@ -177,7 +177,7 @@ describe('POST /api/pi/kya/claim', () => {
     expect(data.code).toBe('INTERNAL_ERROR');
   });
 
-  it('includes optional name field in creation data when provided', async () => {
+  it('sets piUsername from username when creating new user', async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
     mockPrisma.user.create.mockResolvedValue({
       id: 'named-user',
@@ -186,14 +186,14 @@ describe('POST /api/pi/kya/claim', () => {
       did: 'did:axiom:mock-pi-uid',
     } as any);
 
-    const req = mockPostRequest({ username: 'nameduser', name: 'John Doe' });
+    const req = mockPostRequest({ username: 'nameduser' });
     const res = await POST(req);
 
     expect(res.status).toBe(201);
     expect(mockPrisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          name: 'John Doe',
+          piUsername: 'nameduser',
         }),
       })
     );
