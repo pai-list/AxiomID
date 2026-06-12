@@ -350,3 +350,148 @@ describe("Dashboard — header", () => {
     ).toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Additional regression / boundary tests
+// ---------------------------------------------------------------------------
+
+describe("Dashboard — connect button interaction", () => {
+  it("calls connectWallet when the connect button is clicked", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({ isDemoWalletEnabled: true, connectWallet }),
+    );
+    render(<Dashboard />);
+
+    screen.getByRole("button", { name: /CONNECT WALLET/i }).click();
+
+    expect(connectWallet).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT call connectWallet when the button is disabled (shouldShowPiBrowserPrompt=true)", () => {
+    const connectWallet = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({
+        isDemoWalletEnabled: false,
+        isPiBrowser: false,
+        connectWallet,
+      }),
+    );
+    render(<Dashboard />);
+
+    screen.getByRole("button", { name: /CONNECT WALLET/i }).click();
+
+    // Button is disabled so onClick should not fire
+    expect(connectWallet).not.toHaveBeenCalled();
+  });
+});
+
+describe("Dashboard — footer navigation", () => {
+  it("always renders all four footer tabs", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx());
+    render(<Dashboard />);
+
+    expect(screen.getByText("Passport")).toBeInTheDocument();
+    expect(screen.getByText("Actions")).toBeInTheDocument();
+    expect(screen.getByText("Terminal")).toBeInTheDocument();
+    expect(screen.getByText("Marketplace")).toBeInTheDocument();
+  });
+});
+
+describe("Dashboard — piUsername edge cases", () => {
+  it("falls back to 'Agent' when piUsername is an empty string", () => {
+    const userEmptyName = {
+      id: "user-empty",
+      walletAddress: "pi:emptyname",
+      piUsername: "",
+      xp: 10,
+      tier: "Visitor" as any,
+      trustScore: 1,
+      createdAt: new Date().toISOString(),
+      actions: [],
+      agent: null,
+    };
+
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({ user: userEmptyName, isPiBrowser: true }),
+    );
+    render(<Dashboard />);
+
+    expect(
+      screen.getByRole("heading", { name: /Welcome back, Agent/i }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("Dashboard — error styling", () => {
+  it("renders error in red container when shouldShowPiBrowserPrompt is false", () => {
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({
+        isDemoWalletEnabled: true,
+        isPiBrowser: false,
+        error: "Connection failed",
+      }),
+    );
+    render(<Dashboard />);
+
+    const errorEl = screen.getByText("Connection failed");
+    expect(errorEl).toBeInTheDocument();
+    // The amber Pi Browser prompt should NOT appear alongside a normal error
+    expect(
+      screen.queryByText(/Demo wallet is disabled for this deployment/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("amber prompt takes precedence over error when shouldShowPiBrowserPrompt is true", () => {
+    // Even if error is set, shouldShowPiBrowserPrompt=true shows the amber prompt, not the error div
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({
+        isDemoWalletEnabled: false,
+        isPiBrowser: false,
+        error: "some other error",
+      }),
+    );
+    render(<Dashboard />);
+
+    expect(
+      screen.getByText("افتح التطبيق من Pi Browser"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Demo wallet is disabled for this deployment/i),
+    ).toBeInTheDocument();
+    // The generic error text should NOT appear since the amber block takes priority
+    expect(screen.queryByText("some other error")).not.toBeInTheDocument();
+  });
+});
+
+describe("Dashboard — level progress bar", () => {
+  it("renders level progress bar with correct width when levelProgress is set", () => {
+    const piUser = {
+      id: "prog-user",
+      walletAddress: "pi:proguser",
+      piUsername: "proguser",
+      xp: 150,
+      tier: "Citizen" as any,
+      trustScore: 15,
+      createdAt: new Date().toISOString(),
+      actions: [],
+      agent: null,
+    };
+
+    mockUseWallet.mockReturnValue(
+      defaultWalletCtx({
+        user: piUser,
+        levelProgress: 60,
+        isPiBrowser: true,
+      }),
+    );
+    render(<Dashboard />);
+
+    // The progress bar div has an inline style with width
+    const progressBar = document.querySelector(
+      "[style*='width: 60%']",
+    ) as HTMLElement | null;
+    expect(progressBar).not.toBeNull();
+    expect(progressBar?.style.width).toBe("60%");
+  });
+});

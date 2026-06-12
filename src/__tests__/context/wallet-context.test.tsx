@@ -847,4 +847,140 @@ describe("WalletProvider & WalletContext", () => {
     expect(contextValue.user).toBeNull();
     expect(mockFetch).not.toHaveBeenCalled();
   });
+
+  // -------------------------------------------------------------------------
+  // Additional regression / boundary tests
+  // -------------------------------------------------------------------------
+
+  it("connectWallet in external browser (demo enabled): sets error when /api/auth/connect returns non-ok", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_WALLET = "true";
+
+    // /api/auth/connect returns a server error
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}),
+    });
+
+    let contextValue: any;
+    const { getByTestId } = render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    await act(async () => {
+      getByTestId("connect-btn").click();
+    });
+
+    await waitFor(() => expect(contextValue.isConnecting).toBe(false));
+
+    // connectDemoWallet throws "Demo auth failed" → connectWallet catches and sets error
+    expect(contextValue.error).toBe("Demo auth failed");
+    expect(contextValue.user).toBeNull();
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+  });
+
+  it("connectWallet in Pi Browser sets error when connectPi throws a generic (non-NOT_IN_PI_BROWSER) error", async () => {
+    setUserAgent("Pi Browser; Android; minepi");
+
+    // connectPi throws a generic network error (not NOT_IN_PI_BROWSER)
+    mockConnectPi.mockRejectedValueOnce(new Error("Pi SDK network timeout"));
+
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    // The generic error should be propagated to context.error
+    expect(contextValue.error).toBe("Pi SDK network timeout");
+    expect(contextValue.isConnecting).toBe(false);
+    expect(contextValue.user).toBeNull();
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("isDemoWallet is false when no user is connected (user is null)", async () => {
+    // No stored wallet, no Pi Browser — user remains null
+    let contextValue: any;
+    render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    expect(contextValue.user).toBeNull();
+    expect(contextValue.isDemoWallet).toBe(false);
+  });
+
+  it("connectWallet clears the previous error before a new connection attempt", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_WALLET = "true";
+
+    // First attempt: fail
+    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({}) });
+
+    let contextValue: any;
+    const { getByTestId } = render(
+      <WalletProvider>
+        <TestConsumer
+          onUpdate={(val) => {
+            contextValue = val;
+          }}
+        />
+      </WalletProvider>,
+    );
+
+    await waitFor(() => expect(contextValue.isLoading).toBe(false));
+
+    await act(async () => {
+      getByTestId("connect-btn").click();
+    });
+    await waitFor(() => expect(contextValue.isConnecting).toBe(false));
+    expect(contextValue.error).not.toBeNull();
+
+    // Second attempt: succeed
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: {
+          userId: "demo-retry",
+          walletAddress: "demo:retry1",
+          xp: 0,
+          tier: "Visitor",
+          trustScore: 0,
+          createdAt: new Date().toISOString(),
+          piUsername: null,
+          actions: [],
+          agent: null,
+        },
+      }),
+    });
+
+    await act(async () => {
+      getByTestId("connect-btn").click();
+    });
+    await waitFor(() => expect(contextValue.isConnecting).toBe(false));
+
+    // Error should have been cleared before the second attempt resolved
+    expect(contextValue.error).toBeNull();
+    expect(contextValue.user).not.toBeNull();
+  });
 });
