@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { logger } from '@/lib/logger';
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess } from "@/lib/errors";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       claimedStampsCount: stamps.length,
     });
   } catch (error) {
-    console.error("[STAMP-GET] Database error:", error);
+    logger.error("[STAMP-GET] Database error:", error);
     return apiError("INTERNAL_ERROR", "Failed to retrieve stamps");
   }
 }

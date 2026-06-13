@@ -21,6 +21,13 @@ interface StatusDetails {
   };
 }
 
+/**
+ * Render the AxiomID Settings page, presenting sovereign profile, progression, verifiable social bindings, and the local action ledger.
+ *
+ * Shows a centered wallet connect prompt when no user is present; when a user is connected, renders the DID/wallet/KYC section, XP/tier progression, social identifier connect/inspect controls (with VC inspector and copy), and the cryptographic action ledger. Also manages dialog lifecycle, fetching of status/ledger details, and clipboard actions for VC payloads.
+ *
+ * @returns The page's JSX element: either a centered connect prompt (when no wallet is connected) or the full settings UI with profile, progression, social binding controls, ledger, and modal dialogs for claiming connections and inspecting/copying Verifiable Credential payloads.
+ */
 export default function SettingsPage() {
   const { user, connectWallet, claimAction } = useWallet();
   const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
@@ -108,17 +115,19 @@ export default function SettingsPage() {
   };
 
   const openVcModal = (actionType: string) => {
-    const action = user?.actions?.find((a) => a.type === actionType);
-    if (!action) return;
+    const stamp = user?.stamps?.find((s) => s.type === actionType);
+    if (!stamp) return;
     try {
-      // Action metadata stores the stringified W3C Verifiable Credential object
-      const parsedVc = JSON.parse(action.metadata || "{}");
+      // Stamp metadata stores the stringified W3C Verifiable Credential object
+      const parsedVc = JSON.parse(stamp.metadata || "{}");
+      if (parsedVc === null) {
+        throw new Error("Invalid or empty credential metadata");
+      }
       setActiveVc(parsedVc);
-      vcDialogRef.current?.showModal();
     } catch {
       setActiveVc({ error: "Failed to parse Verifiable Credential payload." });
-      vcDialogRef.current?.showModal();
     }
+    vcDialogRef.current?.showModal();
   };
 
   const copyVcPayload = () => {
@@ -129,8 +138,14 @@ export default function SettingsPage() {
   };
 
   const isPlatformConnected = (platform: "twitter" | "discord" | "google") => {
-    return !!user?.actions?.some((a) => a.type === `connect_${platform}`);
+    return !!user?.stamps?.some((s) => s.type === `connect_${platform}`);
   };
+
+  const PLATFORMS: { id: "twitter" | "discord" | "google"; emoji: string; label: string }[] = [
+    { id: "twitter", emoji: "🐦", label: "Twitter / X" },
+    { id: "discord", emoji: "💬", label: "Discord" },
+    { id: "google", emoji: "🔑", label: "Google Accounts" },
+  ];
 
   // XP Progress Calculation
   const xp = user?.xp || 0;
@@ -278,90 +293,37 @@ export default function SettingsPage() {
           </p>
 
           <div className="space-y-4">
-            {/* Twitter */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🐦</span>
+            {PLATFORMS.map(({ id, emoji, label }) => (
+              <div key={id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{emoji}</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">{label}</h4>
+                    <p className="text-xs text-gray-400">XP Reward: +50 XP</p>
+                  </div>
+                </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Twitter / X</h4>
-                  <p className="text-xs text-gray-400">XP Reward: +50 XP</p>
+                  {isPlatformConnected(id) ? (
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20">
+                        CONNECTED
+                      </span>
+                      <button onClick={() => openVcModal(`connect_${id}`)} className="btn-ghost text-xs px-2.5 py-1">
+                        INSPECT VC
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => openConnectModal(id)} className="btn-primary text-xs px-4 py-1.5">
+                      CONNECT
+                    </button>
+                  )}
                 </div>
               </div>
-              <div>
-                {isPlatformConnected("twitter") ? (
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20">
-                      CONNECTED
-                    </span>
-                    <button onClick={() => openVcModal("connect_twitter")} className="btn-ghost text-xs px-2.5 py-1">
-                      INSPECT VC
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => openConnectModal("twitter")} className="btn-primary text-xs px-4 py-1.5">
-                    CONNECT
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Discord */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">💬</span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Discord</h4>
-                  <p className="text-xs text-gray-400">XP Reward: +50 XP</p>
-                </div>
-              </div>
-              <div>
-                {isPlatformConnected("discord") ? (
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20">
-                      CONNECTED
-                    </span>
-                    <button onClick={() => openVcModal("connect_discord")} className="btn-ghost text-xs px-2.5 py-1">
-                      INSPECT VC
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => openConnectModal("discord")} className="btn-primary text-xs px-4 py-1.5">
-                    CONNECT
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Google */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🔑</span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Google Accounts</h4>
-                  <p className="text-xs text-gray-400">XP Reward: +50 XP</p>
-                </div>
-              </div>
-              <div>
-                {isPlatformConnected("google") ? (
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20">
-                      CONNECTED
-                    </span>
-                    <button onClick={() => openVcModal("connect_google")} className="btn-ghost text-xs px-2.5 py-1">
-                      INSPECT VC
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={() => openConnectModal("google")} className="btn-primary text-xs px-4 py-1.5">
-                    CONNECT
-                  </button>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
-        {/* Section 4: XP Ledger Logs */}
+
         <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <span className="text-yellow-500">📜</span> Cryptographic Action Ledger
