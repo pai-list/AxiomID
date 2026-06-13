@@ -63,6 +63,7 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
+  contain: layout style;
 }
 
 /* ============================================
@@ -94,6 +95,7 @@ body {
   animation: scanline 8s linear infinite;
   pointer-events: none;
   z-index: 50;
+  will-change: transform;
 }
 
 [data-theme="light"] .scanline {
@@ -112,12 +114,14 @@ body {
 .bento-card {
   background: var(--bg-card);
   border: 1px solid var(--card-border);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
   border-radius: 20px;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
   position: relative;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  will-change: transform;
+  contain: layout style;
 }
 
 .bento-card:hover {
@@ -433,6 +437,7 @@ body {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
 }
 
 @keyframes float {
