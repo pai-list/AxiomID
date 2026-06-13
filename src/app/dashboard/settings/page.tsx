@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useWallet } from "../../context/wallet-context";
+import { useLanguage } from "../../context/language-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
 import { createUserDid } from "@/lib/did";
@@ -31,6 +32,7 @@ interface StatusDetails {
  */
 export default function SettingsPage() {
   const { user, connectWallet, claimAction } = useWallet();
+  const { t } = useLanguage();
   const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -119,18 +121,18 @@ export default function SettingsPage() {
     try {
       const raw = stamp.metadata;
       if (!raw || typeof raw !== "string" || raw.trim() === "" || raw.trim() === "{}") {
-        setActiveVc({ error: "No Verifiable Credential data available for this stamp." });
+        setActiveVc({ error: t("vc_no_data") });
         vcDialogRef.current?.showModal();
         return;
       }
       const parsedVc = JSON.parse(raw);
       if (!parsedVc || typeof parsedVc !== "object" || Object.keys(parsedVc).length === 0) {
-        setActiveVc({ error: "Credential metadata is empty." });
+        setActiveVc({ error: t("vc_empty_metadata") });
       } else {
         setActiveVc(parsedVc);
       }
     } catch {
-      setActiveVc({ error: "Failed to parse Verifiable Credential payload." });
+      setActiveVc({ error: t("vc_parse_error") });
     }
     vcDialogRef.current?.showModal();
   };
@@ -171,13 +173,13 @@ export default function SettingsPage() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 flex items-center justify-center mx-auto mb-6">
             <span className="text-neon-green font-bold text-3xl">A</span>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Sovereign Settings</h2>
-          <p className="text-gray-400 mb-6 text-sm">Please connect your wallet to access profile details and link accounts.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('settings_sovereign_title')}</h2>
+          <p className="text-gray-400 mb-6 text-sm">{t('settings_wallet_prompt')}</p>
           <button onClick={connectWallet} className="btn-primary w-full py-3">
-            CONNECT WALLET
+            {t('connect_wallet')}
           </button>
           <div className="mt-6 text-xs text-gray-500 font-mono">
-            <Link href="/" className="hover:text-neon-green transition-colors">← Back to landing</Link>
+            <Link href="/" className="hover:text-neon-green transition-colors">{t('settings_back_landing')}</Link>
           </div>
         </div>
       </main>
@@ -196,12 +198,12 @@ export default function SettingsPage() {
               <span className="text-neon-green font-bold text-xl">A</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">AxiomID Settings</h1>
-              <p className="text-xs text-gray-400 font-mono">Manage sovereign keys & connections</p>
+              <h1 className="text-lg font-bold text-white">{t('settings_page_title')}</h1>
+              <p className="text-xs text-gray-400 font-mono">{t('settings_page_desc')}</p>
             </div>
           </div>
           <Link href="/dashboard" className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
-            ← DASHBOARD
+            {t('settings_dashboard_link')}
           </Link>
         </div>
       </header>
@@ -210,21 +212,21 @@ export default function SettingsPage() {
         {/* Section 1: Profile Details */}
         <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-neon-green">👤</span> Sovereign Profile
+            <span className="text-neon-green">👤</span> {t('settings_profile_title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">PI NETWORK ID</span>
+              <span className="text-gray-500 text-xs">{t('settings_pi_network_id')}</span>
               <p className="text-white text-base">{user.piUsername || "Authenticated Pioneer"}</p>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">STELLAR WALLET</span>
+              <span className="text-gray-500 text-xs">{t('settings_stellar_wallet')}</span>
               <p className="text-white text-xs truncate max-w-full text-ellipsis" title={user.walletAddress}>
                 {user.walletAddress}
               </p>
             </div>
             <div className="space-y-1 md:col-span-2">
-              <span className="text-gray-500 text-xs">SOVEREIGN DID</span>
+              <span className="text-gray-500 text-xs">{t('settings_sovereign_did')}</span>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -240,20 +242,20 @@ export default function SettingsPage() {
                   }}
                   className="btn-ghost text-xs px-2 py-1"
                 >
-                  COPY
+                  {t('settings_copy')}
                 </button>
               </div>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">IDENTITY STATUS (KYA)</span>
+              <span className="text-gray-500 text-xs">{t('settings_identity_status')}</span>
               <div>
                 {user.kycStatus === "VERIFIED" ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-neon-green/10 text-neon-green border border-neon-green/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neon-green" /> Verified Human
+                    <span className="w-1.5 h-1.5 rounded-full bg-neon-green" /> {t('settings_verified_human')}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> Pending KYC Claim
+                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> {t('settings_pending_kyc')}
                   </span>
                 )}
               </div>
@@ -265,14 +267,14 @@ export default function SettingsPage() {
         <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span className="text-electric-blue">⚡</span> Progression & Experience
+              <span className="text-electric-blue">⚡</span> {t('settings_progression_title')}
             </h2>
-            <span className="text-electric-blue font-mono text-sm">{xp} Total XP</span>
+            <span className="text-electric-blue font-mono text-sm">{xp} {t('total_xp')}</span>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <div>
-                <span className="text-gray-500 text-xs font-mono">CURRENT TIER</span>
+                <span className="text-gray-500 text-xs font-mono">{t('current_tier').toUpperCase()}</span>
                 <p className="text-2xl font-black text-white tracking-wider">{tier.toUpperCase()}</p>
               </div>
               <div className="text-right text-xs text-gray-400 font-mono">
@@ -295,10 +297,10 @@ export default function SettingsPage() {
         {/* Section 3: Social Binding & Credentials */}
         <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-axiom-purple">🔗</span> Verifiable Social Identifiers
+            <span className="text-axiom-purple">🔗</span> {t('settings_social_title')}
           </h2>
           <p className="text-xs text-gray-400 mb-6 font-mono">
-            Bind your profiles to generate W3C compliance credentials signed cryptographically by the protocol authority.
+            {t('settings_social_desc')}
           </p>
 
           <div className="space-y-4">
@@ -308,22 +310,22 @@ export default function SettingsPage() {
                   <span className="text-2xl">{emoji}</span>
                   <div>
                     <h4 className="text-sm font-bold text-white">{label}</h4>
-                    <p className="text-xs text-gray-400">XP Reward: +{xp} XP</p>
+                    <p className="text-xs text-gray-400">{t('settings_xp_reward')} +{xp} XP</p>
                   </div>
                 </div>
                 <div>
                   {isPlatformConnected(id) ? (
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 rounded text-[10px] bg-neon-green/10 text-neon-green border border-neon-green/20">
-                        CONNECTED
+                        {t('connected')}
                       </span>
                       <button onClick={() => openVcModal(`connect_${id}`)} className="btn-ghost text-xs px-2.5 py-1">
-                        INSPECT VC
+                        {t('inspect_vc')}
                       </button>
                     </div>
                   ) : (
                     <button onClick={() => openConnectModal(id)} className="btn-primary text-xs px-4 py-1.5">
-                      CONNECT
+                      {t('settings_connect_btn')}
                     </button>
                   )}
                 </div>
@@ -335,7 +337,7 @@ export default function SettingsPage() {
 
         <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-yellow-500">📜</span> Cryptographic Action Ledger
+            <span className="text-yellow-500">📜</span> {t('settings_ledger_title')}
           </h2>
           {detailsLoading ? (
             <div className="space-y-2 py-4">
@@ -343,15 +345,15 @@ export default function SettingsPage() {
               <div className="h-6 bg-white/5 rounded animate-pulse w-5/6" />
             </div>
           ) : !statusDetails || statusDetails.recentLedger.length === 0 ? (
-            <p className="text-sm text-gray-500 font-mono py-4 text-center">No transactions recorded in the local cache.</p>
+            <p className="text-sm text-gray-500 font-mono py-4 text-center">{t('settings_no_tx')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead>
                   <tr className="border-b border-white/10 text-gray-500 pb-2">
-                    <th className="py-2">TX OBJECTIVE</th>
-                    <th className="py-2 text-right">BALANCE SHIFT</th>
-                    <th className="py-2 text-right">TIMESTAMP</th>
+                    <th className="py-2">{t('settings_tx_objective')}</th>
+                    <th className="py-2 text-right">{t('settings_balance_shift')}</th>
+                    <th className="py-2 text-right">{t('settings_timestamp')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,22 +385,22 @@ export default function SettingsPage() {
       >
         <div className="p-6">
           <h3 id="connect-dialog-title" className="text-lg font-bold mb-2 flex items-center gap-2">
-            Link {activePlatform ? activePlatform.toUpperCase() : "Account"} Profile
+            {t('settings_link_profile').replace('{platform}', (activePlatform || "Account").toUpperCase())}
           </h3>
           <p className="text-xs text-gray-400 font-mono mb-4">
-            Type your username handle to build a verifiable social connection claim.
+            {t('settings_link_desc')}
           </p>
 
           <form onSubmit={handleConnectSubmit} className="space-y-4">
             <div className="space-y-1">
               <label htmlFor="handle-input" className="text-xs text-gray-400 font-mono">
-                {activePlatform === "google" ? "Email Address" : "Profile Handle"}
+                {activePlatform === "google" ? t('settings_link_email_label') : t('settings_link_handle_label')}
               </label>
               <input
                 id="handle-input"
                 type={activePlatform === "google" ? "email" : "text"}
                 required
-                placeholder={activePlatform === "google" ? "name@gmail.com" : "@cryptojoker"}
+                placeholder={activePlatform === "google" ? t('settings_link_email_placeholder') : t('settings_link_placeholder')}
                 value={handleInput}
                 onChange={(e) => setHandleInput(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-neon-green outline-none font-mono"
@@ -411,14 +413,14 @@ export default function SettingsPage() {
                 onClick={() => connectDialogRef.current?.close()}
                 className="btn-ghost text-xs px-4 py-2"
               >
-                CANCEL
+                {t('cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submittingClaim || !handleInput.trim()}
                 className="btn-primary text-xs px-4 py-2"
               >
-                {submittingClaim ? "SIGNING..." : "CONFIRM CLAIM"}
+                {submittingClaim ? t('settings_signing') : t('settings_confirm_claim')}
               </button>
             </div>
           </form>
@@ -435,10 +437,10 @@ export default function SettingsPage() {
       >
         <div className="p-6">
           <h3 id="vc-dialog-title" className="text-lg font-bold mb-1 flex items-center gap-2">
-            SocialIdentityCredential (W3C Standard)
+            {t('settings_vc_title')}
           </h3>
           <p className="text-xs text-gray-400 font-mono mb-4">
-            Signed by AxiomID issuer authority. Copy payload to verify portability.
+            {t('settings_vc_desc')}
           </p>
 
           <pre className="font-mono text-[10px] leading-relaxed bg-white/5 p-4 rounded-xl border border-white/10 overflow-auto max-h-80 text-neon-green whitespace-pre-wrap select-all">
@@ -450,13 +452,13 @@ export default function SettingsPage() {
               onClick={copyVcPayload}
               className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
             >
-              {copied ? "COPIED ✅" : "COPY PAYLOAD"}
+              {copied ? `${t('copied')} ✅` : t('copy_payload')}
             </button>
             <button
               onClick={() => vcDialogRef.current?.close()}
               className="btn-ghost text-xs px-4 py-2"
             >
-              CLOSE
+              {t('close')}
             </button>
           </div>
         </div>
