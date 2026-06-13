@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useWallet } from "../../context/wallet-context";
 import { useLanguage } from "../../context/language-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
 import { createUserDid } from "@/lib/did";
 
@@ -169,16 +171,14 @@ export default function SettingsPage() {
     return (
       <main className="min-h-screen bg-grid flex items-center justify-center p-4">
         <div className="scanline" />
-        <div className="bento-card max-w-md w-full p-8 text-center border border-white/10 backdrop-blur-md">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 flex items-center justify-center mx-auto mb-6">
-            <span className="text-neon-green font-bold text-3xl">A</span>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">{t('settings_sovereign_title')}</h2>
-          <p className="text-gray-400 mb-6 text-sm">{t('settings_wallet_prompt')}</p>
+        <div className="bento-card max-w-md w-full p-8 text-center backdrop-blur-md" style={{ border: '1px solid var(--card-border)' }}>
+          <div className="text-4xl mb-4">🔐</div>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings_sovereign_title')}</h2>
+          <p className="mb-6 text-sm" style={{ color: 'var(--text-secondary)' }}>{t('settings_wallet_prompt')}</p>
           <button onClick={connectWallet} className="btn-primary w-full py-3">
             {t('connect_wallet')}
           </button>
-          <div className="mt-6 text-xs text-gray-500 font-mono">
+          <div className="mt-6 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
             <Link href="/" className="hover:text-neon-green transition-colors">{t('settings_back_landing')}</Link>
           </div>
         </div>
@@ -191,48 +191,53 @@ export default function SettingsPage() {
       <div className="scanline" />
       <ErrorBanner />
 
-      <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-40 backdrop-blur-md border-b" style={{ background: 'color-mix(in srgb, var(--bg-card) 90%, transparent)', borderColor: 'var(--card-border)' }}>
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 flex items-center justify-center">
               <span className="text-neon-green font-bold text-xl">A</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">{t('settings_page_title')}</h1>
-              <p className="text-xs text-gray-400 font-mono">{t('settings_page_desc')}</p>
+              <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{t('settings_page_title')}</h1>
+              <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_page_desc')}</p>
             </div>
           </div>
-          <Link href="/dashboard" className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
-            {t('settings_dashboard_link')}
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
+            <Link href="/dashboard" className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
+              {t('settings_dashboard_link')}
+            </Link>
+          </div>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Section 1: Profile Details */}
-        <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <span className="text-neon-green">👤</span> {t('settings_profile_title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">{t('settings_pi_network_id')}</span>
-              <p className="text-white text-base">{user.piUsername || "Authenticated Pioneer"}</p>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_pi_network_id')}</span>
+              <p className="text-base" style={{ color: 'var(--text-primary)' }}>{user.piUsername || "Authenticated Pioneer"}</p>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">{t('settings_stellar_wallet')}</span>
-              <p className="text-white text-xs truncate max-w-full text-ellipsis" title={user.walletAddress}>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_stellar_wallet')}</span>
+              <p className="text-xs truncate max-w-full text-ellipsis" style={{ color: 'var(--text-primary)' }} title={user.walletAddress}>
                 {user.walletAddress}
               </p>
             </div>
             <div className="space-y-1 md:col-span-2">
-              <span className="text-gray-500 text-xs">{t('settings_sovereign_did')}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_sovereign_did')}</span>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={user.did || createUserDid(user.id)}
-                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-neon-green flex-1 font-mono outline-none"
+                  className="rounded px-2 py-1 text-xs text-neon-green flex-1 font-mono outline-none"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}
                 />
                 <button
                   onClick={() => {
@@ -247,7 +252,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 text-xs">{t('settings_identity_status')}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_identity_status')}</span>
               <div>
                 {user.kycStatus === "VERIFIED" ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-neon-green/10 text-neon-green border border-neon-green/20">
@@ -264,9 +269,9 @@ export default function SettingsPage() {
         </section>
 
         {/* Section 2: XP & Tiers */}
-        <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
+        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <span className="text-electric-blue">⚡</span> {t('settings_progression_title')}
             </h2>
             <span className="text-electric-blue font-mono text-sm">{xp} {t('total_xp')}</span>
@@ -274,20 +279,20 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <div>
-                <span className="text-gray-500 text-xs font-mono">{t('current_tier').toUpperCase()}</span>
-                <p className="text-2xl font-black text-white tracking-wider">{tier.toUpperCase()}</p>
+                <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{t('current_tier').toUpperCase()}</span>
+                <p className="text-2xl font-black tracking-wider" style={{ color: 'var(--text-primary)' }}>{tier.toUpperCase()}</p>
               </div>
-              <div className="text-right text-xs text-gray-400 font-mono">
+              <div className="text-right text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                 {progressPercent.toFixed(0)}% to level {xp >= 1000 ? "Max" : "Up"}
               </div>
             </div>
-            <div className="h-3 bg-white/15 rounded-full overflow-hidden border border-white/5">
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}>
               <div
                 className="h-full bg-gradient-to-r from-neon-green to-electric-blue transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-gray-500 font-mono">
+            <div className="flex justify-between text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
               <span>{range.min.toLocaleString()} XP</span>
               <span>{range.max.toLocaleString()} XP</span>
             </div>
@@ -295,22 +300,22 @@ export default function SettingsPage() {
         </section>
 
         {/* Section 3: Social Binding & Credentials */}
-        <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <span className="text-axiom-purple">🔗</span> {t('settings_social_title')}
           </h2>
-          <p className="text-xs text-gray-400 mb-6 font-mono">
+          <p className="text-xs mb-6 font-mono" style={{ color: 'var(--text-secondary)' }}>
             {t('settings_social_desc')}
           </p>
 
           <div className="space-y-4">
             {PLATFORMS.map(({ id, emoji, label, xp }) => (
-              <div key={id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
+              <div key={id} className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{emoji}</span>
                   <div>
-                    <h4 className="text-sm font-bold text-white">{label}</h4>
-                    <p className="text-xs text-gray-400">{t('settings_xp_reward')} +{xp} XP</p>
+                    <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{label}</h4>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('settings_xp_reward')} +{xp} XP</p>
                   </div>
                 </div>
                 <div>
@@ -335,22 +340,22 @@ export default function SettingsPage() {
         </section>
 
 
-        <section className="bento-card p-6 border border-white/10 bg-black/40 backdrop-blur-md">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <span className="text-yellow-500">📜</span> {t('settings_ledger_title')}
           </h2>
           {detailsLoading ? (
             <div className="space-y-2 py-4">
-              <div className="h-6 bg-white/5 rounded animate-pulse" />
-              <div className="h-6 bg-white/5 rounded animate-pulse w-5/6" />
+              <div className="h-6 rounded animate-pulse" style={{ background: 'var(--bg-card)' }} />
+              <div className="h-6 rounded animate-pulse w-5/6" style={{ background: 'var(--bg-card)' }} />
             </div>
           ) : !statusDetails || statusDetails.recentLedger.length === 0 ? (
-            <p className="text-sm text-gray-500 font-mono py-4 text-center">{t('settings_no_tx')}</p>
+            <p className="text-sm font-mono py-4 text-center" style={{ color: 'var(--text-muted)' }}>{t('settings_no_tx')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 text-gray-500 pb-2">
+                  <tr className="border-b pb-2" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
                     <th className="py-2">{t('settings_tx_objective')}</th>
                     <th className="py-2 text-right">{t('settings_balance_shift')}</th>
                     <th className="py-2 text-right">{t('settings_timestamp')}</th>
@@ -358,12 +363,12 @@ export default function SettingsPage() {
                 </thead>
                 <tbody>
                   {statusDetails.recentLedger.map((entry) => (
-                    <tr key={entry.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 text-white uppercase font-bold tracking-wider">{entry.reason.replaceAll("_", " ")}</td>
+                    <tr key={entry.id} className="border-b transition-colors" style={{ borderColor: 'var(--card-border)' }}>
+                      <td className="py-3 uppercase font-bold tracking-wider" style={{ color: 'var(--text-primary)' }}>{entry.reason.replaceAll("_", " ")}</td>
                       <td className={`py-3 text-right ${entry.amount >= 0 ? "text-neon-green" : "text-red-500"}`}>
                         {entry.amount >= 0 ? `+${entry.amount}` : entry.amount} XP
                       </td>
-                      <td className="py-3 text-right text-gray-400">
+                      <td className="py-3 text-right" style={{ color: 'var(--text-secondary)' }}>
                         {new Date(entry.createdAt).toLocaleString()}
                       </td>
                     </tr>
