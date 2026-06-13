@@ -699,7 +699,7 @@ describe("WalletProvider & WalletContext", () => {
 
     const registration = addEventListenerSpy.mock.calls.find(call => call[0] === "unhandledrejection");
     expect(registration).toBeDefined();
-    const handler = registration![1] as Function;
+    const handler = registration![1] as (event: PromiseRejectionEvent) => void;
 
     const testCases = [
       new Error("Connection closed."),
