@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 
 type Theme = "dark" | "light";
 
@@ -35,21 +35,16 @@ function getStoredTheme(): Theme {
  * @returns A ThemeContext.Provider element that supplies `{ theme, toggleTheme, setTheme }` to descendants
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    setThemeState(getStoredTheme());
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
+    mountedRef.current = true;
     document.documentElement.setAttribute("data-theme", theme);
     try {
       localStorage.setItem("aix_theme", theme);
     } catch {}
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => (prev === "dark" ? "light" : "dark"));

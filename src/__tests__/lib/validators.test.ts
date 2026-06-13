@@ -75,7 +75,7 @@ describe('UserStatusSchema', () => {
 
   it('accepts Stellar G-address', () => {
     const result = UserStatusSchema.safeParse({
-      walletAddress: 'G' + 'A'.repeat(54),
+      walletAddress: 'G' + 'A'.repeat(55),
     });
     expect(result.success).toBe(true);
   });

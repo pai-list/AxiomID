@@ -68,18 +68,20 @@ export async function POST(request: NextRequest) {
     const userDid = createUserDid(authUser.id);
     const platform = actionType.startsWith("connect_") ? actionType.replace("connect_", "") : "system";
 
-    try {
-      const signedVc = signSocialCredential(
-        authUser.id,
-        userDid,
-        platform,
-        handle,
-        authUser.walletAddress
-      );
-      finalMetadata = JSON.stringify(signedVc);
-    } catch (e) {
-      logger.error("[STAMP-CLAIM] VC signing failed:", e);
-      return apiError("INTERNAL_ERROR", "Cryptographic signing failure");
+    if (actionType.startsWith("connect_")) {
+      try {
+        const signedVc = signSocialCredential(
+          authUser.id,
+          userDid,
+          platform,
+          handle,
+          authUser.walletAddress
+        );
+        finalMetadata = JSON.stringify(signedVc);
+      } catch (e) {
+        logger.error("[STAMP-CLAIM] VC signing failed:", e);
+        return apiError("INTERNAL_ERROR", "Cryptographic signing failure");
+      }
     }
 
     const provider = actionType.startsWith("connect_") ? actionType.replace("connect_", "") : "system";

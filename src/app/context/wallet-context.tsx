@@ -200,10 +200,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window === "undefined") return true;
+    if (localStorage.getItem("axiomid_logged_out") === "true") return false;
     return !!(getStoredWallet() || getLocalStorageItem("pi_access_token"));
   });
   const [error, setError] = useState<string | null>(null);
-  const [isPiBrowser, setIsPiBrowser] = useState(false);
+  const [isPiBrowser] = useState(() => checkPiBrowser());
   const [piAccessToken, setPiAccessToken] = useState<string | null>(() => {
     return getLocalStorageItem("pi_access_token");
   });
@@ -217,10 +218,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     userRef.current = user;
   }, [user]);
-
-  useEffect(() => {
-    queueMicrotask(() => setIsPiBrowser(checkPiBrowser()));
-  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -591,7 +588,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     initRef.current = true;
 
     if (getLocalStorageItem("axiomid_logged_out") === "true") {
-      setTimeout(() => setIsLoading(false), 0);
       return;
     }
 
@@ -612,7 +608,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const storedWallet = getStoredWallet();
     const storedToken = getLocalStorageItem("pi_access_token");
     if (!storedWallet && !storedToken) {
-      queueMicrotask(() => setIsLoading(false));
       return;
     }
 
@@ -621,7 +616,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       headers["Authorization"] = `Bearer ${storedToken}`;
     }
 
-    queueMicrotask(() => setIsLoading(true));
     fetch(`/api/user/status`, { headers }).then(res => {
       if (!res.ok) {
         removeLocalStorageItem("axiomid_wallet");

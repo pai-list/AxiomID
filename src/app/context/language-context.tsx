@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 
 export type Language = "en" | "ar";
 
@@ -209,36 +209,23 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
  * @returns A React context provider that supplies `{ language, setLanguage, t }` to its descendants
  */
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
-  const [mounted, setMounted] = useState(false);
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window === "undefined") return "en";
+    const saved = localStorage.getItem("aix_language") as Language;
+    return saved === "en" || saved === "ar" ? saved : "en";
+  });
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("aix_language") as Language;
-    if (saved === "en" || saved === "ar") {
-      setTimeout(() => {
-        setLanguageState(saved);
-      }, 0);
-    } else {
-      // Default to english
-      setTimeout(() => {
-        setLanguageState("en");
-      }, 0);
-    }
-    setTimeout(() => {
-      setMounted(true);
-    }, 0);
-  }, []);
+    mountedRef.current = true;
+    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = language;
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("aix_language", lang);
   };
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = language;
-  }, [language, mounted]);
 
   const t = (key: string): string => {
     const dict = translations[language] || translations.en;

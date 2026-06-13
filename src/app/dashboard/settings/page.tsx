@@ -32,7 +32,10 @@ interface StatusDetails {
 export default function SettingsPage() {
   const { user, connectWallet, claimAction } = useWallet();
   const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !!(localStorage.getItem("axiomid_wallet") || localStorage.getItem("pi_access_token"));
+  });
 
   // Modal states
   const [activePlatform, setActivePlatform] = useState<"twitter" | "discord" | "google" | null>(null);
@@ -45,40 +48,34 @@ export default function SettingsPage() {
   const connectDialogRef = useRef<HTMLDialogElement>(null);
   const vcDialogRef = useRef<HTMLDialogElement>(null);
 
-  // Fetch status details (XP Ledger logs)
-  const fetchStatusDetails = async () => {
-    try {
-      const storedToken = localStorage.getItem("pi_access_token");
-      const headers: Record<string, string> = {};
-      if (storedToken) {
-        headers["Authorization"] = `Bearer ${storedToken}`;
-      }
-      const res = await fetch("/api/user/status", { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setStatusDetails({
-          recentLedger: data.recentLedger || [],
-          stats: data.stats || { totalActions: 0, totalXP: 0 },
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch ledger logs:", err);
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (user) {
-      queueMicrotask(() => {
-        fetchStatusDetails();
-      });
-    } else {
-      queueMicrotask(() => {
-        setDetailsLoading(false);
-      });
-    }
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const storedToken = localStorage.getItem("pi_access_token");
+        const headers: Record<string, string> = {};
+        if (storedToken) {
+          headers["Authorization"] = `Bearer ${storedToken}`;
+        }
+        const res = await fetch("/api/user/status", { headers });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setStatusDetails({
+            recentLedger: data.recentLedger || [],
+            stats: data.stats || { totalActions: 0, totalXP: 0 },
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch ledger logs:", err);
+      } finally {
+        if (!cancelled) setDetailsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [user]);
+
+  // Handle outside click backdrop dismiss for dialogs
 
   // Handle outside click backdrop dismiss for dialogs (Standard fallback for <dialog closedby>)
   const handleDialogBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
@@ -139,7 +136,9 @@ export default function SettingsPage() {
 
   const copyVcPayload = () => {
     if (!activeVc) return;
-    navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -234,7 +233,9 @@ export default function SettingsPage() {
                 />
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(user.did || createUserDid(user.id));
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(user.did || createUserDid(user.id));
+                    }
                   }}
                   className="btn-ghost text-xs px-2 py-1"
                 >
