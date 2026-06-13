@@ -53,7 +53,7 @@
     "@prisma/client": "^6.0.0",
     "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.40.0",
-    "next": "16.2.7",
+    "next": "16.2.9",
     "qrcode.react": "^4.2.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
