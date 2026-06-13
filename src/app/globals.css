@@ -53,6 +53,10 @@ html {
   color-scheme: dark;
 }
 
+[data-theme="light"] {
+  color-scheme: light;
+}
+
 body {
   background: var(--bg-deep);
   color: var(--text-primary);

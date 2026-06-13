@@ -170,19 +170,20 @@ interface ApiResponse {
  * @returns The mapped `User` object with defaults applied; `trustScore` is taken from the response when present or computed from `xp` and the number of `stamps`.
  */
 function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | null; createdAt?: string; actions?: User["actions"]; stamps?: User["stamps"] }): User {
+  const stamps = data.stamps || fallback?.stamps || [];
   return {
     id: data.userId,
     walletAddress: data.walletAddress,
     stellarAddress: data.stellarAddress || fallback?.stellarAddress || null,
     xp: data.xp,
     tier: data.tier,
-    trustScore: data.trustScore ?? calculateTrustScore(data.xp || 0, data.stamps?.length || 0),
+    trustScore: data.trustScore ?? calculateTrustScore(data.xp || 0, stamps.length),
     createdAt: data.createdAt || fallback?.createdAt || new Date().toISOString(),
     piUsername: data.piUsername,
     kycStatus: data.kycStatus || null,
     did: data.did || null,
     actions: data.actions || fallback?.actions || [],
-    stamps: data.stamps || fallback?.stamps || [],
+    stamps,
     agent: data.agent || null,
   };
 }

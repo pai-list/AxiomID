@@ -128,7 +128,7 @@ export function AgentPassport({
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white font-mono">{agentName}</span>
                 <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${
-                  agentStatus === "ACTIVE"
+                  agentStatus?.toUpperCase() === "ACTIVE"
                     ? "bg-neon-green/10 text-neon-green border border-neon-green/20"
                     : "bg-white/5 text-gray-400 border border-white/10"
                 }`}>

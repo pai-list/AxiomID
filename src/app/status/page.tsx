@@ -9,7 +9,7 @@ interface NetworkStats {
   registeredAgents: number;
   totalTransactions: number;
   averageTrustScore: number | null;
-  activeUsers: number;
+  activeAgents: number;
   totalXpEarned: number;
   verificationRate: number | null;
 }
@@ -44,10 +44,10 @@ export default function StatusPage() {
       setStats({
         registeredAgents: apiStats.totalAgents ?? 0,
         totalTransactions: apiStats.totalPayments ?? 0,
-        averageTrustScore: apiStats.averageTrustScore ?? 98.4,
-        activeUsers: apiStats.registeredUsers ?? 0,
+        averageTrustScore: apiStats.averageTrustScore ?? null,
+        activeAgents: apiStats.activeAgents ?? 0,
         totalXpEarned: apiStats.totalXpEarned ?? 0,
-        verificationRate: apiStats.verificationRate ?? 99.2,
+        verificationRate: apiStats.verificationRate ?? null,
       });
       setLastFetchTime(Date.now());
       setTimeSince(0);
@@ -138,9 +138,9 @@ export default function StatusPage() {
                 </span>
               </div>
               <div className="bento-card p-6 text-center">
-                <span className="text-[10px] font-mono text-gray-500 block mb-2">ACTIVE USERS</span>
+                <span className="text-[10px] font-mono text-gray-500 block mb-2">ACTIVE AGENTS</span>
                 <span className="text-3xl font-bold font-mono text-neon-green">
-                  {stats.activeUsers.toLocaleString()}
+                  {stats.activeAgents.toLocaleString()}
                 </span>
               </div>
               <div className="bento-card p-6 text-center">
