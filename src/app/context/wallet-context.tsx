@@ -567,7 +567,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         } else if (event.reason instanceof Error) {
           reasonStr = event.reason.message || event.reason.toString();
         } else if (typeof event.reason === "object") {
-          reasonStr = (event.reason as any).message || (event.reason as any).error || String(event.reason);
+          const rawMessage = (event.reason as any).message ?? (event.reason as any).error;
+          reasonStr = rawMessage !== undefined && rawMessage !== null ? String(rawMessage) : String(event.reason);
         } else {
           reasonStr = String(event.reason);
         }
