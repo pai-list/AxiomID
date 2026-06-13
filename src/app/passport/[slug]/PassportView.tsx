@@ -55,7 +55,9 @@ export function PassportView() {
   useEffect(() => {
     if (!slug) return;
 
-    fetch(`/api/passport/${encodeURIComponent(slug)}`)
+    const abortController = new AbortController();
+
+    fetch(`/api/passport/${encodeURIComponent(slug)}`, { signal: abortController.signal })
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json().catch(() => null);
@@ -68,9 +70,12 @@ export function PassportView() {
         setLoading(false);
       })
       .catch((err) => {
+        if (err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : t('passport_load_error'));
         setLoading(false);
       });
+
+    return () => abortController.abort();
   }, [slug, t]);
 
   return (

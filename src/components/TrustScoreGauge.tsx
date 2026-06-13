@@ -61,7 +61,7 @@ export function TrustScoreGauge({ score, size = 120 }: TrustScoreGaugeProps) {
         >
           {score}
         </span>
-        <span className="text-[8px] text-gray-500 tracking-wider">{label}</span>
+        <span className="text-[8px] tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
     </div>
   );
