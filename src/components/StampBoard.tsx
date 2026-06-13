@@ -48,6 +48,14 @@ const STAMP_DEFS = [
   { type: "verify_identity", label: "KYC Status Stamp", xp: 100, icon: "🔐", isAutomatic: true },
 ];
 
+/**
+ * Renders the user's live stamps dashboard including trust score, level progress, stamps grid, and a modal to inspect or download Verifiable Credential payloads.
+ *
+ * @param user - The current user object or `null`. Used to determine claimed stamps, XP, and tier for display.
+ * @param claimAction - Called to initiate a stamp claim; receives the stamp `type` and optional `metadata`, and should resolve to `true` on success.
+ * @param connectWallet - Invoked when an action requires an authenticated user and `user` is `null`.
+ * @returns The StampBoard React element.
+ */
 export function StampBoard({ user, claimAction, connectWallet }: StampBoardProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeVc, setActiveVc] = useState<any | null>(null);

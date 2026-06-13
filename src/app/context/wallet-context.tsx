@@ -123,6 +123,13 @@ function removeLocalStorageItem(key: string): void {
   }
 }
 
+/**
+ * Detects whether the current environment is the Pi Browser or an embedded Pi context.
+ *
+ * Inspects the user agent for Pi Browser identifiers and, when running inside an iframe, checks the document referrer for minepi domains.
+ *
+ * @returns `true` if running in Pi Browser or embedded from `minepi.com`/`sandbox.minepi.com`, `false` otherwise.
+ */
 function checkPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
 
@@ -155,6 +162,13 @@ interface ApiResponse {
   stamps?: User['stamps'];
 }
 
+/**
+ * Normalize an API user response into the local `User` shape.
+ *
+ * @param data - Raw API response containing user fields (e.g., `userId`, `walletAddress`, `xp`, `tier`, optional `stamps`, `actions`, `trustScore`, etc.).
+ * @param fallback - Optional fallback values used when the API omits certain fields: `stellarAddress`, `createdAt`, `actions`, and `stamps`.
+ * @returns The mapped `User` object with defaults applied; `trustScore` is taken from the response when present or computed from `xp` and the number of `stamps`.
+ */
 function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | null; createdAt?: string; actions?: User["actions"]; stamps?: User["stamps"] }): User {
   return {
     id: data.userId,
@@ -173,6 +187,13 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
   };
 }
 
+/**
+ * Provides wallet authentication state and actions to descendant components via WalletContext.
+ *
+ * Manages wallet detection (Pi Browser and demo wallets), connection/auth flows, user refresh and agent actions, XP/tier progression helpers, and wallet-related logs; supplies the resulting state and callbacks to its children.
+ *
+ * @returns A React context provider that supplies wallet state, status flags, and wallet-related actions to its children.
+ */
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const userRef = useRef<User | null>(null);
@@ -198,7 +219,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    setIsPiBrowser(checkPiBrowser());
+    queueMicrotask(() => setIsPiBrowser(checkPiBrowser()));
   }, []);
 
   useEffect(() => {

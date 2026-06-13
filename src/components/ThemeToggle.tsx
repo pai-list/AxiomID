@@ -2,6 +2,15 @@
 
 import { useTheme } from "@/app/context/theme-context";
 
+/**
+ * Renders a button that toggles between dark and light themes.
+ *
+ * The button's `aria-label` indicates the target mode ("Switch to light mode" or "Switch to dark mode")
+ * and its content shows a sun icon when the current theme is `"dark"` and a moon icon otherwise.
+ *
+ * @param className - Optional additional CSS class names appended to the button's default classes
+ * @returns The button element that toggles the theme and displays the corresponding icon
+ */
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
 

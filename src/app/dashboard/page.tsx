@@ -29,6 +29,15 @@ const INITIAL_LOGS = [
 
 
 
+/**
+ * Renders the Agent Identity Layer dashboard page and manages its UI state and behavior.
+ *
+ * The component controls wallet interactions (connect, disconnect, wallet logs, demo mode),
+ * onboarding flow, tab navigation (passport, actions, agent, terminal), agent lifecycle
+ * actions (create, activate, pause), KYA verification, and the terminal overlay.
+ *
+ * @returns The React element representing the dashboard page.
+ */
 export default function Dashboard() {
   const router = useRouter();
   const { t, language } = useLanguage();

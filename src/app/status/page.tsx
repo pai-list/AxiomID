@@ -14,6 +14,15 @@ interface NetworkStats {
   verificationRate: number | null;
 }
 
+/**
+ * Renders the network status dashboard and controls for viewing real-time AxiomID metrics.
+ *
+ * The component fetches network statistics from /api/status, displays metric cards and network information,
+ * and keeps data fresh by polling every 30 seconds. It also tracks the time since the last successful fetch
+ * and exposes a manual retry button.
+ *
+ * @returns The JSX element for the StatusPage component.
+ */
 export default function StatusPage() {
   const { t, language } = useLanguage();
   const [stats, setStats] = useState<NetworkStats | null>(null);

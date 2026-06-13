@@ -199,6 +199,15 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+/**
+ * Provides language selection, persistence, and a translation helper to descendant components.
+ *
+ * Persists the chosen language to localStorage under `aix_language` and updates
+ * `document.documentElement.dir` and `document.documentElement.lang` after initial mount.
+ *
+ * @param children - React nodes that will receive the language context
+ * @returns A React context provider that supplies `{ language, setLanguage, t }` to its descendants
+ */
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
@@ -243,6 +252,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Access the language context value for the current React tree.
+ *
+ * @returns The context object with `language`, `setLanguage`, and `t` (translation) helpers.
+ * @throws Error if called outside a `LanguageProvider` (message: "useLanguage must be used within a LanguageProvider").
+ */
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {

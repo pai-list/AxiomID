@@ -32,6 +32,23 @@ function getInitial(name: string): string {
   return name ? name.charAt(0).toUpperCase() : "?";
 }
 
+/**
+ * Render an agent passport card displaying identity, addresses, verification badges, tier, and statistics.
+ *
+ * @param username - Display name for the agent
+ * @param did - Decentralized identifier shown and copyable in the card
+ * @param agentName - Optional agent organization or label shown when present
+ * @param agentStatus - Optional agent state; when equal to `"ACTIVE"` the status badge is styled as active
+ * @param walletAddress - Optional fallback wallet address used if `stellarAddress` is not provided
+ * @param stellarAddress - Optional preferred address displayed and copied instead of `walletAddress`
+ * @param tier - Agent tier (from `Tier`) used for badge color and label
+ * @param trustScore - Numeric trust score rendered by the TrustScoreGauge
+ * @param xp - Experience points displayed with locale formatting
+ * @param kyaStatus - KYA verification status; one of `"verified" | "pending" | "denied"`
+ * @param kycStatus - KYC verification status; one of `"verified" | "pending" | "denied"`
+ * @param issuedDate - Date string used to display issued date information
+ * @returns The JSX element for the agent passport card
+ */
 export function AgentPassport({
   username,
   walletAddress,

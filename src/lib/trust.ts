@@ -1,5 +1,14 @@
 export const TOTAL_STAMPS = 6;
 
+/**
+ * Compute a trust score from a user's experience points and number of claimed stamps.
+ *
+ * The score is a weighted combination of XP (70%) and stamps (30%), rounded and clamped to the range 0–100.
+ *
+ * @param xp - The user's experience points (used to derive the XP component)
+ * @param stampsClaimed - Number of stamps the user claimed; values outside 0 to TOTAL_STAMPS are clamped
+ * @returns A numeric trust score between 0 and 100
+ */
 export function calculateTrustScore(xp: number, stampsClaimed: number): number {
   const clamped = Math.max(0, Math.min(stampsClaimed, TOTAL_STAMPS));
 

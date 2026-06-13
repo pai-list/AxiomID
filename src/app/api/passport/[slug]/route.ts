@@ -15,7 +15,12 @@ const AGENT_SELECT = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * Builds a passport object containing public identity, verification status, and trust metadata for a user.
+ *
+ * @param user - A user record with expected properties: `id`, optional `did`, optional `piUsername`, `walletAddress`, optional `stellarAddress`, `tier`, `xp`, optional `stamps` (array), `kycStatus`, `createdAt` (Date), and optional `agent` with `name` and `status`.
+ * @returns An object with the following fields: `username`, `walletAddress`, `stellarAddress`, `did`, `tier`, `xp`, `trustScore`, `kyaStatus`, `kycStatus`, `issuedDate`, `agentName`, and `agentStatus`.
+ */
 function buildPassportResponse(user: any) {
   const did = user.did || createUserDid(user.id);
   const trustScore = calculateTrustScore(user.xp || 0, (user.stamps || []).length);
@@ -41,6 +46,16 @@ function buildPassportResponse(user: any) {
   };
 }
 
+/**
+ * Fetches a user's passport by a route slug and returns a JSON response.
+ *
+ * The slug is decoded and matched in this order: agent publicId, wallet address,
+ * Pi username, then DID. Enforces per-IP rate limits before lookup.
+ *
+ * @param _request - The incoming NextRequest (used to derive client IP for rate limiting)
+ * @param params - An object whose `slug` route parameter will be decoded and used to find the passport
+ * @returns A NextResponse containing the passport JSON when a user is found, or a JSON error object with `error` set to `RATE_LIMITED`, `NOT_FOUND`, or `INTERNAL_ERROR` and the corresponding HTTP status
+ */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
