@@ -189,11 +189,9 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
 }
 
 /**
- * Provides wallet authentication state and actions to descendant components via WalletContext.
+ * Exposes wallet authentication state, connection actions, user-refresh and agent operations, progression helpers, and wallet logs to descendant components via WalletContext.
  *
- * Manages wallet detection (Pi Browser and demo wallets), connection/auth flows, user refresh and agent actions, XP/tier progression helpers, and wallet-related logs; supplies the resulting state and callbacks to its children.
- *
- * @returns A React context provider that supplies wallet state, status flags, and wallet-related actions to its children.
+ * @returns A React context provider element that supplies wallet state, status flags, and wallet-related actions to its children.
  */
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -567,8 +565,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         } else if (event.reason instanceof Error) {
           reasonStr = event.reason.message || event.reason.toString();
         } else if (typeof event.reason === "object") {
-          const rawMessage = (event.reason as any).message ?? (event.reason as any).error;
-          reasonStr = rawMessage !== undefined && rawMessage !== null ? String(rawMessage) : String(event.reason);
+          reasonStr = (event.reason as any).message || (event.reason as any).error || String(event.reason);
         } else {
           reasonStr = String(event.reason);
         }
