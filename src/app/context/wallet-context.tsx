@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from "react";
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
 import { calculateTrustScore } from "@/lib/trust";
 import { connectPi, runWalletTest } from "@/lib/pi-sdk";
@@ -210,8 +210,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return getLocalStorageItem("pi_access_token");
   });
 
-  const levelProgress = user ? getLevelProgress(user.xp, user.tier) : 0;
-  const nextXP = user ? getNextLevelXP(user.tier) : null;
+  const levelProgress = useMemo(() => user ? getLevelProgress(user.xp, user.tier) : 0, [user]);
+  const nextXP = useMemo(() => user ? getNextLevelXP(user.tier) : null, [user]);
   const isDemoWallet = isDemoWalletAddress(user?.walletAddress);
   const isDemoWalletEnabled = isDemoWalletAllowed();
   const [walletLogs, setWalletLogs] = useState<string[]>([]);
@@ -639,32 +639,57 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     });
   }, [connectWallet]);
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      isConnecting,
+      error,
+      isPiBrowser,
+      isDemoWallet,
+      isDemoWalletEnabled,
+      connectWallet,
+      logout,
+      claimAction,
+      refreshUser,
+      createAgent,
+      activateAgent,
+      pauseAgent,
+      claimKya,
+      levelProgress,
+      nextXP,
+      walletLogs,
+      runWalletTest: runTest,
+      clearWalletLogs,
+      disconnectWallet,
+    }),
+    [
+      user,
+      isLoading,
+      isConnecting,
+      error,
+      isPiBrowser,
+      isDemoWallet,
+      isDemoWalletEnabled,
+      connectWallet,
+      logout,
+      claimAction,
+      refreshUser,
+      createAgent,
+      activateAgent,
+      pauseAgent,
+      claimKya,
+      levelProgress,
+      nextXP,
+      walletLogs,
+      runTest,
+      clearWalletLogs,
+      disconnectWallet,
+    ]
+  );
+
   return (
-    <WalletContext.Provider
-      value={{
-        user,
-        isLoading,
-        isConnecting,
-        error,
-        isPiBrowser,
-        isDemoWallet,
-        isDemoWalletEnabled,
-        connectWallet,
-        logout,
-        claimAction,
-        refreshUser,
-        createAgent,
-        activateAgent,
-        pauseAgent,
-        claimKya,
-        levelProgress,
-        nextXP,
-        walletLogs,
-        runWalletTest: runTest,
-        clearWalletLogs,
-        disconnectWallet,
-      }}
-    >
+    <WalletContext.Provider value={contextValue}>
       {children}
     </WalletContext.Provider>
   );

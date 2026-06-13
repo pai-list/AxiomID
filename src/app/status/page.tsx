@@ -109,7 +109,7 @@ export default function StatusPage() {
 
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
+            {[...Array(3)].map((_, i) => (
               <div key={i} className="bento-card p-6">
                 <div className="h-6 bg-white/5 rounded animate-pulse mb-2" />
                 <div className="h-8 bg-white/5 rounded animate-pulse" />
