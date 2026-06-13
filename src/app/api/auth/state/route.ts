@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
-import { WalletConnectSchema } from '@/lib/validators';
+import { AuthStateSchema } from '@/lib/validators';
 
 function getSecret(): string | null {
   return process.env.OAUTH_STATE_SECRET || null;
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
 
-  const parsed = WalletConnectSchema.safeParse(body);
+  const parsed = AuthStateSchema.safeParse(body);
   if (!parsed.success) {
     return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
   }

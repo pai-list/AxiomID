@@ -4,17 +4,21 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { createUserDid } from "@/lib/did";
+import { calculateTrustScore } from "@/lib/trust";
 
 const AGENT_SELECT = {
   agent: {
     select: { name: true, status: true },
+  },
+  stamps: {
+    select: { type: true },
   },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildPassportResponse(user: any) {
   const did = user.did || createUserDid(user.id);
-  const trustScore = Math.min(100, Math.floor((user.xp || 0) / 10));
+  const trustScore = calculateTrustScore(user.xp || 0, (user.stamps || []).length);
   const kyaStatus = user.kycStatus === "VERIFIED"
     ? "verified"
     : user.kycStatus === "PENDING"

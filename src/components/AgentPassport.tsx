@@ -111,7 +111,7 @@ export function AgentPassport({
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white font-mono">{agentName}</span>
                 <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${
-                  agentStatus === "active"
+                  agentStatus === "ACTIVE"
                     ? "bg-neon-green/10 text-neon-green border border-neon-green/20"
                     : "bg-white/5 text-gray-400 border border-white/10"
                 }`}>
@@ -151,7 +151,7 @@ export function AgentPassport({
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex flex-col items-center justify-center">
               <span className="text-[9px] text-gray-500 font-mono block">XP</span>
-              <span className="text-xl font-bold text-white font-mono">{xp}</span>
+              <span className="text-xl font-bold text-white font-mono">{xp.toLocaleString()}</span>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex flex-col items-center justify-center">
               <span className="text-[9px] text-gray-500 font-mono block">ISSUED</span>

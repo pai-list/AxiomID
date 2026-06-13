@@ -5,6 +5,7 @@ import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
 import { SandboxProvider } from "./context/sandbox-provider";
 import { LanguageProvider } from "./context/language-context";
+import { ThemeProvider } from "./context/theme-context";
 import { Analytics } from "@vercel/analytics/next";
 
 // Preload fonts for better performance
@@ -124,13 +125,15 @@ export default function RootLayout({
           Skip to content
         </a>
         <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
-        <LanguageProvider>
-          <SandboxProvider>
-            <WalletProvider>
-              {children}
-            </WalletProvider>
-          </SandboxProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <SandboxProvider>
+              <WalletProvider>
+                {children}
+              </WalletProvider>
+            </SandboxProvider>
+          </LanguageProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

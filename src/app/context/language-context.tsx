@@ -91,6 +91,10 @@ export const translations = {
     logout: "LOGOUT",
     connecting: "CONNECTING...",
     connect: "CONNECT",
+    // Pi Browser prompts
+    pi_browser_required: "Open this app from Pi Browser",
+    pi_browser_demo_disabled: "Open this app from Pi Browser (Demo Disabled)",
+    demo_disabled_desc: "Demo wallets are disabled for this deployment.",
   },
   ar: {
     // Navigation / Header
@@ -178,6 +182,10 @@ export const translations = {
     logout: "تسجيل الخروج",
     connecting: "جاري الاتصال...",
     connect: "اتصال",
+    // Pi Browser prompts
+    pi_browser_required: "افتح التطبيق من Pi Browser",
+    pi_browser_demo_disabled: "افتح التطبيق من Pi Browser (التجربة معطلة)",
+    demo_disabled_desc: "المحافظ التجريبية معطلة في هذا الإصدار.",
   }
 };
 

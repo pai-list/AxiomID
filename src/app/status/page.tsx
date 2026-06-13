@@ -154,7 +154,7 @@ export default function StatusPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
                 <div className="flex justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-500">Protocol</span>
-                  <span className="text-white">AxiomID v1.0.0</span>
+                  <span className="text-white">AxiomID 1.0.0</span>
                 </div>
                 <div className="flex justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-500">Network</span>

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
+import { calculateTrustScore } from "@/lib/trust";
 import { connectPi, runWalletTest } from "@/lib/pi-sdk";
 
 export interface User {
@@ -128,8 +129,6 @@ function checkPiBrowser(): boolean {
   const ua = navigator.userAgent;
   if (/Pi Browser|minepi/i.test(ua)) return true;
 
-  if (typeof window !== "undefined" && window.Pi?.authenticate) return true;
-
   try {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";
@@ -163,7 +162,7 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
     stellarAddress: data.stellarAddress || fallback?.stellarAddress || null,
     xp: data.xp,
     tier: data.tier,
-    trustScore: data.trustScore ?? Math.min(100, Math.floor((data.xp || 0) / 10)),
+    trustScore: data.trustScore ?? calculateTrustScore(data.xp || 0, data.stamps?.length || 0),
     createdAt: data.createdAt || fallback?.createdAt || new Date().toISOString(),
     piUsername: data.piUsername,
     kycStatus: data.kycStatus || null,
@@ -183,7 +182,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return !!(getStoredWallet() || getLocalStorageItem("pi_access_token"));
   });
   const [error, setError] = useState<string | null>(null);
-  const [isPiBrowser] = useState(() => checkPiBrowser());
+  const [isPiBrowser, setIsPiBrowser] = useState(false);
   const [piAccessToken, setPiAccessToken] = useState<string | null>(() => {
     return getLocalStorageItem("pi_access_token");
   });
@@ -197,6 +196,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     userRef.current = user;
   }, [user]);
+
+  useEffect(() => {
+    queueMicrotask(() => setIsPiBrowser(checkPiBrowser()));
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {

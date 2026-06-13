@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useWallet } from "../../context/wallet-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
+import { createUserDid } from "@/lib/did";
 
 interface LedgerEntry {
   id: string;
@@ -118,12 +119,18 @@ export default function SettingsPage() {
     const stamp = user?.stamps?.find((s) => s.type === actionType);
     if (!stamp) return;
     try {
-      // Stamp metadata stores the stringified W3C Verifiable Credential object
-      const parsedVc = JSON.parse(stamp.metadata || "{}");
-      if (parsedVc === null) {
-        throw new Error("Invalid or empty credential metadata");
+      const raw = stamp.metadata;
+      if (!raw || typeof raw !== "string" || raw.trim() === "" || raw.trim() === "{}") {
+        setActiveVc({ error: "No Verifiable Credential data available for this stamp." });
+        vcDialogRef.current?.showModal();
+        return;
       }
-      setActiveVc(parsedVc);
+      const parsedVc = JSON.parse(raw);
+      if (!parsedVc || typeof parsedVc !== "object" || Object.keys(parsedVc).length === 0) {
+        setActiveVc({ error: "Credential metadata is empty." });
+      } else {
+        setActiveVc(parsedVc);
+      }
     } catch {
       setActiveVc({ error: "Failed to parse Verifiable Credential payload." });
     }
@@ -141,10 +148,10 @@ export default function SettingsPage() {
     return !!user?.stamps?.some((s) => s.type === `connect_${platform}`);
   };
 
-  const PLATFORMS: { id: "twitter" | "discord" | "google"; emoji: string; label: string }[] = [
-    { id: "twitter", emoji: "🐦", label: "Twitter / X" },
-    { id: "discord", emoji: "💬", label: "Discord" },
-    { id: "google", emoji: "🔑", label: "Google Accounts" },
+  const PLATFORMS: { id: "twitter" | "discord" | "google"; emoji: string; label: string; xp: number }[] = [
+    { id: "twitter", emoji: "🐦", label: "Twitter / X", xp: 50 },
+    { id: "discord", emoji: "💬", label: "Discord", xp: 50 },
+    { id: "google", emoji: "🔑", label: "Google Accounts", xp: 50 },
   ];
 
   // XP Progress Calculation
@@ -222,12 +229,12 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   readOnly
-                  value={user.did || `did:axiom:user-${user.id}`}
+                  value={user.did || createUserDid(user.id)}
                   className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-neon-green flex-1 font-mono outline-none"
                 />
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(user.did || `did:axiom:user-${user.id}`);
+                    navigator.clipboard.writeText(user.did || createUserDid(user.id));
                   }}
                   className="btn-ghost text-xs px-2 py-1"
                 >
@@ -277,8 +284,8 @@ export default function SettingsPage() {
               />
             </div>
             <div className="flex justify-between text-[10px] text-gray-500 font-mono">
-              <span>{range.min} XP</span>
-              <span>{range.max} XP</span>
+              <span>{range.min.toLocaleString()} XP</span>
+              <span>{range.max.toLocaleString()} XP</span>
             </div>
           </div>
         </section>
@@ -293,13 +300,13 @@ export default function SettingsPage() {
           </p>
 
           <div className="space-y-4">
-            {PLATFORMS.map(({ id, emoji, label }) => (
+            {PLATFORMS.map(({ id, emoji, label, xp }) => (
               <div key={id} className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{emoji}</span>
                   <div>
                     <h4 className="text-sm font-bold text-white">{label}</h4>
-                    <p className="text-xs text-gray-400">XP Reward: +50 XP</p>
+                    <p className="text-xs text-gray-400">XP Reward: +{xp} XP</p>
                   </div>
                 </div>
                 <div>

@@ -8,7 +8,7 @@ interface AgentQRProps {
 }
 
 export function AgentQR({ did, size = 160 }: AgentQRProps) {
-  const qrValue = `https://axiomid.app/passport/${did.split(':').pop()}`;
+  const qrValue = did;
 
   return (
     <div className="flex flex-col items-center gap-2">

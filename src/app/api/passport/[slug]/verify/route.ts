@@ -4,14 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { createUserDid } from "@/lib/did";
-
-const TOTAL_STAMPS_COUNT = 6;
+import { calculateTrustScore, TOTAL_STAMPS } from "@/lib/trust";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildVerificationResponse(user: any) {
   const did = user.did || createUserDid(user.id);
   const stamps = user.stamps || [];
-  const trustScore = TOTAL_STAMPS_COUNT > 0 ? Math.round((stamps.length / TOTAL_STAMPS_COUNT) * 100) : 0;
+  const trustScore = calculateTrustScore(user.xp || 0, stamps.length);
 
   return {
     did,
@@ -29,7 +28,7 @@ function buildVerificationResponse(user: any) {
       xpAwarded: s.xpAwarded,
       createdAt: s.createdAt,
     })),
-    totalStampsCount: TOTAL_STAMPS_COUNT,
+    totalStampsCount: TOTAL_STAMPS,
     claimedStampsCount: stamps.length,
   };
 }
