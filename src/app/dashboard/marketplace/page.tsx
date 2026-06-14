@@ -1,0 +1,563 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+interface Skill {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  tier: string;
+  pricePi: number;
+  version: string;
+  installCount: number;
+  avgRating: number;
+  ratingCount: number;
+  createdAt: string;
+}
+
+interface SkillDetail extends Skill {
+  manifestMd: string;
+  agentScript: string | null;
+  testSuite: string | null;
+  status: string;
+  isPublished: boolean;
+  installationCount: number;
+  reviewCount: number;
+  updatedAt: string;
+}
+
+const TIER_COLORS: Record<string, string> = {
+  BASIC_TOOL: "#64748b",
+  ADVANCED_TOOL: "#00d4ff",
+  ADVANCED_INFRASTRUCTURE: "#f59e0b",
+  PRO: "#a855f7",
+  SOVEREIGN: "#00ff41",
+};
+
+const TIER_LABELS: Record<string, string> = {
+  BASIC_TOOL: "Basic Tool",
+  ADVANCED_TOOL: "Advanced Tool",
+  ADVANCED_INFRASTRUCTURE: "Infra",
+  PRO: "Pro",
+  SOVEREIGN: "Sovereign",
+};
+
+/**
+ * Agentic-First Skill Marketplace — The Genomic Repository of AI Capabilities.
+ * Skills are living, executable entities that agents can install and run autonomously.
+ */
+export default function MarketplacePage() {
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterTier, setFilterTier] = useState<string>("");
+  const [selectedSkill, setSelectedSkill] = useState<SkillDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filterTier) params.set("tier", filterTier);
+        if (searchQuery) params.set("q", searchQuery);
+        params.set("limit", "100");
+        const res = await fetch(`/api/skills?${params}`);
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setSkills(data.skills || []);
+        }
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [filterTier, searchQuery]);
+
+  const openDetail = async (slug: string) => {
+    setDetailLoading(true);
+    try {
+      const res = await fetch(`/api/skills/${slug}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedSkill(data);
+      }
+    } catch {
+      // silent
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleInstall = async (slug: string) => {
+    setInstalling(true);
+    try {
+      const res = await fetch(`/api/skills/${slug}/install`, { method: "POST" });
+      if (res.ok) {
+        // Refresh the skill detail
+        openDetail(slug);
+      }
+    } catch {
+      // silent
+    } finally {
+      setInstalling(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-grid">
+      <div className="scanline" />
+
+      <header className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ background: "color-mix(in srgb, var(--bg-card) 90%, transparent)", borderColor: "var(--card-border)" }}>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard" className="btn-ghost text-xs px-3 py-1.5">
+                ← DASHBOARD
+              </Link>
+              <div className="w-px h-6 bg-white/10" />
+              <div>
+                <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                  🧬 Agentic Marketplace
+                </h1>
+                <p className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
+                  Genomic Repository of AI Capabilities — Pi Powered
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowPublish(!showPublish)}
+                className="btn-primary text-xs px-4 py-2"
+              >
+                {showPublish ? "BROWSE SKILLS" : "PUBLISH SKILL"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+        {showPublish ? (
+          <PublishSkillForm onPublished={() => setShowPublish(false)} />
+        ) : (
+          <>
+            {/* Search + Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search skills... (agent-memory, voice-wizard, sovereign-constitution)"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-green/40 font-mono"
+              />
+              <div className="flex gap-2">
+                {["", "BASIC_TOOL", "ADVANCED_TOOL", "PRO", "SOVEREIGN"].map((tier) => (
+                  <button
+                    key={tier}
+                    onClick={() => setFilterTier(tier)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-mono border transition-colors ${
+                      filterTier === tier
+                        ? "bg-neon-green/10 text-neon-green border-neon-green/30"
+                        : "bg-white/5 text-gray-500 border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    {tier ? TIER_LABELS[tier] || tier : "ALL"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bento-card p-4 text-center">
+                <span className="text-2xl font-bold text-neon-green font-mono">{skills.length}</span>
+                <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>Published Skills</p>
+              </div>
+              <div className="bento-card p-4 text-center">
+                <span className="text-2xl font-bold text-electric-blue font-mono">
+                  {skills.reduce((acc, s) => acc + s.installCount, 0)}
+                </span>
+                <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>Total Installs</p>
+              </div>
+              <div className="bento-card p-4 text-center">
+                <span className="text-2xl font-bold text-axiom-purple font-mono">
+                  {skills.filter((s) => s.tier === "PRO" || s.tier === "SOVEREIGN").length}
+                </span>
+                <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>Pro+ Skills</p>
+              </div>
+              <div className="bento-card p-4 text-center">
+                <span className="text-2xl font-bold text-amber-400 font-mono">
+                  {skills.filter((s) => s.pricePi === 0).length}
+                </span>
+                <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>Free Skills</p>
+              </div>
+            </div>
+
+            {/* Skills Grid */}
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bento-card p-6 animate-pulse">
+                    <div className="h-4 bg-white/5 rounded w-3/4 mb-3" />
+                    <div className="h-3 bg-white/5 rounded w-1/2 mb-4" />
+                    <div className="h-8 bg-white/5 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : skills.length === 0 ? (
+              <div className="bento-card p-12 text-center">
+                <span className="text-4xl mb-4 block">🧬</span>
+                <h3 className="text-lg font-bold text-white mb-2">No Skills Published Yet</h3>
+                <p className="text-sm text-gray-400 mb-6">
+                  Be the first to publish a skill to the Agentic Marketplace.
+                </p>
+                <button onClick={() => setShowPublish(true)} className="btn-primary">
+                  PUBLISH FIRST SKILL
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {skills.map((skill) => {
+                  const tierColor = TIER_COLORS[skill.tier] || "#64748b";
+                  return (
+                    <button
+                      key={skill.id}
+                      onClick={() => openDetail(skill.slug)}
+                      className="bento-card p-5 text-left hover:border-white/20 transition-all duration-200 group"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-white font-mono truncate group-hover:text-neon-green transition-colors">
+                            {skill.name}
+                          </h4>
+                          <p className="text-[10px] font-mono mt-0.5" style={{ color: tierColor }}>
+                            {skill.slug} v{skill.version}
+                          </p>
+                        </div>
+                        <span
+                          className="text-[8px] font-mono px-1.5 py-0.5 rounded ml-2 shrink-0"
+                          style={{
+                            background: `${tierColor}15`,
+                            color: tierColor,
+                            border: `1px solid ${tierColor}40`,
+                          }}
+                        >
+                          {TIER_LABELS[skill.tier] || skill.tier}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray-400 line-clamp-2 mb-4 min-h-[32px]">
+                        {skill.description || "No description"}
+                      </p>
+
+                      <div className="flex items-center justify-between text-[9px] font-mono">
+                        <div className="flex items-center gap-3">
+                          <span style={{ color: "var(--text-muted)" }}>
+                            ⬇ {skill.installCount}
+                          </span>
+                          <span style={{ color: "var(--text-muted)" }}>
+                            ⭐ {skill.avgRating.toFixed(1)}
+                          </span>
+                        </div>
+                        <span className="text-neon-green">
+                          {skill.pricePi === 0 ? "FREE" : `${skill.pricePi} π`}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Skill Detail Modal */}
+      {(selectedSkill || detailLoading) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setSelectedSkill(null)}
+        >
+          <div
+            className="bento-card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {detailLoading ? (
+              <div className="space-y-4 animate-pulse">
+                <div className="h-6 bg-white/5 rounded w-1/2" />
+                <div className="h-4 bg-white/5 rounded w-3/4" />
+                <div className="h-32 bg-white/5 rounded" />
+              </div>
+            ) : selectedSkill && (
+              <>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-white font-mono">{selectedSkill.name}</h2>
+                    <p className="text-xs font-mono mt-1" style={{ color: TIER_COLORS[selectedSkill.tier] }}>
+                      {selectedSkill.slug} v{selectedSkill.version} — {TIER_LABELS[selectedSkill.tier] || selectedSkill.tier}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedSkill(null)}
+                    className="text-gray-500 hover:text-white text-xs font-mono px-2 py-0.5 border border-white/5 rounded"
+                  >
+                    CLOSE
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-300 mb-4">{selectedSkill.description}</p>
+
+                <div className="flex items-center gap-4 text-[10px] font-mono mb-6">
+                  <span className="text-neon-green">⬇ {selectedSkill.installCount} installs</span>
+                  <span className="text-amber-400">⭐ {selectedSkill.avgRating.toFixed(1)} ({selectedSkill.ratingCount})</span>
+                  <span className="text-electric-blue">💰 {selectedSkill.pricePi === 0 ? "Free" : `${selectedSkill.pricePi} π`}</span>
+                </div>
+
+                {/* Manifest */}
+                <div className="mb-4">
+                  <h3 className="text-xs font-mono font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
+                    SKILL MANIFEST (SKILL.md)
+                  </h3>
+                  <pre className="bg-black/40 border border-white/5 rounded-lg p-3 text-[10px] font-mono text-neon-green overflow-x-auto max-h-48 scrollbar-thin whitespace-pre-wrap">
+                    {selectedSkill.manifestMd}
+                  </pre>
+                </div>
+
+                {/* Agent Script */}
+                {selectedSkill.agentScript && (
+                  <div className="mb-4">
+                    <h3 className="text-xs font-mono font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
+                      SPECIALIST AGENT SCRIPT
+                    </h3>
+                    <pre className="bg-black/40 border border-white/5 rounded-lg p-3 text-[10px] font-mono text-electric-blue overflow-x-auto max-h-48 scrollbar-thin whitespace-pre-wrap">
+                      {selectedSkill.agentScript}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Test Suite */}
+                {selectedSkill.testSuite && (
+                  <div className="mb-4">
+                    <h3 className="text-xs font-mono font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
+                      TEST SUITE
+                    </h3>
+                    <pre className="bg-black/40 border border-white/5 rounded-lg p-3 text-[10px] font-mono text-amber-400 overflow-x-auto max-h-48 scrollbar-thin whitespace-pre-wrap">
+                      {selectedSkill.testSuite}
+                    </pre>
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => handleInstall(selectedSkill.slug)}
+                    disabled={installing}
+                    className="flex-1 btn-primary py-2.5 text-xs font-mono"
+                  >
+                    {installing ? "INSTALLING..." : "INSTALL SKILL → AGENT"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(JSON.stringify({
+                        slug: selectedSkill.slug,
+                        manifest: selectedSkill.manifestMd,
+                        script: selectedSkill.agentScript,
+                      }, null, 2));
+                    }}
+                    className="btn-ghost py-2.5 text-xs font-mono px-4"
+                  >
+                    COPY PAYLOAD
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
+/**
+ * Publish a new skill to the Agentic Marketplace.
+ */
+function PublishSkillForm({ onPublished }: { onPublished: () => void }) {
+  const [form, setForm] = useState({
+    slug: "",
+    name: "",
+    description: "",
+    manifestMd: "",
+    agentScript: "",
+    testSuite: "",
+    tier: "BASIC_TOOL",
+    pricePi: 0,
+    version: "1.0.0",
+  });
+  const [publishing, setPublishing] = useState(false);
+  const [error, setError] = useState("");
+
+  const handlePublish = async () => {
+    if (!form.slug || !form.name || !form.manifestMd) {
+      setError("slug, name, and manifestMd are required");
+      return;
+    }
+    setPublishing(true);
+    setError("");
+    try {
+      const res = await fetch("/api/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        onPublished();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to publish skill");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="bento-card p-6">
+        <h2 className="text-lg font-bold text-white font-mono mb-2">🧬 Publish Skill to Marketplace</h2>
+        <p className="text-xs text-gray-400 mb-6">
+          Your skill becomes a living, executable entity that agents can install and run autonomously.
+        </p>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>SLUG *</label>
+              <input
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                placeholder="my-skill-name"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>NAME *</label>
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="My Skill Name"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>DESCRIPTION</label>
+            <input
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Short description of what this skill does"
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+              MANIFEST (SKILL.md) * — Full XML-tagged content
+            </label>
+            <textarea
+              value={form.manifestMd}
+              onChange={(e) => setForm({ ...form, manifestMd: e.target.value })}
+              placeholder={`<skill name="my-skill">\n  <context>How the agent should use this skill...</context>\n  <commands>\n    <command trigger="/my-skill:run">Description</command>\n  </commands>\n</skill>`}
+              rows={8}
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-neon-green font-mono focus:outline-none focus:border-neon-green/40 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+              SPECIALIST AGENT SCRIPT (TypeScript)
+            </label>
+            <textarea
+              value={form.agentScript}
+              onChange={(e) => setForm({ ...form, agentScript: e.target.value })}
+              placeholder={`export async function runSkill(context) {\n  // Agent logic here\n  return { success: true };\n}`}
+              rows={6}
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-electric-blue font-mono focus:outline-none focus:border-neon-green/40 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+              TEST SUITE
+            </label>
+            <textarea
+              value={form.testSuite}
+              onChange={(e) => setForm({ ...form, testSuite: e.target.value })}
+              placeholder={`describe('my-skill', () => {\n  it('should do something', () => {\n    expect(true).toBe(true);\n  });\n});`}
+              rows={4}
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-amber-400 font-mono focus:outline-none focus:border-neon-green/40 resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>TIER</label>
+              <select
+                value={form.tier}
+                onChange={(e) => setForm({ ...form, tier: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+              >
+                {Object.entries(TIER_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>PRICE (π)</label>
+              <input
+                type="number"
+                value={form.pricePi}
+                onChange={(e) => setForm({ ...form, pricePi: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.01"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>VERSION</label>
+              <input
+                value={form.version}
+                onChange={(e) => setForm({ ...form, version: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={handlePublish}
+            disabled={publishing || !form.slug || !form.name || !form.manifestMd}
+            className="w-full btn-primary py-3 text-xs font-mono disabled:opacity-50"
+          >
+            {publishing ? "PUBLISHING TO MARKETPLACE..." : "PUBLISH SKILL → MARKETPLACE"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

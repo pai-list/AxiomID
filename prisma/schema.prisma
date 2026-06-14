@@ -49,6 +49,12 @@ model User {
   // Agent Logs
   agentLogs   AgentLog[]
 
+  // Skills (authored)
+  authoredSkills Skill[]
+
+  // Skill Reviews
+  skillReviews SkillReview[]
+
   // Metadata
   metadata   String? @db.Text // JSON: arbitrary user metadata (max ~10KB)
   lastActive DateTime?
@@ -91,6 +97,9 @@ model UserAgent {
 
   // Logs
   agentLogs   AgentLog[]
+
+  // Skills (installed)
+  installedSkills SkillInstallation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -203,5 +212,90 @@ model Stamp {
   createdAt  DateTime @default(now())
 
   @@unique([userId, type], name: "user_stamp_unique")
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// AGENTIC MARKETPLACE — GENOMIC REPOSITORY
+// ─────────────────────────────────────────────
+
+enum SkillTier {
+  BASIC_TOOL
+  ADVANCED_TOOL
+  ADVANCED_INFRASTRUCTURE
+  PRO
+  SOVEREIGN
+}
+
+enum SkillStatus {
+  DRAFT
+  PUBLISHED
+  DEPRECATED
+}
+
+model Skill {
+  id          String     @id @default(uuid())
+  slug        String     @unique @db.VarChar(100) // "agent-memory"
+  name        String     @db.VarChar(200) // "Agent Memory"
+  description String?    @db.VarChar(1000)
+
+  // ── The Genomic Payload ──
+  manifestMd  String     @db.Text // Full SKILL.md content with XML tags
+  agentScript String?    @db.Text // Specialist agent TypeScript code
+  testSuite   String?    @db.Text // Test suite to verify skill integrity
+
+  // ── Marketplace Metadata ──
+  tier        SkillTier  @default(BASIC_TOOL)
+  pricePi     Float      @default(0) // Price in Pi tokens (0 = free)
+  version     String     @default("1.0.0") @db.VarChar(20) // Semantic version
+  authorId    String?
+  author      User?      @relation(fields: [authorId], references: [id])
+  status      SkillStatus @default(DRAFT)
+  isPublished Boolean    @default(false)
+
+  // ── Analytics ──
+  installCount Int       @default(0)
+  avgRating    Float     @default(0) // 0-5 scale
+  ratingCount  Int       @default(0)
+
+  // ── Relations ──
+  installations SkillInstallation[]
+  reviews       SkillReview[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([tier])
+  @@index([status])
+  @@index([isPublished])
+  @@index([slug])
+}
+
+model SkillInstallation {
+  id          String   @id @default(uuid())
+  skillId     String
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  agentId     String
+  agent       UserAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  installedAt DateTime @default(now())
+  status      String   @default("active") @db.VarChar(20) // "active" | "disabled" | "pending"
+
+  @@unique([skillId, agentId], name: "skill_agent_unique")
+  @@index([skillId])
+  @@index([agentId])
+}
+
+model SkillReview {
+  id        String   @id @default(uuid())
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      // 1-5 stars
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@unique([skillId, userId], name: "skill_user_review_unique")
+  @@index([skillId])
   @@index([userId])
 }

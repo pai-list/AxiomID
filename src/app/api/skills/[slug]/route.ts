@@ -1,0 +1,152 @@
+import { logger } from '@/lib/logger';
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { apiError, apiSuccess } from '@/lib/errors';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/ip';
+
+/**
+ * GET /api/skills/[slug] — Get full skill detail including manifest, agent script, and tests.
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`skill-detail:${ip}`, RATE_LIMITS.anonymous);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+  }
+
+  try {
+    const skill = await prisma.skill.findUnique({
+      where: { slug },
+      include: {
+        _count: {
+          select: { installations: true, reviews: true },
+        },
+      },
+    });
+
+    if (!skill) {
+      return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    return apiSuccess({
+      id: skill.id,
+      slug: skill.slug,
+      name: skill.name,
+      description: skill.description,
+      manifestMd: skill.manifestMd,
+      agentScript: skill.agentScript,
+      testSuite: skill.testSuite,
+      tier: skill.tier,
+      pricePi: skill.pricePi,
+      version: skill.version,
+      status: skill.status,
+      isPublished: skill.isPublished,
+      installCount: skill.installCount,
+      avgRating: skill.avgRating,
+      ratingCount: skill.ratingCount,
+      installationCount: skill._count.installations,
+      reviewCount: skill._count.reviews,
+      createdAt: skill.createdAt,
+      updatedAt: skill.updatedAt,
+    });
+  } catch (error) {
+    logger.error('[SKILL-DETAIL] Database error:', error);
+    return apiError('INTERNAL_ERROR', 'Failed to fetch skill');
+  }
+}
+
+/**
+ * PATCH /api/skills/[slug] — Update skill metadata, manifest, or script.
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`skill-update:${ip}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
+  }
+
+  if (!body || typeof body !== 'object') {
+    return apiError('VALIDATION_ERROR', 'Request body required');
+  }
+
+  try {
+    const existing = await prisma.skill.findUnique({ where: { slug } });
+    if (!existing) {
+      return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    const allowedUpdates = [
+      'name', 'description', 'manifestMd', 'agentScript', 'testSuite',
+      'tier', 'pricePi', 'version', 'status', 'isPublished',
+    ];
+
+    const updateData: Record<string, unknown> = {};
+    for (const field of allowedUpdates) {
+      if ((body as Record<string, unknown>)[field] !== undefined) {
+        updateData[field] = (body as Record<string, unknown>)[field];
+      }
+    }
+
+    const skill = await prisma.skill.update({
+      where: { slug },
+      data: updateData,
+    });
+
+    return apiSuccess({
+      slug: skill.slug,
+      name: skill.name,
+      tier: skill.tier,
+      version: skill.version,
+      status: skill.status,
+      isPublished: skill.isPublished,
+    });
+  } catch (error) {
+    logger.error('[SKILL-UPDATE] Database error:', error);
+    return apiError('INTERNAL_ERROR', 'Failed to update skill');
+  }
+}
+
+/**
+ * DELETE /api/skills/[slug] — Remove a skill from the marketplace.
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`skill-delete:${ip}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+  }
+
+  try {
+    const existing = await prisma.skill.findUnique({ where: { slug } });
+    if (!existing) {
+      return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    await prisma.skill.delete({ where: { slug } });
+
+    return apiSuccess({ deleted: true, slug });
+  } catch (error) {
+    logger.error('[SKILL-DELETE] Database error:', error);
+    return apiError('INTERNAL_ERROR', 'Failed to delete skill');
+  }
+}
