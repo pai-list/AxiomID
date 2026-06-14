@@ -7,7 +7,10 @@ const REQUIRED_ENV_VARS = [
   'ISSUER_PUBLIC_KEY',
 ] as const;
 
+let validated = false;
+
 export function validateEnv(): void {
+  if (validated) return;
   if (typeof process === 'undefined' || !process.env) return;
 
   const missing: string[] = [];
@@ -23,4 +26,6 @@ export function validateEnv(): void {
       `Set them in your Vercel dashboard or .env file before deploying.`
     );
   }
+
+  validated = true;
 }
