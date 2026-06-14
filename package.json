@@ -46,7 +46,8 @@
     "deploy:preview": "vercel",
     "test": "NODE_OPTIONS='--no-deprecation' jest --runInBand --forceExit",
     "test:watch": "jest --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "memory:build": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' scripts/build-memory.ts"
   },
   "dependencies": {
     "@pinetwork/pi-sdk-js": "^2.0.0",

@@ -337,12 +337,6 @@ npm run dev
 | Tier | Layer | Repository | Role / Description |
 | :--- | :--- | :--- | :--- |
 | 👑 **Root** | **L0** | [**`axiomid-project`**](https://github.com/Moeabdelaziz007/axiomid-project) | **📍 YOU ARE HERE** · Sole Issuer of `did:axiom:*` |
-| 🌀 **Core** | **L1** | [**`aix-format`**](https://github.com/Moeabdelaziz007/aix-format) | Protocol · Agent Passport · TrustChain |
-| 🌀 **Core** | **L2** | [**`iqra`**](https://github.com/Moeabdelaziz007/iqra) | Runtime · Sovereign AI OS · Conscience Engine |
-| 🌀 **Core** | **L3** | [**`aix-agent-skills`**](https://github.com/Moeabdelaziz007/aix-agent-skills) | Skills Marketplace · Decoupled Capabilities |
-| 🛰️ **Satellite** | **L4** | [**`AlphaAxiom`**](https://github.com/Moeabdelaziz007/AlphaAxiom) | Trading & Exchange Integrations |
-| 🛰️ **Satellite** | **L5** | [**`PiWorker-OS`**](https://github.com/Moeabdelaziz007/PiWorker-OS) | Pi Network Nodes & Escrow Automation |
-| 🛰️ **Satellite** | **L6** | [**`GemClaw`**](https://github.com/Moeabdelaziz007/GemClaw) | Voice Forge & Real-Time Gemini Stream |
 
 </div>
 
