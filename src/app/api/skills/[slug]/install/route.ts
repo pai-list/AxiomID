@@ -25,24 +25,22 @@ export async function POST(
   const { user } = auth;
 
   try {
-    const skill = await prisma.skill.findUnique({ where: { slug } });
+    const [skill, agent] = await Promise.all([
+      prisma.skill.findUnique({ where: { slug } }),
+      prisma.userAgent.findUnique({ where: { userId: user.id } }),
+    ]);
     if (!skill) {
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
     }
     if (!skill.isPublished || skill.status !== 'PUBLISHED') {
       return apiError('FORBIDDEN', 'Skill is not available for installation');
     }
-
-    const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });
     if (!agent) {
       return apiError('NOT_FOUND', 'No agent found. Create one first via POST /api/agent');
     }
 
-    const existingInstallation = await prisma.skillInstallation.findFirst({
-      where: {
-        skillId: skill.id,
-        agentId: agent.id,
-      },
+    const existingInstallation = await prisma.skillInstallation.findUnique({
+      where: { skill_agent_unique: { skillId: skill.id, agentId: agent.id } },
     });
 
     if (existingInstallation) {
@@ -102,21 +100,19 @@ export async function DELETE(
   const { user } = auth;
 
   try {
-    const skill = await prisma.skill.findUnique({ where: { slug } });
+    const [skill, agent] = await Promise.all([
+      prisma.skill.findUnique({ where: { slug } }),
+      prisma.userAgent.findUnique({ where: { userId: user.id } }),
+    ]);
     if (!skill) {
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
     }
-
-    const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });
     if (!agent) {
       return apiError('NOT_FOUND', 'No agent found');
     }
 
-    const installation = await prisma.skillInstallation.findFirst({
-      where: {
-        skillId: skill.id,
-        agentId: agent.id,
-      },
+    const installation = await prisma.skillInstallation.findUnique({
+      where: { skill_agent_unique: { skillId: skill.id, agentId: agent.id } },
     });
 
     if (!installation) {

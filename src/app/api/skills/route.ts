@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
-import { SkillTier } from '@prisma/client';
+import { Prisma, SkillTier } from '@prisma/client';
 
 /**
  * GET /api/skills — List published skills from the Agentic Marketplace.
@@ -24,26 +24,22 @@ export async function GET(request: NextRequest) {
   const offset = parseInt(searchParams.get('offset') || '0', 10);
 
   try {
-    const where: Record<string, unknown> = {
+    const where: Prisma.SkillWhereInput = {
       isPublished: true,
       status: 'PUBLISHED',
+      ...(tier ? { tier: tier as SkillTier } : {}),
+      ...(search ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      } : {}),
     };
-
-    if (tier) {
-      where.tier = tier;
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
 
     const [skills, total] = await Promise.all([
       prisma.skill.findMany({
         where,
-        select: {
+
           id: true,
           slug: true,
           name: true,

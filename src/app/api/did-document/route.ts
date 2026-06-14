@@ -26,6 +26,19 @@ function encodeBase58(buffer: Buffer): string {
   return result;
 }
 
+const DID_DOC_HEADERS = {
+  "Content-Type": "application/did+ld+json",
+  "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+};
+
+function didDocResponse(did: string, publicKeyPem?: string): NextResponse {
+  try {
+    return NextResponse.json(buildDidDocument(did, publicKeyPem), { headers: DID_DOC_HEADERS });
+  } catch (err) {
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  }
+}
+
 function buildDidDocument(did: string, publicKeyPem?: string) {
   const doc: Record<string, unknown> = {
     "@context": [
@@ -97,20 +110,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "DID not found" }, { status: 404 });
     }
 
-    try {
-      const doc = buildDidDocument(user.did);
-      return NextResponse.json(doc, {
-        headers: {
-          "Content-Type": "application/did+ld+json",
-          "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
-        },
-      });
-    } catch (err) {
-      return NextResponse.json(
-        { error: (err as Error).message },
-        { status: 500 }
-      );
-    }
+    return didDocResponse(user.did);
   }
 
   // No DID param → return issuer DID Document
@@ -119,20 +119,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "ISSUER_PUBLIC_KEY not configured" }, { status: 500 });
   }
 
-  const issuerDid = createIssuerDid();
-
-  try {
-    const doc = buildDidDocument(issuerDid, publicKeyPem);
-    return NextResponse.json(doc, {
-      headers: {
-        "Content-Type": "application/did+ld+json",
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
-      },
-    });
-  } catch (err) {
-    return NextResponse.json(
-      { error: (err as Error).message },
-      { status: 500 }
-    );
-  }
+  return didDocResponse(createIssuerDid(), publicKeyPem);
 }
