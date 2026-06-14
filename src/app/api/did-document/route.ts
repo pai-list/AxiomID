@@ -61,9 +61,8 @@ function buildDidDocument(did: string, publicKeyPem?: string) {
       }
     } catch (err) {
       console.error("[DID-DOCUMENT] Failed to parse issuer public key:", err);
-      return NextResponse.json(
-        { error: "Failed to parse ISSUER_PUBLIC_KEY. Ensure it is a valid Ed25519 or RSA PEM key." },
-        { status: 500 }
+      throw new Error(
+        "Failed to parse ISSUER_PUBLIC_KEY. Ensure it is a valid Ed25519 or RSA PEM key."
       );
     }
 
@@ -98,12 +97,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "DID not found" }, { status: 404 });
     }
 
-    return NextResponse.json(buildDidDocument(user.did), {
-      headers: {
-        "Content-Type": "application/did+ld+json",
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
-      },
-    });
+    try {
+      const doc = buildDidDocument(user.did);
+      return NextResponse.json(doc, {
+        headers: {
+          "Content-Type": "application/did+ld+json",
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+        },
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { error: (err as Error).message },
+        { status: 500 }
+      );
+    }
   }
 
   // No DID param → return issuer DID Document
@@ -114,10 +121,18 @@ export async function GET(request: NextRequest) {
 
   const issuerDid = createIssuerDid();
 
-  return NextResponse.json(buildDidDocument(issuerDid, publicKeyPem), {
-    headers: {
-      "Content-Type": "application/did+ld+json",
-      "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
-    },
-  });
+  try {
+    const doc = buildDidDocument(issuerDid, publicKeyPem);
+    return NextResponse.json(doc, {
+      headers: {
+        "Content-Type": "application/did+ld+json",
+        "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
+      },
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: (err as Error).message },
+      { status: 500 }
+    );
+  }
 }

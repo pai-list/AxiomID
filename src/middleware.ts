@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
     host !== `www.${rootDomain}` &&
     host !== rootDomain;
 
-  if (isSubdomain) {
+  if (isSubdomain && !url.pathname.startsWith("/api/")) {
     const subdomain = host.replace(`.${rootDomain}`, "");
     // Sanitize subdomain: alphanumeric + hyphens only (reject leading/trailing hyphens)
     if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {

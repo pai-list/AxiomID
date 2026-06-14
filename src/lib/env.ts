@@ -9,6 +9,8 @@ const REQUIRED_ENV_VARS = [
 
 let validated = false;
 
+// Available for manual invocation at startup (e.g., in a route handler or script).
+// Not called automatically — the app is designed to boot without validating all env vars.
 export function validateEnv(): void {
   if (validated) return;
   if (typeof process === 'undefined' || !process.env) return;

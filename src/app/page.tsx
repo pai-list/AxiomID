@@ -81,7 +81,13 @@ function PassportHero({ user }: { user: { piUsername?: string | null; walletAddr
 
         {/* Bottom bar */}
         <div className="flex items-center justify-between border-t border-white/5 pt-3">
-          <span className="text-[8px] text-gray-600 font-mono">AxiomID Verified • Pi Compatible</span>
+          <div className="flex items-center gap-1.5">
+            <svg viewBox="0 0 100 100" className="w-3 h-3 text-[#8B5CF6]" fill="currentColor">
+              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="5"/>
+              <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
+            </svg>
+            <span className="text-[8px] text-gray-600 font-mono">AxiomID • Pi Network</span>
+          </div>
           <span className="text-[8px] text-gray-600 font-mono">{user?.tier ? user.tier.toUpperCase() : "1.0.0"}</span>
         </div>
       </div>
@@ -135,11 +141,21 @@ export default function Home() {
 
       {/* Header */}
       <header className="w-full max-w-6xl flex justify-between items-center px-6 py-6 z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-neon-green/20 flex items-center justify-center border border-neon-green/50">
-            <span className="text-neon-green font-bold">A</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded bg-neon-green/20 flex items-center justify-center border border-neon-green/50">
+              <span className="text-neon-green font-bold">A</span>
+            </div>
+            <span className="font-mono text-xl tracking-tighter">AXIOM<span className="text-gray-600">ID</span></span>
           </div>
-          <span className="font-mono text-xl tracking-tighter">AXIOM<span className="text-gray-600">ID</span></span>
+          <div className="w-px h-6 bg-white/10" />
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#8B5CF6]/10 border border-[#8B5CF6]/30">
+            <svg viewBox="0 0 100 100" className="w-4 h-4 text-[#8B5CF6]" fill="currentColor">
+              <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3"/>
+              <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
+            </svg>
+            <span className="text-[9px] font-mono text-[#8B5CF6] tracking-wider">PI NETWORK</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -190,7 +206,7 @@ export default function Home() {
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">
+           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1]">
             {language === "en" ? (
               <>
                 Agent Identity
@@ -209,6 +225,18 @@ export default function Home() {
               </>
             )}
           </h1>
+          <div className="flex items-center gap-2 text-[10px] font-mono">
+            <span className="px-2 py-0.5 rounded bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 flex items-center gap-1">
+              <svg viewBox="0 0 100 100" className="w-3 h-3" fill="currentColor">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="5"/>
+                <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
+              </svg>
+              {language === "en" ? "Built on Pi Network" : "مبني على شبكة Pi"}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              {language === "en" ? "Pi Token Payments Only" : "مدفوعات Pi فقط"}
+            </span>
+          </div>
 
           <p className="text-gray-400 max-w-md leading-relaxed text-sm md:text-base">
             {t("hero_desc")}
@@ -267,10 +295,11 @@ export default function Home() {
               <span>{language === "en" ? "Stellar On-Chain" : "على الشبكة Stellar"}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <svg className="w-3 h-3 text-neon-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg viewBox="0 0 100 100" className="w-3 h-3 text-[#8B5CF6]" fill="currentColor">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="5"/>
+                <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
               </svg>
-              <span>{language === "en" ? "Pi Network Compatible" : "متوافق مع شبكة Pi"}</span>
+              <span>{language === "en" ? "Pi Network Ecosystem — Pi Only" : "نظام Pi البيئي — Pi فقط"}</span>
             </div>
           </div>
         </div>
@@ -335,7 +364,7 @@ export default function Home() {
             {
               step: "03",
               title: language === "en" ? "Deploy" : "التشغيل",
-              desc: language === "en" ? "Your Agent Passport is ready. Use it across the Pi ecosystem and beyond." : "جواز سفر العميل الخاص بك جاهز للاستخدام في شبكة Pi وخارجها.",
+              desc: language === "en" ? "Your Agent Passport is ready. Use it across the Pi ecosystem — Pi apps, dApps, and beyond — with Pi token payments only." : "جواز سفر العميل الخاص بك جاهز للاستخدام في نظام Pi البيئي — تطبيقات Pi والتطبيقات اللامركزية — مع مدفوعات Pi فقط.",
               icon: (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
