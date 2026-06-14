@@ -162,6 +162,16 @@ interface ApiResponse {
   stamps?: User['stamps'];
 }
 
+function reasonToString(reason: unknown): string {
+  if (typeof reason === "string") return reason;
+  if (reason instanceof Error) return reason.message || reason.toString();
+  if (reason !== null && typeof reason === "object") {
+    const obj = reason as { message?: unknown; error?: unknown };
+    return String(obj.message ?? obj.error ?? reason);
+  }
+  return String(reason);
+}
+
 /**
  * Normalize an API user response into the local `User` shape.
  *
@@ -288,16 +298,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createAgent = useCallback(async (name?: string) => {
+  const callAgentApi = useCallback(async (url: string, body?: string) => {
     if (!userRef.current) return false;
     try {
-      const res = await fetch("/api/agent", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
-        body: name !== undefined ? JSON.stringify({ name }) : undefined,
+        body,
       });
       if (!res.ok) return false;
       await refreshUser();
@@ -307,41 +317,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshUser, piAccessToken]);
 
-  const activateAgent = useCallback(async () => {
-    if (!userRef.current) return false;
-    try {
-      const res = await fetch("/api/agent/activate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [refreshUser, piAccessToken]);
+  const createAgent = useCallback(
+    (name?: string) => callAgentApi("/api/agent", name !== undefined ? JSON.stringify({ name }) : undefined),
+    [callAgentApi]
+  );
 
-  const pauseAgent = useCallback(async () => {
-    if (!userRef.current) return false;
-    try {
-      const res = await fetch("/api/agent/pause", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [refreshUser, piAccessToken]);
+  const activateAgent = useCallback(() => callAgentApi("/api/agent/activate"), [callAgentApi]);
+
+  const pauseAgent = useCallback(() => callAgentApi("/api/agent/pause"), [callAgentApi]);
 
   const connectDemoWallet = useCallback(async (walletAddress: string) => {
     if (!isDemoWalletAllowed()) {
@@ -559,26 +542,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
         if (!event.reason) return;
 
-        let reasonStr = "";
-        if (typeof event.reason === "string") {
-          reasonStr = event.reason;
-        } else if (event.reason instanceof Error) {
-          reasonStr = event.reason.message || event.reason.toString();
-        } else if (typeof event.reason === "object") {
-          reasonStr = (event.reason as any).message || (event.reason as any).error || String(event.reason);
-        } else {
-          reasonStr = String(event.reason);
-        }
-
-        const isConnectionClosed =
-          reasonStr.toLowerCase().includes("connection closed") ||
-          reasonStr.toLowerCase().includes("connection_closed");
-
-        if (isConnectionClosed) {
+        const lower = reasonToString(event.reason).toLowerCase();
+        if (lower.includes("connection closed") || lower.includes("connection_closed")) {
           event.preventDefault();
           console.warn("[Pi SDK] Suppressed expected connection closure rejection:", event.reason);
         }
-      };
+
       window.addEventListener("unhandledrejection", handleUnhandledRejection);
 
       if (window.Pi) {
