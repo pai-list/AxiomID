@@ -55,6 +55,10 @@ model User {
   // Skill Reviews
   skillReviews SkillReview[]
 
+  // Delegated Trust
+  delegatedTrustFrom DelegatedTrust[] @relation("DelegatedTrustFrom")
+  delegatedTrustTo   DelegatedTrust[] @relation("DelegatedTrustTo")
+
   // Metadata
   metadata   String? @db.Text // JSON: arbitrary user metadata (max ~10KB)
   lastActive DateTime?
@@ -118,6 +122,13 @@ enum AgentMode {
   MANUAL
 }
 
+enum PaymentStatus {
+  PENDING
+  ESCROWED
+  RELEASED
+  REFUNDED
+}
+
 // ─────────────────────────────────────────────
 // PI BLOCKCHAIN PAYMENTS
 // ─────────────────────────────────────────────
@@ -131,7 +142,7 @@ model PiPayment {
   amount        Float
   memo          String?  @db.VarChar(500)
   metadata      String?  @db.Text // JSON: { skillId, agentId, purpose }
-  status        String   @default("pending") @db.VarChar(50)
+  status        PaymentStatus   @default(PENDING)
   fromAddress   String?
   toAddress     String?
   network       String   @default("pi")
@@ -298,4 +309,20 @@ model SkillReview {
   @@unique([skillId, userId], name: "skill_user_review_unique")
   @@index([skillId])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// TRUST DELEGATION
+// ─────────────────────────────────────────────
+
+model DelegatedTrust {
+  id            String   @id @default(uuid())
+  fromDid       String   @db.VarChar(255) // The delegating DID
+  fromUser      User     @relation("DelegatedTrustFrom", fields: [fromDid], references: [did], onDelete: Cascade)
+  toDid         String   @db.VarChar(255) // The trusted DID
+  toUser        User     @relation("DelegatedTrustTo", fields: [toDid], references: [did], onDelete: Cascade)
+  weight        Float    @default(1.0)    // Trust weight (0.0 - 1.0)
+  createdAt     DateTime @default(now())
+
+  @@unique([fromDid, toDid], name: "delegation_unique")
 }

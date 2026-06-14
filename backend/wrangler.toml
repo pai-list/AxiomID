@@ -1,0 +1,20 @@
+name = "axiomid-backend"
+main = "src/index.ts"
+compatibility_date = "2026-06-14"
+
+[[durable_objects.bindings]]
+name = "PRESENCE_DO"
+class_name = "PresenceDO"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["PresenceDO"]
+
+[[queues.producers]]
+queue = "harvest-queue"
+binding = "HARVEST_QUEUE"
+
+[[queues.consumers]]
+queue = "harvest-queue"
+max_batch_size = 10
+max_batch_timeout = 2
