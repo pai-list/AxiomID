@@ -108,12 +108,13 @@ export function extractASTInfo(
   const edges: MemoryEdge[] = [];
 
   // Add the file node itself
+  const stat = fs.statSync(filePath);
   nodes.push({
     id: relativeFilePath,
     type: 'file',
     metadata: {
-      size: fs.statSync(filePath).size,
-      mtime: fs.statSync(filePath).mtime.toISOString(),
+      size: stat.size,
+      mtime: stat.mtime.toISOString(),
       extension: path.extname(filePath)
     }
   });
