@@ -41,10 +41,10 @@ export function globMarkdownFiles(dir: string, rootDir: string): string[] {
  * @returns An object with `frontmatter` containing the parsed metadata as key-value pairs and `body` containing the remaining content after the frontmatter block.
  */
 export function parseFrontmatter(content: string): {
-  frontmatter: Record<string, any>;
+  frontmatter: Record<string, string | string[]>;
   body: string;
 } {
-  const frontmatter: Record<string, any> = {};
+  const frontmatter: Record<string, string | string[]> = {};
   let body = content;
 
   // Match --- \n metadata \n ---

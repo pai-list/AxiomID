@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import fs from 'fs';
 import path from 'path';
 import { buildMemoryGraph, calculateGraphHash, buildAndSaveMemoryGraph } from '../../../lib/memory/builder';

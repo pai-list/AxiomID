@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import fs from 'fs';
 import path from 'path';
 import { globFiles, resolveImportPath, extractASTInfo } from '../../../lib/memory/extractors/ast-extractor';
