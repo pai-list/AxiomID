@@ -149,7 +149,7 @@ function checkPiBrowser(): boolean {
       if (referrer) {
         try {
           const referrerHost = new URL(referrer).hostname.toLowerCase();
-          if (referrerHost === "minepi.com" || referrerHost === "sandbox.minepi.com") return true;
+          if (referrerHost === "minepi.com" || referrerHost.endsWith(".minepi.com")) return true;
         } catch { /* malformed URL — fall through */ }
       }
     }
