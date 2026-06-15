@@ -4,7 +4,12 @@ import ts from 'typescript';
 import { MemoryNode, MemoryEdge } from '../graph';
 
 /**
- * Recursively gets all TS/JS files in a directory, ignoring node_modules, .git, .next, etc.
+ * Enumerates all TypeScript and JavaScript source files in a directory tree.
+ *
+ * Recursively scans `dir` for files with extensions `.ts`, `.tsx`, `.js`, or `.jsx`,
+ * excluding `.d.ts` files. Skips these directories: `node_modules`, `.git`, `.next`, `.jolli`, `dist`, `out`, and `build`.
+ *
+ * @returns An array of absolute file paths.
  */
 export function globFiles(dir: string, rootDir: string): string[] {
   let results: string[] = [];
@@ -41,8 +46,12 @@ export function globFiles(dir: string, rootDir: string): string[] {
 }
 
 /**
- * Resolves an imported module path to a relative path from workspace root.
- * Supports relative imports and '@/' alias.
+ * Resolves an import specifier to a relative path from the workspace root.
+ *
+ * Supports relative imports and the `@/` alias mapped to `src/`.
+ * External dependencies are not resolved.
+ *
+ * @returns The relative path from `rootDir` to the resolved file, or `null` if the import could not be resolved
  */
 export function resolveImportPath(
   importee: string,
@@ -94,7 +103,13 @@ export function resolveImportPath(
 }
 
 /**
- * Parses a TS/JS file AST to extract imports and top-level exported symbols.
+ * Extracts imports and exported symbols from a TypeScript or JavaScript file.
+ *
+ * Creates nodes for the file itself and for each top-level exported declaration (class, interface, function, enum, or type alias), and creates edges representing import relationships and export associations.
+ *
+ * @param filePath - Absolute path to the file to analyze.
+ * @param rootDir - Project root directory; relative paths in graph nodes are computed from this.
+ * @returns An object with `nodes` (file and symbol nodes) and `edges` (import and export relationships).
  */
 export function extractASTInfo(
   filePath: string,
@@ -108,13 +123,12 @@ export function extractASTInfo(
   const edges: MemoryEdge[] = [];
 
   // Add the file node itself
-  const stat = fs.statSync(filePath);
   nodes.push({
     id: relativeFilePath,
     type: 'file',
     metadata: {
-      size: stat.size,
-      mtime: stat.mtime.toISOString(),
+      size: fs.statSync(filePath).size,
+      mtime: fs.statSync(filePath).mtime.toISOString(),
       extension: path.extname(filePath)
     }
   });
@@ -203,7 +217,10 @@ export function extractASTInfo(
 }
 
 /**
- * Scans the entire project and extracts AST nodes and edges.
+ * Scans the entire project and builds a graph of its code structure and file hierarchy.
+ *
+ * @returns An object containing deduplicated nodes (files, exports, directories) and
+ *          edges (imports, exports, containment) representing the project's structure.
  */
 export function scanProjectAST(rootDir: string): {
   nodes: MemoryNode[];

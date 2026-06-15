@@ -16,6 +16,13 @@ interface StampCardProps {
   isAutomatic?: boolean;
 }
 
+/**
+ * Renders a stamp credential card for claiming and inspecting verifiable credentials.
+ *
+ * Displays the stamp's reward and connection status. When connected, shows the claimed handle
+ * and provides an inspect button. When not connected, offers options to manually enter a handle
+ * or connect via external link. Triggers an XP animation upon successful claims.
+ */
 export function StampCard({
   type,
   label,

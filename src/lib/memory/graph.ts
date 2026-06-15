@@ -56,21 +56,29 @@ export const MemoryGraphSchema = z.object({
 export type MemoryGraph = z.infer<typeof MemoryGraphSchema>;
 
 /**
- * Validates a node object against the Zod schema.
+ * Validates an unknown value as a memory node.
+ *
+ * @returns The validated node.
  */
 export function validateNode(node: unknown): MemoryNode {
   return MemoryNodeSchema.parse(node);
 }
 
 /**
- * Validates an edge object against the Zod schema.
+ * Validates an unknown value as a memory edge.
+ *
+ * @param edge - The value to validate
+ * @returns The input typed as a `MemoryEdge` if valid
+ * @throws If the input does not conform to the memory edge structure
  */
 export function validateEdge(edge: unknown): MemoryEdge {
   return MemoryEdgeSchema.parse(edge);
 }
 
 /**
- * Validates a complete graph object against the Zod schema.
+ * Validates a graph object.
+ *
+ * @returns The validated graph object, typed as MemoryGraph.
  */
 export function validateGraph(graph: unknown): MemoryGraph {
   return MemoryGraphSchema.parse(graph);

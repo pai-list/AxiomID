@@ -3,7 +3,9 @@ import path from 'path';
 import { MemoryNode, MemoryEdge } from '../graph';
 
 /**
- * Recursively find all Markdown files in a directory.
+ * Recursively scans a directory for Markdown files, skipping `node_modules`, `.git`, `.next`, `.jolli`, and `dist`.
+ *
+ * @returns An array of full file paths to all discovered `.md` files, or an empty array if the directory does not exist.
  */
 export function globMarkdownFiles(dir: string, rootDir: string): string[] {
   let results: string[] = [];
@@ -37,7 +39,9 @@ export function globMarkdownFiles(dir: string, rootDir: string): string[] {
 }
 
 /**
- * Parses simple YAML frontmatter.
+ * Extracts and parses YAML frontmatter from the beginning of content.
+ *
+ * @returns An object with `frontmatter` containing the parsed metadata as key-value pairs (with `[...]` notation converted to arrays) and `body` containing the remaining content after the frontmatter block. If no frontmatter block is found, `frontmatter` is empty and `body` is the original content.
  */
 export function parseFrontmatter(content: string): {
   frontmatter: Record<string, any>;
@@ -74,7 +78,9 @@ export function parseFrontmatter(content: string): {
 }
 
 /**
- * Extracts all [[Wikilinks]] from a body of markdown text.
+ * Extracts wikilink targets from Markdown text.
+ *
+ * @returns An array of extracted wikilink targets.
  */
 export function extractWikilinks(body: string): string[] {
   const links: string[] = [];
@@ -90,7 +96,14 @@ export function extractWikilinks(body: string): string[] {
 }
 
 /**
- * Resolves a wikilink target name to a file/document ID in the project.
+ * Resolves a wikilink target to a project-relative file path.
+ *
+ * Searches for the target file by checking relative to the current document's directory and then at the project root. If the target does not have a `.md` extension, the function appends it during the search.
+ *
+ * @param target - The wikilink target name, with or without a `.md` extension
+ * @param currentDocPath - The file path of the document containing the wikilink
+ * @param rootDir - The project root directory
+ * @returns The project-relative file path if found, or `null` if the target cannot be resolved
  */
 export function resolveWikilinkTarget(
   target: string,
@@ -120,7 +133,11 @@ export function resolveWikilinkTarget(
 }
 
 /**
- * Extracts metadata, wikilinks, and creates nodes & edges for a markdown file.
+ * Reads a markdown file and extracts document metadata and relationships as graph nodes and edges.
+ *
+ * @param filePath - Absolute path to the markdown file
+ * @param rootDir - The root directory used to compute relative paths in the result
+ * @returns An object containing document nodes and relationship edges extracted from the file
  */
 export function extractDocInfo(
   filePath: string,
@@ -185,7 +202,9 @@ export function extractDocInfo(
 }
 
 /**
- * Scans the workspace for markdown documentation and returns nodes and edges.
+ * Aggregates document nodes and relationship edges by scanning Markdown files in a directory.
+ *
+ * @returns An object containing a `nodes` array of document nodes and an `edges` array of relationship edges.
  */
 export function scanProjectDocs(rootDir: string): {
   nodes: MemoryNode[];
