@@ -7,9 +7,9 @@ import { extractGitInfo } from './extractors/git-extractor';
 import { scanProjectDocs } from './extractors/doc-extractor';
 
 /**
- * Computes a deterministic SHA-256 hash of a graph's nodes, edges, and timestamp.
+ * Generates a deterministic hash of graph nodes, edges, and a timestamp.
  *
- * @returns The hexadecimal SHA-256 hash.
+ * @returns A hexadecimal hash string.
  */
 export function calculateGraphHash(
   nodes: MemoryNode[],
@@ -36,9 +36,10 @@ export function calculateGraphHash(
 }
 
 /**
- * Builds a memory graph by scanning and merging project data from multiple sources.
+ * Constructs a memory graph by scanning a project's code, Git history, and documentation.
  *
- * @returns A validated memory graph containing deduplicated nodes and edges.
+ * @param rootDir - The root directory of the project to scan
+ * @returns A validated memory graph containing the project's extracted and deduplicated nodes and edges
  */
 export function buildMemoryGraph(rootDir: string): MemoryGraph {
   console.log(`[Memory Builder] Starting build for root: ${rootDir}`);
@@ -114,8 +115,10 @@ export function buildMemoryGraph(rootDir: string): MemoryGraph {
 }
 
 /**
- * Builds a memory graph from a project directory and persists it to a file.
+ * Builds a project memory graph and persists it to a JSON file.
  *
+ * @param rootDir - The root directory of the project to scan
+ * @param outputPath - The file path where the memory graph JSON will be written
  * @returns The constructed memory graph
  */
 export function buildAndSaveMemoryGraph(rootDir: string, outputPath: string): MemoryGraph {

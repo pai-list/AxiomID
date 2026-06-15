@@ -5,9 +5,9 @@ import { MemoryNode, MemoryEdge } from '../graph';
 const IGNORED_DIRS = new Set(['node_modules', '.git', '.next', '.jolli', 'dist', 'out', 'build']);
 
 /**
- * Collects all `.md` file paths in a directory tree, excluding ignored directories.
+ * Finds all Markdown files in a directory tree, excluding ignored directories such as node_modules, .git, and build output directories.
  *
- * @returns An array of full paths to `.md` files found.
+ * @returns Array of absolute paths to all .md files found.
  */
 export function globMarkdownFiles(dir: string, rootDir: string): string[] {
   let results: string[] = [];
@@ -35,13 +35,10 @@ export function globMarkdownFiles(dir: string, rootDir: string): string[] {
 }
 
 /**
- * Extracts and parses YAML-style frontmatter from content.
+ * Extracts and parses YAML frontmatter from the beginning of content.
  *
- * Frontmatter is expected to be delimited by `---` markers at the beginning.
- * Values are parsed as strings (with surrounding quotes removed) or arrays
- * (for values in bracket notation).
- *
- * @returns The parsed frontmatter object and the remaining body text.
+ * @param content - Markdown content that may include a YAML frontmatter block delimited by `---` at the start.
+ * @returns An object with `frontmatter` containing the parsed metadata as key-value pairs and `body` containing the remaining content after the frontmatter block.
  */
 export function parseFrontmatter(content: string): {
   frontmatter: Record<string, any>;
@@ -78,9 +75,9 @@ export function parseFrontmatter(content: string): {
 }
 
 /**
- * Extracts wikilinks from markdown text, supporting `[[target]]` and `[[target|display-text]]` formats.
+ * Extracts all wikilink targets from markdown text.
  *
- * @returns An array of wikilink targets.
+ * @returns An array of wikilink targets, excluding display labels if present.
  */
 export function extractWikilinks(body: string): string[] {
   const links: string[] = [];
@@ -98,32 +95,17 @@ export function extractWikilinks(body: string): string[] {
 /**
  * Resolves a wikilink target to a file path within the project.
  *
- * Attempts resolution in the following order: relative to the current document's directory (with optional `.md` extension), or as a path relative to the project root.
+ * Attempts multiple resolution strategies: relative to the current document's directory (with or without `.md` extension), or as a path relative to the project root. Returns the first successful match.
  *
- * @param target - The wikilink target name or path.
- * @param currentDocPath - The absolute path of the document containing the wikilink.
- * @param rootDir - The absolute path of the project root directory.
- * @returns The relative file path (normalized to forward slashes) if a matching file exists, `null` otherwise.
+ * @returns The file path relative to `rootDir` if the target exists, `null` otherwise
  */
+```
 
-/**
- * Parses a markdown file and creates a document node with wikilink and reference edges.
- *
- * Reads the markdown file, extracts YAML frontmatter and wikilinks, creates a document node with metadata, and produces edges for each resolved wikilink and related document entry.
- *
- * @param filePath - The absolute path to the markdown file.
- * @param rootDir - The absolute path of the project root directory.
- * @returns An object containing extracted nodes and edges. If the file cannot be processed, the returned arrays may be empty.
- */
+KEEP_EXISTING
 
-/**
- * Scans the workspace for markdown files and aggregates extracted nodes and edges.
- *
- * Recursively discovers all markdown files, extracts metadata and links from each, and deduplicates document nodes by ID while collecting all discovered edges.
- *
- * @param rootDir - The absolute path of the project root directory to scan.
- * @returns An object containing deduplicated document nodes and all discovered edges.
- */
+```
+
+KEEP_EXISTING
 export function resolveWikilinkTarget(
   target: string,
   currentDocPath: string,
@@ -153,11 +135,9 @@ export function resolveWikilinkTarget(
 
   return null;
 /**
- * Builds graph nodes and edges representing a markdown document's metadata and references.
+ * Parses a markdown file to extract document metadata and create graph nodes and edges.
  *
- * @param filePath - Path to the markdown file to process
- * @param rootDir - Root directory used to resolve relative file paths
- * @returns An object containing the extracted document node and edges for wikilinks and related references
+ * @returns An object containing the document node with metadata from frontmatter and edges representing wikilinks and related references.
  */
 export function extractDocInfo(
   filePath: string,
@@ -222,9 +202,9 @@ export function extractDocInfo(
 }
 
 /**
- * Builds an in-memory graph of project documentation by scanning markdown files and extracting their metadata and cross-references.
+ * Builds a graph of workspace documents from markdown files and their wikilink relationships.
  *
- * @returns An object containing document nodes and the edges that represent relationships between them.
+ * @returns An object with `nodes` representing documents and `edges` representing wikilink and reference connections between them.
  */
 export function scanProjectDocs(rootDir: string): {
   nodes: MemoryNode[];

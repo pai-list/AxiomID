@@ -2,9 +2,10 @@ import { execSync } from 'child_process';
 import { MemoryNode, MemoryEdge } from '../graph';
 
 /**
- * Determines if the specified directory is inside a Git work tree.
+ * Determines if the directory is a Git repository.
  *
- * @returns `true` if the directory is inside a Git work tree, `false` otherwise.
+ * @param rootDir - The directory to check
+ * @returns `true` if the directory is inside a Git work tree, `false` otherwise
  */
 export function isGitRepository(rootDir: string): boolean {
   try {
@@ -19,15 +20,16 @@ export function isGitRepository(rootDir: string): boolean {
 }
 
 /**
- * Extracts Git commit history and builds a graph of file modifications and relationships.
+ * Extracts Git commits and file relationships as graph nodes and edges.
  *
- * Parses `git log` output to create commit nodes and edges linking commits to modified files.
- * For commits with 2–5 changed files, adds additional edges between each file pair to represent
- * co-occurrences. Returns empty results if Git is not available in the specified directory.
+ * Creates nodes for each commit with metadata and edges linking commits to modified
+ * files and connecting files changed together in the same commit. Gracefully returns
+ * empty results if Git is unavailable or the directory is not a Git repository.
  *
- * @param rootDir - The directory to analyze
- * @param maxCommits - Maximum number of commits to extract (default 50)
- * @returns An object containing `nodes` (commit nodes) and `edges` (file references and co-occurrences)
+ * @param rootDir - The directory to extract Git information from
+ * @param maxCommits - Maximum number of commits to process (default: 50)
+ * @returns An object with `nodes` (commit nodes) and `edges` ("references" edges from
+ *   commits to files and "co-occurrence" edges between files in the same commit)
  */
 export function extractGitInfo(rootDir: string, maxCommits = 50): {
   nodes: MemoryNode[];

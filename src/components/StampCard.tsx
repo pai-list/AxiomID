@@ -17,17 +17,11 @@ interface StampCardProps {
 }
 
 /**
- * Renders an interactive stamp card for connecting items and claiming XP.
+ * Renders a stamp reward card with manual or automatic claim workflow.
  *
- * Displays different UI states based on connection status: an inspect button when claimed,
- * a manual input form or claim button when unclaimed. Automatically derives and displays
- * a connected account handle from credential metadata.
+ * Displays a form or auto-claim button based on `isAutomatic`. When connected, shows the verified handle and provides credential inspection. Triggers an XP animation on successful claim.
  *
- * @param type - The stamp type; determines input placeholder text.
- * @param metadata - JSON string containing credential subject data; used to derive the display handle when claimed.
- * @param onConnect - Callback invoked with the trimmed user input or "system_verified" for automatic claims.
- * @param onInspectVc - Callback invoked when the user inspects a connected credential.
- * @param isAutomatic - If `true`, automatically claims when clicked; otherwise shows a manual input form.
+ * @param metadata - Optional JSON string containing credential data; the handle or username is displayed when connected.
  */
 export function StampCard({
   type,
