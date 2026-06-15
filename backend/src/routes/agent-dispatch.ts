@@ -9,6 +9,7 @@ import { D1Helper } from "../db/d1";
 import { TrustEngine } from "../lib/trust";
 import { DelegationResolver } from "../lib/delegation";
 import { PerplexityClient } from "../lib/perplexity-client";
+import { generateId } from "../lib/utils";
 
 export interface DispatchRequest {
   skillSlug: string;
@@ -92,7 +93,7 @@ export class AgentDispatcher {
       if (!query) throw new Error("Missing query parameter");
 
       // Enqueue harvest job
-      const jobId = `h-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const jobId = generateId("h");
       await this.env.HARVEST_QUEUE.send({
         jobId,
         query,

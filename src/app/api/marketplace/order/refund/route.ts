@@ -1,10 +1,7 @@
 import { NextRequest } from "next/server";
-import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
-import { apiError, apiSuccess } from "@/lib/errors";
-import { OrderActionSchema } from "@/lib/validators";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
-import { getClientIp } from "@/lib/ip";
+import { apiSuccess } from "@/lib/errors";
+import { validateEscrowAction } from "../helpers";
 
 /**
  * Refunds an escrowed payment for the authenticated user.
@@ -15,33 +12,10 @@ import { getClientIp } from "@/lib/ip";
  * @returns An API response with the refunded payment status or an error.
  */
 export async function POST(req: NextRequest) {
-  const ip = getClientIp(req);
-  const rateLimit = await checkRateLimit(`order-refund:${ip}`, RATE_LIMITS.payment);
-  if (!rateLimit.allowed) {
-    return apiError("RATE_LIMITED", "Too many requests. Try again later.");
-  }
+  const result = await validateEscrowAction(req, "order-refund");
+  if (!("paymentId" in result)) return result;
 
-  const auth = await requireAuth(req);
-  if (auth.error) return auth.error;
-
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return apiError("VALIDATION_ERROR", "Invalid JSON body");
-  }
-
-  const parsed = OrderActionSchema.safeParse(body);
-  if (!parsed.success) {
-    return apiError("VALIDATION_ERROR", parsed.error.issues[0].message, parsed.error.issues);
-  }
-
-  const { paymentId } = parsed.data;
-
-  const payment = await prisma.piPayment.findUnique({ where: { id: paymentId } });
-  if (!payment) return apiError("NOT_FOUND", "Payment not found");
-  if (payment.userId !== auth.user.id) return apiError("FORBIDDEN", "Unauthorized");
-  if (payment.status !== "ESCROWED") return apiError("CONFLICT", "Payment not in escrow");
+  const { paymentId } = result;
 
   await prisma.piPayment.update({
     where: { id: paymentId },

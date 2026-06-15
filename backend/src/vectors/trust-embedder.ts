@@ -4,6 +4,7 @@
  */
 
 import type { Env } from "../lib/types";
+import { getTrustLevel } from "../lib/trust";
 
 export interface TrustVector {
   id: string;
@@ -38,7 +39,7 @@ export class TrustEmbedder {
   async embedTrustProfile(did: string, trustScore: number, delegationCount: number): Promise<number[]> {
     try {
       // Use Workers AI for real embeddings
-      const text = `DID:${did} trust:${trustScore.toFixed(3)} delegations:${delegationCount} level:${this.getTrustLevel(trustScore)}`;
+      const text = `DID:${did} trust:${trustScore.toFixed(3)} delegations:${delegationCount} level:${getTrustLevel(trustScore)}`;
       const response = await this.env.AI.run("@cf/baai/bge-small-en-v1.5", { text: [text] }) as { data: number[][] };
       if (response?.data?.[0]) {
         return response.data[0];
@@ -66,7 +67,7 @@ export class TrustEmbedder {
         trustScore,
         delegations: delegationCount,
         lastUpdated: Date.now(),
-        level: this.getTrustLevel(trustScore),
+        level: getTrustLevel(trustScore),
       },
     }]);
   }
@@ -82,13 +83,7 @@ export class TrustEmbedder {
       returnMetadata: true,
     });
 
-    return results.matches.map((match) => ({
-      id: match.id,
-      score: match.score,
-      did: (match.metadata?.did as string) || "",
-      trustScore: (match.metadata?.trustScore as number) || 0,
-      metadata: match.metadata || {},
-    }));
+    return results.matches.map(this.mapMatch);
   }
 
   /**
@@ -102,13 +97,7 @@ export class TrustEmbedder {
           topK,
           returnMetadata: true,
         });
-        return results.matches.map((match) => ({
-          id: match.id,
-          score: match.score,
-          did: (match.metadata?.did as string) || "",
-          trustScore: (match.metadata?.trustScore as number) || 0,
-          metadata: match.metadata || {},
-        }));
+        return results.matches.map(this.mapMatch);
       }
     } catch (err) {
       console.warn("[Vectorize] Text search failed:", err);
@@ -116,12 +105,14 @@ export class TrustEmbedder {
     return [];
   }
 
-  private getTrustLevel(score: number): string {
-    if (score >= 0.8) return "sovereign";
-    if (score >= 0.6) return "validator";
-    if (score >= 0.4) return "citizen";
-    if (score >= 0.2) return "visitor";
-    return "newcomer";
+  private mapMatch(match: { id: string; score: number; metadata?: Record<string, unknown> | null }): SearchResult {
+    return {
+      id: match.id,
+      score: match.score,
+      did: (match.metadata?.did as string) || "",
+      trustScore: (match.metadata?.trustScore as number) || 0,
+      metadata: match.metadata || {},
+    };
   }
 
   private fallbackEmbedding(did: string, trustScore: number, delegationCount: number): number[] {

@@ -208,10 +208,14 @@ export class TrustEngine {
   }
 
   private getTrustLevel(score: number): string {
-    if (score >= 0.8) return "sovereign";
-    if (score >= 0.6) return "validator";
-    if (score >= 0.4) return "citizen";
-    if (score >= 0.2) return "visitor";
-    return "newcomer";
+    return getTrustLevel(score);
   }
+}
+
+export function getTrustLevel(score: number): string {
+  if (score >= 0.8) return "sovereign";
+  if (score >= 0.6) return "validator";
+  if (score >= 0.4) return "citizen";
+  if (score >= 0.2) return "visitor";
+  return "newcomer";
 }

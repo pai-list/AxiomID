@@ -13,6 +13,7 @@ import { SkillsMarketplace } from "./routes/skills";
 import { AgentDispatcher } from "./routes/agent-dispatch";
 import { handleMcp } from "./mcp/handler";
 import { handleSearch, handleSearchSimilar } from "./routes/search";
+import { generateId } from "./lib/utils";
 
 export class Router {
   private kv: KVHelper;
@@ -201,7 +202,7 @@ export class Router {
     const body = await request.json<{ query: string; userDid?: string }>();
     if (!body.query) return errorResponse("Missing query");
 
-    const jobId = `h-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const jobId = generateId("h");
 
     await this.env.HARVEST_QUEUE.send({
       jobId,

@@ -5,6 +5,11 @@
 
 import { createMcpServer } from "./server";
 import type { Env } from "../lib/types";
+import { KVHelper } from "../db/kv";
+import { D1Helper } from "../db/d1";
+import { TrustEngine } from "../lib/trust";
+import { DelegationResolver } from "../lib/delegation";
+import { generateId } from "../lib/utils";
 
 export async function handleMcp(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -105,11 +110,6 @@ async function handleToolCall(
   args: Record<string, unknown>,
   env: Env
 ): Promise<unknown> {
-  const { KVHelper } = await import("../db/kv");
-  const { D1Helper } = await import("../db/d1");
-  const { TrustEngine } = await import("../lib/trust");
-  const { DelegationResolver } = await import("../lib/delegation");
-
   const kv = new KVHelper(env.CACHE_KV);
   const d1 = new D1Helper(env.DB);
   const trust = new TrustEngine(kv);
@@ -166,7 +166,7 @@ async function handleToolCall(
     }
 
     case "skill_install": {
-      const id = `install-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const id = generateId("install");
       await d1.db
         .prepare("INSERT OR REPLACE INTO skill_installs (id, skill_slug, user_did, version) VALUES (?, ?, ?, ?)")
         .bind(id, args.slug as string, args.userDid as string, (args.version as string) || "latest")
@@ -175,7 +175,7 @@ async function handleToolCall(
     }
 
     case "harvest_query": {
-      const jobId = `h-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const jobId = generateId("h");
       await env.HARVEST_QUEUE.send({ jobId, query: args.query, userDid: args.userDid });
       return { jobId, query: args.query, status: "queued", timestamp: Date.now() };
     }

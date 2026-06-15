@@ -10,6 +10,7 @@ import { KVHelper } from "../db/kv";
 import { D1Helper } from "../db/d1";
 import { TrustEngine } from "../lib/trust";
 import { DelegationResolver } from "../lib/delegation";
+import { generateId } from "../lib/utils";
 
 export function createMcpServer(env: Env): McpServer {
   const server = new McpServer({
@@ -284,7 +285,7 @@ export function createMcpServer(env: Env): McpServer {
     },
     async ({ slug, userDid, version }) => {
       try {
-        const id = `install-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const id = generateId("install");
         await d1.db
           .prepare(
             "INSERT OR REPLACE INTO skill_installs (id, skill_slug, user_did, version) VALUES (?, ?, ?, ?)"
@@ -326,7 +327,7 @@ export function createMcpServer(env: Env): McpServer {
     },
     async ({ query, userDid }) => {
       try {
-        const jobId = `h-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const jobId = generateId("h");
         await env.HARVEST_QUEUE.send({ jobId, query, userDid });
         return {
           content: [{

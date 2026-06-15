@@ -6,6 +6,7 @@
 import { KVHelper } from "../db/kv";
 import { D1Helper } from "../db/d1";
 import type { SkillRecord } from "../lib/types";
+import { generateId } from "../lib/utils";
 
 const SKILLS_CACHE_TTL = 300; // 5 minutes
 
@@ -57,7 +58,7 @@ export class SkillsMarketplace {
     }
 
     // Record install in D1
-    const id = `install-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const id = generateId("install");
     await this.d1.db
       .prepare(
         "INSERT OR REPLACE INTO skill_installs (id, skill_slug, user_did, version) VALUES (?, ?, ?, ?)"
