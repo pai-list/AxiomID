@@ -365,3 +365,31 @@ model SelfReviewLog {
 
   @@index([actionName])
 }
+
+// ─────────────────────────────────────────────
+// HARVEST RESULTS (Perplexity → Cloudflare)
+// ─────────────────────────────────────────────
+
+model HarvestResult {
+  id        String   @id @default(uuid())
+  query     String   @db.Text
+  result    String   @db.Text
+  citations String?  @db.Text // JSON array of citation URLs
+  userDid   String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  @@index([userDid])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// AGENT PRESENCE (Edge tracking)
+// ─────────────────────────────────────────────
+
+model AgentPresence {
+  agentId       String   @id @default(uuid())
+  status        String   @default("offline") @db.VarChar(20)
+  lastHeartbeat BigInt?
+  metadata      String?  @db.Text // JSON blob for agent-specific data
+  updatedAt     DateTime @updatedAt
+}
