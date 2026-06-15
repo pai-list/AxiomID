@@ -8,7 +8,7 @@ interface StampCardProps {
   type: string;
   label: string;
   xp: number;
-  icon: string;
+  icon: React.ReactNode;
   isConnected: boolean;
   metadata?: string | null;
   onConnect: (handle: string) => Promise<boolean>;

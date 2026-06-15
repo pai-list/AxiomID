@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
 import { createUserDid } from "@/lib/did";
+import { Shield, User, Zap, CheckCircle, AtSign, MessageCircle, Key } from "lucide-react";
 
 interface LedgerEntry {
   id: string;
@@ -152,10 +153,10 @@ export default function SettingsPage() {
     return !!user?.stamps?.some((s) => s.type === `connect_${platform}`);
   };
 
-  const PLATFORMS: { id: "twitter" | "discord" | "google"; emoji: string; label: string; xp: number }[] = [
-    { id: "twitter", emoji: "🐦", label: "Twitter / X", xp: 50 },
-    { id: "discord", emoji: "💬", label: "Discord", xp: 50 },
-    { id: "google", emoji: "🔑", label: "Google Accounts", xp: 50 },
+  const PLATFORMS: { id: "twitter" | "discord" | "google"; icon: React.ReactNode; label: string; xp: number }[] = [
+    { id: "twitter", icon: <AtSign className="w-4 h-4" />, label: "Twitter / X", xp: 50 },
+    { id: "discord", icon: <MessageCircle className="w-4 h-4" />, label: "Discord", xp: 50 },
+    { id: "google", icon: <Key className="w-4 h-4" />, label: "Google Accounts", xp: 50 },
   ];
 
   // XP Progress Calculation
@@ -172,7 +173,7 @@ export default function SettingsPage() {
       <main className="min-h-screen bg-grid flex items-center justify-center p-4">
         <div className="scanline" />
         <div className="bento-card max-w-md w-full p-8 text-center backdrop-blur-md" style={{ border: '1px solid var(--card-border)' }}>
-          <div className="text-4xl mb-4">🔐</div>
+          <div className="text-4xl mb-4"><Shield className="w-8 h-8 text-emerald-400" /></div>
           <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings_sovereign_title')}</h2>
           <p className="mb-6 text-sm" style={{ color: 'var(--text-secondary)' }}>{t('settings_wallet_prompt')}</p>
           <button onClick={connectWallet} className="btn-primary w-full py-3">
@@ -216,7 +217,7 @@ export default function SettingsPage() {
         {/* Section 1: Profile Details */}
         <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <span className="text-neon-green">👤</span> {t('settings_profile_title')}
+            <span className="text-neon-green"><User className="w-5 h-5" /></span> {t('settings_profile_title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
             <div className="space-y-1">
@@ -272,7 +273,7 @@ export default function SettingsPage() {
         <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <span className="text-electric-blue">⚡</span> {t('settings_progression_title')}
+              <span className="text-electric-blue"><Zap className="w-5 h-5" /></span> {t('settings_progression_title')}
             </h2>
             <span className="text-electric-blue font-mono text-sm">{xp} {t('total_xp')}</span>
           </div>
@@ -309,10 +310,10 @@ export default function SettingsPage() {
           </p>
 
           <div className="space-y-4">
-            {PLATFORMS.map(({ id, emoji, label, xp }) => (
+            {PLATFORMS.map(({ id, icon, label, xp }) => (
               <div key={id} className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}>
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{emoji}</span>
+                  <span className="text-2xl">{icon}</span>
                   <div>
                     <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{label}</h4>
                     <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('settings_xp_reward')} +{xp} XP</p>
@@ -457,7 +458,7 @@ export default function SettingsPage() {
               onClick={copyVcPayload}
               className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
             >
-              {copied ? `${t('copied')} ✅` : t('copy_payload')}
+              {copied ? <span className="flex items-center gap-1.5">{t('copied')} <CheckCircle className="w-4 h-4 text-emerald-400" /></span> : t('copy_payload')}
             </button>
             <button
               onClick={() => vcDialogRef.current?.close()}

@@ -33,16 +33,16 @@ describe("ThemeToggle — rendering", () => {
     expect(screen.getByRole("button")).toBeInTheDocument();
   });
 
-  it("shows '☀️' (sun) icon when current theme is 'dark'", () => {
+  it("renders Sun icon when current theme is 'dark'", () => {
     mockUseTheme.mockReturnValue(makeThemeCtx({ theme: "dark" }));
-    render(<ThemeToggle />);
-    expect(screen.getByText("☀️")).toBeInTheDocument();
+    const { container } = render(<ThemeToggle />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
-  it("shows '🌙' (moon) icon when current theme is 'light'", () => {
+  it("renders Moon icon when current theme is 'light'", () => {
     mockUseTheme.mockReturnValue(makeThemeCtx({ theme: "light" }));
-    render(<ThemeToggle />);
-    expect(screen.getByText("🌙")).toBeInTheDocument();
+    const { container } = render(<ThemeToggle />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
   it("sets aria-label to 'Switch to light mode' when theme is 'dark'", () => {

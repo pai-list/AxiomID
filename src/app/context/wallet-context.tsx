@@ -146,9 +146,14 @@ function checkPiBrowser(): boolean {
   try {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";
-      if (referrer.includes("minepi.com") || referrer.includes("sandbox.minepi.com")) return true;
+      if (referrer) {
+        try {
+          const referrerHost = new URL(referrer).hostname.toLowerCase();
+          if (referrerHost === "minepi.com" || referrerHost === "sandbox.minepi.com") return true;
+        } catch { /* malformed URL — fall through */ }
+      }
     }
-  } catch {}
+  } catch { /* cross-origin — fall through */ }
 
   return false;
 }
