@@ -3,8 +3,22 @@ import { createIssuerDid } from "@/lib/did";
 import { buildDidDocument } from "@/lib/did-document";
 import { resolveDid } from "@/lib/did-resolver";
 import { DidDocumentQuerySchema } from "@/lib/validators";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { apiError, rateLimitHeaders } from "@/lib/errors";
+import { getClientIp } from "@/lib/ip";
 
+/**
+ * Serves a DID document for a specified DID or the issuer's DID.
+ *
+ * @returns A NextResponse containing the DID document in `application/did+ld+json` format with cache headers, or an HTTP error response (429, 400, 404, or 500) if rate limiting, validation, resolution, or generation fails.
+ */
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`did-doc:${ip}`, RATE_LIMITS.public);
+  if (!rateLimit.allowed) {
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.", undefined, rateLimitHeaders(rateLimit));
+  }
+
   const { searchParams } = new URL(request.url);
   const parsed = DidDocumentQuerySchema.safeParse({
     did: searchParams.get("did"),

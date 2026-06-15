@@ -112,10 +112,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Provide the application's root HTML layout and context provider composition.
+ * Render the application's root HTML layout with global context providers.
  *
- * @param children - The application content to render inside the global providers and layout
- * @returns The root HTML element containing the app's layout, provider tree, fonts, analytics, and external script
+ * @returns The application root element.
  */
 export default function RootLayout({
   children,
@@ -155,6 +154,27 @@ export default function RootLayout({
           Skip to content
         </a>
         <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                if (document.readyState === 'complete') {
+                  navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+                    console.error('Service worker registration failed:', err);
+                  });
+                } else {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+                      console.error('Service worker registration failed:', err);
+                    });
+                  });
+                }
+              }
+            `,
+          }}
+        />
         <ThemeProvider>
           <LanguageProvider>
             <SandboxProvider>

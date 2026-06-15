@@ -1,11 +1,19 @@
 import { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth-middleware";
-import { apiError, apiSuccess } from "@/lib/errors";
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/ip';
 import { PresenceHeartbeatSchema } from "@/lib/validators";
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth.error) return auth.error;
+
+  const ip = getClientIp(req);
+  const rateLimit = await checkRateLimit(`heartbeat:${ip}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
+  }
 
   let body: unknown;
   try {

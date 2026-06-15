@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import crypto from 'crypto';
-import { apiError, apiSuccess } from '@/lib/errors';
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { AuthStateSchema } from '@/lib/validators';
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`auth-state:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
   const secret = getSecret();

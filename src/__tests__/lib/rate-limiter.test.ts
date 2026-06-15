@@ -95,4 +95,27 @@ describe('checkRateLimit (in-memory)', () => {
     expect(RATE_LIMITS.piAuth.maxRequests).toBe(5);
     expect(RATE_LIMITS.payment.maxRequests).toBe(10);
   });
+
+  it('RATE_LIMITS.public has correct values (PR change: new public tier)', () => {
+    expect(RATE_LIMITS.public.maxRequests).toBe(60);
+    expect(RATE_LIMITS.public.windowMs).toBe(60_000);
+  });
+
+  it('RATE_LIMITS.public allows up to 60 requests per window', async () => {
+    const key = 'test-public-1';
+    // First request is allowed
+    const first = await checkRateLimit(key, RATE_LIMITS.public);
+    expect(first.allowed).toBe(true);
+    expect(first.remaining).toBe(59);
+  });
+
+  it('RATE_LIMITS.public blocks after 60 requests', async () => {
+    const key = 'test-public-2';
+    for (let i = 0; i < 60; i++) {
+      await checkRateLimit(key, RATE_LIMITS.public);
+    }
+    const result = await checkRateLimit(key, RATE_LIMITS.public);
+    expect(result.allowed).toBe(false);
+    expect(result.remaining).toBe(0);
+  });
 });

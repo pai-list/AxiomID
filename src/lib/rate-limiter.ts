@@ -25,6 +25,7 @@ export interface RateLimitResult {
 export const RATE_LIMITS = {
   anonymous:     { windowMs: 60_000, maxRequests: 30  },
   authenticated: { windowMs: 60_000, maxRequests: 100 },
+  public:        { windowMs: 60_000, maxRequests: 60  },
   piAuth:        { windowMs: 60_000, maxRequests: 5   },
   payment:       { windowMs: 60_000, maxRequests: 10  },
 } as const satisfies Record<string, RateLimitConfig>;

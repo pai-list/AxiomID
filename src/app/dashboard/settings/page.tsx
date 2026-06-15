@@ -4,9 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useWallet } from "../../context/wallet-context";
 import { useLanguage } from "../../context/language-context";
-import { ErrorBanner } from "@/components/ErrorBanner";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import LanguageToggle from "@/components/LanguageToggle";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
 import { createUserDid } from "@/lib/did";
 import { Shield, User, Zap, CheckCircle, AtSign, MessageCircle, Key } from "lucide-react";
@@ -170,50 +167,23 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <main className="min-h-screen bg-grid flex items-center justify-center p-4">
-        <div className="scanline" />
-        <div className="bento-card max-w-md w-full p-8 text-center backdrop-blur-md" style={{ border: '1px solid var(--card-border)' }}>
-          <div className="text-4xl mb-4"><Shield className="w-8 h-8 text-emerald-400" /></div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings_sovereign_title')}</h2>
-          <p className="mb-6 text-sm" style={{ color: 'var(--text-secondary)' }}>{t('settings_wallet_prompt')}</p>
-          <button onClick={connectWallet} className="btn-primary w-full py-3">
-            {t('connect_wallet')}
-          </button>
-          <div className="mt-6 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-            <Link href="/" className="hover:text-neon-green transition-colors">{t('settings_back_landing')}</Link>
-          </div>
+      <div className="bento-card max-w-md w-full mx-auto p-8 text-center backdrop-blur-md" style={{ border: '1px solid var(--card-border)' }}>
+        <div className="text-4xl mb-4"><Shield className="w-8 h-8 text-emerald-400" /></div>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings_sovereign_title')}</h2>
+        <p className="mb-6 text-sm" style={{ color: 'var(--text-secondary)' }}>{t('settings_wallet_prompt')}</p>
+        <button onClick={connectWallet} className="btn-primary w-full py-3">
+          {t('connect_wallet')}
+        </button>
+        <div className="mt-6 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+          <Link href="/" className="hover:text-neon-green transition-colors">{t('settings_back_landing')}</Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-grid">
-      <div className="scanline" />
-      <ErrorBanner />
-
-      <header className="sticky top-0 z-40 backdrop-blur-md border-b" style={{ background: 'color-mix(in srgb, var(--bg-card) 90%, transparent)', borderColor: 'var(--card-border)' }}>
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 flex items-center justify-center shrink-0">
-              <span className="text-neon-green font-bold text-xl">A</span>
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text-primary)' }}>{t('settings_page_title')}</h1>
-              <p className="text-xs font-mono hidden sm:block" style={{ color: 'var(--text-muted)' }}>{t('settings_page_desc')}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <ThemeToggle />
-            <LanguageToggle />
-            <Link href="/dashboard" className="btn-ghost text-xs px-2 sm:px-3 py-1.5 hidden sm:flex items-center gap-1.5">
-              {t('settings_dashboard_link')}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+    <>
+    <div className="max-w-4xl mx-auto space-y-6">
         {/* Section 1: Profile Details */}
         <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
@@ -469,6 +439,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </dialog>
-    </main>
+    </>
   );
 }

@@ -1,10 +1,23 @@
 import { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
-import { apiError, apiSuccess } from "@/lib/errors";
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { OrderCreateSchema } from "@/lib/validators";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 
+/**
+ * Creates an escrow payment for a marketplace order.
+ *
+ * @returns An API response containing the payment ID on success, or an error response if rate-limited, unauthenticated, validation fails, or the skill does not exist.
+ */
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateLimit = await checkRateLimit(`order-create:${ip}`, RATE_LIMITS.payment);
+  if (!rateLimit.allowed) {
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.", undefined, rateLimitHeaders(rateLimit));
+  }
+
   const auth = await requireAuth(req);
   if (auth.error) return auth.error;
 

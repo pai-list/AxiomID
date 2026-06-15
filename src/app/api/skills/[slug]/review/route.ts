@@ -1,12 +1,20 @@
 import { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
-import { apiError, apiSuccess } from "@/lib/errors";
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/ip';
 import { SlugParamSchema, SkillReviewCreateSchema } from "@/lib/validators";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const auth = await requireAuth(req);
   if (auth.error) return auth.error;
+
+  const ip = getClientIp(req);
+  const rateLimit = await checkRateLimit(`review:${ip}:${req.nextUrl.pathname}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
+  }
 
   const { slug } = await params;
   const parsedParams = SlugParamSchema.safeParse({ slug });
@@ -44,6 +52,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const ip = getClientIp(req);
+  const rateLimit = await checkRateLimit(`review-get:${ip}:${req.nextUrl.pathname}`, RATE_LIMITS.public);
+  if (!rateLimit.allowed) {
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
+  }
+
   const { slug } = await params;
   const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {

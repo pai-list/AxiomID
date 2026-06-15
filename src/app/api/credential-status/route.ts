@@ -1,9 +1,22 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { apiError, apiSuccess } from "@/lib/errors";
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { CredentialStatusQuerySchema } from "@/lib/validators";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 
+/**
+ * Returns the credential status for a subject identified by DID.
+ *
+ * The credential is considered revoked if the subject's KYC status is rejected.
+ */
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`credential-status:${ip}`, RATE_LIMITS.anonymous);
+  if (!rateLimit.allowed) {
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.", undefined, rateLimitHeaders(rateLimit));
+  }
+
   const { searchParams } = new URL(request.url);
   const parsed = CredentialStatusQuerySchema.safeParse({
     credentialId: searchParams.get("credentialId"),

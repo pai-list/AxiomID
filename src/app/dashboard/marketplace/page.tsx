@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins, Package } from "lucide-react";
 
 interface Skill {
@@ -51,8 +51,10 @@ const TIER_LABELS: Record<string, string> = {
  * Users can search and filter published skills by tier, click to view details in a modal, and install selected skills. The component also provides a publish mode to add new skills to the marketplace.
  */
 export default function MarketplacePage() {
+  const { user, connectWallet, isConnecting } = useWallet();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState<string>("");
   const [selectedSkill, setSelectedSkill] = useState<SkillDetail | null>(null);
@@ -64,18 +66,24 @@ export default function MarketplacePage() {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const params = new URLSearchParams();
         if (filterTier) params.set("tier", filterTier);
         if (searchQuery) params.set("q", searchQuery);
         params.set("limit", "100");
         const res = await fetch(`/api/skills?${params}`);
-        if (res.ok && !cancelled) {
+        if (!res.ok) {
+          throw new Error(`Failed to load skills (${res.status})`);
+        }
+        if (!cancelled) {
           const data = await res.json();
           setSkills(data.skills || []);
         }
-      } catch {
-        // silent
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load marketplace");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -100,54 +108,56 @@ export default function MarketplacePage() {
   };
 
   const handleInstall = async (slug: string) => {
+    if (!user) {
+      connectWallet();
+      return;
+    }
     setInstalling(true);
     try {
-      const res = await fetch(`/api/skills/${slug}/install`, { method: "POST" });
-      if (res.ok) {
-        // Refresh the skill detail
-        openDetail(slug);
+      const res = await fetch(`/api/skills/${slug}/install`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `Install failed (${res.status})`);
       }
-    } catch {
-      // silent
+      openDetail(slug);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to install skill");
     } finally {
       setInstalling(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-grid">
-      <div className="scanline" />
-
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ background: "color-mix(in srgb, var(--bg-card) 90%, transparent)", borderColor: "var(--card-border)" }}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Link href="/dashboard" className="btn-ghost text-xs px-2 sm:px-3 py-1.5 shrink-0">
-                ← DASHBOARD
-              </Link>
-              <div className="w-px h-6 bg-white/10 hidden sm:block" />
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-bold truncate flex items-center" style={{ color: "var(--text-primary)" }}>
-                  <Dna className="w-5 h-5 text-emerald-400 inline mr-2" />Agentic Marketplace
-                </h1>
-                <p className="text-[10px] font-mono hidden sm:block" style={{ color: "var(--text-muted)" }}>
-                  Repository of AI Agent Skills — Pi Network
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setShowPublish(!showPublish)}
-                className="btn-primary text-xs px-3 sm:px-4 py-2"
-              >
-                {showPublish ? "BROWSE" : "PUBLISH"}
-              </button>
-            </div>
+    <>
+      {error && (
+        <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-center px-4 py-3" role="alert">
+          <div className="flex items-center gap-3 max-w-lg w-full px-4 py-3 rounded-xl border bg-[#1a0a0a]/90 backdrop-blur-md"
+            style={{ borderColor: "rgba(239, 68, 68, 0.25)" }}
+          >
+            <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span className="text-sm font-mono text-red-300 flex-1">{error}</span>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 text-xs font-mono px-2 py-1">DISMISS</button>
           </div>
         </div>
-      </header>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+      <div className="flex items-center gap-2 mb-6">
+        <h1 className="text-lg font-bold truncate flex items-center" style={{ color: "var(--text-primary)" }}>
+          <Dna className="w-5 h-5 text-emerald-400 inline mr-2" />Agentic Marketplace
+        </h1>
+        <div className="ml-auto">
+          <button
+            onClick={() => setShowPublish(!showPublish)}
+            className="btn-primary text-xs px-3 sm:px-4 py-2"
+          >
+            {showPublish ? "BROWSE" : "PUBLISH"}
+          </button>
+        </div>
+      </div>
         {showPublish ? (
           <PublishSkillForm onPublished={() => setShowPublish(false)} />
         ) : (
@@ -281,7 +291,6 @@ export default function MarketplacePage() {
             )}
           </>
         )}
-      </div>
 
       {/* Skill Detail Modal */}
       {(selectedSkill || detailLoading) && (
@@ -361,10 +370,10 @@ export default function MarketplacePage() {
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => handleInstall(selectedSkill.slug)}
-                    disabled={installing}
+                    disabled={installing || isConnecting}
                     className="flex-1 btn-primary py-2.5 text-xs font-mono"
                   >
-                    {installing ? "INSTALLING..." : "INSTALL SKILL → AGENT"}
+                    {installing ? "INSTALLING..." : isConnecting ? "CONNECTING..." : !user ? "CONNECT WALLET TO INSTALL" : "INSTALL SKILL → AGENT"}
                   </button>
                   <button
                     onClick={() => {
@@ -384,7 +393,7 @@ export default function MarketplacePage() {
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }
 
