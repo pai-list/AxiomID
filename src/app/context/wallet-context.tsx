@@ -389,13 +389,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     removeLocalStorageItem("axiomid_logged_out");
 
     try {
-      const inPiBrowser = checkPiBrowser();
-      const isSandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
-      const win = typeof window !== "undefined" ? (window as unknown as { Pi?: unknown }) : {};
-      const hasPiSdk = !!win.Pi;
-      pushLog(`Pi Browser: ${inPiBrowser ? "detected" : "not detected via UA"}`);
-      pushLog(`Pi SDK present: ${hasPiSdk ? "yes" : "no"}`);
-
       if (typeof window !== "undefined") {
         pushLog("Attempting Pi SDK authentication...");
         try {
