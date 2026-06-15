@@ -28,6 +28,22 @@ jest.mock("@/components/ThemeToggle", () => ({
   ThemeToggle: () => null,
 }));
 
+// jsdom does not implement the Touch constructor; provide a minimal polyfill
+if (typeof Touch === "undefined") {
+  (globalThis as any).Touch = class Touch {
+    identifier: number;
+    target: EventTarget;
+    clientX: number;
+    clientY: number;
+    constructor(init: { identifier: number; target: EventTarget; clientX: number; clientY: number }) {
+      this.identifier = init.identifier;
+      this.target = init.target;
+      this.clientX = init.clientX;
+      this.clientY = init.clientY;
+    }
+  };
+}
+
 jest.mock("next/link", () => {
   const Link = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
     <a href={href} className={className}>{children}</a>

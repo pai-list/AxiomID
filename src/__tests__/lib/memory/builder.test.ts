@@ -121,12 +121,15 @@ describe('MemoryBuilder', () => {
     mockExtractGitInfo.mockReturnValue({ nodes: [], edges: [] });
     mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
 
-    // Output dir already exists
+    // Output dir already exists — mkdirSync({recursive: true}) is idempotent
     mockFs.existsSync.mockReturnValue(true);
 
     buildAndSaveMemoryGraph(rootDir, '/mock/root/memory.graph.json');
 
-    expect(mockFs.mkdirSync).not.toHaveBeenCalled();
+    expect(mockFs.mkdirSync).toHaveBeenCalledWith(
+      '/mock/root',
+      { recursive: true }
+    );
   });
 
   it('should deduplicate edges by source+target+type, keeping the maximum weight', () => {

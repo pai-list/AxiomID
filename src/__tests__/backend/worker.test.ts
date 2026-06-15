@@ -10,7 +10,7 @@ jest.mock('cloudflare:workers', () => ({
   DurableObject: class DurableObject {
     constructor(public ctx: any, public env: any) {}
   },
-}));
+}), { virtual: true });
 
 // We test the default export logic directly without importing the full module,
 // since DurableObject subclassing is Cloudflare-specific.
