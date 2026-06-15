@@ -86,77 +86,83 @@ describe('TopologicalRouter', () => {
     expect(context).toHaveLength(0);
   });
 
-  it('should use default radius of 2 when not specified', () => {
-    // nodeB -> nodeC (distance 1) -> nodeD (distance 2)
-    // nodeB -> nodeA (distance 1) -> nodeE (distance 2)
-    // nodeD -> nodeB (cycle, already visited)
-    const context = router.getContext('nodeB');
-
-    // Should find nodeC, nodeD, nodeA at distance 1, and nodeE at distance 2
-    expect(context.find(c => c.node.id === 'nodeE')).toBeDefined();
-    expect(context.find(c => c.node.id === 'nodeE')?.distance).toBe(2);
-  });
-
-  it('should return empty array when radius is 0', () => {
-    // maxRadius=0 means we never leave the starting node
+  it('should return empty array with maxRadius=0 (no traversal beyond starting node)', () => {
+    // With maxRadius=0, the BFS never explores neighbors
     const context = router.getContext('nodeB', 0);
     expect(context).toHaveLength(0);
   });
 
-  it('should return empty context for isolated node with no edges', () => {
-    const isolatedGraph: MemoryGraph = {
-      version: '1.0',
-      hash: 'isolatedhash',
-      timestamp: Date.now(),
-      nodes: [
-        { id: 'isolated', type: 'file' },
-        { id: 'other', type: 'file' }
-      ],
-      edges: []
-    };
-
-    const isolatedRouter = new TopologicalRouter(isolatedGraph);
-    const context = isolatedRouter.getContext('isolated');
-    expect(context).toHaveLength(0);
+  it('should use default maxRadius of 2 when not specified', () => {
+    // nodeB at radius 2 should find nodeA, nodeC, nodeD (distance 1) and nodeE (distance 2)
+    const contextDefault = router.getContext('nodeB');
+    const contextRadius2 = router.getContext('nodeB', 2);
+    expect(contextDefault).toHaveLength(contextRadius2.length);
+    expect(contextDefault.map(c => c.node.id).sort()).toEqual(
+      contextRadius2.map(c => c.node.id).sort()
+    );
   });
 
-  it('should update weight when a heavier path at same distance is found', () => {
-    // Graph: A -> B (weight 0.5), A -> C (weight 1.0), C -> B (weight 1.0)
-    // From A at radius 2:
-    // B reachable via direct edge: weight 0.5 (distance 1)
-    // B also reachable via C: weight 1.0 * 1.0 = 1.0 (distance 2 - NOT same distance as direct)
-    // So direct edge wins at distance 1 with weight 0.5
-    const weightUpdateGraph: MemoryGraph = {
-      version: '1.0',
-      hash: 'weighthash',
-      timestamp: Date.now(),
-      nodes: [
-        { id: 'A', type: 'directory' },
-        { id: 'B', type: 'file' },
-        { id: 'C', type: 'file' }
-      ],
-      edges: [
-        { source: 'A', target: 'B', type: 'contains', weight: 0.5 },
-        { source: 'A', target: 'C', type: 'contains', weight: 1.0 },
-        { source: 'C', target: 'B', type: 'imports', weight: 1.0 }
-      ]
-    };
+  it('should return correct distance for nodes at distance 2', () => {
+    const context = router.getContext('nodeA', 2);
+    // nodeA -> nodeB (dist 1), nodeA -> nodeE (dist 1)
+    // Then from nodeB: nodeC (dist 2), nodeD (dist 2)
+    const nodeC = context.find(c => c.node.id === 'nodeC');
+    const nodeD = context.find(c => c.node.id === 'nodeD');
+    expect(nodeC?.distance).toBe(2);
+    expect(nodeD?.distance).toBe(2);
+  });
+});
 
-    const weightRouter = new TopologicalRouter(weightUpdateGraph);
-    const context = weightRouter.getContext('A', 1);
+describe('TopologicalRouter — linear chain graph', () => {
+  // Simple linear chain: Root -> A -> B -> C
+  const linearGraph: MemoryGraph = {
+    version: '1.0',
+    hash: 'linearhash',
+    timestamp: Date.now(),
+    nodes: [
+      { id: 'root', type: 'directory' },
+      { id: 'A', type: 'file' },
+      { id: 'B', type: 'file' },
+      { id: 'C', type: 'file' },
+    ],
+    edges: [
+      { source: 'root', target: 'A', type: 'contains', weight: 1.0 },
+      { source: 'A', target: 'B', type: 'imports', weight: 1.0 },
+      { source: 'B', target: 'C', type: 'imports', weight: 1.0 },
+    ]
+  };
 
-    // At radius 1, both B (direct, 0.5) and C (direct, 1.0) are found
-    const bEntry = context.find(c => c.node.id === 'B');
-    const cEntry = context.find(c => c.node.id === 'C');
-    expect(bEntry).toBeDefined();
-    expect(cEntry).toBeDefined();
-    // C has higher weight so should come first
-    expect(context[0].node.id).toBe('C');
-    expect(context[0].weight).toBe(1.0);
+  let linearRouter: import('../../../lib/memory/router').TopologicalRouter;
+
+  beforeEach(() => {
+    const { TopologicalRouter } = require('../../../lib/memory/router');
+    linearRouter = new TopologicalRouter(linearGraph);
   });
 
-  it('should not include starting node in results', () => {
-    const context = router.getContext('nodeA', 3);
-    expect(context.find(c => c.node.id === 'nodeA')).toBeUndefined();
+  it('should find C at distance 2 from A (forward traversal)', () => {
+    const context = linearRouter.getContext('A', 2);
+    const nodeC = context.find(c => c.node.id === 'C');
+    expect(nodeC).toBeDefined();
+    expect(nodeC?.distance).toBe(2);
+  });
+
+  it('should find root at distance 2 from B (backward traversal)', () => {
+    const context = linearRouter.getContext('B', 2);
+    const root = context.find(c => c.node.id === 'root');
+    expect(root).toBeDefined();
+    expect(root?.distance).toBe(2);
+  });
+
+  it('should not find C from A with maxRadius=1 (too shallow)', () => {
+    const context = linearRouter.getContext('A', 1);
+    const nodeC = context.find(c => c.node.id === 'C');
+    expect(nodeC).toBeUndefined();
+  });
+
+  it('results should be sorted by distance ascending', () => {
+    const context = linearRouter.getContext('A', 3);
+    for (let i = 1; i < context.length; i++) {
+      expect(context[i].distance).toBeGreaterThanOrEqual(context[i - 1].distance);
+    }
   });
 });

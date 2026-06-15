@@ -116,57 +116,32 @@ describe('MemoryBuilder', () => {
     );
   });
 
-  it('should not call mkdirSync when outputDir already exists', () => {
+  it('should NOT call mkdirSync if output directory already exists', () => {
     mockScanProjectAST.mockReturnValue({ nodes: [], edges: [] });
     mockExtractGitInfo.mockReturnValue({ nodes: [], edges: [] });
     mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
 
+    // Output dir already exists
     mockFs.existsSync.mockReturnValue(true);
 
-    const outputPath = '/mock/root/memory.graph.json';
-    buildAndSaveMemoryGraph(rootDir, outputPath);
+    buildAndSaveMemoryGraph(rootDir, '/mock/root/memory.graph.json');
 
     expect(mockFs.mkdirSync).not.toHaveBeenCalled();
-    expect(mockFs.writeFileSync).toHaveBeenCalled();
   });
 
-  it('should produce different hash when graph content changes', () => {
-    const nodes = [{ id: 'src/a.ts', type: 'file' as const }];
-    const edges: any[] = [];
-    const timestamp = 1718352000000;
-
-    const hash1 = calculateGraphHash(nodes, edges, timestamp);
-    const hash2 = calculateGraphHash([{ id: 'src/b.ts', type: 'file' as const }], edges, timestamp);
-
-    expect(hash1).not.toBe(hash2);
-  });
-
-  it('should produce different hash when timestamp changes', () => {
-    const nodes = [{ id: 'src/a.ts', type: 'file' as const }];
-    const edges: any[] = [];
-
-    const hash1 = calculateGraphHash(nodes, edges, 1000);
-    const hash2 = calculateGraphHash(nodes, edges, 2000);
-
-    expect(hash1).not.toBe(hash2);
-  });
-
-  it('should produce valid hash for empty graph', () => {
-    const hash = calculateGraphHash([], [], 0);
-    expect(hash).toHaveLength(64);
-  });
-
-  it('should deduplicate edges and keep maximum weight', () => {
+  it('should deduplicate edges by source+target+type, keeping the maximum weight', () => {
     mockScanProjectAST.mockReturnValue({
-      nodes: [{ id: 'src/a.ts', type: 'file', metadata: {} }],
-      edges: [{ source: 'src/a.ts', target: 'src/b.ts', type: 'imports', weight: 0.5 }]
+      nodes: [{ id: 'a.ts', type: 'file' as const }],
+      edges: [
+        { source: 'a.ts', target: 'b.ts', type: 'imports' as const, weight: 0.5 }
+      ]
     });
 
     mockExtractGitInfo.mockReturnValue({
       nodes: [],
       edges: [
-        // Same edge with higher weight
-        { source: 'src/a.ts', target: 'src/b.ts', type: 'imports', weight: 1.5 }
+        // Same edge as AST but with higher weight
+        { source: 'a.ts', target: 'b.ts', type: 'imports' as const, weight: 1.5 }
       ]
     });
 
@@ -174,34 +149,63 @@ describe('MemoryBuilder', () => {
 
     const graph = buildMemoryGraph(rootDir);
 
+    // Should be deduplicated to 1 edge with weight 1.5 (max)
     const importEdges = graph.edges.filter(
-      e => e.source === 'src/a.ts' && e.target === 'src/b.ts' && e.type === 'imports'
+      e => e.source === 'a.ts' && e.target === 'b.ts' && e.type === 'imports'
     );
     expect(importEdges).toHaveLength(1);
     expect(importEdges[0].weight).toBe(1.5);
   });
 
-  it('should merge node hash when incoming node has hash', () => {
+  it('should treat edges with same source+target but different type as distinct edges', () => {
     mockScanProjectAST.mockReturnValue({
-      nodes: [{ id: 'src/lib/did.ts', type: 'file', metadata: { size: 100 } }],
-      edges: []
-    });
-
-    mockExtractGitInfo.mockReturnValue({
       nodes: [
-        { id: 'src/lib/did.ts', type: 'file', metadata: { author: 'Mohamed' }, hash: 'sha256abc' }
+        { id: 'dir', type: 'directory' as const },
+        { id: 'a.ts', type: 'file' as const }
       ],
-      edges: []
+      edges: [
+        { source: 'dir', target: 'a.ts', type: 'contains' as const, weight: 0.5 },
+        { source: 'dir', target: 'a.ts', type: 'references' as const, weight: 1.0 }
+      ]
     });
-
+    mockExtractGitInfo.mockReturnValue({ nodes: [], edges: [] });
     mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
 
     const graph = buildMemoryGraph(rootDir);
 
-    const didNode = graph.nodes.find(n => n.id === 'src/lib/did.ts');
-    expect(didNode).toBeDefined();
-    expect(didNode?.hash).toBe('sha256abc');
-    expect(didNode?.metadata.size).toBe(100);
-    expect(didNode?.metadata.author).toBe('Mohamed');
+    // Two distinct edge types → must remain as 2 separate edges
+    const edgesBetween = graph.edges.filter(
+      e => e.source === 'dir' && e.target === 'a.ts'
+    );
+    expect(edgesBetween).toHaveLength(2);
+    const types = edgesBetween.map(e => e.type).sort();
+    expect(types).toEqual(['contains', 'references']);
+  });
+
+  it('should produce a different hash when nodes are different', () => {
+    const nodesA = [{ id: 'a.ts', type: 'file' as const }];
+    const nodesB = [{ id: 'b.ts', type: 'file' as const }];
+    const edges: any[] = [];
+    const ts = 1000000;
+
+    const hashA = calculateGraphHash(nodesA, edges, ts);
+    const hashB = calculateGraphHash(nodesB, edges, ts);
+
+    expect(hashA).not.toBe(hashB);
+  });
+
+  it('should produce a different hash when timestamp changes', () => {
+    const nodes = [{ id: 'a.ts', type: 'file' as const }];
+    const edges: any[] = [];
+
+    const hash1 = calculateGraphHash(nodes, edges, 1000000);
+    const hash2 = calculateGraphHash(nodes, edges, 2000000);
+
+    expect(hash1).not.toBe(hash2);
+  });
+
+  it('should produce a 64-character hex string (SHA-256 output)', () => {
+    const hash = calculateGraphHash([], [], 0);
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
   });
 });

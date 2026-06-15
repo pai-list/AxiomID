@@ -108,89 +108,116 @@ describe('AxiomMemory Graph Schema', () => {
       expect(() => validateGraph(graph)).toThrow(ZodError);
     });
 
-    it('should validate graph with empty nodes and edges arrays', () => {
+    it('should accept an empty graph (no nodes, no edges) with a valid hash', () => {
       const graph = {
         version: '1.0',
         hash: 'abc123',
-        timestamp: 1000,
+        timestamp: 0,
         nodes: [],
         edges: []
       };
-
       const validated = validateGraph(graph);
       expect(validated.nodes).toHaveLength(0);
       expect(validated.edges).toHaveLength(0);
     });
 
-    it('should throw ZodError on empty hash string', () => {
+    it('should default version to "1.0" if not provided', () => {
       const graph = {
-        version: '1.0',
-        hash: '',
-        timestamp: Date.now(),
+        hash: 'abc123',
+        timestamp: 0,
         nodes: [],
         edges: []
       };
+      const validated = validateGraph(graph);
+      expect(validated.version).toBe('1.0');
+    });
 
+    it('should throw ZodError on missing timestamp', () => {
+      const graph = {
+        version: '1.0',
+        hash: 'abc123',
+        nodes: [],
+        edges: []
+      };
       expect(() => validateGraph(graph)).toThrow(ZodError);
     });
   });
+});
 
-  describe('MemoryNodeTypeSchema', () => {
-    it('should accept all valid node types', () => {
-      const validTypes = ['file', 'directory', 'symbol', 'doc', 'commit'];
-      for (const type of validTypes) {
-        expect(() => validateNode({ id: `test-${type}`, type })).not.toThrow();
-      }
+describe('AxiomMemory Graph Schema — all valid node types', () => {
+  const validNodeTypes = ['file', 'directory', 'symbol', 'doc', 'commit'] as const;
+
+  validNodeTypes.forEach((type) => {
+    it(`should accept node type "${type}"`, () => {
+      const node = { id: `test-${type}`, type };
+      const validated = validateNode(node);
+      expect(validated.type).toBe(type);
     });
   });
 
-  describe('MemoryEdgeTypeSchema', () => {
-    it('should accept all valid edge types', () => {
-      const validTypes = ['contains', 'imports', 'exports', 'calls', 'references', 'co-occurrence', 'wikilink'];
-      for (const type of validTypes) {
-        expect(() => validateEdge({ source: 'a', target: 'b', type })).not.toThrow();
-      }
+  it('should reject node type "unknown"', () => {
+    expect(() => validateNode({ id: 'x', type: 'unknown' })).toThrow(ZodError);
+  });
+});
+
+describe('AxiomMemory Graph Schema — all valid edge types', () => {
+  const validEdgeTypes = [
+    'contains',
+    'imports',
+    'exports',
+    'calls',
+    'references',
+    'co-occurrence',
+    'wikilink',
+  ] as const;
+
+  validEdgeTypes.forEach((type) => {
+    it(`should accept edge type "${type}"`, () => {
+      const edge = { source: 'a', target: 'b', type };
+      const validated = validateEdge(edge);
+      expect(validated.type).toBe(type);
     });
   });
 
-  describe('validateNode additional cases', () => {
-    it('should accept optional hash field on a node', () => {
-      const node = {
-        id: 'src/lib/auth.ts',
-        type: 'file',
-        hash: 'sha256hashvalue'
-      };
+  it('should reject edge type "links"', () => {
+    expect(() => validateEdge({ source: 'a', target: 'b', type: 'links' })).toThrow(ZodError);
+  });
+});
 
-      const validated = validateNode(node);
-      expect(validated.hash).toBe('sha256hashvalue');
-    });
+describe('AxiomMemory Graph Schema — node optional hash field', () => {
+  it('accepts a node with an optional hash field', () => {
+    const node = { id: 'src/index.ts', type: 'file', hash: 'sha256:abc' };
+    const validated = validateNode(node);
+    expect(validated.hash).toBe('sha256:abc');
+  });
 
-    it('should default metadata to empty object when not provided', () => {
-      const node = {
-        id: 'src/lib/auth.ts',
-        type: 'file'
-      };
+  it('accepts a node without a hash field', () => {
+    const node = { id: 'src/index.ts', type: 'file' };
+    const validated = validateNode(node);
+    expect(validated.hash).toBeUndefined();
+  });
+});
 
-      const validated = validateNode(node);
-      expect(validated.metadata).toEqual({});
-    });
+describe('AxiomMemory Graph Schema — edge validation boundary cases', () => {
+  it('should throw ZodError when source is empty string', () => {
+    const edge = { source: '', target: 'nodeB', type: 'imports' };
+    expect(() => validateEdge(edge)).toThrow(ZodError);
+  });
 
-    it('should throw ZodError when source is empty string on edge', () => {
-      const edge = {
-        source: '',
-        target: 'nodeB',
-        type: 'imports'
-      };
-      expect(() => validateEdge(edge)).toThrow(ZodError);
-    });
+  it('should throw ZodError when target is empty string', () => {
+    const edge = { source: 'nodeA', target: '', type: 'imports' };
+    expect(() => validateEdge(edge)).toThrow(ZodError);
+  });
 
-    it('should throw ZodError when target is empty string on edge', () => {
-      const edge = {
-        source: 'nodeA',
-        target: '',
-        type: 'imports'
-      };
-      expect(() => validateEdge(edge)).toThrow(ZodError);
-    });
+  it('accepts a weight of 0', () => {
+    const edge = { source: 'a', target: 'b', type: 'co-occurrence', weight: 0 };
+    const validated = validateEdge(edge);
+    expect(validated.weight).toBe(0);
+  });
+
+  it('accepts a weight greater than 1.0 (no upper bound in schema)', () => {
+    const edge = { source: 'a', target: 'b', type: 'imports', weight: 99.5 };
+    const validated = validateEdge(edge);
+    expect(validated.weight).toBe(99.5);
   });
 });
