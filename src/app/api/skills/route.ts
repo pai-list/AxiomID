@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { apiError, apiSuccess } from '@/lib/errors';
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { SkillTier } from '@prisma/client';
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`skills-list:${ip}`, RATE_LIMITS.anonymous);
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
   const { searchParams } = new URL(request.url);
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`skills-create:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many requests. Try again later.');
+    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
   let body: unknown;

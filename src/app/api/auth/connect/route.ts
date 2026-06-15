@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { WalletConnectSchema } from '@/lib/validators';
-import { apiError, apiSuccess } from '@/lib/errors';
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { verifyState } from '@/lib/oauth-state';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`wallet-connect:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many connection requests. Try again later.');
+    return apiError('RATE_LIMITED', 'Too many connection requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
   let body: unknown;

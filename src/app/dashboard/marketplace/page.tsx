@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins, Package } from "lucide-react";
 
@@ -117,9 +116,6 @@ export default function MarketplacePage() {
     try {
       const res = await fetch(`/api/skills/${slug}/install`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${user?.accessToken || ""}`
-        }
       });
       if (!res.ok) {
         const data = await res.json();
@@ -134,9 +130,7 @@ export default function MarketplacePage() {
   };
 
   return (
-    <main className="min-h-screen bg-grid">
-      <div className="scanline" />
-
+    <>
       {error && (
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 py-3" role="alert">
           <div className="flex items-center gap-3 max-w-lg w-full px-4 py-3 rounded-xl border bg-[#1a0a0a]/90 backdrop-blur-md"
@@ -151,36 +145,19 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ background: "color-mix(in srgb, var(--bg-card) 90%, transparent)", borderColor: "var(--card-border)" }}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Link href="/dashboard" className="btn-ghost text-xs px-2 sm:px-3 py-1.5 shrink-0">
-                ← DASHBOARD
-              </Link>
-              <div className="w-px h-6 bg-white/10 hidden sm:block" />
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-bold truncate flex items-center" style={{ color: "var(--text-primary)" }}>
-                  <Dna className="w-5 h-5 text-emerald-400 inline mr-2" />Agentic Marketplace
-                </h1>
-                <p className="text-[10px] font-mono hidden sm:block" style={{ color: "var(--text-muted)" }}>
-                  Repository of AI Agent Skills — Pi Network
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setShowPublish(!showPublish)}
-                className="btn-primary text-xs px-3 sm:px-4 py-2"
-              >
-                {showPublish ? "BROWSE" : "PUBLISH"}
-              </button>
-            </div>
-          </div>
+      <div className="flex items-center gap-2 mb-6">
+        <h1 className="text-lg font-bold truncate flex items-center" style={{ color: "var(--text-primary)" }}>
+          <Dna className="w-5 h-5 text-emerald-400 inline mr-2" />Agentic Marketplace
+        </h1>
+        <div className="ml-auto">
+          <button
+            onClick={() => setShowPublish(!showPublish)}
+            className="btn-primary text-xs px-3 sm:px-4 py-2"
+          >
+            {showPublish ? "BROWSE" : "PUBLISH"}
+          </button>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+      </div>
         {showPublish ? (
           <PublishSkillForm onPublished={() => setShowPublish(false)} />
         ) : (
@@ -314,7 +291,6 @@ export default function MarketplacePage() {
             )}
           </>
         )}
-      </div>
 
       {/* Skill Detail Modal */}
       {(selectedSkill || detailLoading) && (
@@ -417,7 +393,7 @@ export default function MarketplacePage() {
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }
 

@@ -4,6 +4,7 @@ import { createPrivateKey, sign } from "crypto";
 import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { rateLimitHeaders } from "@/lib/errors";
 import { getClientIp } from "@/lib/ip";
 import { createUserDid, createIssuerDid } from "@/lib/did";
 import { getIssuerPrivateKey } from "@/lib/crypto";
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`manifest:${ip}`, MANIFEST_RATE_LIMIT);
   if (!rateLimit.allowed) {
-    return NextResponse.json({ error: "RATE_LIMITED", message: "Too many requests." }, { status: 429 });
+    return NextResponse.json({ error: "RATE_LIMITED", message: "Too many requests." }, { status: 429, headers: rateLimitHeaders(rateLimit) });
   }
 
   const auth = await requireAuth(request);

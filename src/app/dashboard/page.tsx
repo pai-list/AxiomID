@@ -4,13 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useWallet } from "../context/wallet-context";
-import { ErrorBanner } from "@/components/ErrorBanner";
 import { createUserDid } from "@/lib/did";
 import skillsData from "@/data/skills.json";
 import { StampBoard } from "@/components/StampBoard";
 import { useLanguage } from "../context/language-context";
-import LanguageToggle from "@/components/LanguageToggle";
-import { Fingerprint, Zap, Bot, Terminal, Store, ClipboardCopy, CheckCircle, Clock, Plug, Ticket } from "lucide-react";
+import { Fingerprint, Zap, Bot, Terminal, ClipboardCopy, CheckCircle, Clock, Plug, Ticket } from "lucide-react";
 
 type TabId = "passport" | "actions" | "terminal" | "marketplace" | "agent";
 
@@ -150,71 +148,7 @@ export default function Dashboard() {
   const hasAgent = !!agent;
   const agentStatus = agent?.status ?? "NONE";
   return (
-    <main id="main-content" className="min-h-screen bg-grid">
-      <div className="scanline" />
-      <ErrorBanner />
-
-      <header className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ background: 'color-mix(in srgb, var(--bg-card) 90%, transparent)', borderColor: 'var(--card-border)' }}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold text-neon-green font-mono">AXIOM</span>
-              <span className="text-xl font-bold text-white font-mono">ID</span>
-            </Link>
-            <div className="hidden sm:flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{t("dashboard_title")}</h1>
-                <p className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Agent Identity Layer v1.0.0</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 sm:gap-3">
-              <LanguageToggle />
-              <button
-                onClick={() => {
-                  localStorage.removeItem("axiom_onboarding_completed");
-                  setShowOnboarding(true);
-                }}
-                className="btn-ghost text-xs px-2 sm:px-3 py-1.5 flex items-center gap-1.5"
-                title={t("replay_onboarding")}
-              >
-                <svg className="w-3.5 h-3.5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                <span className="hidden sm:inline">{t("replay_onboarding")}</span>
-              </button>
-              {user && (
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <Link
-                    href={{ pathname: "/dashboard/settings" }}
-                    prefetch={false}
-                    className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="hidden sm:inline">{t("nav_settings")}</span>
-                  </Link>
-                  <button
-                    onClick={() => {
-                      router.push("/");
-                      setTimeout(() => {
-                        disconnectWallet();
-                      }, 100);
-                    }}
-                    className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    <span className="hidden sm:inline">{t("logout")}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+    <>
         {isLoading ? (
           <div className="space-y-6">
             <div className="bento-card p-8">
@@ -654,7 +588,36 @@ export default function Dashboard() {
             )}
           </>
         ) : null}
-      </div>
+
+      {/* ── TAB NAVIGATION ── */}
+      {user && (
+        <nav className="flex items-center gap-1 mb-6 overflow-x-auto no-scrollbar" role="tablist" aria-label="Dashboard sections">
+          {([
+            { id: "passport" as TabId, icon: <Fingerprint className="w-4 h-4" />, label: language === "ar" ? "الجواز" : "Passport" },
+            { id: "actions" as TabId, icon: <Zap className="w-4 h-4" />, label: language === "ar" ? "العمليات" : "Actions" },
+            { id: "agent" as TabId, icon: <Bot className="w-4 h-4" />, label: language === "ar" ? "العميل" : "Agent" },
+            { id: "terminal" as TabId, icon: <Terminal className="w-4 h-4" />, label: language === "ar" ? "الطرفية" : "Terminal" },
+          ]).map((tab) => {
+            const isActive = tab.id === "terminal" ? showTerminal : activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => handleTabClick(tab.id)}
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[40px] rounded-lg text-xs font-mono transition-all flex-shrink-0 ${
+                  isActive
+                    ? "bg-neon-green/20 text-neon-green"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* ── TERMINAL OVERLAY ── */}
       {showTerminal && (
@@ -701,43 +664,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
-      {/* ── BOTTOM NAV ── */}
-      <footer className="fixed bottom-0 left-0 right-0 backdrop-blur-md border-t z-40" style={{ background: 'color-mix(in srgb, var(--bg-card) 90%, transparent)', borderColor: 'var(--card-border)' }}>
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4" role="tablist">
-          <div className="flex justify-around sm:justify-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar">
-            {([
-              { id: "passport" as TabId, icon: <Fingerprint className="w-5 h-5" />, label: language === "ar" ? "الجواز" : "Passport" },
-              { id: "actions" as TabId, icon: <Zap className="w-5 h-5" />, label: language === "ar" ? "العمليات" : "Actions" },
-              { id: "agent" as TabId, icon: <Bot className="w-5 h-5" />, label: language === "ar" ? "العميل" : "Agent" },
-              { id: "terminal" as TabId, icon: <Terminal className="w-5 h-5" />, label: language === "ar" ? "الطرفية" : "Terminal" },
-              { id: "marketplace" as TabId, icon: <Store className="w-5 h-5" />, label: language === "ar" ? "المتجر" : "Marketplace" },
-            ]).map((tab) => {
-              const isActive = tab.id === "terminal"
-                ? showTerminal
-                : activeTab === tab.id;
-
-              return (
-                <button
-                  key={tab.id}
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`flex flex-col items-center gap-1 px-2 sm:px-5 py-2 min-h-[48px] rounded-lg transition-all relative flex-shrink-0 ${
-                    isActive
-                      ? "bg-neon-green/20 text-neon-green"
-                      : "hover:text-neon-green"
-                  }`}
-                  style={!isActive ? { color: 'var(--text-muted)' } : undefined}
-                >
-                  <span className="flex items-center justify-center">{tab.icon}</span>
-                  <span className="text-[10px] sm:text-xs font-mono">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </footer>
 
       {/* ── ONBOARDING MODAL ── */}
       {showOnboarding && (
@@ -871,6 +797,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }

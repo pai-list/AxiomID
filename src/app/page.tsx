@@ -135,7 +135,7 @@ export default function Home() {
           payments: s.totalPayments ?? 0,
         });
       }
-    }).catch(() => {});
+    }).catch((err) => console.error("Failed to fetch network stats:", err));
     return () => { cancelled = true; };
   }, []);
 

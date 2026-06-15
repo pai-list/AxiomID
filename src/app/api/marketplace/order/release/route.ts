@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
 
   await prisma.piPayment.update({
     where: { id: paymentId },
-
   });
 
   return apiSuccess({ status: "RELEASED" });

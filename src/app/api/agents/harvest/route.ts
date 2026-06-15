@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth-middleware';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { rateLimitHeaders } from '@/lib/errors';
 import { getClientIp } from '@/lib/ip';
 import { queryPerplexity } from '@/lib/agents/perplexity';
 import { logger } from '@/lib/logger';
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'RATE_LIMITED', message: 'Too many requests. Please try again later.' },
-      { status: 429 }
+      { status: 429, headers: rateLimitHeaders(rateLimit) }
     );
   }
 

@@ -42,18 +42,27 @@ export function requireAuth(request: Request, env: Env): Response | null {
   return null;
 }
 
-export function jsonResponse(data: unknown, status: number = 200): Response {
+const BASE_HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "https://axiomid.app",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Shared-Secret",
+};
+
+export function rateLimitHeaders(result: { remaining: number; resetMs: number }): Record<string, string> {
+  return {
+    "X-RateLimit-Remaining": String(result.remaining),
+    "X-RateLimit-Reset": String(Math.ceil(result.resetMs / 1000)),
+  };
+}
+
+export function jsonResponse(data: unknown, status: number = 200, extraHeaders?: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://axiomid.app",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, X-Shared-Secret",
-    },
+    headers: { ...BASE_HEADERS, ...extraHeaders },
   });
 }
 
-export function errorResponse(message: string, status: number = 400): Response {
-  return jsonResponse({ success: false, error: message, timestamp: Date.now() }, status);
+export function errorResponse(message: string, status: number = 400, extraHeaders?: Record<string, string>): Response {
+  return jsonResponse({ success: false, error: message, timestamp: Date.now() }, status, extraHeaders);
 }

@@ -4,7 +4,7 @@
  */
 
 import type { Env } from "./lib/types";
-import { verifyAuth, jsonResponse, errorResponse, PUBLIC_ROUTES } from "./lib/auth";
+import { verifyAuth, jsonResponse, errorResponse, PUBLIC_ROUTES, rateLimitHeaders } from "./lib/auth";
 import { KVHelper } from "./db/kv";
 import { D1Helper } from "./db/d1";
 import { RateLimiter } from "./lib/rate-limiter";
@@ -99,7 +99,7 @@ export class Router {
     const tier = authorized ? "authenticated" : "anonymous";
     const rl = await this.rateLimiter.check(`${clientIp}:${path}`, tier);
     if (!rl.allowed) {
-      return errorResponse("Rate limit exceeded", 429);
+      return errorResponse("Rate limit exceeded", 429, rateLimitHeaders(rl));
     }
 
     // --- Presence ---
