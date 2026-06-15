@@ -3,8 +3,16 @@ import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess } from "@/lib/errors";
 import { OrderCreateSchema } from "@/lib/validators";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateLimit = await checkRateLimit(`order-create:${ip}`, RATE_LIMITS.payment);
+  if (!rateLimit.allowed) {
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.");
+  }
+
   const auth = await requireAuth(req);
   if (auth.error) return auth.error;
 

@@ -110,7 +110,10 @@ export default function Dashboard() {
   }, []);
 
   const handleTabClick = (tabId: TabId) => {
-    if (tabId === "marketplace") return;
+    if (tabId === "marketplace") {
+      router.push("/dashboard/marketplace");
+      return;
+    }
 
     if (tabId === "terminal") {
       setShowTerminal((prev) => !prev);
@@ -708,7 +711,7 @@ export default function Dashboard() {
               { id: "actions" as TabId, icon: <Zap className="w-5 h-5" />, label: language === "ar" ? "العمليات" : "Actions" },
               { id: "agent" as TabId, icon: <Bot className="w-5 h-5" />, label: language === "ar" ? "العميل" : "Agent" },
               { id: "terminal" as TabId, icon: <Terminal className="w-5 h-5" />, label: language === "ar" ? "الطرفية" : "Terminal" },
-              { id: "marketplace" as TabId, icon: <Store className="w-5 h-5" />, label: language === "ar" ? "المتجر" : "Marketplace", disabled: true },
+              { id: "marketplace" as TabId, icon: <Store className="w-5 h-5" />, label: language === "ar" ? "المتجر" : "Marketplace" },
             ]).map((tab) => {
               const isActive = tab.id === "terminal"
                 ? showTerminal
@@ -719,24 +722,16 @@ export default function Dashboard() {
                   key={tab.id}
                   role="tab"
                   aria-selected={isActive}
-                  disabled={tab.disabled}
                   onClick={() => handleTabClick(tab.id)}
-                  className={`flex flex-col items-center gap-1 px-2 sm:px-5 py-2 min-h-[48px] rounded-lg transition-all relative group flex-shrink-0 ${
-                    tab.disabled
-                      ? "opacity-40 cursor-not-allowed"
-                      : isActive
-                        ? "bg-neon-green/20 text-neon-green"
-                        : "hover:text-neon-green"
+                  className={`flex flex-col items-center gap-1 px-2 sm:px-5 py-2 min-h-[48px] rounded-lg transition-all relative flex-shrink-0 ${
+                    isActive
+                      ? "bg-neon-green/20 text-neon-green"
+                      : "hover:text-neon-green"
                   }`}
-                  style={!tab.disabled && !isActive ? { color: 'var(--text-muted)' } : undefined}
+                  style={!isActive ? { color: 'var(--text-muted)' } : undefined}
                 >
                   <span className="flex items-center justify-center">{tab.icon}</span>
                   <span className="text-[10px] sm:text-xs font-mono">{tab.label}</span>
-                  {tab.disabled && (
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50" style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
-                      {language === "ar" ? "قريباً" : "Coming Soon"}
-                    </span>
-                  )}
                 </button>
               );
             })}

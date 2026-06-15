@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins, Package } from "lucide-react";
 
 interface Skill {
@@ -51,8 +52,10 @@ const TIER_LABELS: Record<string, string> = {
  * Users can search and filter published skills by tier, click to view details in a modal, and install selected skills. The component also provides a publish mode to add new skills to the marketplace.
  */
 export default function MarketplacePage() {
+  const { user, connectWallet, isConnecting } = useWallet();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTier, setFilterTier] = useState<string>("");
   const [selectedSkill, setSelectedSkill] = useState<SkillDetail | null>(null);
@@ -64,18 +67,24 @@ export default function MarketplacePage() {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const params = new URLSearchParams();
         if (filterTier) params.set("tier", filterTier);
         if (searchQuery) params.set("q", searchQuery);
         params.set("limit", "100");
         const res = await fetch(`/api/skills?${params}`);
-        if (res.ok && !cancelled) {
+        if (!res.ok) {
+          throw new Error(`Failed to load skills (${res.status})`);
+        }
+        if (!cancelled) {
           const data = await res.json();
           setSkills(data.skills || []);
         }
-      } catch {
-        // silent
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load marketplace");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -100,15 +109,20 @@ export default function MarketplacePage() {
   };
 
   const handleInstall = async (slug: string) => {
+    if (!user) {
+      connectWallet();
+      return;
+    }
     setInstalling(true);
     try {
       const res = await fetch(`/api/skills/${slug}/install`, { method: "POST" });
-      if (res.ok) {
-        // Refresh the skill detail
-        openDetail(slug);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `Install failed (${res.status})`);
       }
-    } catch {
-      // silent
+      openDetail(slug);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to install skill");
     } finally {
       setInstalling(false);
     }
@@ -117,6 +131,20 @@ export default function MarketplacePage() {
   return (
     <main className="min-h-screen bg-grid">
       <div className="scanline" />
+
+      {error && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center px-4 py-3" role="alert">
+          <div className="flex items-center gap-3 max-w-lg w-full px-4 py-3 rounded-xl border bg-[#1a0a0a]/90 backdrop-blur-md"
+            style={{ borderColor: "rgba(239, 68, 68, 0.25)" }}
+          >
+            <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span className="text-sm font-mono text-red-300 flex-1">{error}</span>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 text-xs font-mono px-2 py-1">DISMISS</button>
+          </div>
+        </div>
+      )}
 
       <header className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ background: "color-mix(in srgb, var(--bg-card) 90%, transparent)", borderColor: "var(--card-border)" }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -361,10 +389,10 @@ export default function MarketplacePage() {
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => handleInstall(selectedSkill.slug)}
-                    disabled={installing}
+                    disabled={installing || isConnecting}
                     className="flex-1 btn-primary py-2.5 text-xs font-mono"
                   >
-                    {installing ? "INSTALLING..." : "INSTALL SKILL → AGENT"}
+                    {installing ? "INSTALLING..." : isConnecting ? "CONNECTING..." : !user ? "CONNECT WALLET TO INSTALL" : "INSTALL SKILL → AGENT"}
                   </button>
                   <button
                     onClick={() => {

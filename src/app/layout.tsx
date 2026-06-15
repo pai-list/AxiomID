@@ -155,6 +155,19 @@ export default function RootLayout({
           Skip to content
         </a>
         <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/service-worker.js').catch(function() {});
+                });
+              }
+            `,
+          }}
+        />
         <ThemeProvider>
           <LanguageProvider>
             <SandboxProvider>

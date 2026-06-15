@@ -2,8 +2,16 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess } from "@/lib/errors";
 import { CredentialStatusQuerySchema } from "@/lib/validators";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = await checkRateLimit(`credential-status:${ip}`, RATE_LIMITS.authenticated);
+  if (!rateLimit.allowed) {
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.");
+  }
+
   const { searchParams } = new URL(request.url);
   const parsed = CredentialStatusQuerySchema.safeParse({
     credentialId: searchParams.get("credentialId"),
