@@ -23,10 +23,14 @@ export function safeJsonParse(str: string | null | undefined): unknown {
 }
 
 export function sanitizeForDisplay(value: string, maxLength: number): string {
-  return value
-    .replace(/<[^>]*>/g, '')
-    .trim()
-    .slice(0, maxLength);
+  let prev = value;
+  // Loop to strip nested HTML tags that become valid after each pass
+  while (true) {
+    const cleaned = prev.replace(/<[^>]*>/g, '');
+    if (cleaned === prev) break;
+    prev = cleaned;
+  }
+  return prev.trim().slice(0, maxLength);
 }
 
 export function canonicalize(obj: unknown): unknown {

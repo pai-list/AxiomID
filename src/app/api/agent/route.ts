@@ -42,13 +42,18 @@ export async function POST(request: NextRequest) {
 
   const { name, description } = parsed.data;
 
-  // Sanitize: strip HTML, enforce length limits
-  const sanitizedName = (name ?? 'My Agent')
-    .replace(/<[^>]*>/g, '')
-    .trim()
-    .slice(0, 100) || 'My Agent';
+  // Sanitize: strip all HTML tags (loop to catch nested), enforce length limits
+  const stripHtml = (s: string): string => {
+    let prev = s;
+    while (true) {
+      const cleaned = prev.replace(/<[^>]*>/g, '');
+      if (cleaned === prev) return cleaned;
+      prev = cleaned;
+    }
+  };
+  const sanitizedName = stripHtml(name ?? 'My Agent').trim().slice(0, 100) || 'My Agent';
   const sanitizedDesc = description
-    ? description.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+    ? stripHtml(description).trim().slice(0, 500)
     : null;
 
   try {
