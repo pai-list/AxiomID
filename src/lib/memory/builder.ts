@@ -7,7 +7,9 @@ import { extractGitInfo } from './extractors/git-extractor';
 import { scanProjectDocs } from './extractors/doc-extractor';
 
 /**
- * Deterministically computes a SHA-256 hash of nodes and edges to enforce the TrustChain (RULE 3).
+ * Generates a deterministic hash of graph nodes, edges, and a timestamp.
+ *
+ * @returns A hexadecimal hash string.
  */
 export function calculateGraphHash(
   nodes: MemoryNode[],
@@ -34,7 +36,10 @@ export function calculateGraphHash(
 }
 
 /**
- * Builds the entire Topological Memory Graph for the project.
+ * Constructs a memory graph by scanning a project's code, Git history, and documentation.
+ *
+ * @param rootDir - The root directory of the project to scan
+ * @returns A validated memory graph containing the project's extracted and deduplicated nodes and edges
  */
 export function buildMemoryGraph(rootDir: string): MemoryGraph {
   console.log(`[Memory Builder] Starting build for root: ${rootDir}`);
@@ -110,16 +115,17 @@ export function buildMemoryGraph(rootDir: string): MemoryGraph {
 }
 
 /**
- * Builds the graph and saves it to a local JSON file.
+ * Builds a project memory graph and persists it to a JSON file.
+ *
+ * @param rootDir - The root directory of the project to scan
+ * @param outputPath - The file path where the memory graph JSON will be written
+ * @returns The constructed memory graph
  */
 export function buildAndSaveMemoryGraph(rootDir: string, outputPath: string): MemoryGraph {
   const graph = buildMemoryGraph(rootDir);
   
   // Ensure the output directory exists
-  const outputDir = path.dirname(outputPath);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
   fs.writeFileSync(outputPath, JSON.stringify(graph, null, 2), 'utf-8');
   console.log(`[Memory Builder] Memory graph written to: ${outputPath}`);

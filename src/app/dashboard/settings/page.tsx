@@ -26,11 +26,11 @@ interface StatusDetails {
 }
 
 /**
- * Render the AxiomID Settings page with profile, progression, social bindings, cryptographic ledger, and modal dialogs.
+ * Render the AxiomID settings page with profile info, progression, social bindings, and action ledger.
  *
- * When no user is connected, displays a centered wallet connect prompt; when a user is connected, displays the sovereign DID/wallet/KYC section, XP/tier progression, verifiable social binding controls (connect/inspect), the local action ledger, and dialogs for claiming connections and inspecting/copying Verifiable Credential payloads.
+ * Displays a wallet connection prompt if no user is authenticated. Once connected, shows the user's sovereign identity (DID, wallet address, KYC status), XP and tier progression, verifiable social account bindings, and a ledger of recent actions. Includes modals for managing social connections and inspecting verifiable credentials.
  *
- * @returns The page's JSX element: either a centered connect prompt (when no wallet is connected) or the full settings UI including profile, progression, social binding controls, ledger, and VC inspector/copy modals.
+ * @returns A JSX element representing either a centered wallet connection prompt or the full settings interface.
  */
 export default function SettingsPage() {
   const { user, connectWallet, claimAction } = useWallet();

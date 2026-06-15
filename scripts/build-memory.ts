@@ -1,6 +1,9 @@
 import path from 'path';
 import { buildAndSaveMemoryGraph } from '../src/lib/memory/builder';
 
+/**
+ * Builds and saves the AxiomMemory graph to `memory.graph.json` in the current working directory.
+ */
 function main() {
   try {
     const rootDir = process.cwd();

@@ -16,6 +16,13 @@ interface StampCardProps {
   isAutomatic?: boolean;
 }
 
+/**
+ * Renders a stamp reward card with manual or automatic claim workflow.
+ *
+ * Displays a form or auto-claim button based on `isAutomatic`. When connected, shows the verified handle and provides credential inspection. Triggers an XP animation on successful claim.
+ *
+ * @param metadata - Optional JSON string containing credential data; the handle or username is displayed when connected.
+ */
 export function StampCard({
   type,
   label,
@@ -137,24 +144,19 @@ export function StampCard({
             </div>
           </form>
         ) : (
-            <button
-              onClick={() => {
-                if (stamp.url) {
-                  window.open(stamp.url, "_blank");
-                } else {
-                  alert(t("stamp_connect_alert", { name: stamp.name }));
-                }
-              }}
-              className="btn-primary text-[9px] min-h-[44px] min-w-[44px] px-3 sm:px-4 py-2"
-            >
-              {t("stamp_connect")}
-            </button>
-            <button
-              onClick={() => onInspect(stamp)}
-              className="btn-ghost text-[9px] min-h-[44px] min-w-[44px] px-3 sm:px-4 py-2"
-            >
-              {t("stamp_inspect")}
-            </button>
+          <button
+            onClick={() => {
+              if (isAutomatic) {
+                handleAutoClaim();
+              } else {
+                setShowInput(true);
+              }
+            }}
+            disabled={submitting}
+            className="w-full btn-primary text-[10px] min-h-[44px] py-2"
+          >
+            {submitting ? t('claiming') : isAutomatic ? t('claim_stamp') : t('connect_profile')}
+          </button>
         )}
       </div>
     </div>

@@ -202,5 +202,46 @@ describe('AxiomMemory Extractors', () => {
       expect(edges).toHaveLength(2);
       expect(edges.find(e => e.type === 'wikilink')?.target).toBe('src/lib/trust.ts');
     });
+
+    it('should return empty body when content has no frontmatter', () => {
+      const content = 'Just a plain body with no frontmatter here.';
+      const { frontmatter, body } = parseFrontmatter(content);
+      expect(frontmatter).toEqual({});
+      expect(body).toBe(content);
+    });
+
+    it('should return empty wikilinks array for empty body', () => {
+      const links = extractWikilinks('');
+      expect(links).toEqual([]);
+    });
+
+    it('should return empty wikilinks array for body with no wikilink syntax', () => {
+      const links = extractWikilinks('This doc has no [[links]] at all except regular text.');
+      // Wait — "[[links]]" IS a wikilink. Let's use text without brackets:
+      const linksNoBrackets = extractWikilinks('No wikilinks here at all. Just text.');
+      expect(linksNoBrackets).toEqual([]);
+    });
+
+    it('should extract multiple wikilinks from the same body', () => {
+      const body = 'See [[src/a.ts]] and [[docs/b.md]] for more info.';
+      const links = extractWikilinks(body);
+      expect(links).toHaveLength(2);
+      expect(links).toContain('src/a.ts');
+      expect(links).toContain('docs/b.md');
+    });
+  });
+
+  describe('AST Extractor — external imports ignored', () => {
+    it('should return null for external module imports (no ./ or @/ prefix)', () => {
+      mockFs.existsSync.mockReturnValue(false);
+      mockFs.statSync.mockReturnValue({ isFile: () => false } as any);
+
+      const importer = path.resolve(rootDir, 'src/lib/did.ts');
+
+      expect(resolveImportPath('react', importer, rootDir)).toBeNull();
+      expect(resolveImportPath('zod', importer, rootDir)).toBeNull();
+      expect(resolveImportPath('typescript', importer, rootDir)).toBeNull();
+      expect(resolveImportPath('@radix-ui/react-dialog', importer, rootDir)).toBeNull();
+    });
   });
 });

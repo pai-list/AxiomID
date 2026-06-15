@@ -45,8 +45,9 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 /**
- * Agentic-First Skill Marketplace — The Genomic Repository of AI Capabilities.
- * Skills are living, executable entities that agents can install and run autonomously.
+ * Renders the AI skill marketplace with browsing, filtering, detail viewing, and installation features.
+ *
+ * Users can search and filter published skills by tier, click to view details in a modal, and install selected skills. The component also provides a publish mode to add new skills to the marketplace.
  */
 export default function MarketplacePage() {
   const [skills, setSkills] = useState<Skill[]>([]);

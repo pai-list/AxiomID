@@ -10,12 +10,10 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 /**
- * Render a floating "Agent Passport" card for a user with an interactive 3D tilt effect.
+ * Renders an interactive passport card that displays user identity information with a 3D tilt effect responding to mouse and touch movement.
  *
- * The card displays an avatar, a username (prefers `piUsername`, falls back to `walletAddress`, or shows "Connect Wallet"), a shortened wallet address or placeholder, KYA/KYC badges that reflect presence of a user, and a tier/version label. Registers a window mousemove listener to compute the card's tilt and removes the listener on unmount.
- *
- * @param user - Optional user object. If provided, may include `piUsername`, `walletAddress`, and `tier`; values are used for display and badge/tier states. When `user` is null, placeholders and pending badge styles are shown.
- * @returns A JSX element rendering the interactive passport card.
+ * @param user - Optional user object. Provides identity data for display. When null, shows placeholder values and pending badge states.
+ * @returns A JSX element rendering the passport card.
  */
 function PassportHero({ user }: { user: { piUsername?: string | null; walletAddress?: string; tier?: Tier | null } | null }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -111,13 +109,11 @@ function PassportHero({ user }: { user: { piUsername?: string | null; walletAddr
 }
 
 /**
- * Render the application's public landing Home page with localized content and live network statistics.
+ * Displays the public landing page for the AxiomID agent identity platform.
  *
- * Uses wallet and language hooks to drive header and CTA state (connect, dashboard, logout, language/theme toggles).
- * On mount it fetches "/api/status" to populate the Live Stats bar (users, agents, xp, payments).
- * Displays a sandbox banner when NEXT_PUBLIC_PI_SANDBOX === "true" and renders the hero, floating passport, features, tiers, and footer.
+ * Includes a responsive header with wallet connection state and language/theme toggles, a hero section with a floating passport card, live network statistics fetched from the `/api/status` endpoint, feature overview, tier level cards, and footer. Conditionally displays a sandbox mode banner based on environment configuration.
  *
- * @returns The React element representing the Home page.
+ * @returns A React element.
  */
 export default function Home() {
   const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();

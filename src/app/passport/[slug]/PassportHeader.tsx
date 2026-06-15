@@ -5,11 +5,7 @@ import { useLanguage } from "../../context/language-context";
 import LanguageToggle from "@/components/LanguageToggle";
 
 /**
- * Renders the top header bar for the passport page with a home link, brand mark, language toggle, and a language-dependent label.
- *
- * The displayed label switches to Arabic when the current language from context is `"ar"`.
- *
- * @returns The header JSX element containing the brand link, language toggle, and language-specific label.
+ * Renders the header bar for the passport page, including navigation and language controls.
  */
 export function PassportHeader() {
   const { t } = useLanguage();
