@@ -14,12 +14,10 @@ const CORS_ALLOWED_ORIGINS = [
 ];
 
 /**
- * Determines whether a host is in the allowed hosts list.
+ * Determines whether a host is allowed.
  *
- * Allowed hosts include localhost, 127.0.0.1, axiomid.app, www.axiomid.app, and subdomains of axiomid.app.
- *
- * @param host - The host string to validate, optionally including a port
- * @returns `true` if the host is allowed, `false` otherwise
+ * @param host - The host string to validate, which may include a port number
+ * @returns `true` if the host is localhost, 127.0.0.1, axiomid.app, www.axiomid.app, or any subdomain of axiomid.app; `false` otherwise
  */
 function isAllowedHost(host: string): boolean {
   const plain = host.replace(/:\d+$/, ""); // strip port
@@ -30,11 +28,9 @@ function isAllowedHost(host: string): boolean {
 }
 
 /**
- * Determines if an origin is allowed for CORS requests.
+ * Determines whether an origin is allowed for CORS requests.
  *
- * Allows the root domain and its subdomains, origins on the explicit allowlist, and localhost for development.
- *
- * @returns The original `origin` if allowed, `null` otherwise
+ * @returns The original `origin` if it is allowed, `null` otherwise.
  */
 function getAllowedOrigin(origin: string | null): string | null {
   if (!origin) return null;
@@ -56,7 +52,7 @@ function getAllowedOrigin(origin: string | null): string | null {
 /**
  * Applies CORS headers to a response if the request origin is allowed.
  *
- * @returns The response with CORS headers applied if the origin is allowed, otherwise unchanged
+ * @returns The response with CORS headers applied if the origin is valid, or unchanged otherwise
  */
 function applyCorsHeaders(response: NextResponse, request: NextRequest): NextResponse {
   const origin = request.headers.get("origin");
@@ -71,9 +67,13 @@ function applyCorsHeaders(response: NextResponse, request: NextRequest): NextRes
 }
 
 /**
- * Validates incoming requests, enforces CORS policies, and controls request routing.
+ * Validates requests, handles CORS, and rewrites specific paths.
  *
- * Handles CORS preflight requests with a 204 response. Enforces a maximum request body size of 1 MB, validates the request host against an allowlist, and rewrites `.well-known/did.json` requests to the DID document API route. Routes subdomain requests to their corresponding passport pages, validating that subdomains contain only alphanumeric characters and hyphens, have no leading or trailing hyphens, and do not exceed 63 characters. Applies CORS headers to all responses.
+ * Rejects requests with invalid hosts or body sizes exceeding the limit.
+ * Handles CORS preflight requests and applies CORS headers to all responses.
+ * Rewrites `/.well-known/did.json` to the DID document API route and subdomain requests to passport pages.
+ *
+ * @returns The processed response.
  */
 export function middleware(request: NextRequest) {
   // Handle CORS preflight

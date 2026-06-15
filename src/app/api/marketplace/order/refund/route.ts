@@ -7,11 +7,12 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 /**
- * Refunds an escrowed payment from an authenticated user.
+ * Refunds an escrowed payment for the authenticated user.
  *
- * Validates the request, authenticates the user, verifies they own the payment, and updates the payment status to refunded. Rate limiting is enforced per client IP.
+ * Rate limits by client IP. Verifies the payment belongs to the authenticated user and is in escrow
+ * before marking it as `REFUNDED`.
  *
- * @returns An API response object containing the refund status on success, or error details on failure.
+ * @returns An API response with the refunded payment status or an error.
  */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);

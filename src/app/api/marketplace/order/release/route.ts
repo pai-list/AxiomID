@@ -7,10 +7,11 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 /**
- * Releases an escrowed payment after verifying authorization and request validity.
+ * Transitions a payment from escrow to released status after verifying the requester's authorization and rate limit.
  *
- * @param req - The HTTP request containing the payment ID
- * @returns An API response indicating successful payment release or describing the error
+ * @returns A response indicating successful release with the updated payment status, or an error response
+ * if rate-limited, unauthenticated, the payment is not found, the user is unauthorized to modify it,
+ * or the payment is not in escrow.
  */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);

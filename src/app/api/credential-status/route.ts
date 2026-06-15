@@ -6,10 +6,9 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 /**
- * Checks the revocation status of a credential subject.
+ * Returns the credential status for a subject identified by DID.
  *
- * @param request - The incoming HTTP request containing `credentialId` or `subjectId` query parameters
- * @returns An API response with the subject's revocation status, subject ID, and last updated timestamp
+ * The credential is considered revoked if the subject's KYC status is rejected.
  */
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);

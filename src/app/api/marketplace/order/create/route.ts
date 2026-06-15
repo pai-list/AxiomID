@@ -7,7 +7,9 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 /**
- * Handles marketplace order creation with rate limiting, authentication, and validation.
+ * Creates an escrow payment for a marketplace order.
+ *
+ * @returns An API response containing the payment ID on success, or an error response if rate-limited, unauthenticated, validation fails, or the skill does not exist.
  */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);

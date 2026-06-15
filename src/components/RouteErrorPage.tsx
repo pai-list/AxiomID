@@ -10,10 +10,15 @@ interface RouteErrorPageProps {
 }
 
 /**
- * Renders a full-screen error page displaying error information and action controls.
+ * Renders a route-level error page with retry and dashboard navigation options.
  *
- * In development, the actual error message is displayed; in production, a fallback message is shown.
- * The error is logged to the console with the provided title.
+ * Displays the error message in development mode or a fallback message in production. 
+ * Provides a button to retry the route and a link to return to the dashboard.
+ *
+ * @param title - Heading text for the error page
+ * @param fallbackMessage - Message shown in production when error details should be hidden
+ * @param error - The error object, optionally including a digest for tracking
+ * @param reset - Callback invoked when the retry button is clicked
  */
 export function RouteErrorPage({ title, fallbackMessage, error, reset }: RouteErrorPageProps) {
   console.error(`${title}:`, error);

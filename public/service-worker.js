@@ -7,9 +7,9 @@ const STATIC_ASSETS = [
 ];
 
 /**
- * Stores an HTTP response in the cache.
- * @param {Request} request - The request object to use as the cache key.
- * @param {Response} response - The response object to cache.
+ * Stores a response in the cache for a given request.
+ * @param {Request} request - The request to use as the cache key.
+ * @param {Response} response - The response to cache.
  */
 function cacheResponse(request, response) {
   const clone = response.clone();

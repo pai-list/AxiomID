@@ -3,7 +3,9 @@
 import { RouteErrorPage } from "@/components/RouteErrorPage";
 
 /**
- * Displays an error page for settings route failures.
+ * Renders a settings-specific error page for route failures.
+ *
+ * @returns The error page component.
  */
 export default function SettingsError({
   error,

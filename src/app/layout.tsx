@@ -112,10 +112,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Renders the application's root HTML structure with integrated providers and utilities.
+ * Render the application's root HTML layout with global context providers.
  *
- * @param children - The child components to render within the provider tree
- * @returns The root HTML element
+ * @returns The application root element.
  */
 export default function RootLayout({
   children,
