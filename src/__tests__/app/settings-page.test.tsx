@@ -352,3 +352,58 @@ describe("SettingsPage — unauthenticated", () => {
     expect(screen.queryByText(/Verifiable Social Identifiers/i)).toBeNull();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLATFORMS icon change (PR change: emoji string → React.ReactNode JSX element)
+// PLATFORMS array: { id, icon: React.ReactNode, label, xp }
+// Previously: { id, emoji: string, label, xp }
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("SettingsPage — PLATFORMS icon rendered as SVG (PR change)", () => {
+  it("renders SVG icons in the platform list, not emoji strings", () => {
+    const user = makeUser({ stamps: [] });
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
+    const { container } = render(<SettingsPage />);
+
+    // PR change: icons are now Lucide SVG elements (AtSign, MessageCircle, Key)
+    const svgElements = container.querySelectorAll("svg");
+    expect(svgElements.length).toBeGreaterThan(0);
+
+    // Emoji strings previously used for platform icons should NOT appear
+    expect(screen.queryByText("🐦")).toBeNull();
+    expect(screen.queryByText("💬")).toBeNull();
+    expect(screen.queryByText("🔑")).toBeNull();
+  });
+
+  it("renders platform labels Twitter / X, Discord, Google Accounts in the settings list", () => {
+    const user = makeUser({ stamps: [] });
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
+    render(<SettingsPage />);
+
+    expect(screen.getByText("Twitter / X")).toBeInTheDocument();
+    expect(screen.getByText("Discord")).toBeInTheDocument();
+    expect(screen.getByText("Google Accounts")).toBeInTheDocument();
+  });
+
+  it("renders three platform rows in the social section (one for each PLATFORM entry)", () => {
+    const user = makeUser({ stamps: [] });
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
+    render(<SettingsPage />);
+
+    // Three unconnected platforms → three CONNECT buttons
+    const connectButtons = screen.getAllByRole("button", { name: /^connect$/i });
+    expect(connectButtons).toHaveLength(3);
+  });
+
+  it("does not render any raw emoji characters for platform icons (regression guard)", () => {
+    const user = makeUser({ stamps: [] });
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
+    const { container } = render(<SettingsPage />);
+
+    // None of the old emoji values should appear as text nodes
+    const textContent = container.textContent ?? "";
+    expect(textContent).not.toContain("🐦");
+    expect(textContent).not.toContain("💬");
+    expect(textContent).not.toContain("🔑");
+  });
+});

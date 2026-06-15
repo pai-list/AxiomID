@@ -2,6 +2,8 @@
  * Tests for src/components/StampCard.tsx
  *
  * PR changes:
+ * - icon prop changed from string to React.ReactNode (JSX element).
+ *   StampCard now accepts Lucide icon elements (e.g. <AtSign />) instead of emoji strings.
  * - The unconnected idle state was changed: the original claim/connect button was replaced
  *   with two new buttons: one that opens stamp.url in a new tab and one that calls onInspect(stamp).
  *   Note: these new buttons reference `stamp` which is not in the component's scope (undefined variable),
@@ -11,6 +13,7 @@
 
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { AtSign } from "lucide-react";
 import { StampCard } from "@/components/StampCard";
 
 // XPBurst is a visual effect component; stub it to avoid canvas issues
@@ -18,11 +21,12 @@ jest.mock("@/components/XPBurst", () => ({
   XPBurst: () => null,
 }));
 
+// PR change: icon is now React.ReactNode (JSX element), no longer a string emoji
 const defaultProps = {
   type: "connect_twitter",
   label: "Twitter Stamp",
   xp: 50,
-  icon: "🐦",
+  icon: <AtSign className="w-6 h-6" data-testid="stamp-icon" />,
   isConnected: false,
   metadata: null,
   onConnect: jest.fn().mockResolvedValue(false),
@@ -43,9 +47,17 @@ describe("StampCard — connected state (isConnected=true)", () => {
     expect(onInspectVc).toHaveBeenCalledTimes(1);
   });
 
-  it("renders the stamp icon", () => {
+  it("renders the stamp icon as a React node (SVG element, not emoji string)", () => {
+    const { container } = render(<StampCard {...defaultProps} isConnected={true} />);
+    // PR change: icon is now a JSX/SVG element, not a string emoji
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    // The emoji string "🐦" should NOT be present
+    expect(screen.queryByText("🐦")).toBeNull();
+  });
+
+  it("renders icon passed as a custom data-testid element", () => {
     render(<StampCard {...defaultProps} isConnected={true} />);
-    expect(screen.getByText("🐦")).toBeInTheDocument();
+    expect(screen.getByTestId("stamp-icon")).toBeInTheDocument();
   });
 
   it("renders the stamp label", () => {
@@ -122,5 +134,62 @@ describe("StampCard — rendering structure", () => {
     const { container } = render(<StampCard {...defaultProps} isConnected={true} />);
     const card = container.firstChild as HTMLElement;
     expect(card.className).toContain("min-h-[160px]");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PR change: icon prop is now React.ReactNode (JSX) instead of a string emoji
+// ─────────────────────────────────────────────────────────────────────────────
+describe("StampCard — icon prop as React.ReactNode (PR change)", () => {
+  it("accepts a Lucide SVG element as the icon prop", () => {
+    const { container } = render(
+      <StampCard
+        {...defaultProps}
+        isConnected={true}
+        icon={<AtSign className="w-6 h-6" />}
+      />
+    );
+    expect(container.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("accepts a custom React element with a data-testid as icon", () => {
+    render(
+      <StampCard
+        {...defaultProps}
+        isConnected={true}
+        icon={<span data-testid="custom-icon">★</span>}
+      />
+    );
+    expect(screen.getByTestId("custom-icon")).toBeInTheDocument();
+  });
+
+  it("does not render a literal emoji string when icon is a JSX element", () => {
+    render(
+      <StampCard
+        {...defaultProps}
+        isConnected={true}
+        icon={<AtSign className="w-6 h-6" />}
+      />
+    );
+    // Emoji strings like "🐦" or "💬" should NOT appear
+    expect(screen.queryByText("🐦")).toBeNull();
+    expect(screen.queryByText("💬")).toBeNull();
+  });
+
+  it("renders with different icon types without crashing (regression boundary)", () => {
+    // Verify different Lucide icons can be swapped in without error
+    const { rerender } = render(
+      <StampCard {...defaultProps} isConnected={true} icon={<AtSign className="w-6 h-6" />} />
+    );
+    // Re-render with a different JSX node — should not crash
+    expect(() =>
+      rerender(
+        <StampCard
+          {...defaultProps}
+          isConnected={true}
+          icon={<span role="img" aria-label="key">🔑</span>}
+        />
+      )
+    ).not.toThrow();
   });
 });

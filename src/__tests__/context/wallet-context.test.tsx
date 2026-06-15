@@ -728,3 +728,163 @@ describe("WalletProvider & WalletContext", () => {
     expect(unrelatedEvent.preventDefault).not.toHaveBeenCalled();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// checkPiBrowser — URL hostname parsing (PR security fix)
+//
+// PR change: replaced `referrer.includes("minepi.com")` with
+//   `new URL(referrer).hostname.toLowerCase() === "minepi.com"`
+// This prevents false positives from domains that merely contain the string
+// "minepi.com" (e.g. "evil-minepi.com" or "sandbox.minepi.com.attacker.com").
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("checkPiBrowser — iframe referrer URL hostname parsing (PR security fix)", () => {
+  const originalTop = window.top;
+  const originalReferrer = document.referrer;
+
+  // Helper to simulate being inside an iframe by making window.self !== window.top
+  function simulateIframe(referrerUrl: string) {
+    // Make window.top point to a different object so self !== top
+    Object.defineProperty(window, "top", {
+      value: Object.create(null),
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(document, "referrer", {
+      value: referrerUrl,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    // Restore window.top and document.referrer to originals
+    Object.defineProperty(window, "top", {
+      value: originalTop,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(document, "referrer", {
+      value: originalReferrer,
+      configurable: true,
+    });
+    jest.clearAllMocks();
+    localStorage.clear();
+    delete (window as unknown as Record<string, unknown>).Pi;
+    global.fetch = jest.fn();
+  });
+
+  it("isPiBrowser=true when in iframe with exact referrer hostname 'minepi.com'", async () => {
+    simulateIframe("https://minepi.com/app");
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    expect(contextValue?.isPiBrowser).toBe(true);
+  });
+
+  it("isPiBrowser=true when in iframe with exact referrer hostname 'sandbox.minepi.com'", async () => {
+    simulateIframe("https://sandbox.minepi.com/path");
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    expect(contextValue?.isPiBrowser).toBe(true);
+  });
+
+  it("isPiBrowser=false when in iframe with referrer 'evil-minepi.com' (old substring match would incorrectly return true)", async () => {
+    simulateIframe("https://evil-minepi.com/phishing");
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    // PR fix: exact hostname check prevents "evil-minepi.com" from matching
+    expect(contextValue?.isPiBrowser).toBe(false);
+  });
+
+  it("isPiBrowser=false when in iframe with referrer 'sandbox.minepi.com.attacker.com' (subdomain spoofing)", async () => {
+    simulateIframe("https://sandbox.minepi.com.attacker.com/page");
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    // PR fix: hostname "sandbox.minepi.com.attacker.com" does not equal "sandbox.minepi.com"
+    expect(contextValue?.isPiBrowser).toBe(false);
+  });
+
+  it("isPiBrowser=false when in iframe with malformed referrer URL (graceful fallthrough)", async () => {
+    simulateIframe("not-a-valid-url-at-all");
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    // Malformed URL: new URL() throws, catch block falls through → false
+    expect(contextValue?.isPiBrowser).toBe(false);
+  });
+
+  it("isPiBrowser=false when NOT in iframe even if referrer contains minepi.com", async () => {
+    // Ensure window.top === window.self (not in iframe)
+    Object.defineProperty(window, "top", {
+      value: window,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(document, "referrer", {
+      value: "https://minepi.com",
+      configurable: true,
+    });
+
+    let contextValue: ReturnType<typeof useWallet> | undefined;
+    render(
+      <WalletProvider>
+        <TestConsumer onUpdate={(val) => { contextValue = val; }} />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextValue?.isLoading).toBe(false);
+    });
+
+    // No user agent match, not in iframe → false
+    expect(contextValue?.isPiBrowser).toBe(false);
+  });
+});
