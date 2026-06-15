@@ -6,6 +6,12 @@ import { OrderActionSchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
+/**
+ * Releases an escrowed payment after verifying authorization and request validity.
+ *
+ * @param req - The HTTP request containing the payment ID
+ * @returns An API response indicating successful payment release or describing the error
+ */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rateLimit = await checkRateLimit(`order-release:${ip}`, RATE_LIMITS.payment);

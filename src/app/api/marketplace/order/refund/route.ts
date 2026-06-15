@@ -6,6 +6,13 @@ import { OrderActionSchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
+/**
+ * Refunds an escrowed payment from an authenticated user.
+ *
+ * Validates the request, authenticates the user, verifies they own the payment, and updates the payment status to refunded. Rate limiting is enforced per client IP.
+ *
+ * @returns An API response object containing the refund status on success, or error details on failure.
+ */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rateLimit = await checkRateLimit(`order-refund:${ip}`, RATE_LIMITS.payment);

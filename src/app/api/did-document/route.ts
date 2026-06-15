@@ -6,6 +6,13 @@ import { DidDocumentQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
+/**
+ * Returns a DID Document for the requested DID or the issuer's DID Document.
+ *
+ * Enforces per-client rate limiting on the endpoint. If a `did` query parameter is provided, resolves and returns the corresponding DID Document. If no `did` parameter is provided, returns the issuer's DID Document. Responses include appropriate caching headers and `application/did+ld+json` content type.
+ *
+ * @returns A JSON response containing a DID Document with caching headers, or an error response if the request is rate-limited, the DID is invalid, the DID is not found, the user has no DID configured, or document generation fails.
+ */
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`did-doc:${ip}`, RATE_LIMITS.public);

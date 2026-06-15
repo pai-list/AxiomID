@@ -2,6 +2,9 @@
 
 import { RouteErrorPage } from "@/components/RouteErrorPage";
 
+/**
+ * Error boundary component for the marketplace dashboard route.
+ */
 export default function MarketplaceError({
   error,
   reset,

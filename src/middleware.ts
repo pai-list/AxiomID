@@ -13,6 +13,14 @@ const CORS_ALLOWED_ORIGINS = [
   "https://axiomid.vercel.app",
 ];
 
+/**
+ * Determines whether a host is in the allowed hosts list.
+ *
+ * Allowed hosts include localhost, 127.0.0.1, axiomid.app, www.axiomid.app, and subdomains of axiomid.app.
+ *
+ * @param host - The host string to validate, optionally including a port
+ * @returns `true` if the host is allowed, `false` otherwise
+ */
 function isAllowedHost(host: string): boolean {
   const plain = host.replace(/:\d+$/, ""); // strip port
   if (plain === "localhost" || plain === "127.0.0.1") return true;
@@ -21,6 +29,13 @@ function isAllowedHost(host: string): boolean {
   return false;
 }
 
+/**
+ * Determines if an origin is allowed for CORS requests.
+ *
+ * Allows the root domain and its subdomains, origins on the explicit allowlist, and localhost for development.
+ *
+ * @returns The original `origin` if allowed, `null` otherwise
+ */
 function getAllowedOrigin(origin: string | null): string | null {
   if (!origin) return null;
   try {
@@ -38,6 +53,11 @@ function getAllowedOrigin(origin: string | null): string | null {
   return null;
 }
 
+/**
+ * Applies CORS headers to a response if the request origin is allowed.
+ *
+ * @returns The response with CORS headers applied if the origin is allowed, otherwise unchanged
+ */
 function applyCorsHeaders(response: NextResponse, request: NextRequest): NextResponse {
   const origin = request.headers.get("origin");
   const allowedOrigin = getAllowedOrigin(origin);
@@ -50,6 +70,11 @@ function applyCorsHeaders(response: NextResponse, request: NextRequest): NextRes
   return response;
 }
 
+/**
+ * Validates incoming requests, enforces CORS policies, and controls request routing.
+ *
+ * Handles CORS preflight requests with a 204 response. Enforces a maximum request body size of 1 MB, validates the request host against an allowlist, and rewrites `.well-known/did.json` requests to the DID document API route. Routes subdomain requests to their corresponding passport pages, validating that subdomains contain only alphanumeric characters and hyphens, have no leading or trailing hyphens, and do not exceed 63 characters. Applies CORS headers to all responses.
+ */
 export function middleware(request: NextRequest) {
   // Handle CORS preflight
   if (request.method === "OPTIONS") {

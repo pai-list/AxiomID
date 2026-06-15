@@ -9,6 +9,12 @@ interface RouteErrorPageProps {
   reset: () => void;
 }
 
+/**
+ * Renders a full-screen error page displaying error information and action controls.
+ *
+ * In development, the actual error message is displayed; in production, a fallback message is shown.
+ * The error is logged to the console with the provided title.
+ */
 export function RouteErrorPage({ title, fallbackMessage, error, reset }: RouteErrorPageProps) {
   console.error(`${title}:`, error);
   return (

@@ -6,6 +6,11 @@ const STATIC_ASSETS = [
   "/manifest.json",
 ];
 
+/**
+ * Stores an HTTP response in the cache.
+ * @param {Request} request - The request object to use as the cache key.
+ * @param {Response} response - The response object to cache.
+ */
 function cacheResponse(request, response) {
   const clone = response.clone();
   caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));

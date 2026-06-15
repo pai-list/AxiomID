@@ -6,6 +6,9 @@ import { OrderCreateSchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
+/**
+ * Handles marketplace order creation with rate limiting, authentication, and validation.
+ */
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rateLimit = await checkRateLimit(`order-create:${ip}`, RATE_LIMITS.payment);

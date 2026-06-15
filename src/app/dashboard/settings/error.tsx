@@ -2,6 +2,9 @@
 
 import { RouteErrorPage } from "@/components/RouteErrorPage";
 
+/**
+ * Displays an error page for settings route failures.
+ */
 export default function SettingsError({
   error,
   reset,

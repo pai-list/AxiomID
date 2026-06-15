@@ -5,6 +5,12 @@ import { CredentialStatusQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
+/**
+ * Checks the revocation status of a credential subject.
+ *
+ * @param request - The incoming HTTP request containing `credentialId` or `subjectId` query parameters
+ * @returns An API response with the subject's revocation status, subject ID, and last updated timestamp
+ */
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`credential-status:${ip}`, RATE_LIMITS.authenticated);
