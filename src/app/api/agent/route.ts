@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
 
   const { name, description } = parsed.data;
 
-  // Sanitize: strip HTML, enforce length limits
+  // Sanitize: remove HTML angle brackets, enforce length limits
   const sanitizedName = (name ?? 'My Agent')
-    .replace(/<[^>]*>/g, '')
+    .replace(/<|>/g, '')
     .trim()
     .slice(0, 100) || 'My Agent';
   const sanitizedDesc = description
-    ? description.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+    ? description.replace(/<|>/g, '').trim().slice(0, 500)
     : null;
 
   try {
