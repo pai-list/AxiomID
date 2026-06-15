@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Dna, Download, Star, Coins, Package } from "lucide-react";
 
 interface Skill {
   id: string;
@@ -126,11 +127,11 @@ export default function MarketplacePage() {
               </Link>
               <div className="w-px h-6 bg-white/10 hidden sm:block" />
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: "var(--text-primary)" }}>
-                  🧬 Agentic Marketplace
+                <h1 className="text-base sm:text-lg font-bold truncate flex items-center" style={{ color: "var(--text-primary)" }}>
+                  <Dna className="w-5 h-5 text-emerald-400 inline mr-2" />Agentic Marketplace
                 </h1>
                 <p className="text-[10px] font-mono hidden sm:block" style={{ color: "var(--text-muted)" }}>
-                  Genomic Repository of AI Capabilities — Pi Powered
+                  Repository of AI Agent Skills — Pi Network
                 </p>
               </div>
             </div>
@@ -216,10 +217,10 @@ export default function MarketplacePage() {
               </div>
             ) : skills.length === 0 ? (
               <div className="bento-card p-12 text-center">
-                <span className="text-4xl mb-4 block">🧬</span>
-                <h3 className="text-lg font-bold text-white mb-2">No Skills Published Yet</h3>
+                <span className="mb-4 block"><Dna className="w-12 h-12 text-emerald-400/40 mx-auto" /></span>
+                <h3 className="text-lg font-bold text-white mb-2">No Skills Available</h3>
                 <p className="text-sm text-gray-400 mb-6">
-                  Be the first to publish a skill to the Agentic Marketplace.
+                  Publish the first skill to the marketplace.
                 </p>
                 <button onClick={() => setShowPublish(true)} className="btn-primary">
                   PUBLISH FIRST SKILL
@@ -263,10 +264,10 @@ export default function MarketplacePage() {
                       <div className="flex items-center justify-between text-[9px] font-mono">
                         <div className="flex items-center gap-3">
                           <span style={{ color: "var(--text-muted)" }}>
-                            ⬇ {skill.installCount}
+                            <Download className="w-3 h-3 inline mr-1" />{skill.installCount}
                           </span>
                           <span style={{ color: "var(--text-muted)" }}>
-                            ⭐ {skill.avgRating.toFixed(1)}
+                            <Star className="w-3 h-3 inline mr-1" />{(skill.avgRating ?? 0).toFixed(1)}
                           </span>
                         </div>
                         <span className="text-neon-green">
@@ -318,9 +319,9 @@ export default function MarketplacePage() {
                 <p className="text-sm text-gray-300 mb-4">{selectedSkill.description}</p>
 
                 <div className="flex items-center gap-4 text-[10px] font-mono mb-6">
-                  <span className="text-neon-green">⬇ {selectedSkill.installCount} installs</span>
-                  <span className="text-amber-400">⭐ {selectedSkill.avgRating.toFixed(1)} ({selectedSkill.ratingCount})</span>
-                  <span className="text-electric-blue">💰 {selectedSkill.pricePi === 0 ? "Free" : `${selectedSkill.pricePi} π`}</span>
+                  <span className="text-neon-green"><Download className="w-3 h-3 inline mr-1" />{selectedSkill.installCount} installs</span>
+                  <span className="text-amber-400"><Star className="w-3 h-3 inline mr-1" />{(selectedSkill.avgRating ?? 0).toFixed(1)} ({selectedSkill.ratingCount})</span>
+                  <span className="text-electric-blue"><Coins className="w-3 h-3 inline mr-1" />{selectedSkill.pricePi === 0 ? "Free" : `${selectedSkill.pricePi} π`}</span>
                 </div>
 
                 {/* Manifest */}
@@ -434,9 +435,9 @@ function PublishSkillForm({ onPublished }: { onPublished: () => void }) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="bento-card p-6">
-        <h2 className="text-lg font-bold text-white font-mono mb-2">🧬 Publish Skill to Marketplace</h2>
+        <h2 className="text-lg font-bold text-white font-mono mb-2 flex items-center"><Package className="w-5 h-5 text-emerald-400 inline mr-2" />Publish Skill</h2>
         <p className="text-xs text-gray-400 mb-6">
-          Your skill becomes a living, executable entity that agents can install and run autonomously.
+          Skills are executable modules that agents can install and run.
         </p>
 
         <div className="space-y-4">

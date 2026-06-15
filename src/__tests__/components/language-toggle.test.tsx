@@ -45,10 +45,10 @@ describe("LanguageToggle — rendering", () => {
     expect(screen.getByText("English")).toBeInTheDocument();
   });
 
-  it("renders the globe emoji '🌐' icon", () => {
+  it("renders the Globe icon", () => {
     mockUseLanguage.mockReturnValue(makeLanguageCtx());
-    render(<LanguageToggle />);
-    expect(screen.getByText("🌐")).toBeInTheDocument();
+    const { container } = render(<LanguageToggle />);
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 });
 

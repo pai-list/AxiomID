@@ -10,6 +10,7 @@ import skillsData from "@/data/skills.json";
 import { StampBoard } from "@/components/StampBoard";
 import { useLanguage } from "../context/language-context";
 import LanguageToggle from "@/components/LanguageToggle";
+import { Fingerprint, Zap, Bot, Terminal, Store, ClipboardCopy, CheckCircle, Clock, Plug, Ticket } from "lucide-react";
 
 type TabId = "passport" | "actions" | "terminal" | "marketplace" | "agent";
 
@@ -315,11 +316,11 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
                 <div className="space-y-2">
                   <Link href="/passport/demo" className="flex items-center gap-2 text-sm text-gray-400 hover:text-neon-green transition-colors">
-                    <span className="text-base">🆔</span>
+                    <span className="text-base"><Fingerprint className="w-4 h-4" /></span>
                     View Demo Passport
                   </Link>
                   <Link href="/passport/demo" className="flex items-center gap-2 text-sm text-gray-400 hover:text-electric-blue transition-colors">
-                    <span className="text-base">📋</span>
+                    <span className="text-base"><ClipboardCopy className="w-4 h-4" /></span>
                     DID Document
                   </Link>
                 </div>
@@ -406,14 +407,14 @@ export default function Dashboard() {
                         href={`/passport/${user.piUsername || user.walletAddress}`}
                         className="flex items-center gap-2 text-sm text-gray-400 hover:text-neon-green transition-colors"
                       >
-                        <span className="text-base">🆔</span>
+                        <span className="text-base"><Fingerprint className="w-4 h-4" /></span>
                         View Passport
                       </Link>
                       <Link
                         href={`/passport/${user.piUsername || user.walletAddress}`}
                         className="flex items-center gap-2 text-sm text-gray-400 hover:text-electric-blue transition-colors"
                       >
-                        <span className="text-base">📋</span>
+                        <span className="text-base"><ClipboardCopy className="w-4 h-4" /></span>
                         DID Document
                       </Link>
                     </div>
@@ -429,7 +430,7 @@ export default function Dashboard() {
                     </div>
                     {user.kycStatus === "VERIFIED" ? (
                       <span className="px-3 py-1 rounded-full text-xs font-mono bg-neon-green/10 text-neon-green border border-neon-green/20 flex items-center gap-1.5 animate-pulse">
-                        VERIFIED ✅
+                        VERIFIED <CheckCircle className="w-3 h-3 inline" />
                       </span>
                     ) : user.kycStatus === "PENDING" ? (
                       <span className="px-3 py-1 rounded-full text-xs font-mono bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center gap-1.5 animate-pulse">
@@ -449,7 +450,7 @@ export default function Dashboard() {
                     </div>
                   ) : user.kycStatus === "PENDING" ? (
                     <div className="p-4 rounded-xl border border-yellow-400/20 bg-yellow-400/5 text-xs text-gray-300 font-mono space-y-2">
-                      <p className="text-yellow-400 font-bold">⏳ Verification Pending</p>
+                      <p className="text-yellow-400 font-bold"><Clock className="w-3 h-3 inline mr-1" /> Verification Pending</p>
                       <p>The oracle network is validating your Pi Network credentials. Advanced agent tasks will unlock automatically upon approval.</p>
                     </div>
                   ) : (
@@ -623,7 +624,7 @@ export default function Dashboard() {
                           className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-neon-green/30 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-lg">🆔</span>
+                            <span className="text-lg"><Fingerprint className="w-5 h-5" /></span>
                             <span className="text-sm text-white font-mono">View Passport</span>
                           </div>
                           <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -635,7 +636,7 @@ export default function Dashboard() {
                           className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-electric-blue/30 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-lg">⚡</span>
+                            <span className="text-lg"><Zap className="w-5 h-5" /></span>
                             <span className="text-sm text-white font-mono">Claim Actions</span>
                           </div>
                           <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -703,11 +704,11 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4" role="tablist">
           <div className="flex justify-around sm:justify-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar">
             {([
-              { id: "passport" as TabId, icon: "🆔", label: language === "ar" ? "الجواز" : "Passport" },
-              { id: "actions" as TabId, icon: "⚡", label: language === "ar" ? "العمليات" : "Actions" },
-              { id: "agent" as TabId, icon: "🤖", label: language === "ar" ? "العميل" : "Agent" },
-              { id: "terminal" as TabId, icon: "💻", label: language === "ar" ? "الطرفية" : "Terminal" },
-              { id: "marketplace" as TabId, icon: "🛒", label: language === "ar" ? "المتجر" : "Marketplace", disabled: true },
+              { id: "passport" as TabId, icon: <Fingerprint className="w-5 h-5" />, label: language === "ar" ? "الجواز" : "Passport" },
+              { id: "actions" as TabId, icon: <Zap className="w-5 h-5" />, label: language === "ar" ? "العمليات" : "Actions" },
+              { id: "agent" as TabId, icon: <Bot className="w-5 h-5" />, label: language === "ar" ? "العميل" : "Agent" },
+              { id: "terminal" as TabId, icon: <Terminal className="w-5 h-5" />, label: language === "ar" ? "الطرفية" : "Terminal" },
+              { id: "marketplace" as TabId, icon: <Store className="w-5 h-5" />, label: language === "ar" ? "المتجر" : "Marketplace", disabled: true },
             ]).map((tab) => {
               const isActive = tab.id === "terminal"
                 ? showTerminal
@@ -729,7 +730,7 @@ export default function Dashboard() {
                   }`}
                   style={!tab.disabled && !isActive ? { color: 'var(--text-muted)' } : undefined}
                 >
-                  <span className="text-lg sm:text-xl">{tab.icon}</span>
+                  <span className="flex items-center justify-center">{tab.icon}</span>
                   <span className="text-[10px] sm:text-xs font-mono">{tab.label}</span>
                   {tab.disabled && (
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[9px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50" style={{ background: 'var(--bg-card)', color: 'var(--text-muted)', border: '1px solid var(--card-border)' }}>
@@ -788,7 +789,7 @@ export default function Dashboard() {
             <div className="flex-1 min-h-[200px] flex flex-col justify-between">
               {onboardingStep === 1 && (
                 <div className="space-y-4">
-                  <div className="text-center py-4 text-4xl animate-float">🔌</div>
+                  <div className="text-center py-4 text-4xl animate-float"><Plug className="w-10 h-10 mx-auto text-neon-green" /></div>
                   <h4 className="text-base font-semibold text-white text-center">Connect Your Pi Wallet</h4>
                   <p className="text-xs text-gray-400 text-center leading-relaxed">
                     Link your secure Pi cryptographic identity to anchor your autonomous agent on the AxiomID protocol.
@@ -813,7 +814,7 @@ export default function Dashboard() {
 
               {onboardingStep === 2 && (
                 <div className="space-y-4">
-                  <div className="text-center py-4 text-4xl animate-float">🤖</div>
+                  <div className="text-center py-4 text-4xl animate-float"><Bot className="w-10 h-10 mx-auto text-axiom-purple" /></div>
                   <h4 className="text-base font-semibold text-white text-center">Create Autonomous Agent</h4>
                   <p className="text-xs text-gray-400 text-center leading-relaxed font-mono">
                     Define the name for your autonomous gRPC agent. It will begin at Tier 1 with 0 XP.
@@ -839,7 +840,7 @@ export default function Dashboard() {
 
               {onboardingStep === 3 && (
                 <div className="space-y-4">
-                  <div className="text-center py-4 text-4xl animate-float">🎫</div>
+                  <div className="text-center py-4 text-4xl animate-float"><Ticket className="w-10 h-10 mx-auto text-electric-blue" /></div>
                   <h4 className="text-base font-semibold text-white text-center">Your Passport is Ready!</h4>
                   <p className="text-xs text-gray-400 text-center leading-relaxed">
                     Congratulations! Your agent identity passport has been successfully anchored and is ready to execute automated workflows.

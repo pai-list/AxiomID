@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useLanguage } from "./context/language-context";
 import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Users, Bot, Ticket, Zap, AlertTriangle } from "lucide-react";
 
 /**
  * Renders an interactive passport card that displays user identity information with a 3D tilt effect responding to mouse and touch movement.
@@ -327,13 +328,13 @@ export default function Home() {
       <div className="w-full max-w-6xl px-6 mt-12 z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bento-card border border-white/5 bg-white/[0.01]">
           {[
-            { label: t("stat_users"), value: networkStats?.users.toLocaleString() ?? "—", icon: "🆔", color: "text-neon-green" },
-            { label: t("stat_agents"), value: networkStats?.agents.toLocaleString() ?? "—", icon: "🤖", color: "text-electric-blue" },
-            { label: t("total_xp"), value: networkStats?.xp.toLocaleString() ?? "—", icon: "🎫", color: "text-axiom-purple" },
-            { label: t("stat_tx"), value: networkStats?.payments.toLocaleString() ?? "—", icon: "⚡", color: "text-axiom-gold" },
+            { label: t("stat_users"), value: networkStats?.users.toLocaleString() ?? "—", icon: <Users className="w-5 h-5" />, color: "text-neon-green" },
+            { label: t("stat_agents"), value: networkStats?.agents.toLocaleString() ?? "—", icon: <Bot className="w-5 h-5" />, color: "text-electric-blue" },
+            { label: t("total_xp"), value: networkStats?.xp.toLocaleString() ?? "—", icon: <Ticket className="w-5 h-5" />, color: "text-axiom-purple" },
+            { label: t("stat_tx"), value: networkStats?.payments.toLocaleString() ?? "—", icon: <Zap className="w-5 h-5" />, color: "text-axiom-gold" },
           ].map((stat) => (
             <div key={stat.label} className="text-center md:text-left md:border-r border-white/5 last:border-0 md:px-4 flex flex-col md:flex-row md:items-center gap-3">
-              <span className="text-2xl hidden md:inline">{stat.icon}</span>
+              <span className="hidden md:inline">{stat.icon}</span>
               <div>
                 <p className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">{stat.label}</p>
                 <h4 className={`text-lg md:text-xl font-bold font-mono mt-0.5 ${stat.color}`}>{stat.value}</h4>
@@ -408,7 +409,7 @@ export default function Home() {
           <div className="bento-card p-6 border border-red-500/10 bg-red-500/[0.01] flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-red-400 text-lg">⚠️</span>
+                <AlertTriangle className="w-4 h-4 inline text-red-400" />
                 <h3 className="text-base font-bold text-red-400 font-mono">{language === "en" ? "Traditional Identity (Web2)" : "الهوية التقليدية (Web2)"}</h3>
               </div>
               <ul className="space-y-3.5 text-xs text-gray-400 font-mono">

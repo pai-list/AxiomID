@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { AtSign, MessageCircle, Key, Pickaxe, Wallet, ShieldCheck } from "lucide-react";
 import { StampCard } from "./StampCard";
 import { TrustScoreGauge } from "./TrustScoreGauge";
 import type { Tier } from "@/lib/tiers";
@@ -41,12 +42,12 @@ interface StampBoardProps {
 }
 
 const STAMP_DEFS = [
-  { type: "connect_twitter", label: "Twitter Stamp", xp: 50, icon: "🐦", isAutomatic: false },
-  { type: "connect_discord", label: "Discord Stamp", xp: 50, icon: "💬", isAutomatic: false },
-  { type: "connect_google", label: "Google Stamp", xp: 50, icon: "🔑", isAutomatic: false },
-  { type: "daily_pow", label: "Proof of Work", xp: 20, icon: "⛏️", isAutomatic: true },
-  { type: "wallet_age", label: "Wallet Activity", xp: 300, icon: "💰", isAutomatic: true },
-  { type: "verify_identity", label: "KYC Status Stamp", xp: 100, icon: "🔐", isAutomatic: true },
+  { type: "connect_twitter", label: "Twitter Stamp", xp: 50, icon: <AtSign className="w-6 h-6" />, isAutomatic: false },
+  { type: "connect_discord", label: "Discord Stamp", xp: 50, icon: <MessageCircle className="w-6 h-6" />, isAutomatic: false },
+  { type: "connect_google", label: "Google Stamp", xp: 50, icon: <Key className="w-6 h-6" />, isAutomatic: false },
+  { type: "daily_pow", label: "Proof of Work", xp: 20, icon: <Pickaxe className="w-6 h-6" />, isAutomatic: true },
+  { type: "wallet_age", label: "Wallet Activity", xp: 300, icon: <Wallet className="w-6 h-6" />, isAutomatic: true },
+  { type: "verify_identity", label: "KYC Status Stamp", xp: 100, icon: <ShieldCheck className="w-6 h-6" />, isAutomatic: true },
 ];
 
 /**

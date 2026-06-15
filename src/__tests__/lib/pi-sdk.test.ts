@@ -203,11 +203,14 @@ describe('pi-sdk', () => {
   });
 
   describe('connectPi', () => {
+    // Tests 1-4 verify PiSdkBase error handling through the browser path
+    // (connectPi rejects in jsdom, which now re-throws PiSdkError directly)
+
     it('throws when PiSdkBase.connect fails (server-side fallback)', async () => {
       const mockInstance = { connect: jest.fn().mockRejectedValue(new Error('Connection error')) };
       MockPiSdkBase.mockImplementationOnce(() => mockInstance as any);
 
-      await expect(connectPi()).rejects.toThrow('Pi authentication failed');
+      await expect(connectPi()).rejects.toThrow('Pi SDK is not available');
     });
 
     it('throws when get_user returns null after successful connect', async () => {
@@ -215,7 +218,7 @@ describe('pi-sdk', () => {
       MockPiSdkBase.mockImplementationOnce(() => mockInstance as any);
       (PiSdkBase as any).get_user = jest.fn().mockReturnValue(null);
 
-      await expect(connectPi()).rejects.toThrow('Pi authentication failed');
+      await expect(connectPi()).rejects.toThrow('Pi SDK is not available');
     });
 
     it('throws when accessToken is falsy after successful connect', async () => {
@@ -224,7 +227,7 @@ describe('pi-sdk', () => {
       (PiSdkBase as any).get_user = jest.fn().mockReturnValue({ uid: 'u1', name: 'User' });
       (PiSdkBase as any).accessToken = null;
 
-      await expect(connectPi()).rejects.toThrow('Pi authentication failed');
+      await expect(connectPi()).rejects.toThrow('Pi SDK is not available');
     });
 
     it('calls pushLog with error message on failure', async () => {
@@ -236,16 +239,16 @@ describe('pi-sdk', () => {
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Auth error'));
     });
 
+    // PiSdkBase success path is server-only (typeof window === "undefined") and
+    // unreachable in jsdom. The browser path with window.Pi covers the same
+    // return-shape contract — see "uses window.Pi.authenticate" test below.
     it('returns PiAuthResult on successful auth via PiSdkBase', async () => {
-      const mockInstance = { connect: jest.fn().mockResolvedValue(undefined) };
-      MockPiSdkBase.mockImplementationOnce(() => mockInstance as any);
-      (PiSdkBase as any).get_user = jest.fn().mockReturnValue({
-        uid: 'uid-123',
-        username: 'piuser',
-        name: 'Pi User',
-        stellarAddress: 'GSTELLAR',
+      const mockAuthenticate = jest.fn().mockResolvedValue({
+        user: { uid: 'uid-123', username: 'piuser', name: 'Pi User', stellarAddress: 'GSTELLAR' },
+        accessToken: 'token-abc',
       });
-      (PiSdkBase as any).accessToken = 'token-abc';
+      (global as any).window = (global as any).window || {};
+      (global as any).window.Pi = { authenticate: mockAuthenticate };
 
       const result = await connectPi();
 
@@ -253,6 +256,8 @@ describe('pi-sdk', () => {
       expect(result.user.uid).toBe('uid-123');
       expect(result.user.username).toBe('piuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
+
+      delete (global as any).window.Pi;
     });
 
     it('uses window.Pi.authenticate when available (Pi Browser)', async () => {

@@ -4,6 +4,7 @@ import { VerificationBadge } from "./VerificationBadge";
 import { TrustScoreGauge } from "./TrustScoreGauge";
 import type { Tier } from "@/lib/tiers";
 import { useLanguage } from "@/app/context/language-context";
+import { Copy, Eye, Zap } from "lucide-react";
 
 interface AgentPassportProps {
   username: string;
@@ -121,7 +122,7 @@ export function AgentPassport({
             <h3 className="text-lg font-bold font-mono" style={{ color: 'var(--text-primary)' }}>{username}</h3>
             <div className="flex items-center justify-center gap-2 mt-1">
               <p className="text-[10px] font-mono break-all" style={{ color: 'var(--text-muted)' }}>{did}</p>
-              <button onClick={() => copyToClipboard(did)} className="hover:text-white" style={{ color: 'var(--text-muted)' }} aria-label="Copy DID">📋</button>
+              <button onClick={() => copyToClipboard(did)} className="hover:text-white" style={{ color: 'var(--text-muted)' }} aria-label="Copy DID"><Copy className="w-3.5 h-3.5" /></button>
             </div>
           </div>
 
@@ -130,7 +131,7 @@ export function AgentPassport({
             <span className="text-[9px] font-mono block" style={{ color: 'var(--text-muted)' }}>{t('label_wallet')}</span>
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-neon-green font-mono">{shortAddress}</span>
-              {displayAddress && <button onClick={() => copyToClipboard(displayAddress)} className="hover:text-white" style={{ color: 'var(--text-muted)' }} aria-label="Copy Wallet Address">📋</button>}
+              {displayAddress && <button onClick={() => copyToClipboard(displayAddress)} className="hover:text-white" style={{ color: 'var(--text-muted)' }} aria-label="Copy Wallet Address"><Copy className="w-3.5 h-3.5" /></button>}
             </div>
           </div>
 
@@ -192,7 +193,7 @@ export function AgentPassport({
           {/* System Modules Slots Grid */}
           <div className="rounded-xl p-4 border" style={{ background: 'var(--bg-card)', borderColor: 'var(--card-border)' }}>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] tracking-wider font-mono text-neon-green">⚡ SYSTEM MODULES</span>
+              <span className="text-[10px] tracking-wider font-mono text-neon-green"><Zap className="w-3 h-3 inline mr-1" /> SYSTEM MODULES</span>
               <span className="text-[9px] font-mono text-gray-500">ACTIVE: 3/4</span>
             </div>
             <div className="grid grid-cols-4 gap-2 text-center font-mono text-[9px]">
@@ -212,7 +213,7 @@ export function AgentPassport({
                 <span className="text-[7px] text-neon-green bg-neon-green/10 px-1 rounded">ON</span>
               </div>
               <div className="relative rounded-lg p-2 border border-dashed border-gray-600 bg-black/40 flex flex-col items-center justify-center gap-1 opacity-60">
-                <span className="text-gray-500 text-xs">👁️</span>
+                <span className="text-gray-500 text-xs"><Eye className="w-3 h-3" /></span>
                 <span className="text-[8px] text-gray-400">WORLD ID</span>
                 <span className="text-[7px] text-gray-500 bg-gray-800 px-1 rounded">SLOT</span>
               </div>

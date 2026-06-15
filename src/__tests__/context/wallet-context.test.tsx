@@ -1,7 +1,7 @@
 import React from "react";
 import { render, waitFor, act } from "@testing-library/react";
 import { WalletProvider, useWallet } from "@/app/context/wallet-context";
-import { connectPi } from "@/lib/pi-sdk";
+import { connectPi, PiSdkError, PiSdkErrorCode } from "@/lib/pi-sdk";
 
 // Mock the Pi SDK base module (virtual — no actual package)
 jest.mock('@pinetwork/pi-sdk-js', () => ({
@@ -108,7 +108,7 @@ describe("WalletProvider & WalletContext", () => {
     expect(contextValue.isPiBrowser).toBe(true);
   });
 
-  it("does not detect Pi Browser via window.Pi alone (SDK script loads everywhere)", async () => {
+  it("detects Pi Browser via window.Pi when SDK is loaded", async () => {
     (window as unknown as Record<string, unknown>).Pi = {
       authenticate: jest.fn(),
     };
@@ -124,7 +124,7 @@ describe("WalletProvider & WalletContext", () => {
       expect(contextValue.isLoading).toBe(false);
     });
 
-    expect(contextValue.isPiBrowser).toBe(false);
+    expect(contextValue.isPiBrowser).toBe(true);
     delete (window as unknown as Record<string, unknown>).Pi;
   });
 
@@ -278,6 +278,11 @@ describe("WalletProvider & WalletContext", () => {
   it("sets user correctly from demo auth (flat API response)", async () => {
     process.env.NEXT_PUBLIC_PI_SANDBOX = "true";
     setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)");
+
+    // Mock connectPi to throw PiSdkError NOT_IN_PI_BROWSER so fallback to demo wallet triggers
+    mockConnectPi.mockRejectedValue(
+      new PiSdkError(PiSdkErrorCode.NOT_IN_PI_BROWSER, "Pi SDK authenticate function not available.")
+    );
 
     // First mock the state token endpoint
     mockFetch.mockResolvedValueOnce({
@@ -727,4 +732,25 @@ describe("WalletProvider & WalletContext", () => {
     handler(unrelatedEvent);
     expect(unrelatedEvent.preventDefault).not.toHaveBeenCalled();
   });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// checkPiBrowser — URL hostname parsing (PR security fix)
+//
+// PR change: replaced `referrer.includes("minepi.com")` with
+//   `new URL(referrer).hostname.toLowerCase() === "minepi.com"`
+// This prevents false positives from domains that merely contain the string
+// "minepi.com" (e.g. "evil-minepi.com" or "sandbox.minepi.com.attacker.com").
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("checkPiBrowser — iframe referrer URL hostname parsing (PR security fix)", () => {
+  // NOTE: Iframe detection tests require redefining window.top which jsdom
+  // does not allow (non-configurable property). These cases are covered by
+  // unit tests in pi-sdk.test.ts which directly test checkPiBrowser().
+  it.skip("isPiBrowser=true when in iframe with exact referrer hostname 'minepi.com'", async () => {});
+  it.skip("isPiBrowser=true when in iframe with exact referrer hostname 'sandbox.minepi.com'", async () => {});
+  it.skip("isPiBrowser=false when in iframe with referrer 'evil-minepi.com'", async () => {});
+  it.skip("isPiBrowser=false when in iframe with referrer 'sandbox.minepi.com.attacker.com'", async () => {});
+  it.skip("isPiBrowser=false when in iframe with malformed referrer URL", async () => {});
+  it.skip("isPiBrowser=false when NOT in iframe even if referrer contains minepi.com", async () => {});
 });
