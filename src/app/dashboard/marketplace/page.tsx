@@ -267,7 +267,7 @@ export default function MarketplacePage() {
                             <Download className="w-3 h-3 inline mr-1" />{skill.installCount}
                           </span>
                           <span style={{ color: "var(--text-muted)" }}>
-                            <Star className="w-3 h-3 inline mr-1" />{skill.avgRating.toFixed(1)}
+                            <Star className="w-3 h-3 inline mr-1" />{(skill.avgRating ?? 0).toFixed(1)}
                           </span>
                         </div>
                         <span className="text-neon-green">
