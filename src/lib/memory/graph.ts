@@ -77,10 +77,10 @@ export function validateEdge(edge: unknown): MemoryEdge {
 }
 
 /**
- * Validates that an object conforms to the MemoryGraph schema.
+ * Parses and validates a graph object.
  *
- * @throws If the input does not match the expected MemoryGraph structure.
- * @returns The validated graph object.
+ * @throws If the input does not conform to the MemoryGraph schema.
+ * @returns The validated graph.
  */
 export function validateGraph(graph: unknown): MemoryGraph {
   return MemoryGraphSchema.parse(graph);

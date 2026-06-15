@@ -6,7 +6,9 @@ import { MemoryNode, MemoryEdge } from '../graph';
 const IGNORED_DIRS = new Set(['node_modules', '.git', '.next', '.jolli', 'dist', 'out', 'build']);
 
 /**
- * Recursively gets all TS/JS files in a directory, ignoring node_modules, .git, .next, etc.
+ * Collects all TypeScript and JavaScript source files recursively from a directory, excluding declaration files and ignored directories.
+ *
+ * @returns An array of absolute file paths for all matching source files.
  */
 export function globFiles(dir: string, rootDir: string): string[] {
   let results: string[] = [];
@@ -34,8 +36,15 @@ export function globFiles(dir: string, rootDir: string): string[] {
 }
 
 /**
- * Resolves an imported module path to a relative path from workspace root.
- * Supports relative imports and '@/' alias.
+ * Resolves an import specifier to a file path relative to the project root.
+ *
+ * Supports relative imports (e.g., `./foo`, `../bar`) and the `@/` alias mapping
+ * to `<rootDir>/src`. Returns `null` for external dependencies and unresolvable imports.
+ *
+ * @param importee - The import specifier (e.g., `'./utils'`, `'@/components'`, `'react'`)
+ * @param importerPath - The file path of the module performing the import
+ * @param rootDir - The project root directory
+ * @returns A path relative to `rootDir` if the import resolves to a file, `null` otherwise
  */
 export function resolveImportPath(
   importee: string,
@@ -87,7 +96,11 @@ export function resolveImportPath(
 }
 
 /**
- * Parses a TS/JS file AST to extract imports and top-level exported symbols.
+ * Extracts file metadata, exported symbols, and import relationships from a TypeScript or JavaScript file.
+ *
+ * @param filePath - Path to the file to parse
+ * @param rootDir - Root directory for relative path and import resolution
+ * @returns Object containing extracted nodes (file and symbol declarations) and edges (import and export relationships)
  */
 export function extractASTInfo(
   filePath: string,
@@ -196,7 +209,10 @@ export function extractASTInfo(
 }
 
 /**
- * Scans the entire project and extracts AST nodes and edges.
+ * Scans all TypeScript and JavaScript files in a project and builds a graph of files, exported symbols, and directory hierarchy.
+ *
+ * @param rootDir - The root directory of the project to scan
+ * @returns An object containing file and symbol nodes (with directory nodes for hierarchy) and edges representing imports, exports, and containment relationships
  */
 export function scanProjectAST(rootDir: string): {
   nodes: MemoryNode[];

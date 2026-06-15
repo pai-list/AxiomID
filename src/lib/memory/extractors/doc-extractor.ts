@@ -5,7 +5,9 @@ import { MemoryNode, MemoryEdge } from '../graph';
 const IGNORED_DIRS = new Set(['node_modules', '.git', '.next', '.jolli', 'dist', 'out', 'build']);
 
 /**
- * Recursively find all Markdown files in a directory.
+ * Collects all `.md` file paths in a directory tree, excluding ignored directories.
+ *
+ * @returns An array of full paths to `.md` files found.
  */
 export function globMarkdownFiles(dir: string, rootDir: string): string[] {
   let results: string[] = [];
@@ -33,7 +35,13 @@ export function globMarkdownFiles(dir: string, rootDir: string): string[] {
 }
 
 /**
- * Parses simple YAML frontmatter.
+ * Extracts and parses YAML-style frontmatter from content.
+ *
+ * Frontmatter is expected to be delimited by `---` markers at the beginning.
+ * Values are parsed as strings (with surrounding quotes removed) or arrays
+ * (for values in bracket notation).
+ *
+ * @returns The parsed frontmatter object and the remaining body text.
  */
 export function parseFrontmatter(content: string): {
   frontmatter: Record<string, any>;
@@ -70,7 +78,9 @@ export function parseFrontmatter(content: string): {
 }
 
 /**
- * Extracts all [[Wikilinks]] from a body of markdown text.
+ * Extracts wikilinks from markdown text, supporting `[[target]]` and `[[target|display-text]]` formats.
+ *
+ * @returns An array of wikilink targets.
  */
 export function extractWikilinks(body: string): string[] {
   const links: string[] = [];
@@ -86,7 +96,33 @@ export function extractWikilinks(body: string): string[] {
 }
 
 /**
- * Resolves a wikilink target name to a file/document ID in the project.
+ * Resolves a wikilink target to a file path within the project.
+ *
+ * Attempts resolution in the following order: relative to the current document's directory (with optional `.md` extension), or as a path relative to the project root.
+ *
+ * @param target - The wikilink target name or path.
+ * @param currentDocPath - The absolute path of the document containing the wikilink.
+ * @param rootDir - The absolute path of the project root directory.
+ * @returns The relative file path (normalized to forward slashes) if a matching file exists, `null` otherwise.
+ */
+
+/**
+ * Parses a markdown file and creates a document node with wikilink and reference edges.
+ *
+ * Reads the markdown file, extracts YAML frontmatter and wikilinks, creates a document node with metadata, and produces edges for each resolved wikilink and related document entry.
+ *
+ * @param filePath - The absolute path to the markdown file.
+ * @param rootDir - The absolute path of the project root directory.
+ * @returns An object containing extracted nodes and edges. If the file cannot be processed, the returned arrays may be empty.
+ */
+
+/**
+ * Scans the workspace for markdown files and aggregates extracted nodes and edges.
+ *
+ * Recursively discovers all markdown files, extracts metadata and links from each, and deduplicates document nodes by ID while collecting all discovered edges.
+ *
+ * @param rootDir - The absolute path of the project root directory to scan.
+ * @returns An object containing deduplicated document nodes and all discovered edges.
  */
 export function resolveWikilinkTarget(
   target: string,
@@ -117,7 +153,11 @@ export function resolveWikilinkTarget(
 
   return null;
 /**
- * Extracts metadata, wikilinks, and creates nodes & edges for a markdown file.
+ * Builds graph nodes and edges representing a markdown document's metadata and references.
+ *
+ * @param filePath - Path to the markdown file to process
+ * @param rootDir - Root directory used to resolve relative file paths
+ * @returns An object containing the extracted document node and edges for wikilinks and related references
  */
 export function extractDocInfo(
   filePath: string,
@@ -182,7 +222,9 @@ export function extractDocInfo(
 }
 
 /**
- * Scans the workspace for markdown documentation and returns nodes and edges.
+ * Builds an in-memory graph of project documentation by scanning markdown files and extracting their metadata and cross-references.
+ *
+ * @returns An object containing document nodes and the edges that represent relationships between them.
  */
 export function scanProjectDocs(rootDir: string): {
   nodes: MemoryNode[];

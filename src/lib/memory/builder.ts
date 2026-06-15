@@ -7,7 +7,9 @@ import { extractGitInfo } from './extractors/git-extractor';
 import { scanProjectDocs } from './extractors/doc-extractor';
 
 /**
- * Deterministically computes a SHA-256 hash of nodes and edges to enforce the TrustChain (RULE 3).
+ * Computes a deterministic SHA-256 hash of a graph's nodes, edges, and timestamp.
+ *
+ * @returns The hexadecimal SHA-256 hash.
  */
 export function calculateGraphHash(
   nodes: MemoryNode[],
@@ -34,7 +36,9 @@ export function calculateGraphHash(
 }
 
 /**
- * Builds the entire Topological Memory Graph for the project.
+ * Builds a memory graph by scanning and merging project data from multiple sources.
+ *
+ * @returns A validated memory graph containing deduplicated nodes and edges.
  */
 export function buildMemoryGraph(rootDir: string): MemoryGraph {
   console.log(`[Memory Builder] Starting build for root: ${rootDir}`);
@@ -110,7 +114,9 @@ export function buildMemoryGraph(rootDir: string): MemoryGraph {
 }
 
 /**
- * Builds the graph and saves it to a local JSON file.
+ * Builds a memory graph from a project directory and persists it to a file.
+ *
+ * @returns The constructed memory graph
  */
 export function buildAndSaveMemoryGraph(rootDir: string, outputPath: string): MemoryGraph {
   const graph = buildMemoryGraph(rootDir);
