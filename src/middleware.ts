@@ -62,6 +62,7 @@ function applyCorsHeaders(response: NextResponse, request: NextRequest): NextRes
     response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Shared-Secret");
     response.headers.set("Access-Control-Max-Age", "86400");
+    response.headers.set("Vary", "Origin");
   }
   return response;
 }
@@ -69,29 +70,26 @@ function applyCorsHeaders(response: NextResponse, request: NextRequest): NextRes
 /**
  * Validates requests, handles CORS, and rewrites specific paths.
  *
- * Rejects requests with invalid hosts or body sizes exceeding the limit.
- * Handles CORS preflight requests and applies CORS headers to all responses.
- * Rewrites `/.well-known/did.json` to the DID document API route and subdomain requests to passport pages.
- *
  * @returns The processed response.
  */
 export function middleware(request: NextRequest) {
+  const withCors = (response: NextResponse) => applyCorsHeaders(response, request);
+
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
-    const response = new NextResponse(null, { status: 204 });
-    return applyCorsHeaders(response, request);
+    return withCors(new NextResponse(null, { status: 204 }));
   }
 
   const contentLength = request.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_BODY_BYTES) {
-    return new NextResponse("Request body too large", { status: 413 });
+    return withCors(new NextResponse("Request body too large", { status: 413 }));
   }
 
   const host = request.headers.get("host") || "";
 
   // Validate host against allowlist
   if (!isAllowedHost(host)) {
-    return new NextResponse("Invalid host", { status: 403 });
+    return withCors(new NextResponse("Invalid host", { status: 403 }));
   }
 
   const url = request.nextUrl;
@@ -99,7 +97,7 @@ export function middleware(request: NextRequest) {
   // Rewrite /.well-known/did.json to the DID document API route
   if (url.pathname === "/.well-known/did.json") {
     url.pathname = "/api/did-document";
-    return NextResponse.rewrite(url);
+    return withCors(NextResponse.rewrite(url));
   }
 
   // Check if this is a subdomain request (e.g., alice.axiomid.app)
@@ -112,20 +110,18 @@ export function middleware(request: NextRequest) {
     const subdomain = host.replace(`.${ROOT_DOMAIN}`, "");
     // Sanitize subdomain: alphanumeric + hyphens only (reject leading/trailing hyphens)
     if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {
-      return new NextResponse("Invalid subdomain", { status: 400 });
-
+      return withCors(new NextResponse("Invalid subdomain", { status: 400 }));
+    }
     // Rewrite to passport page with the subdomain as slug
     url.pathname = `/passport/${subdomain}`;
-    return NextResponse.rewrite(url);
+    return withCors(NextResponse.rewrite(url));
   }
 
-  const response = NextResponse.next();
-  return applyCorsHeaders(response, request);
+  return withCors(NextResponse.next());
 }
 
 export const config = {
   matcher: [
-    // Match all paths except static files and Next.js internals
     "/((?!_next/static|_next/image|favicon.ico|icon-.*|validation-key.txt).*)",
   ],
 };

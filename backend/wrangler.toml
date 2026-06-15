@@ -5,6 +5,7 @@ compatibility_date = "2026-06-14"
 [vars]
 ENVIRONMENT = "production"
 
+# --- Durable Objects ---
 [[durable_objects.bindings]]
 name = "PRESENCE_DO"
 class_name = "PresenceDO"
@@ -13,6 +14,7 @@ class_name = "PresenceDO"
 tag = "v1"
 new_sqlite_classes = ["PresenceDO"]
 
+# --- Queues ---
 [[queues.producers]]
 queue = "harvest-queue"
 binding = "HARVEST_QUEUE"
@@ -21,3 +23,17 @@ binding = "HARVEST_QUEUE"
 queue = "harvest-queue"
 max_batch_size = 10
 max_batch_timeout = 2
+
+# --- KV Namespace (reuse existing: b2623ff0d28342c799dae14fae4eb512) ---
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "b2623ff0d28342c799dae14fae4eb512"
+
+# --- D1 Database (reuse existing: 64c6f62f-0df0-455f-ba4f-c63a572e6663) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "axiomid-edge"
+database_id = "64c6f62f-0df0-455f-ba4f-c63a572e6663"
+
+# --- Secrets (set via `wrangler secret put`) ---
+# PERPLEXITY_API_KEY = set via `wrangler secret put PERPLEXITY_API_KEY`

@@ -3,7 +3,7 @@ import { createIssuerDid } from "@/lib/did";
 import { buildDidDocument } from "@/lib/did-document";
 import { resolveDid } from "@/lib/did-resolver";
 import { DidDocumentQuerySchema } from "@/lib/validators";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 /**

@@ -1,0 +1,204 @@
+/**
+ * Modular router for AxiomID backend Worker.
+ * Replaces monolithic index.ts with clean route handling.
+ */
+
+import type { Env } from "./lib/types";
+import { verifyAuth, jsonResponse, errorResponse, PUBLIC_ROUTES } from "./lib/auth";
+import { KVHelper } from "./db/kv";
+import { D1Helper } from "./db/d1";
+import { RateLimiter } from "./lib/rate-limiter";
+import { TrustEngine } from "./lib/trust";
+import { SkillsMarketplace } from "./routes/skills";
+import { AgentDispatcher } from "./routes/agent-dispatch";
+
+export class Router {
+  private kv: KVHelper;
+  private d1: D1Helper;
+  private rateLimiter: RateLimiter;
+  private trust: TrustEngine;
+  private skills: SkillsMarketplace;
+  private dispatcher: AgentDispatcher;
+  private env: Env;
+
+  constructor(env: Env) {
+    this.env = env;
+    this.kv = new KVHelper(env.CACHE_KV);
+    this.d1 = new D1Helper(env.DB);
+    this.rateLimiter = new RateLimiter(this.kv);
+    this.trust = new TrustEngine(this.kv);
+    this.skills = new SkillsMarketplace(this.kv, this.d1);
+    this.dispatcher = new AgentDispatcher(this.kv, this.d1);
+  }
+
+  private async ensureD1(): Promise<void> {
+    await this.d1.init();
+  }
+
+  async handle(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    // Initialize D1 tables on first request
+    await this.ensureD1();
+
+    // CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "https://axiomid.app",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-Shared-Secret",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
+
+    try {
+      return await this.route(url, request);
+    } catch (err) {
+      console.error("Router error:", err);
+      return errorResponse("Internal server error", 500);
+    }
+  }
+
+  private async route(url: URL, request: Request): Promise<Response> {
+    const path = url.pathname;
+    const method = request.method;
+
+    // --- Health ---
+    if (path === "/health" || path === "/") {
+      return jsonResponse({ status: "ok", timestamp: Date.now() });
+    }
+
+    // --- Auth check for protected routes ---
+    const { authorized, agentId } = verifyAuth(request, this.env);
+    if (!authorized && !this.isPublicRoute(path)) {
+      return errorResponse("Unauthorized", 401);
+    }
+
+    // --- Rate limiting ---
+    const clientIp = request.headers.get("CF-Connecting-IP") || "unknown";
+    const tier = authorized ? "authenticated" : "anonymous";
+    const rl = await this.rateLimiter.check(`${clientIp}:${path}`, tier);
+    if (!rl.allowed) {
+      return errorResponse("Rate limit exceeded", 429);
+    }
+
+    // --- Presence ---
+    if (path === "/heartbeat" && method === "POST") {
+      return this.handleHeartbeat(agentId || "default");
+    }
+
+    if (path.startsWith("/status")) {
+      const targetAgent = url.searchParams.get("agentId") || agentId || "default";
+      return this.handleStatus(targetAgent);
+    }
+
+    // --- Trust ---
+    if (path.startsWith("/api/trust/")) {
+      const did = path.split("/api/trust/")[1];
+      if (!did) return errorResponse("Missing DID");
+      const result = await this.trust.compute(did);
+      return jsonResponse({ success: true, data: result, timestamp: Date.now() });
+    }
+
+    // --- Harvest ---
+    if (path === "/api/harvest" && method === "POST") {
+      return this.handleHarvestEnqueue(request);
+    }
+
+    if (path.startsWith("/api/harvest/") && method === "GET") {
+      const id = path.split("/api/harvest/")[1];
+      return this.handleHarvestGet(id);
+    }
+
+    // --- Skills Marketplace ---
+    if (path === "/api/skills" && method === "GET") {
+      const skills = await this.skills.listSkills();
+      return jsonResponse({ success: true, data: { skills, total: skills.length }, timestamp: Date.now() });
+    }
+
+    if (path.startsWith("/api/skills/") && method === "GET") {
+      const slug = path.split("/api/skills/")[1];
+      const skill = await this.skills.getSkill(slug);
+      if (!skill) return errorResponse("Skill not found", 404);
+      return jsonResponse({ success: true, data: skill, timestamp: Date.now() });
+    }
+
+    if (path.startsWith("/api/skills/") && path.endsWith("/install") && method === "POST") {
+      const slug = path.split("/api/skills/")[1].replace("/install", "");
+      const body = await request.json<{ userDid?: string; version?: string }>();
+      if (!body.userDid) return errorResponse("Missing userDid");
+      const result = await this.skills.installSkill(slug, body.userDid, body.version);
+      return jsonResponse({ success: result.success, data: result, timestamp: Date.now() });
+    }
+
+    // --- Agent Dispatch ---
+    if (path === "/api/agent/dispatch" && method === "POST") {
+      const body = await request.json<{ skillSlug: string; action: string; params: Record<string, unknown>; userDid: string }>();
+      if (!body.skillSlug || !body.action || !body.userDid) {
+        return errorResponse("Missing skillSlug, action, or userDid");
+      }
+      try {
+        const result = await this.dispatcher.dispatch(body);
+        return jsonResponse({ success: true, data: result, timestamp: Date.now() });
+      } catch (err) {
+        return errorResponse(err instanceof Error ? err.message : "Dispatch failed", 500);
+      }
+    }
+
+    return errorResponse("Not found", 404);
+  }
+
+  private isPublicRoute(path: string): boolean {
+    return PUBLIC_ROUTES.some((p) => path.startsWith(p));
+  }
+
+  private async handleHeartbeat(agentId: string): Promise<Response> {
+    try {
+      const id = this.env.PRESENCE_DO.idFromName(agentId);
+      const obj = this.env.PRESENCE_DO.get(id);
+      const resp = await obj.fetch(new Request("https://internal/heartbeat", { method: "POST" }));
+      if (!resp.ok) return errorResponse("Presence service error", 502);
+      const data = await resp.json();
+      return jsonResponse({ success: true, data, timestamp: Date.now() });
+    } catch {
+      return errorResponse("Presence unavailable", 503);
+    }
+  }
+
+  private async handleStatus(agentId: string): Promise<Response> {
+    try {
+      const id = this.env.PRESENCE_DO.idFromName(agentId);
+      const obj = this.env.PRESENCE_DO.get(id);
+      const resp = await obj.fetch(new Request(`https://internal/status?agentId=${agentId}`));
+      if (!resp.ok) return errorResponse("Presence service error", 502);
+      const data = await resp.json();
+      return jsonResponse({ success: true, data, timestamp: Date.now() });
+    } catch {
+      return errorResponse("Presence unavailable", 503);
+    }
+  }
+
+  private async handleHarvestEnqueue(request: Request): Promise<Response> {
+    const body = await request.json<{ query: string; userDid?: string }>();
+    if (!body.query) return errorResponse("Missing query");
+
+    const jobId = `h-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    await this.env.HARVEST_QUEUE.send({
+      jobId,
+      query: body.query,
+      userDid: body.userDid,
+    });
+
+    return jsonResponse({ success: true, data: { jobId, status: "queued" }, timestamp: Date.now() });
+  }
+
+  private async handleHarvestGet(id: string): Promise<Response> {
+    const result = await this.d1.getHarvestResult(id);
+    if (!result) return errorResponse("Not found", 404);
+    return jsonResponse({ success: true, data: result, timestamp: Date.now() });
+  }
+}

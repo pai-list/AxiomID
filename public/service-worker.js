@@ -6,6 +6,9 @@ const STATIC_ASSETS = [
   "/manifest.json",
 ];
 
+// Only cache truly public API routes (no auth headers)
+const PUBLIC_API_ROUTES = ["/api/status", "/api/health"];
+
 /**
  * Stores a response in the cache for a given request.
  * @param {Request} request - The request to use as the cache key.
@@ -35,17 +38,30 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API routes: network-first with cache fallback
+  // Only handle GET requests
+  if (request.method !== "GET") return;
+
+  // API routes: network-first, only cache public routes
   if (url.pathname.startsWith("/api/")) {
+    const isPublicApi = PUBLIC_API_ROUTES.some((route) => url.pathname.startsWith(route));
+    if (!isPublicApi) return; // Don't intercept authenticated API calls
+
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok && request.method === "GET") {
+          if (response.ok) {
             cacheResponse(request, response);
           }
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          return new Response(
+            JSON.stringify({ error: "Service unavailable" }),
+            { status: 503, headers: { "Content-Type": "application/json" } }
+          );
+        })
     );
     return;
   }
