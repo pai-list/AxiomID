@@ -18,7 +18,7 @@ function isAllowedHost(host: string): boolean {
   if (plain === "localhost" || plain === "127.0.0.1") return true;
   if (plain === ROOT_DOMAIN || plain === `www.${ROOT_DOMAIN}`) return true;
   if (plain.endsWith(`.${ROOT_DOMAIN}`)) return true;
-  if (plain.endsWith(".vercel.app") && plain.includes("axiomid")) return false;
+  if (plain.endsWith(".vercel.app") && plain.includes("axiomid")) return true;
   return false;
 }
 
