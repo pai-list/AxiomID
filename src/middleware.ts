@@ -18,7 +18,6 @@ function isAllowedHost(host: string): boolean {
   if (plain === "localhost" || plain === "127.0.0.1") return true;
   if (plain === ROOT_DOMAIN || plain === `www.${ROOT_DOMAIN}`) return true;
   if (plain.endsWith(`.${ROOT_DOMAIN}`)) return true;
-  if (plain.endsWith(".vercel.app") && plain.includes("axiomid")) return true;
   return false;
 }
 
@@ -79,18 +78,17 @@ export function middleware(request: NextRequest) {
   }
 
   // Check if this is a subdomain request (e.g., alice.axiomid.app)
-  const rootDomain = ROOT_DOMAIN;
   const isSubdomain =
-    host.endsWith(`.${rootDomain}`) &&
-    host !== `www.${rootDomain}` &&
-    host !== rootDomain;
+    host.endsWith(`.${ROOT_DOMAIN}`) &&
+    host !== `www.${ROOT_DOMAIN}` &&
+    host !== ROOT_DOMAIN;
 
   if (isSubdomain && !url.pathname.startsWith("/api/")) {
-    const subdomain = host.replace(`.${rootDomain}`, "");
+    const subdomain = host.replace(`.${ROOT_DOMAIN}`, "");
     // Sanitize subdomain: alphanumeric + hyphens only (reject leading/trailing hyphens)
     if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {
       return new NextResponse("Invalid subdomain", { status: 400 });
-    }
+
     // Rewrite to passport page with the subdomain as slug
     url.pathname = `/passport/${subdomain}`;
     return NextResponse.rewrite(url);

@@ -161,9 +161,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
+                if (document.readyState === 'complete') {
                   navigator.serviceWorker.register('/service-worker.js').catch(function() {});
-                });
+                } else {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/service-worker.js').catch(function() {});
+                  });
+                }
               }
             `,
           }}

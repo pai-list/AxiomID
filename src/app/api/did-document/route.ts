@@ -6,11 +6,9 @@ import { DidDocumentQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
-const DID_DOC_RATE_LIMIT = { windowMs: 60_000, maxRequests: 60 };
-
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(`did-doc:${ip}`, DID_DOC_RATE_LIMIT);
+  const rateLimit = await checkRateLimit(`did-doc:${ip}`, RATE_LIMITS.public);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: "RATE_LIMITED", message: "Too many requests." }, { status: 429 });
   }
