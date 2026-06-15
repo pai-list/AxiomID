@@ -85,4 +85,78 @@ describe('TopologicalRouter', () => {
     const context = router.getContext('nonExistent');
     expect(context).toHaveLength(0);
   });
+
+  it('should use default radius of 2 when not specified', () => {
+    // nodeB -> nodeC (distance 1) -> nodeD (distance 2)
+    // nodeB -> nodeA (distance 1) -> nodeE (distance 2)
+    // nodeD -> nodeB (cycle, already visited)
+    const context = router.getContext('nodeB');
+
+    // Should find nodeC, nodeD, nodeA at distance 1, and nodeE at distance 2
+    expect(context.find(c => c.node.id === 'nodeE')).toBeDefined();
+    expect(context.find(c => c.node.id === 'nodeE')?.distance).toBe(2);
+  });
+
+  it('should return empty array when radius is 0', () => {
+    // maxRadius=0 means we never leave the starting node
+    const context = router.getContext('nodeB', 0);
+    expect(context).toHaveLength(0);
+  });
+
+  it('should return empty context for isolated node with no edges', () => {
+    const isolatedGraph: MemoryGraph = {
+      version: '1.0',
+      hash: 'isolatedhash',
+      timestamp: Date.now(),
+      nodes: [
+        { id: 'isolated', type: 'file' },
+        { id: 'other', type: 'file' }
+      ],
+      edges: []
+    };
+
+    const isolatedRouter = new TopologicalRouter(isolatedGraph);
+    const context = isolatedRouter.getContext('isolated');
+    expect(context).toHaveLength(0);
+  });
+
+  it('should update weight when a heavier path at same distance is found', () => {
+    // Graph: A -> B (weight 0.5), A -> C (weight 1.0), C -> B (weight 1.0)
+    // From A at radius 2:
+    // B reachable via direct edge: weight 0.5 (distance 1)
+    // B also reachable via C: weight 1.0 * 1.0 = 1.0 (distance 2 - NOT same distance as direct)
+    // So direct edge wins at distance 1 with weight 0.5
+    const weightUpdateGraph: MemoryGraph = {
+      version: '1.0',
+      hash: 'weighthash',
+      timestamp: Date.now(),
+      nodes: [
+        { id: 'A', type: 'directory' },
+        { id: 'B', type: 'file' },
+        { id: 'C', type: 'file' }
+      ],
+      edges: [
+        { source: 'A', target: 'B', type: 'contains', weight: 0.5 },
+        { source: 'A', target: 'C', type: 'contains', weight: 1.0 },
+        { source: 'C', target: 'B', type: 'imports', weight: 1.0 }
+      ]
+    };
+
+    const weightRouter = new TopologicalRouter(weightUpdateGraph);
+    const context = weightRouter.getContext('A', 1);
+
+    // At radius 1, both B (direct, 0.5) and C (direct, 1.0) are found
+    const bEntry = context.find(c => c.node.id === 'B');
+    const cEntry = context.find(c => c.node.id === 'C');
+    expect(bEntry).toBeDefined();
+    expect(cEntry).toBeDefined();
+    // C has higher weight so should come first
+    expect(context[0].node.id).toBe('C');
+    expect(context[0].weight).toBe(1.0);
+  });
+
+  it('should not include starting node in results', () => {
+    const context = router.getContext('nodeA', 3);
+    expect(context.find(c => c.node.id === 'nodeA')).toBeUndefined();
+  });
 });

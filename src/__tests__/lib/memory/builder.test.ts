@@ -102,7 +102,7 @@ describe('MemoryBuilder', () => {
     mockScanProjectAST.mockReturnValue({ nodes: [], edges: [] });
     mockExtractGitInfo.mockReturnValue({ nodes: [], edges: [] });
     mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
-    
+
     mockFs.existsSync.mockReturnValue(false);
 
     const outputPath = '/mock/root/memory.graph.json';
@@ -114,5 +114,94 @@ describe('MemoryBuilder', () => {
       expect.stringContaining('"version": "1.0"'),
       'utf-8'
     );
+  });
+
+  it('should not call mkdirSync when outputDir already exists', () => {
+    mockScanProjectAST.mockReturnValue({ nodes: [], edges: [] });
+    mockExtractGitInfo.mockReturnValue({ nodes: [], edges: [] });
+    mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
+
+    mockFs.existsSync.mockReturnValue(true);
+
+    const outputPath = '/mock/root/memory.graph.json';
+    buildAndSaveMemoryGraph(rootDir, outputPath);
+
+    expect(mockFs.mkdirSync).not.toHaveBeenCalled();
+    expect(mockFs.writeFileSync).toHaveBeenCalled();
+  });
+
+  it('should produce different hash when graph content changes', () => {
+    const nodes = [{ id: 'src/a.ts', type: 'file' as const }];
+    const edges: any[] = [];
+    const timestamp = 1718352000000;
+
+    const hash1 = calculateGraphHash(nodes, edges, timestamp);
+    const hash2 = calculateGraphHash([{ id: 'src/b.ts', type: 'file' as const }], edges, timestamp);
+
+    expect(hash1).not.toBe(hash2);
+  });
+
+  it('should produce different hash when timestamp changes', () => {
+    const nodes = [{ id: 'src/a.ts', type: 'file' as const }];
+    const edges: any[] = [];
+
+    const hash1 = calculateGraphHash(nodes, edges, 1000);
+    const hash2 = calculateGraphHash(nodes, edges, 2000);
+
+    expect(hash1).not.toBe(hash2);
+  });
+
+  it('should produce valid hash for empty graph', () => {
+    const hash = calculateGraphHash([], [], 0);
+    expect(hash).toHaveLength(64);
+  });
+
+  it('should deduplicate edges and keep maximum weight', () => {
+    mockScanProjectAST.mockReturnValue({
+      nodes: [{ id: 'src/a.ts', type: 'file', metadata: {} }],
+      edges: [{ source: 'src/a.ts', target: 'src/b.ts', type: 'imports', weight: 0.5 }]
+    });
+
+    mockExtractGitInfo.mockReturnValue({
+      nodes: [],
+      edges: [
+        // Same edge with higher weight
+        { source: 'src/a.ts', target: 'src/b.ts', type: 'imports', weight: 1.5 }
+      ]
+    });
+
+    mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
+
+    const graph = buildMemoryGraph(rootDir);
+
+    const importEdges = graph.edges.filter(
+      e => e.source === 'src/a.ts' && e.target === 'src/b.ts' && e.type === 'imports'
+    );
+    expect(importEdges).toHaveLength(1);
+    expect(importEdges[0].weight).toBe(1.5);
+  });
+
+  it('should merge node hash when incoming node has hash', () => {
+    mockScanProjectAST.mockReturnValue({
+      nodes: [{ id: 'src/lib/did.ts', type: 'file', metadata: { size: 100 } }],
+      edges: []
+    });
+
+    mockExtractGitInfo.mockReturnValue({
+      nodes: [
+        { id: 'src/lib/did.ts', type: 'file', metadata: { author: 'Mohamed' }, hash: 'sha256abc' }
+      ],
+      edges: []
+    });
+
+    mockScanProjectDocs.mockReturnValue({ nodes: [], edges: [] });
+
+    const graph = buildMemoryGraph(rootDir);
+
+    const didNode = graph.nodes.find(n => n.id === 'src/lib/did.ts');
+    expect(didNode).toBeDefined();
+    expect(didNode?.hash).toBe('sha256abc');
+    expect(didNode?.metadata.size).toBe(100);
+    expect(didNode?.metadata.author).toBe('Mohamed');
   });
 });
