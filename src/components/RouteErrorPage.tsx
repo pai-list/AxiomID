@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 
 interface RouteErrorPageProps {
@@ -12,7 +13,7 @@ interface RouteErrorPageProps {
 /**
  * Renders a route-level error page with retry and dashboard navigation options.
  *
- * Displays the error message in development mode or a fallback message in production. 
+ * Displays the error message in development mode or a fallback message in production.
  * Provides a button to retry the route and a link to return to the dashboard.
  *
  * @param title - Heading text for the error page
@@ -21,7 +22,10 @@ interface RouteErrorPageProps {
  * @param reset - Callback invoked when the retry button is clicked
  */
 export function RouteErrorPage({ title, fallbackMessage, error, reset }: RouteErrorPageProps) {
-  console.error(`${title}:`, error);
+  useEffect(() => {
+    console.error(`${title}:`, error);
+  }, [title, error]);
+
   return (
     <div className="min-h-screen bg-grid flex items-center justify-center p-4">
       <div className="bento-card max-w-md w-full p-8 text-center">

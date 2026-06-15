@@ -70,8 +70,8 @@ describe("GET /api/did-document — rate limiting (PR change: uses RATE_LIMITS.p
     const data = await res.json();
 
     expect(res.status).toBe(429);
-    expect(data.error).toBe("RATE_LIMITED");
-    expect(data.message).toBe("Too many requests.");
+    expect(data.error).toBe("Too many requests. Try again later.");
+    expect(data.code).toBe("RATE_LIMITED");
   });
 
   it("uses RATE_LIMITS.public config (PR change: new public tier)", async () => {
@@ -103,11 +103,11 @@ describe("GET /api/did-document — rate limiting (PR change: uses RATE_LIMITS.p
     const res = await GET(req);
     const data = await res.json();
 
-    // did-document route uses NextResponse.json directly, not apiError
-    // So the response has 'error' and 'message' fields (not 'code')
-    expect(data).toHaveProperty("error", "RATE_LIMITED");
-    expect(data).toHaveProperty("message");
-    expect(data).not.toHaveProperty("code");
+    // did-document route now uses apiError() for consistent response shape
+    // apiError returns { error: message, code: errorCode, details? }
+    expect(data).toHaveProperty("error", "Too many requests. Try again later.");
+    expect(data).toHaveProperty("code", "RATE_LIMITED");
+    expect(data).not.toHaveProperty("message");
   });
 });
 

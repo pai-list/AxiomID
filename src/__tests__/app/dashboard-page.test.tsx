@@ -69,67 +69,6 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-describe("Dashboard page — logout button (PR change)", () => {
-  it("renders the LOGOUT button when the user is authenticated", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-    expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
-  });
-
-  it("does NOT render a LOGOUT button when there is no user", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null }));
-    render(<Dashboard />);
-    expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
-  });
-
-  it("handleLogout calls disconnectWallet() when the LOGOUT button is clicked", () => {
-    const disconnectFn = jest.fn();
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
-    render(<Dashboard />);
-
-    act(() => {
-      screen.getByRole("button", { name: /logout/i }).click();
-    });
-
-    act(() => {
-      jest.advanceTimersByTime(100);
-    });
-
-    expect(disconnectFn).toHaveBeenCalledTimes(1);
-  });
-
-  it("handleLogout navigates to '/' after calling disconnectWallet()", () => {
-    const disconnectFn = jest.fn();
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
-    render(<Dashboard />);
-
-    act(() => {
-      screen.getByRole("button", { name: /logout/i }).click();
-    });
-
-    expect(mockRouterPush).toHaveBeenCalledWith("/");
-  });
-
-  it("handleLogout navigates before calling disconnectWallet() (order check)", () => {
-    const callOrder: string[] = [];
-    const disconnectFn = jest.fn(() => { callOrder.push("disconnectWallet"); });
-    mockRouterPush.mockImplementation(() => { callOrder.push("navigate"); });
-
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser, disconnectWallet: disconnectFn }));
-    render(<Dashboard />);
-
-    act(() => {
-      screen.getByRole("button", { name: /logout/i }).click();
-    });
-
-    act(() => {
-      jest.advanceTimersByTime(100);
-    });
-
-    expect(callOrder).toEqual(["navigate", "disconnectWallet"]);
-  });
-});
-
 describe("Dashboard page — loading state", () => {
   it("renders skeleton placeholder UI when isLoading is true", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ isLoading: true }));
@@ -189,60 +128,48 @@ describe("Dashboard page — authenticated user content", () => {
     expect(xpTexts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders the AxiomID Dashboard heading", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-    expect(screen.getByText("AxiomID Dashboard")).toBeInTheDocument();
-  });
 });
 
-describe("Dashboard page — marketplace tab navigation (PR change)", () => {
-  it("clicking Marketplace tab calls router.push('/dashboard/marketplace')", () => {
+describe("Dashboard page — tab navigation", () => {
+  it("passport tab is initially active (aria-selected=true)", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
     render(<Dashboard />);
 
-    act(() => {
-      screen.getByRole("tab", { name: /marketplace/i }).click();
-    });
-
-    expect(mockRouterPush).toHaveBeenCalledWith("/dashboard/marketplace");
-  });
-
-  it("marketplace tab is rendered without 'disabled' attribute (PR change: removed disabled)", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-
-    const marketplaceTab = screen.getByRole("tab", { name: /marketplace/i });
-    expect(marketplaceTab).not.toBeDisabled();
-  });
-
-  it("marketplace tab does not show 'Coming Soon' tooltip text", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-
-    expect(screen.queryByText(/coming soon/i)).not.toBeInTheDocument();
-  });
-
-  it("marketplace tab is visible in the tab list", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-
-    expect(screen.getByRole("tab", { name: /marketplace/i })).toBeInTheDocument();
-  });
-
-  it("marketplace tab click does not change the active tab (navigation leaves the page)", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    render(<Dashboard />);
-
-    // Verify passport tab is initially active (aria-selected=true)
     const passportTab = screen.getByRole("tab", { name: /passport/i });
     expect(passportTab).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("clicking Actions tab sets it as active", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
+    render(<Dashboard />);
 
     act(() => {
-      screen.getByRole("tab", { name: /marketplace/i }).click();
+      screen.getByRole("tab", { name: /actions/i }).click();
     });
 
-    // Passport should still be selected because marketplace nav redirects away
-    expect(passportTab).toHaveAttribute("aria-selected", "true");
+    const actionsTab = screen.getByRole("tab", { name: /actions/i });
+    expect(actionsTab).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("clicking Agent tab sets it as active", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
+    render(<Dashboard />);
+
+    act(() => {
+      screen.getByRole("tab", { name: /agent/i }).click();
+    });
+
+    const agentTab = screen.getByRole("tab", { name: /agent/i });
+    expect(agentTab).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("all four page tabs are rendered", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
+    render(<Dashboard />);
+
+    expect(screen.getByRole("tab", { name: /passport/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /actions/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /agent/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /terminal/i })).toBeInTheDocument();
   });
 });

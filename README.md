@@ -31,10 +31,7 @@
 <!-- ════════════════ /AIX SOVEREIGN STACK ════════════════ -->
 
 <p align="center">
-  <img src="./public/axiomid-banner.png" alt="AxiomID Banner" width="100%" />
-</p>
-
-<h1 align="center">AxiomID: The Human Authorization Protocol</h1>
+  <h1 align="center">AxiomID: The Human Authorization Protocol</h1>
 
 <p align="center">
   <em>Built by <a href="https://github.com/Moeabdelaziz007">Mohamed Abdelaziz</a></em>
@@ -184,8 +181,28 @@ axiomid/
 │   └── types/
 │       └── global.d.ts               # Pi Browser global types
 ├── backend/
-│   ├── src/index.ts                  # Cloudflare Worker (PresenceDO + queue)
-│   └── wrangler.toml                 # Cloudflare config (D1, KV, Queue)
+│   ├── src/
+│   │   ├── index.ts              # Cloudflare Worker entry
+│   │   ├── router.ts             # Route handler (15+ routes)
+│   │   ├── mcp/
+│   │   │   ├── server.ts         # 11 MCP tools with Zod schemas
+│   │   │   └── handler.ts        # JSON-RPC handler for /mcp
+│   │   ├── routes/
+│   │   │   ├── search.ts         # GET /api/search
+│   │   │   ├── agent-dispatch.ts # 5 skill executors
+│   │   │   ├── skills.ts         # Marketplace + install tracking
+│   │   │   └── ...
+│   │   └── lib/
+│   │       ├── auth.ts           # Timing-safe auth + rate limit headers
+│   │       ├── trust.ts          # Dialectic trust engine
+│   │       ├── delegation.ts     # BFS trust chain resolver
+│   │       └── rate-limiter.ts   # KV-backed distributed rate limiter
+│   ├── migrations/
+│   │   ├── 0001_init.sql         # D1 schema
+│   │   └── 0002_seed_skills.sql  # 5 core skills seed
+│   ├── workers/
+│   │   └── harvest-processor.ts  # Queue consumer
+│   └── wrangler.toml             # Cloudflare config (D1, KV, AI, Vectorize, Queues, DO)
 ├── prisma/
 │   ├── schema.prisma                 # Database Schema (PostgreSQL)
 │   └── migrations/                   # Migration files (baseline: 0_init)
@@ -257,15 +274,18 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 | **C** | ✅ Done | Prisma baseline — P3005 resolved, all migrations applied |
 | **D** | ✅ Done | Cloudflare backend deployed (PresenceDO + queue + timing-safe auth) |
 | **E** | ✅ Done | Vercel handshake — GET /status endpoint, heartbeat verified |
+| **F** | ✅ Done | Harvest Logic — Zod schema, Perplexity gatherer, dialectic trust |
+| **G** | ✅ Done | MCP Server — 11 tools, JSON-RPC handler, deploy on Cloudflare |
+| **I** | ✅ Done | Cloudflare AI Search — Workers AI embeddings + Vectorize |
 | **J** | ✅ Done | CodeRabbit fixes — BFS re-queuing, command injection guard, path normalization |
 
 ### 🔄 In Progress
 
 | Phase | Status | Description |
 | :--- | :--- | :--- |
-| **F** | 🔄 Next | Harvest Logic — Zod schema, Perplexity gatherer, dialectic trust |
-| **G** | 🔄 Next | MCP Server — DID/trust/presence tools, deploy on Cloudflare |
-| **I** | 🔄 Next | Cloudflare AI Search — index docs/skills, wire Workers binding |
+| **RL** | 🔄 Active | Rate limit headers — backend + frontend across all API routes |
+| **UI** | 🔄 Active | Shared dashboard layout, error boundaries, landing page fixes |
+| **CI** | 🔄 Next | CI Intelligence Agent — GitHub Actions → Vectorize + Workers AI |
 
 ### ⏳ Deferred
 
@@ -290,7 +310,7 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 | **Queue** | Cloudflare Queues | harvest-queue | ✅ Provisioned |
 | **DO** | Cloudflare Durable Objects | PresenceDO | ✅ Deployed |
 | **KV** | Cloudflare KV | BRAIN_MEMORY | ✅ Reuse for harvest dedup |
-| **AI Search** | Cloudflare AI Search | — | 🔄 Pending |
+| **AI Search** | Cloudflare AI Search | — | ✅ Live |
 
 ### Secrets Management
 - `SHARED_SECRET_TOKEN_VERCEL_CF` — Set in both Vercel env + Wrangler secret
@@ -302,7 +322,7 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 22+ (nvm use 22)
+- Node.js 20+ (nvm use 20)
 - npm
 - PostgreSQL (or use Prisma Accelerate)
 
@@ -330,10 +350,34 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Click **"INITIALIZE SEQUENCE"** to connect your wallet (simulated or real).
 
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in the required values. See `.env.example` for a full list of variables including database, Pi Network SDK, auth secrets, and Cloudflare backend configuration.
+
+### Backend (Cloudflare Worker)
+
+```bash
+cd backend
+
+# Install dependencies
+npm install
+
+# Apply D1 migrations
+npx wrangler d1 execute axiomid-edge --file=./migrations/0001_init.sql
+npx wrangler d1 execute axiomid-edge --file=./migrations/0002_seed_skills.sql
+
+# Set secrets
+echo "your-secret-token" | npx wrangler secret put SHARED_SECRET_TOKEN_VERCEL_CF
+echo "your-perplexity-key" | npx wrangler secret put PERPLEXITY_API_KEY
+
+# Deploy
+npx wrangler deploy
+```
+
 ### Testing
 
 ```bash
-# Run all tests (498 tests)
+# Run all tests (719 tests, 6 skipped)
 npm test
 
 # Type check
@@ -342,6 +386,80 @@ npx tsc --noEmit
 # Lint
 npm run lint
 ```
+
+---
+
+## 🔌 API Reference
+
+### Cloudflare Backend (`https://axiomid-backend.amrikyy.workers.dev`)
+
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/status` | GET | None | Network status |
+| `/mcp` | POST | Shared Secret | MCP Server — 11 tools (DID, trust, presence, skills, harvest) |
+| `/api/search` | GET | None | Semantic search via Workers AI embeddings + Vectorize |
+| `/api/trust/:did` | GET | None | Trust chain resolution with dialectic verification |
+| `/api/presence/heartbeat` | POST | None | Presence heartbeat |
+| `/api/skills/:slug/install` | POST | None | Install a skill |
+
+### Vercel Frontend (`https://axiomid.app`)
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/auth/connect` | POST | Wallet authentication |
+| `/api/auth/logout` | POST | Session logout |
+| `/api/auth/pi` | POST | Pi Network authentication |
+| `/api/did-document` | GET | DID document (also served at `/.well-known/did.json`) |
+| `/api/passport/[slug]` | GET | Public passport lookup |
+| `/api/skills/[slug]` | GET | Skill details |
+| `/api/skills/[slug]/install` | POST | Install a skill |
+| `/api/skills/[slug]/review` | GET/POST | Skill reviews |
+| `/api/agent` | POST | Agent CRUD |
+| `/api/stamp/claim` | POST | Claim a stamp |
+| `/api/status` | GET | User status |
+
+### CI/CD
+
+This project uses **GitHub Actions** for continuous integration and **Vercel** for continuous deployment.
+
+**CI Pipeline** (`.github/workflows/ci.yml`):
+- Runs on every PR and push to `main`
+- Type-check (`npx tsc --noEmit`)
+- Lint (`npm run lint`)
+- Tests (`npm test` — 719 tests, 6 skipped)
+
+**Deployment**:
+- Vercel auto-deploys on push to `main` (production) and on PR branches (preview)
+- Cloudflare Worker deploys via `npx wrangler deploy`
+
+For detailed deployment instructions, see [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md).
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome via PR. All PRs require passing CI (type-check, lint, 719 tests) and at least one CodeRabbit review approval.
+
+```bash
+# Fork, then clone
+git clone https://github.com/<your-fork>/axiomid-project.git
+cd axiomid-project
+
+# Install & verify
+npm install
+cp .env.example .env.local  # fill in your values
+npm test
+npm run lint
+npx tsc --noEmit
+
+# Create a feature branch
+git checkout -b feat/my-feature
+
+# Push & open PR
+git push origin feat/my-feature
+```
+
+See [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) for full deployment instructions and [`.env.example`](./.env.example) for all environment variables.
 
 ---
 

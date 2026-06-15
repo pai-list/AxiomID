@@ -4,7 +4,7 @@ import { buildDidDocument } from "@/lib/did-document";
 import { resolveDid } from "@/lib/did-resolver";
 import { DidDocumentQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
-import { rateLimitHeaders } from "@/lib/errors";
+import { apiError, rateLimitHeaders } from "@/lib/errors";
 import { getClientIp } from "@/lib/ip";
 
 /**
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`did-doc:${ip}`, RATE_LIMITS.public);
   if (!rateLimit.allowed) {
-    return NextResponse.json({ error: "RATE_LIMITED", message: "Too many requests." }, { status: 429, headers: rateLimitHeaders(rateLimit) });
+    return apiError("RATE_LIMITED", "Too many requests. Try again later.", undefined, rateLimitHeaders(rateLimit));
   }
 
   const { searchParams } = new URL(request.url);
