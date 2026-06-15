@@ -100,16 +100,18 @@ axiomid/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                  # 🖥️ The Command Center (Bento Grid)
-│   │   ├── globals.css               # 🎨 Dark Engineering Theme
+│   │   ├── globals.css               # 🎨 Dark Engineering Theme + Mobile fixes
 │   │   ├── layout.tsx                # Root layout + providers
 │   │   ├── error.tsx                 # Page-level error boundary
 │   │   ├── global-error.tsx          # Root error boundary
 │   │   ├── not-found.tsx             # Custom 404 page
 │   │   ├── dashboard/
 │   │   │   ├── page.tsx              # User dashboard (tabs: passport, actions, agent, terminal)
+│   │   │   ├── marketplace/page.tsx  # Skills marketplace
 │   │   │   └── settings/page.tsx     # User settings & profile
 │   │   ├── passport/[slug]/
-│   │   │   └── page.tsx              # Public agent passport view
+│   │   │   ├── page.tsx              # Public agent passport view
+│   │   │   └── PassportHeader.tsx    # Passport header component
 │   │   ├── status/page.tsx           # Network status monitor
 │   │   ├── privacy/page.tsx          # Privacy policy
 │   │   ├── terms/page.tsx            # Terms of service
@@ -117,7 +119,7 @@ axiomid/
 │   │   │   ├── wallet-context.tsx    # 🧠 Global State Management
 │   │   │   ├── language-context.tsx  # i18n (EN/AR) context
 │   │   │   └── sandbox-provider.tsx  # Pi Browser sandbox init
-│   │   └── api/                      # ⚡ Backend Logic (20 routes)
+│   │   └── api/                      # ⚡ Backend Logic (20+ routes)
 │   │       ├── auth/connect/         # Wallet Authentication
 │   │       ├── auth/logout/          # Session logout
 │   │       ├── auth/pi/              # Pi Network Authentication
@@ -134,6 +136,7 @@ axiomid/
 │   │       ├── pi/kya/claim/         # KYA verification
 │   │       ├── pi/payment/approve/   # Payment approval
 │   │       ├── pi/payment/complete/  # Payment completion
+│   │       ├── skills/               # Skills marketplace API
 │   │       ├── stamp/                # Stamp listing
 │   │       ├── stamp/claim/          # Stamp claiming
 │   │       ├── status/               # Network status
@@ -142,10 +145,10 @@ axiomid/
 │   │   ├── AgentPassport.tsx         # Passport card with verification
 │   │   ├── AgentQR.tsx               # QR code generator
 │   │   ├── ErrorBanner.tsx           # Global floating error banner
-│   │   ├── LanguageToggle.tsx        # EN/AR language switcher
+│   │   ├── LanguageToggle.tsx        # EN/AR language switcher (44px target)
 │   │   ├── StampBoard.tsx            # Stamp collection grid
 │   │   ├── StampCard.tsx             # Individual stamp card
-│   │   ├── ThemeToggle.tsx           # Dark/light mode toggle
+│   │   ├── ThemeToggle.tsx           # Dark/light mode toggle (44px target)
 │   │   ├── TrustScoreGauge.tsx       # SVG trust score ring
 │   │   ├── VerificationBadge.tsx     # KYA/KYC status badge
 │   │   └── XPBurst.tsx              # XP animation effect
@@ -166,15 +169,27 @@ axiomid/
 │   │   ├── rate-limiter.ts           # In-memory sliding window
 │   │   ├── sanitize.ts               # Input sanitization
 │   │   ├── validators.ts             # Zod schemas for all inputs
-│   │   └── vc.ts                     # W3C Verifiable Credential signing
+│   │   ├── vc.ts                     # W3C Verifiable Credential signing
+│   │   └── memory/                   # 🧠 Memory Graph System
+│   │       ├── builder.ts            # Graph builder (extractors → JSON)
+│   │       ├── graph.ts              # MemoryGraph types + validation
+│   │       ├── router.ts             # TopologicalRouter (BFS context)
+│   │       └── extractors/           # Code/doc/git extractors
+│   │           ├── ast-extractor.ts  # TypeScript AST extraction
+│   │           ├── doc-extractor.ts  # Markdown/wikilink extraction
+│   │           └── git-extractor.ts  # Git commit extraction
 │   ├── data/
-│   │   └── skills.json               # Agent skill registry (90 skills)
+│   │   └── skills.json               # Agent skill registry (90+ skills)
 │   ├── middleware.ts                  # Subdomain rewrite + body size limit
 │   └── types/
 │       └── global.d.ts               # Pi Browser global types
+├── backend/
+│   ├── src/index.ts                  # Cloudflare Worker (PresenceDO + queue)
+│   └── wrangler.toml                 # Cloudflare config (D1, KV, Queue)
 ├── prisma/
 │   ├── schema.prisma                 # Database Schema (PostgreSQL)
-│   └── migrations/                   # Migration files
+│   └── migrations/                   # Migration files (baseline: 0_init)
+├── memory.graph.json                 # Generated memory graph
 └── STRATEGY.md                       # 📜 Competitive Analysis & Roadmap
 ```
 
@@ -233,6 +248,31 @@ AxiomID is the **Root Authority** of the [**Sovereign AI Stack**](https://github
 
 We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Network, Gitcoin Passport, and others.
 
+### ✅ Completed (Phase A–J)
+
+| Phase | Status | Description |
+| :--- | :--- | :--- |
+| **A** | ✅ Done | Security hardening (PR #32, #33 merged) |
+| **B** | ✅ Done | Mobile/CSS fixes (B1–B9, 12 files, 44px targets, safe-area) |
+| **C** | ✅ Done | Prisma baseline — P3005 resolved, all migrations applied |
+| **D** | ✅ Done | Cloudflare backend deployed (PresenceDO + queue + timing-safe auth) |
+| **E** | ✅ Done | Vercel handshake — GET /status endpoint, heartbeat verified |
+| **J** | ✅ Done | CodeRabbit fixes — BFS re-queuing, command injection guard, path normalization |
+
+### 🔄 In Progress
+
+| Phase | Status | Description |
+| :--- | :--- | :--- |
+| **F** | 🔄 Next | Harvest Logic — Zod schema, Perplexity gatherer, dialectic trust |
+| **G** | 🔄 Next | MCP Server — DID/trust/presence tools, deploy on Cloudflare |
+| **I** | 🔄 Next | Cloudflare AI Search — index docs/skills, wire Workers binding |
+
+### ⏳ Deferred
+
+| Phase | Status | Description |
+| :--- | :--- | :--- |
+| **H** | ⏳ Later | Azure VM — MCP server host, PostgreSQL, agent runtime |
+
 **Upcoming "Moonshot" Features:**
 1.  **The Meta-Aggregator:** Ingest scores from Gitcoin/WorldID to boost Axiom XP.
 2.  **Proof of Time-Stake ("The Vault"):** Lock USDC to prove long-term human intent.
@@ -240,11 +280,31 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 
 ---
 
+## 🏗️ Infrastructure & Deployment
+
+| Layer | Service | URL | Status |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | Vercel | https://axiomid.app | ✅ Live |
+| **Backend** | Cloudflare Workers | https://axiomid-backend.amrikyy.workers.dev | ✅ Live |
+| **Database** | PostgreSQL (Prisma) | db.prisma.io:5432 | ✅ Connected |
+| **Queue** | Cloudflare Queues | harvest-queue | ✅ Provisioned |
+| **DO** | Cloudflare Durable Objects | PresenceDO | ✅ Deployed |
+| **KV** | Cloudflare KV | BRAIN_MEMORY | ✅ Reuse for harvest dedup |
+| **AI Search** | Cloudflare AI Search | — | 🔄 Pending |
+
+### Secrets Management
+- `SHARED_SECRET_TOKEN_VERCEL_CF` — Set in both Vercel env + Wrangler secret
+- `DATABASE_URL` — PostgreSQL connection string
+- `PI_API_KEY` — Pi Network API key (in .env, gitignored)
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 22+ (nvm use 22)
 - npm
+- PostgreSQL (or use Prisma Accelerate)
 
 ### Installation
 
@@ -256,14 +316,32 @@ cd axiomid-project
 # 2. Install dependencies
 npm install
 
-# 3. Initialize Database (PostgreSQL)
-npx prisma db push
+# 3. Setup environment
+cp .env.example .env
+# Edit .env with your DATABASE_URL, PI_API_KEY, etc.
 
-# 4. Run development server
+# 4. Initialize Database (PostgreSQL)
+npx prisma migrate deploy
+npx prisma generate
+
+# 5. Run development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Click **"INITIALIZE SEQUENCE"** to connect your wallet (simulated or real).
+
+### Testing
+
+```bash
+# Run all tests (498 tests)
+npm test
+
+# Type check
+npx tsc --noEmit
+
+# Lint
+npm run lint
+```
 
 ---
 
