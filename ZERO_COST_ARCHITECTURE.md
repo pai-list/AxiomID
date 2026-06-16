@@ -101,6 +101,18 @@ TimescaleDB Features:
   - Hypertables for metrics
   - Continuous aggregates
   - Compression for old data
+
+MCP (Model Context Protocol):
+  - Native AI agent integration
+  - Direct database access for AI agents
+  - Structured data queries
+  - No custom API needed
+
+Fast Forking:
+  - Clone database in seconds
+  - Perfect for testing/development
+  - Isolated sandboxes for AI agents
+  - Zero-cost staging environments
 ```
 
 ## 🔗 Data Flow Architecture
@@ -211,6 +223,49 @@ const imageUrl = `https://pub-${accountId}.r2.dev/avatars/${userId}.jpg`;
 ├─────────────────────────────────────────┤
 │  Layer 4: Ghost.build Row-Level Security│
 └─────────────────────────────────────────┘
+```
+
+## 🤖 AI Agent Integration (MCP)
+
+Ghost.build's native MCP support enables direct AI agent database access:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    AI AGENT ARCHITECTURE                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│  │  AI AGENT   │    │   MCP       │    │ GHOST.BUILD │        │
+│  │  (Claude,   │◄──►│   SERVER    │◄──►│ PostgreSQL  │        │
+│  │   Gemini)   │    │             │    │             │        │
+│  └─────────────┘    └─────────────┘    └─────────────┘        │
+│         │                                        │              │
+│         │                                        │              │
+│         ▼                                        ▼              │
+│  ┌─────────────┐                        ┌─────────────┐        │
+│  │  Fast Fork  │                        │  MCP Tools  │        │
+│  │  (Testing)  │                        │  (Queries)  │        │
+│  └─────────────┘                        └─────────────┘        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### MCP Capabilities:
+- **Direct Queries**: AI agents query database without custom API
+- **Schema Awareness**: Agents understand table structure
+- **Real-time Data**: Live access to user/agent data
+- **Secure**: Row-level security enforced
+
+### Fast Forking Use Cases:
+```bash
+# Create test database in seconds
+ghost fork axiomid-db --name test-agents
+
+# Perfect for:
+# - AI agent testing
+# - Development sandboxes
+# - Performance testing
+# - Data migration testing
 ```
 
 ## 📊 Monitoring Stack
