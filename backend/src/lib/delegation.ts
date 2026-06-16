@@ -269,7 +269,7 @@ export class DelegationResolver {
   private async getAllDelegations(): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
-        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR expires_at > datetime('now'))"
+        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
       )
       .all<DelegationEdge>();
     return result.results;
