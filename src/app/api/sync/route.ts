@@ -186,7 +186,7 @@ async function syncWithRetry(
  * Uses entropy scoring to measure data quality.
  */
 async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
-  let synced = 0;
+  const synced = 0;
   let errors = 0;
 
   try {
@@ -227,7 +227,7 @@ async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
  * Uses entropy scoring to measure status diversity.
  */
 async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
-  let synced = 0;
+  const synced = 0;
   let errors = 0;
 
   try {
