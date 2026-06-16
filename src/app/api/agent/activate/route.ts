@@ -25,17 +25,11 @@ export async function POST(request: NextRequest) {
   const { user } = auth;
 
   try {
-    const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });
-    if (!agent) {
-      return apiError('NOT_FOUND', 'No agent found for this user. Create one first via POST /api/agent');
-    }
-
-    if (agent.status === 'ACTIVE') {
-      return apiError('CONFLICT', 'Agent is already active');
-    }
-
-    const updated = await prisma.userAgent.update({
-      where: { id: agent.id },
+    const updatedAgents = await prisma.userAgent.updateManyAndReturn({
+      where: {
+        userId: user.id,
+        status: { not: 'ACTIVE' },
+      },
       data: {
         status: 'ACTIVE',
         lastActive: new Date(),
@@ -43,11 +37,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return apiSuccess({
-      agentId: updated.id,
-      publicId: updated.publicId,
-      status: updated.status,
-    });
+    if (updatedAgents.length > 0) {
+      const updated = updatedAgents[0];
+      return apiSuccess({
+        agentId: updated.id,
+        publicId: updated.publicId,
+        status: updated.status,
+      });
+    }
+
+    // If no records were updated, the agent either doesn't exist or is already ACTIVE.
+    // Fallback to fetch to determine the correct error message.
+    const agent = await prisma.userAgent.findUnique({ where: { userId: user.id } });
+    if (!agent) {
+      return apiError('NOT_FOUND', 'No agent found for this user. Create one first via POST /api/agent');
+    }
+
+    return apiError('CONFLICT', 'Agent is already active');
   } catch (error) {
     logger.error('[AGENT-ACTIVATE] Database error:', error);
     return apiError('INTERNAL_ERROR', 'Failed to activate agent');
