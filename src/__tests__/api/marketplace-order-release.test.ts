@@ -44,7 +44,7 @@ const mockGetClientIp = getClientIp as jest.Mock;
 
 const UUID_A = "123e4567-e89b-12d3-a456-426614174000";
 const UUID_B = "123e4567-e89b-12d3-a456-426614174001";
-const UUID_C = "123e4567-e89b-12d3-a456-426614174002";
+const _UUID_C = "123e4567-e89b-12d3-a456-426614174002";
 
 const mockUser = {
   id: "user-release",

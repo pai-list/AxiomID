@@ -9,14 +9,14 @@ const CACHE_NAME = "axiomid-v1";
 
 // --- Mock globals ---
 
-let mockCacheStorage;
+let _mockCacheStorage;
 let mockCaches;
 let registeredListeners;
 
 function makeMockCache() {
   const store = new Map();
   return {
-    addAll: jest.fn((urls) => Promise.resolve()),
+    addAll: jest.fn((_urls) => Promise.resolve()),
     put: jest.fn((req, res) => {
       store.set(typeof req === "string" ? req : req.url, res);
       return Promise.resolve();
@@ -57,6 +57,7 @@ function setupServiceWorkerGlobals() {
 function loadServiceWorker() {
   jest.resetModules();
   setupServiceWorkerGlobals();
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("../../public/service-worker.js");
 }
 
@@ -207,7 +208,7 @@ describe("service-worker.js — fetch event: API routes (network-first)", () => 
 
     const { event } = makeFetchEvent("https://axiomid.app/api/status", "GET");
     registeredListeners["fetch"](event);
-    const result = await event.respondWith.mock.calls[0][0];
+    const _result = await event.respondWith.mock.calls[0][0];
 
     expect(mockCaches.open).toHaveBeenCalledWith(CACHE_NAME);
   });
@@ -229,7 +230,7 @@ describe("service-worker.js — fetch event: API routes (network-first)", () => 
 
     const { event, request } = makeFetchEvent("https://axiomid.app/api/status");
     registeredListeners["fetch"](event);
-    const result = await event.respondWith.mock.calls[0][0];
+    const _result = await event.respondWith.mock.calls[0][0];
 
     expect(mockCaches.match).toHaveBeenCalledWith(request);
   });
@@ -250,7 +251,7 @@ describe("service-worker.js — fetch event: static assets (cache-first)", () =>
     const cachedResponse = makeResponse(true);
     mockCaches.match.mockResolvedValue(cachedResponse);
 
-    const { event, request } = makeFetchEvent("https://axiomid.app/icon-192x192.png");
+    const { event, request: _request } = makeFetchEvent("https://axiomid.app/icon-192x192.png");
     registeredListeners["fetch"](event);
     const result = await event.respondWith.mock.calls[0][0];
 

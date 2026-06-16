@@ -118,7 +118,7 @@ const staggerContainer = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const cardHover = {
+const _cardHover = {
   rest: { scale: 1, y: 0 },
   hover: { scale: 1.02, y: -4, transition: { duration: 0.3, ease: "easeOut" } },
 };

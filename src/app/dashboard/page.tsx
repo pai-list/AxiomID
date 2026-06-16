@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useWallet } from "../context/wallet-context";
@@ -67,8 +67,8 @@ export default function Dashboard() {
   const [agentName, setAgentName] = useState("");
   const [agentLoading, setAgentLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [kycUsername, setKycUsername] = useState("");
-  const [kycLoading, setKycLoading] = useState(false);
+  const [_kycUsername, setKycUsername] = useState("");
+  const [_kycLoading, setKycLoading] = useState(false);
 
   const onboardingStep = !user ? 1 : !user.agent ? 2 : 3;
 

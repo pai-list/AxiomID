@@ -39,13 +39,16 @@ process.env.PI_TOKEN_ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef012345678
 
 // Global Mock for framer-motion (simplify animations for tests)
 jest.mock("framer-motion", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react");
   return {
     motion: new Proxy({}, {
       get: (_target, prop) => {
-        return React.forwardRef(({ children, whileHover, whileTap, initial, animate, exit, transition, viewport, variants, custom, ...props }, ref) => (
+        const Component = React.forwardRef(({ children, _whileHover, _whileTap, _initial, _animate, _exit, _transition, _viewport, _variants, _custom, ...props }, ref) => (
           React.createElement(prop, { ...props, ref }, children)
         ));
+        Component.displayName = `Motion.${String(prop)}`;
+        return Component;
       },
     }),
     AnimatePresence: ({ children }) => children,
