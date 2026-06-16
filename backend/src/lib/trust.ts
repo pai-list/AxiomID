@@ -180,12 +180,23 @@ export class TrustEngine {
     const gridSize = 20;
     const trustGrid = Array.from({ length: gridSize }, (_, i) => i / (gridSize - 1));
 
-    // Initial uniform distribution
-    let probs = new Array(gridSize).fill(1 / gridSize);
+    // Initialize from actual trust scores (bin into grid)
+    let probs = new Array(gridSize).fill(0);
+    if (dids.length > 0) {
+      const scores = await Promise.all(dids.map((did) => this.compute(did).then((r) => r.score)));
+      for (const score of scores) {
+        const bin = Math.min(gridSize - 1, Math.floor(score * gridSize));
+        probs[bin]++;
+      }
+      const total = scores.length;
+      probs = probs.map((p) => p / total);
+    } else {
+      probs.fill(1 / gridSize);
+    }
 
     const densities: number[][] = [probs];
     for (let step = 0; step < steps; step++) {
-      const drift = 0.05 - (step * 0.005); // Drift decays over time
+      const drift = 0.05 - (step * 0.005);
       const diffusion = 0.1;
       probs = fokkerPlanckTrustEvolution(trustGrid, probs, drift, diffusion, 0.1);
       densities.push(probs);

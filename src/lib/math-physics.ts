@@ -1719,21 +1719,23 @@ export function isingMetropolisStep(
   temperature: number,
 ): number[] {
   const n = spins.length;
+  if (n === 0) return spins;
   const i = Math.floor(Math.random() * n);
 
-  // Current Hamiltonian
-  const currentH = isingHamiltonian(spins, coupling, externalField, adjacencyMatrix);
-
-  // Flip spin
-  const newSpins = [...spins];
-  newSpins[i] *= -1;
-
-  // New Hamiltonian
-  const newH = isingHamiltonian(newSpins, coupling, externalField, adjacencyMatrix);
+  // Local energy change: dH = 2 * s_i * (J * Σ s_j + h)
+  // O(N) instead of O(N²) by computing only local interactions
+  let neighborSum = 0;
+  for (let j = 0; j < n; j++) {
+    if (adjacencyMatrix[i][j]) {
+      neighborSum += spins[j];
+    }
+  }
+  const deltaH = 2 * spins[i] * (coupling * neighborSum + externalField);
 
   // Metropolis acceptance
-  const deltaH = newH - currentH;
   if (deltaH < 0 || Math.random() < Math.exp(-deltaH / temperature)) {
+    const newSpins = [...spins];
+    newSpins[i] *= -1;
     return newSpins; // Accept flip
   }
 

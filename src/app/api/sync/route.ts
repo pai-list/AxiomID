@@ -67,7 +67,6 @@ export async function POST(req: NextRequest) {
     if (source === "all" || source === "d1") {
       const harvestResult = await syncWithRetry(
         syncHarvestResults,
-        dryRun,
         maxRetries,
       );
       results.harvestResults = harvestResult;
@@ -77,7 +76,6 @@ export async function POST(req: NextRequest) {
     if (source === "all" || source === "d1") {
       const presenceResult = await syncWithRetry(
         syncAgentPresence,
-        dryRun,
         maxRetries,
       );
       results.agentPresence = presenceResult;
@@ -95,11 +93,43 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Get sync status and last sync time.
+ * Get sync status and last sync time — or trigger a sync when called by cron.
+ * cron: GET /api/sync?trigger=cron (Vercel Cron Job calls this)
+ * status: GET /api/sync (shows current state)
+ *
  * Uses Shannon entropy to measure data diversity.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const isCronTrigger = searchParams.get("trigger") === "cron";
+
+    // When triggered by cron, run the actual sync
+    if (isCronTrigger) {
+      const maxRetries = 3;
+
+      const results: Record<string, SyncResult> = {};
+
+      const harvestResult = await syncWithRetry(
+        syncHarvestResults,
+        maxRetries,
+      );
+      results.harvestResults = harvestResult;
+
+      const presenceResult = await syncWithRetry(
+        syncAgentPresence,
+        maxRetries,
+      );
+      results.agentPresence = presenceResult;
+
+      return apiSuccess({
+        message: "Cron sync completed",
+        results,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Normal status check
     const lastHarvest = await prisma.harvestResult.findFirst({
       orderBy: { createdAt: "desc" },
       select: { createdAt: true, query: true },
@@ -141,14 +171,20 @@ export async function GET() {
     const noise = recentQueries.filter((q) => !q.query).length || 1;
     const capacity = shannonHartleyCapacity(bw, signal, noise);
 
-    // Mutual information between queries and agent statuses
+    // Mutual information: contingency table of active agents vs query recency
     const presenceStatuses = await prisma.agentPresence.findMany({
-      select: { status: true },
+      select: { status: true, updatedAt: true },
     });
     const mi = recentQueries.length > 0 && presenceStatuses.length > 0
       ? mutualInformation([
-          [recentQueries.length, presenceStatuses.filter((p) => p.status === "active").length],
-          [presenceStatuses.filter((p) => p.status === "idle").length, presenceStatuses.filter((p) => p.status === "offline").length],
+          [
+            presenceStatuses.filter((p) => p.status === "active").length,
+            presenceStatuses.filter((p) => p.status !== "active").length,
+          ],
+          [
+            presenceStatuses.filter((p) => p.status === "idle").length,
+            presenceStatuses.filter((p) => p.status === "offline").length,
+          ],
         ])
       : 0;
 
@@ -186,15 +222,14 @@ export async function GET() {
  * Physics analogy: Radioactive decay with jitter to prevent thundering herd.
  */
 async function syncWithRetry(
-  syncFn: (dryRun: boolean) => Promise<SyncResult>,
-  dryRun: boolean,
+  syncFn: () => Promise<SyncResult>,
   maxRetries: number,
 ): Promise<SyncResult> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      return await syncFn(dryRun);
+      return await syncFn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       console.error(`[Sync] Attempt ${attempt + 1} failed:`, lastError.message);
@@ -221,8 +256,8 @@ async function syncWithRetry(
  * Sync harvest results from D1 to PostgreSQL.
  * Uses entropy scoring to measure data quality.
  */
-async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
-  let synced = 0;
+async function syncHarvestResults(): Promise<SyncResult> {
+  const synced = 0;
   let errors = 0;
 
   try {
@@ -262,8 +297,8 @@ async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
  * Sync agent presence from D1 to PostgreSQL.
  * Uses entropy scoring to measure status diversity.
  */
-async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
-  let synced = 0;
+async function syncAgentPresence(): Promise<SyncResult> {
+  const synced = 0;
   let errors = 0;
 
   try {
