@@ -1839,17 +1839,18 @@ export function kuramotoCriticalCoupling(
 ): number {
   if (naturalFrequencies.length < 2) return 0;
 
-  // Estimate frequency distribution at zero using KDE
+  // Estimate frequency distribution at the mean using KDE
   const sorted = [...naturalFrequencies].sort((a, b) => a - b);
   const bandwidth = 0.5 * (sorted[Math.floor(sorted.length * 0.75)] - sorted[Math.floor(sorted.length * 0.25)]);
 
   if (bandwidth <= 0) return Infinity;
 
-  // g(0) ≈ count of frequencies near 0 / (n × bandwidth)
-  const nearZero = naturalFrequencies.filter((f) => Math.abs(f) < bandwidth).length;
-  const g0 = nearZero / (naturalFrequencies.length * bandwidth);
+  const mean = naturalFrequencies.reduce((a, b) => a + b, 0) / naturalFrequencies.length;
+  // g(mean) ≈ count of frequencies near mean / (n × bandwidth)
+  const nearMean = naturalFrequencies.filter((f) => Math.abs(f - mean) < bandwidth).length;
+  const gMean = nearMean / (naturalFrequencies.length * bandwidth);
 
-  if (g0 <= 0) return Infinity;
+  if (gMean <= 0) return Infinity;
 
-  return 2 / (Math.PI * g0);
+  return 2 / (Math.PI * gMean);
 }
