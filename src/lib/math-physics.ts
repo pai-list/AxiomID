@@ -1205,7 +1205,8 @@ export function klDivergence(
 
   let dkl = 0;
   for (let i = 0; i < p.length; i++) {
-    if (p[i] > 0 && q[i] > 0) {
+    if (p[i] > 0) {
+      if (q[i] === 0) return Infinity;
       dkl += p[i] * Math.log2(p[i] / q[i]);
     }
   }
