@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { TrustScoreGauge } from "@/components/TrustScoreGauge";
 import { useLanguage } from "@/app/context/language-context";
