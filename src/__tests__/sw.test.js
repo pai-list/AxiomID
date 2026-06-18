@@ -50,6 +50,9 @@ function setupServiceWorkerGlobals() {
     clients: {
       claim: jest.fn(),
     },
+    location: {
+      origin: "https://axiomid.app",
+    },
   };
 }
 
@@ -58,7 +61,7 @@ function loadServiceWorker() {
   jest.resetModules();
   setupServiceWorkerGlobals();
    
-  require("../../public/service-worker.js");
+  require("../../public/sw.js");
 }
 
 function makeEvent(overrides = {}) {
@@ -90,7 +93,7 @@ function makeResponse(ok = true) {
   };
 }
 
-describe("service-worker.js — registration", () => {
+describe("sw.js — registration", () => {
   beforeEach(() => {
     loadServiceWorker();
   });
@@ -111,7 +114,7 @@ describe("service-worker.js — registration", () => {
   });
 });
 
-describe("service-worker.js — install event", () => {
+describe("sw.js — install event", () => {
   beforeEach(() => {
     loadServiceWorker();
   });
@@ -144,7 +147,7 @@ describe("service-worker.js — install event", () => {
   });
 });
 
-describe("service-worker.js — activate event", () => {
+describe("sw.js — activate event", () => {
   beforeEach(() => {
     loadServiceWorker();
   });
@@ -179,7 +182,7 @@ describe("service-worker.js — activate event", () => {
   });
 });
 
-describe("service-worker.js — fetch event: API routes (network-first)", () => {
+describe("sw.js — fetch event: API routes (network-first)", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
@@ -236,7 +239,7 @@ describe("service-worker.js — fetch event: API routes (network-first)", () => 
   });
 });
 
-describe("service-worker.js — fetch event: static assets (cache-first)", () => {
+describe("sw.js — fetch event: static assets (cache-first)", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {

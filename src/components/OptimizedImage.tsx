@@ -114,36 +114,3 @@ export function Avatar({
   );
 }
 
-interface BannerProps {
-  src?: string | null;
-  alt: string;
-  height?: number;
-  className?: string;
-}
-
-export function Banner({
-  src,
-  alt,
-  height = 200,
-  className = "",
-}: BannerProps) {
-  return (
-    <div
-      className={`relative w-full overflow-hidden ${className}`}
-      style={{ height }}
-    >
-      {src ? (
-        <OptimizedImage
-          src={src}
-          alt={alt}
-          width={1200}
-          height={height}
-          objectFit="cover"
-          className="w-full h-full"
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-r from-axiom-purple/20 to-electric-blue/20" />
-      )}
-    </div>
-  );
-}
