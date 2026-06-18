@@ -35,6 +35,9 @@ export function OptimizedImage({
   const optimizedSrc = getOptimizedImageUrl(src, { width, quality, format });
   const errorSrc = getOptimizedImageUrl(fallbackSrc, { width, quality: 80 });
 
+  // Filter out props that are explicitly set on Image to avoid duplicates
+  const { src: _src, alt: _alt, width: _width, height: _height, ...restProps } = props as Record<string, unknown>;
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {showLoading && isLoading && (
@@ -56,7 +59,7 @@ export function OptimizedImage({
           setIsLoading(false);
         }}
         style={{ objectFit }}
-        {...(props as any)}
+        {...restProps}
       />
     </div>
   );

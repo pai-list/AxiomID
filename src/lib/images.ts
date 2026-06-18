@@ -3,6 +3,11 @@
  * 
  * Provides image optimization via Cloudflare's edge network.
  * R2 has zero egress fees, making it ideal for image hosting.
+ * 
+ * Upload Flow (Presigned URLs):
+ * 1. Server generates presigned URL
+ * 2. Browser uploads directly to R2
+ * 3. Zero egress costs, bypasses Vercel limits
  */
 
 interface ImageOptions {
@@ -10,18 +15,6 @@ interface ImageOptions {
   quality?: number;
   format?: "auto" | "webp" | "avif" | "png" | "jpeg";
 }
-
-interface R2Config {
-  accountId: string;
-  bucketName: string;
-  publicDomain?: string;
-}
-
-const DEFAULT_CONFIG: R2Config = {
-  accountId: process.env.CLOUDFLARE_ACCOUNT_ID || "",
-  bucketName: process.env.R2_BUCKET_NAME || "axomid-images",
-  publicDomain: process.env.R2_PUBLIC_DOMAIN || "",
-};
 
 /**
  * Generate optimized image URL via Cloudflare Image Resizing
@@ -57,55 +50,68 @@ export function getOptimizedImageUrl(
 }
 
 /**
- * Upload image to R2 bucket
+ * Get presigned URL for direct browser-to-R2 upload
+ * This bypasses Vercel's 4.5MB limit
  */
-export async function uploadToR2(
-  file: File | Buffer,
+export async function getPresignedUploadUrl(
   key: string,
-  contentType: string = "image/png"
-): Promise<string> {
-  const config = DEFAULT_CONFIG;
-  
-  if (!config.accountId) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID not configured");
-  }
-
-  const url = `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucketName}/${key}`;
-  
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": contentType,
-    },
-    body: file,
+  contentType: string,
+  expiresIn: number = 3600
+): Promise<{ uploadUrl: string; publicUrl: string }> {
+  const response = await fetch("/api/upload/presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key, contentType, expiresIn }),
   });
 
   if (!response.ok) {
-    throw new Error(`R2 upload failed: ${response.statusText}`);
+    const error = await response.json();
+    throw new Error(error.message || "Failed to get presigned URL");
   }
 
-  return `${config.publicDomain || `https://${config.bucketName}.${config.accountId}.r2.dev`}/${key}`;
+  return response.json();
 }
 
 /**
- * Delete image from R2 bucket
+ * Upload file directly to R2 using presigned URL
+ * This bypasses Vercel entirely - zero egress costs
  */
-export async function deleteFromR2(key: string): Promise<void> {
-  const config = DEFAULT_CONFIG;
-  
-  if (!config.accountId) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID not configured");
-  }
+export async function uploadToR2WithPresigned(
+  file: File,
+  key: string,
+  onProgress?: (progress: { loaded: number; total: number; percentage: number }) => void
+): Promise<string> {
+  const { uploadUrl, publicUrl } = await getPresignedUploadUrl(key, file.type);
 
-  const url = `https://${config.accountId}.r2.cloudflarestorage.com/${config.bucketName}/${key}`;
-  
-  const response = await fetch(url, {
-    method: "DELETE",
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        onProgress?.({
+          loaded: event.loaded,
+          total: event.total,
+          percentage: Math.round((event.loaded / event.total) * 100),
+        });
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(publicUrl);
+      } else {
+        reject(new Error(`Upload failed: ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload failed: Network error"));
+    });
+
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+    xhr.send(file);
   });
-
-  if (!response.ok) {
-    throw new Error(`R2 delete failed: ${response.statusText}`);
-  }
 }
 
 /**

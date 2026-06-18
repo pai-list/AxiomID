@@ -113,11 +113,12 @@ export function PiPaymentButton({
   }
 
   const isLoading = state !== "idle";
-  const loadingText = {
+  const loadingTextMap: Record<string, string> = {
     creating: "Creating payment...",
     approving: "Approving...",
     completing: "Completing...",
-  }[state];
+  };
+  const currentLoadingText = loadingTextMap[state] || "";
 
   return (
     <div className={className}>
@@ -131,7 +132,7 @@ export function PiPaymentButton({
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>{loadingText}</span>
+            <span>{currentLoadingText}</span>
           </>
         ) : (
           children

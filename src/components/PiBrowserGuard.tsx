@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Smartphone, Globe, Loader2, ExternalLink } from "lucide-react";
 
 interface PiBrowserContextType {
@@ -125,11 +125,7 @@ export function PiBrowserGuard({
   );
 }
 
-interface PiBrowserBannerProps {
-  onOpenInPi?: () => void;
-}
-
-export function PiBrowserBanner({ onOpenInPi }: PiBrowserBannerProps) {
+export function PiBrowserBanner() {
   const { isPiBrowser, isSandbox } = usePiBrowser();
   
   if (isPiBrowser) {
