@@ -52,12 +52,6 @@ export interface PiAuthResult {
   stellarAddress?: string;
 }
 
-let lastError: string | null = null;
-
-export function getLastPiError(): string | null {
-  return lastError;
-}
-
 let isInitialized = false;
 
 export function loadPiSdk(): Promise<unknown> {
@@ -212,7 +206,6 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
           "Authentication failed - no token received"
         );
       }
-      lastError = null;
       pushLog?.(`Authenticated: ${result.user.name || result.user.uid}`);
       return {
         user: {
@@ -232,13 +225,10 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
   } catch (error) {
     // If it's already a PiSdkError, re-throw it
     if (error instanceof PiSdkError) {
-      lastError = error.message;
       pushLog?.(`Auth error: ${error.message}`);
       throw error;
     }
-    // Otherwise wrap it in a generic error
     const message = error instanceof Error ? error.message : "Unknown error";
-    lastError = message;
     pushLog?.(`Auth error: ${message}`);
     throw new PiSdkError(
       PiSdkErrorCode.GENERIC_ERROR,
@@ -279,19 +269,6 @@ export async function runWalletTest(pushLog?: any): Promise<void> {
     pushLog?.(`Wallet test failed: ${message}`);
     throw error;
   }
-}
-
-export async function verifyStellarAddress(stellarAddress: string): Promise<boolean> {
-  // Stellar public keys: 56 base32 characters starting with G or M
-  if (!stellarAddress || stellarAddress.length !== 56) {
-    return false;
-  }
-  if (!/^[GM][A-Z2-7]{55}$/i.test(stellarAddress)) {
-    return false;
-  }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(true), 100);
-  });
 }
 
 export async function createPiPayment(amount: number, memo: string, metadata?: Record<string, unknown>): Promise<string> {
@@ -353,25 +330,4 @@ export async function createPiPayment(amount: number, memo: string, metadata?: R
       },
     });
   });
-}
-
-export async function claimPiKya(data: {
-  username: string;
-  stellarAddress?: string;
-}): Promise<{ success: true; userId: string }> {
-  try {
-    const response = await fetch("/api/pi/kya/claim", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || `Kya claim failed: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Kya claim failed";
-    throw new Error(`Pi Kya claim failed: ${message}`);
-  }
 }

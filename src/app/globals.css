@@ -348,51 +348,11 @@ body {
   font-family: var(--font-mono);
 }
 
-.text-neon {
-  color: var(--neon-green);
-  text-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
-}
 
-.text-electric {
-  color: var(--electric-blue);
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
-}
-
-.text-purple-glow {
-  color: var(--axiom-purple);
-  text-shadow: 0 0 8px rgba(139, 92, 246, 0.2);
-}
 
 /* ============================================
    UTILITIES
    ============================================ */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--card-border);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
-}
-
-[data-theme="light"] .glass-panel {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.glow-green {
-  box-shadow: 0 0 16px var(--neon-green-glow);
-}
-
-[data-theme="light"] .glow-green {
-  box-shadow: 0 0 16px rgba(5, 150, 105, 0.06);
-}
-
-.glow-blue {
-  box-shadow: 0 0 16px rgba(59, 130, 246, 0.12);
-}
-
-[data-theme="light"] .glow-blue {
-  box-shadow: 0 0 16px rgba(37, 99, 235, 0.06);
-}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -460,10 +420,6 @@ body {
   50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
 }
 
-.animate-glow-pulse {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
 /* ============================================
    ACCESSIBILITY: REDUCED MOTION
    ============================================ */
@@ -478,7 +434,6 @@ body {
 
   .scanline,
   .animate-holographic,
-  .animate-glow-pulse,
   .animate-float,
   .animate-pulse-slow {
     animation: none !important;
@@ -608,11 +563,4 @@ a:focus-visible {
   }
 }
 
-/* ============================================
-   SAFE AREA INSETS (iOS notch)
-   ============================================ */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
+
