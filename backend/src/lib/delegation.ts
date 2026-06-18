@@ -17,7 +17,7 @@ import {
   minCutTrustBottleneck,
   fiedlerPartition,
   type TopologyEdge,
-} from "../../../src/lib/math-physics";
+} from "./math-physics";
 
 export interface DelegationEdge {
   delegator_did: string;
