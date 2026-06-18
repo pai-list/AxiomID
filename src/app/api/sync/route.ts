@@ -32,7 +32,6 @@ const SyncRequestSchema = z.object({
   maxRetries: z.number().int().min(0).max(10).default(3),
 });
 
-
 interface SyncResult {
   synced: number;
   errors: number;
@@ -77,23 +76,13 @@ export async function POST(req: NextRequest) {
 
     const results: Record<string, SyncResult> = {};
 
-    // Sync harvest results with exponential backoff
+    // Sync D1 data with exponential backoff
     if (source === "all" || source === "d1") {
-      const harvestResult = await syncWithRetry(
-        syncHarvestResults,
-        dryRun,
-        maxRetries,
-      );
+      const [harvestResult, presenceResult] = await Promise.all([
+        syncWithRetry(syncHarvestResults, dryRun, maxRetries),
+        syncWithRetry(syncAgentPresence, dryRun, maxRetries),
+      ]);
       results.harvestResults = harvestResult;
-    }
-
-    // Sync agent presence with exponential backoff
-    if (source === "all" || source === "d1") {
-      const presenceResult = await syncWithRetry(
-        syncAgentPresence,
-        dryRun,
-        maxRetries,
-      );
       results.agentPresence = presenceResult;
     }
 
