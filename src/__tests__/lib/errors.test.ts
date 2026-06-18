@@ -224,18 +224,16 @@ describe('apiError — DIAGNOSTIC_MAP wiring verification', () => {
   });
 
   it.each(cases)('maps %s to diagnostic %s', (code, diagCode) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const diagFn = (diagnostics as any)[diagCode] as jest.Mock;
+    const diagFn = (diagnostics as Record<string, jest.Mock>)[diagCode];
     apiError(code, 'test message');
     expect(diagFn).toHaveBeenCalledTimes(1);
   });
 
   it('does not invoke any other diagnostic for a given code', () => {
     apiError('NOT_FOUND', 'missing');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((diagnostics as any).AXIOMID_E012).toHaveBeenCalledTimes(1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((diagnostics as any).AXIOMID_E001).not.toHaveBeenCalled();
+    const diags = diagnostics as Record<string, jest.Mock>;
+    expect(diags.AXIOMID_E012).toHaveBeenCalledTimes(1);
+    expect(diags.AXIOMID_E001).not.toHaveBeenCalled();
   });
 });
 
