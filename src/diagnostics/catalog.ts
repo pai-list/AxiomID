@@ -17,8 +17,8 @@ export const diagnostics = defineDiagnostics({
     AXIOMID_E001: {
       why: (p: { field: string; message: string }) =>
         `Validation failed for field "${p.field}": ${p.message}.`,
-      fix: (p: { example: string }) =>
-        `Check the request body format. Example: ${p.example}`,
+      fix: () =>
+        `Check the request body format and ensure all required fields are provided.`,
     },
     AXIOMID_E002: {
       why: () => `Request body is not valid JSON.`,
