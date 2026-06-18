@@ -36,10 +36,10 @@ const AGENT_SELECT = {
 };
 
 /**
- * Builds a passport object containing public identity, verification status, and trust metadata for a user.
+ * Determines the Know Your Account (KYA) status based on available verification stamps.
  *
- * @param user - A user record with expected properties: `id`, optional `did`, optional `piUsername`, `walletAddress`, optional `stellarAddress`, `tier`, `xp`, optional `stamps` (array), `kycStatus`, `createdAt` (Date), and optional `agent` with `name` and `status`.
- * @returns An object with the following fields: `username`, `walletAddress`, `stellarAddress`, `did`, `tier`, `xp`, `trustScore`, `kyaStatus`, `kycStatus`, `issuedDate`, `agentName`, and `agentStatus`.
+ * @param stamps - Optional array of passport stamps.
+ * @returns `"verified"` if an identity verification or Pi stamp is present, `"pending"` otherwise.
  */
 function getKyaStatus(stamps: PassportStamp[] | undefined): "verified" | "pending" | "denied" {
   if (!stamps || stamps.length === 0) return "pending";
@@ -96,12 +96,11 @@ function buildPassportResponse(user: PassportUser) {
 import { PassportSlugParamSchema } from "@/lib/validators";
 
 /**
- * Retrieves a user passport based on a slug identifier.
+ * Retrieves a user passport for the given slug identifier.
  *
- * Applies rate limiting per IP and returns the formatted passport if found.
+ * Enforces rate limiting and searches by wallet address, username, or DID.
  *
- * @returns An HTTP response containing the formatted passport object, or an error
- * response indicating validation failure, rate limiting, or no matching passport.
+ * @returns An HTTP response with the formatted passport object, or an error response if validation fails, the rate limit is exceeded, or no matching passport is found.
  */
 export async function GET(
   _request: NextRequest,

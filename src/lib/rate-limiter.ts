@@ -161,13 +161,14 @@ function memMaybeCleanup(): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Determines whether a request identified by `key` is allowed under the configured rate limit.
+ * Checks whether a request is allowed under the configured rate limit.
  *
- * In production (when Upstash Redis is available), rate limits are tracked across all instances.
- * In local development or if Upstash fails, rate limits are tracked per process instance.
+ * Attempts to use Upstash Redis for distributed rate limiting in production.
+ * Falls back to in-memory rate limiting if Upstash is unavailable or fails.
  *
  * @param key - The identifier for rate-limit tracking (e.g., user ID, IP address).
- * @returns A RateLimitResult containing whether the request is allowed, remaining quota, and the window reset timestamp.
+ * @returns The rate-limit check result, including whether the request is allowed,
+ * remaining quota, and window reset timestamp.
  */
 export async function checkRateLimit(
   key: string,

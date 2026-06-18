@@ -50,6 +50,12 @@ function getCachedUser(tokenHash: string): AuthenticatedUser | null {
   return entry.user;
 }
 
+/**
+ * Stores an authenticated user in the cache with an expiration time.
+ *
+ * @param tokenHash - The hashed token to use as the cache key
+ * @param user - The authenticated user to cache
+ */
 function setCachedUser(tokenHash: string, user: AuthenticatedUser): void {
   if (tokenCache.size > MAX_CACHE_SIZE) {
     cleanupExpiredEntries();
@@ -61,9 +67,9 @@ function setCachedUser(tokenHash: string, user: AuthenticatedUser): void {
 }
 
 /**
- * Removes a cached authentication token entry.
+ * Deletes a cached authentication token.
  *
- * @param tokenHash - The hashed access token to invalidate from cache
+ * @param tokenHash - The hashed token to remove
  */
 function invalidateCachedToken(tokenHash: string): void {
   tokenCache.delete(tokenHash);
@@ -83,12 +89,10 @@ export function clearAuthCache(tokenHash?: string): void {
 }
 
 /**
- * Authenticates a request using a Pi access token from the Authorization header.
+ * Authenticates a request by validating a Pi access token from the Authorization header.
  *
- * Extracts the token from the Authorization header, verifies it against the Pi API, and retrieves the corresponding user from the database. Successful authentications are cached to avoid repeated verification.
- *
- * @param request - The Next.js request containing the Authorization header
- * @returns `{ error: null; user: AuthenticatedUser }` on successful authentication, `{ error: ...; user: null }` on failure
+ * @param request - The Next.js request object
+ * @returns `{ error: null; user: AuthenticatedUser }` if the token is valid and user exists, `{ error: apiError; user: null }` on any failure
  */
 export async function requireAuth(request: NextRequest): Promise<
   { error: ReturnType<typeof apiError>; user: null } | { error: null; user: AuthenticatedUser }

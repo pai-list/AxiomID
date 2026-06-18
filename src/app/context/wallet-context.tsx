@@ -68,6 +68,12 @@ function isDemoWalletAddress(walletAddress?: string | null): boolean {
   return walletAddress?.startsWith("demo:") ?? false;
 }
 
+/**
+ * Generates a random demo wallet address.
+ *
+ * @returns A demo wallet address prefixed with `demo:` followed by random characters.
+ * @throws If no cryptographic random source is available.
+ */
 function createDemoWalletAddress(): string {
   if (typeof crypto !== "undefined") {
     if (typeof crypto.randomUUID === "function") {
@@ -103,6 +109,11 @@ function getStoredWallet(): string | null {
   }
 }
 
+/**
+ * Returns a demo wallet address from storage if available, otherwise creates a new one.
+ *
+ * @returns A demo wallet address string.
+ */
 function getStoredDemoWalletOrNew(): string {
   const stored = getStoredWallet();
   return stored && isDemoWalletAddress(stored) ? stored : createDemoWalletAddress();
@@ -124,7 +135,7 @@ function getLocalStorageItem(key: string): string | null {
 }
 
 /**
- * Stores a value in localStorage.
+ * Safely stores a value in localStorage.
  */
 function setLocalStorageItem(key: string, value: string): void {
   if (typeof window === "undefined") return;
@@ -136,7 +147,9 @@ function setLocalStorageItem(key: string, value: string): void {
 }
 
 /**
- * Removes a value from localStorage.
+ * Safely removes a value from localStorage, silently handling errors.
+ *
+ * This function is a no-op on the server.
  */
 function removeLocalStorageItem(key: string): void {
   if (typeof window === "undefined") return;
@@ -190,9 +203,9 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
 }
 
 /**
- * Exposes wallet authentication state, connection actions, user-refresh and agent operations, progression helpers, and wallet logs to descendant components via WalletContext.
+ * Provides wallet authentication and management to child components via context.
  *
- * @returns A React context provider element that supplies wallet state, status flags, and wallet-related actions to its children.
+ * @returns A context provider that supplies wallet state, operations, and progression tracking to its children.
  */
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

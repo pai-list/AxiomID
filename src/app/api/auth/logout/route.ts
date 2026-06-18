@@ -9,8 +9,7 @@ import { getClientIp } from '@/lib/ip';
 /**
  * Logs out the authenticated user.
  *
- * @param request - The incoming HTTP request from an authenticated user.
- * @returns An HTTP response with `{ message: 'Logged out successfully' }` on success, or an error response with code `INTERNAL_ERROR` on failure.
+ * @returns An HTTP response with the logout result.
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);

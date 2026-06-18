@@ -39,9 +39,11 @@ interface SyncResult {
 }
 
 /**
- * Processes authenticated sync requests for D1 edge data.
+ * Validates and executes D1 data synchronization with authenticated rate limiting and retry logic.
  *
- * @returns An API response containing sync results and metrics, or an appropriate error response.
+ * Requires authentication, checks rate limits, validates the request body against a schema, and executes sync operations for harvest results and agent presence. Includes exponential backoff retry behavior for transient failures.
+ *
+ * @returns An API response. On success, contains sync results with entropy and freshness metrics for each data source. On validation or rate limit failure, returns an error response with relevant headers or details.
  */
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
