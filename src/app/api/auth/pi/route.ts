@@ -7,6 +7,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
 import { encryptToken } from '@/lib/crypto';
+import { createPiDid } from '@/lib/did';
 
 interface PiApiUser {
   uid: string;
@@ -25,10 +26,6 @@ function getVerifiedStellarAddress(piUser: PiApiUser): string | null {
     return address;
   }
   return null;
-}
-
-function buildPiDid(uid: string): string {
-  return `did:axiom:axiomid.app:pi:${encodeURIComponent(uid)}`;
 }
 
 /**
@@ -89,7 +86,7 @@ export async function POST(request: NextRequest) {
     });
 
     const walletAddress = `pi:${uid}`;
-    const piDid = buildPiDid(uid);
+    const piDid = createPiDid(uid);
 
     let user;
     if (existingUser) {

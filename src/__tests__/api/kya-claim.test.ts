@@ -162,13 +162,13 @@ describe('POST /api/pi/kya/claim', () => {
       walletAddress: 'pi:nameduser',
       piUid: 'mock-pi-uid',
       piUsername: 'oldname',
-      did: 'did:axiom:mock-pi-uid',
+      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
     } as any);
     mockPrisma.user.update.mockResolvedValue({
       id: 'named-user',
       walletAddress: 'pi:nameduser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:mock-pi-uid',
+      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'nameduser' });
@@ -179,6 +179,33 @@ describe('POST /api/pi/kya/claim', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           piUsername: 'oldname',
+        }),
+      })
+    );
+  });
+
+  it('creates the correct DID format using createPiDid when existing user lacks a did', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'existing-user-no-did',
+      walletAddress: 'pi:existinguser',
+      piUid: 'mock-pi-uid',
+    } as any);
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'existing-user-no-did',
+      walletAddress: 'pi:existinguser',
+      kycStatus: 'PENDING',
+      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+    } as any);
+
+    const req = mockPostRequest({ username: 'existinguser' });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+          piUsername: 'existinguser',
         }),
       })
     );
