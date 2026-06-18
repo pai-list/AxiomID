@@ -10,7 +10,9 @@
 import { apiError } from "@/lib/errors";
 import type { NextRequest } from "next/server";
 
-type RouteHandler = (req: NextRequest, ctx: unknown) => Response | Promise<Response>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ctx shape varies
+// across Next.js versions; we forward it opaquely to the emulator adapter.
+type RouteHandler = (req: NextRequest, ctx: any) => Response | Promise<Response>;
 
 // Never expose the emulator surface in production. The emulator route is a
 // dev/preview-only tool; in production every method returns 404.
@@ -18,7 +20,8 @@ const notFound = () => apiError("NOT_FOUND", "Not found");
 
 const isProdDeployment =
   process.env.VERCEL_ENV === "production" ||
-  process.env.NODE_ENV === "production";
+  process.env.NODE_ENV === "production" ||
+  process.env.ENV === "production";
 
 // Defense in depth: the emulator is off by default and must be explicitly
 // enabled via a server-side flag, so it is never an insecure default even on a
