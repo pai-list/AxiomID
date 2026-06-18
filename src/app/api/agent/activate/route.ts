@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const [updated] = updatedAgents;
-    if (updated) {
+    if (updatedAgents.length > 0) {
+      const [updated] = updatedAgents;
       return apiSuccess({
         agentId: updated.id,
         publicId: updated.publicId,
