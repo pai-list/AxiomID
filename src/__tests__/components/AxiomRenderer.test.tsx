@@ -7,6 +7,8 @@ jest.mock("@json-render/react", () => ({
   Renderer: ({ spec, registry }: { spec: unknown; registry: unknown }) => (
     <div data-testid="mock-renderer" data-spec={JSON.stringify(spec)} data-has-registry={String(!!registry)} />
   ),
+  JSONUIProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  VisibilityProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock @/lib/registry so we can control the registry value passed in
