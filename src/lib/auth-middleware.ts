@@ -115,6 +115,7 @@ export async function requireAuth(request: NextRequest): Promise<
     }
 
 
+    const authenticatedUser = user as AuthenticatedUser;
     setCachedUser(tokenHash, authenticatedUser);
 
     return { error: null, user: authenticatedUser };
