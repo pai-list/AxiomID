@@ -24,11 +24,19 @@ import {
 import { requireAuth } from "@/lib/auth-middleware";
 import { logger } from "@/lib/logger";
 
+export const maxDuration = 60;
+
 const SyncRequestSchema = z.object({
   source: z.enum(["d1", "all"]).default("all"),
   dryRun: z.boolean().default(false),
   maxRetries: z.number().int().min(0).max(10).default(3),
 });
+
+interface SyncRequest {
+  source: "d1" | "all";
+  dryRun?: boolean;
+  maxRetries?: number;
+}
 
 interface SyncResult {
   synced: number;
@@ -107,13 +115,22 @@ export async function POST(req: NextRequest) {
 
 /**
  * Retrieves the current sync status and data quality metrics.
+ * Uses Shannon entropy to measure data diversity.
+ *
+ * Vercel cron triggers GET /api/sync?trigger=cron without auth headers.
+ * Bypass auth when trigger=cron query param is present.
  *
  * @returns An object with `lastSync` (most recent harvest and agent presence timestamps)
  * and `metrics` (freshness scores and query entropy).
  */
 export async function GET(req: NextRequest) {
-  const auth = await requireAuth(req);
-  if (auth.error) return auth.error;
+  const url = new URL(req.url);
+  const isCron = url.searchParams.get("trigger") === "cron";
+
+  if (!isCron) {
+    const auth = await requireAuth(req);
+    if (auth.error) return auth.error;
+  }
 
   try {
     const lastHarvest = await prisma.harvestResult.findFirst({
