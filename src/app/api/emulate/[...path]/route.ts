@@ -54,7 +54,10 @@ async function buildEmulatorHandler(): Promise<Record<string, RouteHandler>> {
 function dispatch(method: string): RouteHandler {
   return async (req, ctx) => {
     if (!isEmulatorEnabled) return notFound();
-    handlerPromise ??= buildEmulatorHandler();
+    handlerPromise ??= buildEmulatorHandler().catch((err) => {
+      handlerPromise = null;
+      throw err;
+    });
     const handler = await handlerPromise;
     return handler[method](req, ctx);
   };
