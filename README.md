@@ -306,7 +306,7 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 | Layer | Service | URL | Status |
 | :--- | :--- | :--- | :--- |
 | **Frontend** | Vercel | https://axiomid.app | ✅ Live |
-| **Backend** | Cloudflare Workers | https://axiomid-backend.amrikyy.workers.dev | ✅ Live |
+| **Backend** | Cloudflare Workers | https://axiomid-backend.workers.dev | ✅ Live |
 | **Database** | PostgreSQL (Prisma) | db.prisma.io:5432 | ✅ Connected |
 | **Queue** | Cloudflare Queues | harvest-queue | ✅ Provisioned |
 | **DO** | Cloudflare Durable Objects | PresenceDO | ✅ Deployed |
@@ -440,7 +440,7 @@ AxiomID uses physics and information theory to power trust, delegation, and rate
 
 ## 🔌 API Reference
 
-### Cloudflare Backend (`https://axiomid-backend.amrikyy.workers.dev`)
+### Cloudflare Backend (`https://axiomid-backend.workers.dev`)
 
 | Endpoint | Method | Auth | Description |
 | :--- | :--- | :--- | :--- |

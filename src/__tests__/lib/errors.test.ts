@@ -1,7 +1,8 @@
 /**
  * @jest-environment node
  */
-import { apiError, apiSuccess } from '@/lib/errors';
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
+import { diagnostics } from '@/diagnostics/catalog';
 
 describe('apiError', () => {
   it('returns correct status for VALIDATION_ERROR', async () => {
@@ -97,5 +98,114 @@ describe('apiSuccess', () => {
   it('returns custom status code', async () => {
     const res = apiSuccess({ created: true }, 201);
     expect(res.status).toBe(201);
+  });
+});
+
+describe('apiError — DIAGNOSTIC_MAP coverage (new in this PR)', () => {
+  it('returns 403 for FORBIDDEN (not covered in the base describe)', async () => {
+    const res = apiError('FORBIDDEN', 'Access denied');
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.code).toBe('FORBIDDEN');
+    expect(body.error).toBe('Access denied');
+  });
+
+  it('includes custom headers in the response', async () => {
+    const customHeaders = { 'X-Custom-Header': 'custom-value', 'X-Request-Id': 'abc-123' };
+    const res = apiError('INTERNAL_ERROR', 'oops', undefined, customHeaders);
+    expect(res.status).toBe(500);
+    expect(res.headers.get('X-Custom-Header')).toBe('custom-value');
+    expect(res.headers.get('X-Request-Id')).toBe('abc-123');
+  });
+
+  it('omits details field when not provided', async () => {
+    const res = apiError('NOT_FOUND', 'missing');
+    const body = await res.json();
+    expect(body.details).toBeUndefined();
+  });
+
+  it('response body always includes code field matching the ErrorCode', async () => {
+    const codes = [
+      'VALIDATION_ERROR', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND',
+      'RATE_LIMITED', 'CONFLICT', 'PI_AUTH_FAILED', 'PI_PAYMENT_FAILED', 'INTERNAL_ERROR',
+    ] as const;
+    for (const code of codes) {
+      const res = apiError(code, 'test message');
+      const body = await res.json();
+      expect(body.code).toBe(code);
+    }
+  });
+});
+
+describe('apiError — DIAGNOSTIC_MAP wiring verification', () => {
+  // Mirrors DIAGNOSTIC_MAP in src/lib/errors.ts — each ErrorCode must invoke
+  // its corresponding diagnostics function so mapping regressions fail fast.
+  const cases = [
+    ['VALIDATION_ERROR', 'AXIOMID_E001'],
+    ['UNAUTHORIZED', 'AXIOMID_E010'],
+    ['FORBIDDEN', 'AXIOMID_E011'],
+    ['NOT_FOUND', 'AXIOMID_E012'],
+    ['RATE_LIMITED', 'AXIOMID_E013'],
+    ['CONFLICT', 'AXIOMID_E030'],
+    ['PI_AUTH_FAILED', 'AXIOMID_E020'],
+    ['PI_PAYMENT_FAILED', 'AXIOMID_E021'],
+    ['PAYMENT_VERIFICATION_FAILED', 'AXIOMID_E022'],
+    ['PAYMENT_MISMATCH', 'AXIOMID_E023'],
+    ['PAYMENT_INVALID', 'AXIOMID_E024'],
+    ['INTERNAL_ERROR', 'AXIOMID_E040'],
+  ] as const;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it.each(cases)('maps %s to diagnostic %s', (code, diagCode) => {
+    const diagFn = (diagnostics as Record<string, jest.Mock>)[diagCode];
+    apiError(code, 'test message');
+    expect(diagFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not invoke any other diagnostic for a given code', () => {
+    apiError('NOT_FOUND', 'missing');
+    const diags = diagnostics as Record<string, jest.Mock>;
+    expect(diags.AXIOMID_E012).toHaveBeenCalledTimes(1);
+    expect(diags.AXIOMID_E001).not.toHaveBeenCalled();
+  });
+});
+
+describe('rateLimitHeaders', () => {
+  it('returns X-RateLimit-Remaining header as string', () => {
+    const result = rateLimitHeaders({ remaining: 42, resetAt: 1700000000000 });
+    expect(result['X-RateLimit-Remaining']).toBe('42');
+  });
+
+  it('returns X-RateLimit-Reset header as ceil of resetAt/1000', () => {
+    const result = rateLimitHeaders({ remaining: 10, resetAt: 1700000000500 });
+    expect(result['X-RateLimit-Reset']).toBe(String(Math.ceil(1700000000500 / 1000)));
+  });
+
+  it('handles resetAt that is already a round second', () => {
+    const result = rateLimitHeaders({ remaining: 0, resetAt: 1700000001000 });
+    expect(result['X-RateLimit-Reset']).toBe('1700000001');
+  });
+
+  it('handles remaining = 0', () => {
+    const result = rateLimitHeaders({ remaining: 0, resetAt: 9999999999000 });
+    expect(result['X-RateLimit-Remaining']).toBe('0');
+  });
+
+  it('returns an object with exactly two header keys', () => {
+    const result = rateLimitHeaders({ remaining: 5, resetAt: 1000 });
+    expect(Object.keys(result)).toHaveLength(2);
+    expect(Object.keys(result)).toContain('X-RateLimit-Remaining');
+    expect(Object.keys(result)).toContain('X-RateLimit-Reset');
+  });
+
+  it('rate limit headers can be used in apiError via headers param', async () => {
+    const headers = rateLimitHeaders({ remaining: 0, resetAt: 1700000060000 });
+    const res = apiError('RATE_LIMITED', 'Too many requests', undefined, headers);
+    expect(res.status).toBe(429);
+    expect(res.headers.get('X-RateLimit-Remaining')).toBe('0');
+    expect(res.headers.get('X-RateLimit-Reset')).toBe(String(Math.ceil(1700000060000 / 1000)));
   });
 });

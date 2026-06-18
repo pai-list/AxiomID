@@ -10,7 +10,7 @@ We have analyzed the leading identity protocols to identify their strengths and,
 | **Gitcoin Passport** | Aggregation (Stamps) | **Developer Focus.** It feels like a tool for hackathons, not a universal "Passport for the AI Economy". Lacks financial stake. | **The Meta-Aggregator.** We don't just complete; we *consume*. We ingest Gitcoin scores as just one input signal. We add the "Financial Stake" layer they miss. |
 | **BrightID** | Social Graph | **High Friction.** Requires joining "verification parties" (Zoom calls). Unscalable and annoying for introverts. | **Passive Verification.** We analyze on-chain social graphs and transaction history. No meetings, no scheduling. |
 | **Proof of Humanity** | Video Submission | **Public Exposure.** Users must upload a video of themselves. massive privacy risk and dox potential. | **Zero-Knowledge Philosophy.** Prove humanity without revealing *who* you are, just *that* you are human. |
-| **Idena** | Synchroamrikyy Tests | **Time Constraint.** Users must be online at a specific time to solve "flips". Inconvenient. | **Asynchroamrikyy & Continuous.** AxiomID works 24/7. Your reputation builds over time, not in a 10-minute window. |
+| **Idena** | Synchronous Tests | **Time Constraint.** Users must be online at a specific time to solve "flips". Inconvenient. | **Asynchronous & Continuous.** AxiomID works 24/7. Your reputation builds over time, not in a 10-minute window. |
 
 ---
 

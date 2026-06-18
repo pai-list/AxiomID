@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { diagnostics } from '@/diagnostics/catalog';
 
 export type ErrorCode =
   | 'VALIDATION_ERROR'
@@ -35,8 +36,40 @@ const STATUS_MAP: Record<ErrorCode, number> = {
   INTERNAL_ERROR: 500,
 };
 
+/**
+ * Maps each ErrorCode directly to a function that fires the corresponding
+ * nostics diagnostic. Collapsing the former DIAGNOSTIC_MAP + DIAGNOSTIC_PARAMS
+ * pair into a single map eliminates the double-lookup and the `any` cast on
+ * the diagnostics object.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const REPORT_DIAGNOSTIC: Record<ErrorCode, (message: string) => any> = {
+  VALIDATION_ERROR:            (m) => diagnostics.AXIOMID_E001({ field: 'request', message: m, example: 'N/A' }),
+  UNAUTHORIZED:                (m) => diagnostics.AXIOMID_E010({ reason: m }),
+  FORBIDDEN:                   (m) => diagnostics.AXIOMID_E011({ reason: m }),
+  NOT_FOUND:                   (m) => diagnostics.AXIOMID_E012({ resource: m }),
+  RATE_LIMITED:                ()  => diagnostics.AXIOMID_E013({}),
+  CONFLICT:                    (m) => diagnostics.AXIOMID_E030({ resource: m }),
+  PI_AUTH_FAILED:              (m) => diagnostics.AXIOMID_E020({ piError: m }),
+  PI_PAYMENT_FAILED:           (m) => diagnostics.AXIOMID_E021({ paymentId: 'unknown', piError: m }),
+  PAYMENT_VERIFICATION_FAILED: (m) => diagnostics.AXIOMID_E022({ paymentId: 'unknown', piError: m }),
+  PAYMENT_MISMATCH:            (m) => diagnostics.AXIOMID_E023({ paymentId: 'unknown', piError: m }),
+  PAYMENT_INVALID:             (m) => diagnostics.AXIOMID_E024({ paymentId: 'unknown', piError: m }),
+  INTERNAL_ERROR:              (m) => diagnostics.AXIOMID_E040({ operation: 'unknown', error: m }),
+};
+
 export function apiError(code: ErrorCode, message: string, details?: unknown, headers?: Record<string, string>): NextResponse<ApiError> {
   const status = STATUS_MAP[code] ?? 500;
+
+  // Report structured diagnostic via nostics (non-blocking, best-effort).
+  try {
+    // The fn may return a promise; swallow any rejection so it never surfaces
+    // as an unhandled rejection and never breaks the response path.
+    Promise.resolve(REPORT_DIAGNOSTIC[code](message)).catch(() => {});
+  } catch {
+    // Diagnostics are best-effort; never break the response path
+  }
+
   return NextResponse.json({ error: message, code, details }, { status, headers });
 }
 

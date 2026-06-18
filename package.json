@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build --webpack",
     "start": "next start",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "next build && next start",
@@ -50,6 +50,9 @@
     "memory:build": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' scripts/build-memory.ts"
   },
   "dependencies": {
+    "@json-render/core": "^0.19.0",
+    "@json-render/react": "^0.19.0",
+    "@nostics/unplugin": "^1.1.0",
     "@prisma/client": "^6.0.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
@@ -60,6 +63,7 @@
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.18.0",
     "next": "16.2.9",
+    "nostics": "^1.1.4",
     "qrcode.react": "^4.2.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -77,6 +81,9 @@
     "eslint-config-next": "16.2.9",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "jest-location-mock": "^4.0.1",
+    "@emulators/adapter-next": "^0.6.1",
+    "@emulators/github": "^0.6.1",
     "prisma": "^6.0.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
