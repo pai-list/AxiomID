@@ -5,6 +5,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { SlugParamSchema, SkillReviewCreateSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const auth = await requireAuth(req);
@@ -36,19 +37,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
 
   const { rating, review } = parsedBody.data;
 
-  const skill = await prisma.skill.findUnique({ where: { slug } });
-  if (!skill) return apiError("NOT_FOUND", "Skill not found");
+  try {
+    const skill = await prisma.skill.findUnique({ where: { slug } });
+    if (!skill) return apiError("NOT_FOUND", "Skill not found");
 
-  const skillReview = await prisma.skillReview.create({
-    data: {
-      skillId: skill.id,
-      userId: auth.user.id,
-      rating,
-      review: review || null,
-    },
-  });
+    const skillReview = await prisma.skillReview.create({
+      data: {
+        skillId: skill.id,
+        userId: auth.user.id,
+        rating,
+        review: review || null,
+      },
+    });
 
-  return apiSuccess(skillReview, 201);
+    return apiSuccess(skillReview, 201);
+  } catch (error) {
+    logger.error("[REVIEW] Create error:", error);
+    return apiError("INTERNAL_ERROR", "Failed to create review");
+  }
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -64,13 +70,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     return apiError("VALIDATION_ERROR", parsedParams.error.issues[0].message, parsedParams.error.issues);
   }
 
-  const skill = await prisma.skill.findUnique({ where: { slug } });
-  if (!skill) return apiError("NOT_FOUND", "Skill not found");
+  try {
+    const skill = await prisma.skill.findUnique({ where: { slug } });
+    if (!skill) return apiError("NOT_FOUND", "Skill not found");
 
-  const reviews = await prisma.skillReview.findMany({
-    where: { skillId: skill.id },
-    orderBy: { createdAt: "desc" },
-  });
+    const reviews = await prisma.skillReview.findMany({
+      where: { skillId: skill.id },
+      orderBy: { createdAt: "desc" },
+    });
 
-  return apiSuccess(reviews);
+    return apiSuccess(reviews);
+  } catch (error) {
+    logger.error("[REVIEW] Fetch error:", error);
+    return apiError("INTERNAL_ERROR", "Failed to fetch reviews");
+  }
 }

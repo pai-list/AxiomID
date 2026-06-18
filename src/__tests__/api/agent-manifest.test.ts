@@ -120,7 +120,8 @@ describe('GET /api/agent/manifest', () => {
     const data = await res.json();
 
     expect(res.status).toBe(404);
-    expect(data.error).toBe('USER_NOT_FOUND');
+    expect(data.error).toBe('User not found');
+    expect(data.code).toBe('NOT_FOUND');
   });
 
   it('returns 500 when ISSUER_PRIVATE_KEY is not set', async () => {

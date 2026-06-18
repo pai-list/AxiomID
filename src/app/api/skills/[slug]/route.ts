@@ -5,6 +5,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { SlugParamSchema, SkillUpdateSchema } from '@/lib/validators';
+import { requireAuth } from '@/lib/auth-middleware';
 
 /**
  * GET /api/skills/[slug] — Get full skill detail including manifest, agent script, and tests.
@@ -79,6 +80,9 @@ export async function PATCH(
     return apiError('VALIDATION_ERROR', parsedParams.error.issues[0].message, parsedParams.error.issues);
   }
 
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`skill-update:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
@@ -103,6 +107,10 @@ export async function PATCH(
     const existing = await prisma.skill.findUnique({ where: { slug } });
     if (!existing) {
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    if (existing.authorId !== auth.user.id) {
+      return apiError('FORBIDDEN', 'You can only update your own skills');
     }
 
     const skill = await prisma.skill.update({
@@ -137,6 +145,9 @@ export async function DELETE(
     return apiError('VALIDATION_ERROR', parsedParams.error.issues[0].message, parsedParams.error.issues);
   }
 
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`skill-delete:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
@@ -147,6 +158,10 @@ export async function DELETE(
     const existing = await prisma.skill.findUnique({ where: { slug } });
     if (!existing) {
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    if (existing.authorId !== auth.user.id) {
+      return apiError('FORBIDDEN', 'You can only delete your own skills');
     }
 
     await prisma.skill.delete({ where: { slug } });

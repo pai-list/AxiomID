@@ -20,6 +20,8 @@ import {
   checkRateLimit,
   RATE_LIMITS,
 } from "@/lib/rate-limiter";
+import { requireAuth } from "@/lib/auth-middleware";
+import { logger } from "@/lib/logger";
 
 interface SyncRequest {
   source: "d1" | "all";
@@ -42,8 +44,10 @@ interface SyncResult {
  * @returns Sync status with counts of synced records.
  */
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth(req);
+  if (auth.error) return auth.error;
+
   try {
-    // Rate limit sync requests (prevent thundering herd)
     const rl = await checkRateLimit("sync", RATE_LIMITS.authenticated);
     if (!rl.allowed) {
       return apiError("RATE_LIMITED", "Sync rate limit exceeded", undefined, {
@@ -54,8 +58,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const body = await req.json() as SyncRequest;
-    const { source = "all", dryRun = false, maxRetries = 3 } = body;
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return apiError("VALIDATION_ERROR", "Invalid JSON body");
+    }
+
+    const { source = "all", dryRun = false, maxRetries = 3 } = body as SyncRequest;
 
     const results: Record<string, SyncResult> = {};
 
@@ -85,7 +95,7 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("[Sync] Error:", error);
+    logger.error("[Sync] Error:", error);
     return apiError("INTERNAL_ERROR", "Sync failed");
   }
 }
@@ -140,7 +150,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("[Sync] Status error:", error);
+    logger.error("[Sync] Status error:", error);
     return apiError("INTERNAL_ERROR", "Failed to get sync status");
   }
 }
@@ -161,12 +171,11 @@ async function syncWithRetry(
       return await syncFn(dryRun);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.error(`[Sync] Attempt ${attempt + 1} failed:`, lastError.message);
+      logger.error(`[Sync] Attempt ${attempt + 1} failed:`, lastError.message);
 
       if (attempt < maxRetries) {
-        // Exponential backoff with jitter (physics: radioactive decay)
         const delayMs = exponentialBackoff(attempt, 1000, 30000, 0.3);
-        console.log(`[Sync] Retrying in ${delayMs}ms...`);
+        logger.info(`[Sync] Retrying in ${delayMs}ms...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
@@ -212,11 +221,11 @@ async function syncHarvestResults(_dryRun: boolean): Promise<SyncResult> {
       ? dataFreshness(recentHarvests[0].createdAt.getTime())
       : 0;
 
-    console.log(`[Sync] Harvest results: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
+    logger.info(`[Sync] Harvest results: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
 
     return { synced, errors, retries: 0, entropy, freshness };
   } catch (error) {
-    console.error("[Sync] Harvest sync error:", error);
+    logger.error("[Sync] Harvest sync error:", error);
     errors++;
     return { synced, errors, retries: 0, entropy: 0, freshness: 0 };
   }
@@ -254,11 +263,11 @@ async function syncAgentPresence(_dryRun: boolean): Promise<SyncResult> {
       ? dataFreshness(latestPresence.updatedAt.getTime())
       : 0;
 
-    console.log(`[Sync] Agent presence: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
+    logger.info(`[Sync] Agent presence: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
 
     return { synced, errors, retries: 0, entropy, freshness };
   } catch (error) {
-    console.error("[Sync] Presence sync error:", error);
+    logger.error("[Sync] Presence sync error:", error);
     errors++;
     return { synced, errors, retries: 0, entropy: 0, freshness: 0 };
   }

@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { CredentialStatusQuerySchema } from "@/lib/validators";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from "@/lib/ip";
+import { logger } from "@/lib/logger";
 
 /**
  * Returns the credential status for a subject identified by DID.
@@ -77,7 +78,8 @@ export async function GET(request: NextRequest) {
       subjectId: user.did || `did:axiom:user-${user.id}`,
       lastUpdated: user.updatedAt.toISOString(),
     });
-  } catch {
+  } catch (error) {
+    logger.error("[CREDENTIAL-STATUS] Error:", error);
     return apiError("INTERNAL_ERROR", "Failed to check credential status");
   }
 }

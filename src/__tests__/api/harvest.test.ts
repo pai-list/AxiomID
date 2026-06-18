@@ -55,7 +55,6 @@ describe('POST /api/agents/harvest', () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.success).toBe(true);
     expect(data.result).toBe('Real-time result from Perplexity.');
     expect(data.citations).toContain('https://example.com');
     expect(mockQueryPerplexity).toHaveBeenCalledWith('What is Gitcoin stamp layout?', {
@@ -70,7 +69,7 @@ describe('POST /api/agents/harvest', () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error).toBe('BAD_REQUEST');
+    expect(data.code).toBe('VALIDATION_ERROR');
   });
 
   it('returns 401 when not authenticated', async () => {

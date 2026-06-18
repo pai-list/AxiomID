@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth-middleware';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { rateLimitHeaders } from '@/lib/errors';
+import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { getClientIp } from '@/lib/ip';
 import { queryPerplexity } from '@/lib/agents/perplexity';
 import { logger } from '@/lib/logger';
@@ -17,52 +17,40 @@ const harvestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  
-  // Rate limiting check
+
   const rateLimit = await checkRateLimit(`harvest:${ip}`, HARVEST_RATE_LIMIT);
   if (!rateLimit.allowed) {
-    return NextResponse.json(
-      { error: 'RATE_LIMITED', message: 'Too many requests. Please try again later.' },
-      { status: 429, headers: rateLimitHeaders(rateLimit) }
-    );
+    return apiError('RATE_LIMITED', 'Too many requests. Please try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
-  // RULE 0 & requireAuth: Enforce user authentication
   const auth = await requireAuth(request);
   if (auth.error) {
     return auth.error;
   }
 
+  let body: unknown;
   try {
-    const body = await request.json();
-    
-    // RULE 1: Zod validation
-    const validation = harvestSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'BAD_REQUEST', message: 'Validation failed', details: validation.error.format() },
-        { status: 400 }
-      );
-    }
+    body = await request.json();
+  } catch {
+    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
+  }
 
+  const validation = harvestSchema.safeParse(body);
+  if (!validation.success) {
+    return apiError('VALIDATION_ERROR', validation.error.issues[0].message, validation.error.issues);
+  }
+
+  try {
     const { query, maxTokens, temperature } = validation.data;
-
-    // Execute Perplexity Query
     const result = await queryPerplexity(query, { maxTokens, temperature });
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       query,
       result: result.content,
       citations: result.citations,
     });
   } catch (error: unknown) {
     logger.error('[HARVEST_ROUTE] Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
-    return NextResponse.json(
-      { error: 'INTERNAL_ERROR', message: errorMessage },
-      { status: 500 }
-    );
+    return apiError('INTERNAL_ERROR', 'Harvest request failed');
   }
-
 }
