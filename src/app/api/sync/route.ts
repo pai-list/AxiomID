@@ -31,12 +31,8 @@ const SyncRequestSchema = z.object({
   dryRun: z.boolean().default(false),
   maxRetries: z.number().int().min(0).max(10).default(3),
 });
+export type SyncRequest = z.infer<typeof SyncRequestSchema>;
 
-interface SyncRequest {
-  source: "d1" | "all";
-  dryRun?: boolean;
-  maxRetries?: number;
-}
 
 interface SyncResult {
   synced: number;
@@ -78,7 +74,7 @@ export async function POST(req: NextRequest) {
       return apiError("VALIDATION_ERROR", parsed.error.issues[0].message, parsed.error.issues);
     }
 
-    const { source, dryRun, maxRetries } = parsed.data;
+    const { source, dryRun, maxRetries } = parsed.data as SyncRequest;
 
     const results: Record<string, SyncResult> = {};
 
