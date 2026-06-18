@@ -5,8 +5,12 @@ import { z } from "zod";
 export const axiomCatalog = defineCatalog(schema, {
   components: {
     Card: {
-      props: z.object({ title: z.string().optional() }),
-      description: "A card container for grouped information",
+      props: z.object({
+        title: z.string().optional(),
+        variant: z.enum(["plain", "bento"]).optional(),
+        animate: z.boolean().optional(),
+      }),
+      description: "A card container for grouped information. Use variant 'bento' for the themed dashboard card with an optional entrance animation.",
     },
     LinkItem: {
       props: z.object({

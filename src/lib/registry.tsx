@@ -5,6 +5,7 @@ import { axiomCatalog } from "./catalog";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
+import { motion } from "framer-motion";
 import { Fingerprint, ClipboardCopy, ArrowRight } from "lucide-react";
 
 type LinkIcon = "fingerprint" | "clipboard" | "none";
@@ -30,12 +31,45 @@ const LINK_COLORS: Record<LinkColor, string> = {
 };
 
 const components = {
-  Card: ({ props, children }: { props: { title?: string }; children?: React.ReactNode }) => (
-    <div className="p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
-      {props.title && <h3 className="text-sm font-semibold mb-4">{props.title}</h3>}
-      {children && <div className="space-y-2">{children}</div>}
-    </div>
-  ),
+  Card: ({
+    props,
+    children,
+  }: {
+    props: { title?: string; variant?: "plain" | "bento"; animate?: boolean };
+    children?: React.ReactNode;
+  }) => {
+    const isBento = props.variant === "bento";
+    const body = (
+      <>
+        {props.title && (
+          <h3
+            className="text-sm font-semibold mb-4"
+            style={isBento ? { color: "var(--text-primary)" } : undefined}
+          >
+            {props.title}
+          </h3>
+        )}
+        {children && <div className="space-y-2">{children}</div>}
+      </>
+    );
+
+    if (isBento) {
+      return props.animate ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bento-card p-5"
+        >
+          {body}
+        </motion.div>
+      ) : (
+        <div className="bento-card p-5">{body}</div>
+      );
+    }
+
+    return <div className="p-4 border rounded shadow-sm bg-white dark:bg-gray-800">{body}</div>;
+  },
   LinkItem: ({ props }: { props: LinkItemProps }) => {
     const icon = LINK_ICONS[props.icon ?? "none"];
     const colorClass = LINK_COLORS[props.color ?? "default"];
