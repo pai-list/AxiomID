@@ -7,5 +7,7 @@ interface AxiomRendererProps {
 }
 
 export function AxiomRenderer({ spec }: AxiomRendererProps) {
-  return <Renderer spec={spec} registry={registry} />;
+  // The public prop is `unknown` for caller flexibility; cast to the exact spec
+  // type that Renderer expects at this boundary.
+  return <Renderer spec={spec as React.ComponentProps<typeof Renderer>["spec"]} registry={registry} />;
 }
