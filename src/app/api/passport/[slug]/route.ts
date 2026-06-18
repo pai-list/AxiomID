@@ -51,7 +51,7 @@ function getKyaStatus(stamps: PassportStamp[] | undefined): "verified" | "pendin
 
 function getKycStatus(kycStatus: string | undefined | null): "verified" | "pending" | "denied" {
   if (kycStatus === "VERIFIED") return "verified";
-  if (kycStatus === "PENDING" || kycStatus === "NONE") return "pending";
+  if (!kycStatus || kycStatus === "PENDING" || kycStatus === "NONE") return "pending";
   return "denied";
 }
 
@@ -99,7 +99,12 @@ export async function GET(
     return apiError("VALIDATION_ERROR", parsedParams.error.issues[0].message, parsedParams.error.issues);
   }
 
-  const decodedSlug = decodeURIComponent(slug);
+  let decodedSlug: string;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    return apiError("VALIDATION_ERROR", "Invalid slug encoding");
+  }
 
   const ip = getClientIp(_request);
   const rateLimit = await checkRateLimit(`passport:${ip}`, RATE_LIMITS.authenticated);

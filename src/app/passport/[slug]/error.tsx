@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/app/context/language-context";
 
 export default function PassportError({
   error,
@@ -10,6 +11,8 @@ export default function PassportError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     console.error("[PASSPORT-ERROR]", error);
   }, [error]);
@@ -24,14 +27,14 @@ export default function PassportError({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L14.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">Something went wrong</h2>
-          <p className="text-gray-400 mb-8">{error.message || "An unexpected error occurred while loading this passport."}</p>
+          <h2 className="text-2xl font-bold text-white mb-4">{t('something_went_wrong')}</h2>
+          <p className="text-gray-400 mb-8">{error.message || t('passport_load_error')}</p>
           <div className="flex gap-3 justify-center">
             <button onClick={reset} className="btn-primary text-xs">
-              Try Again
+              {t('try_again')}
             </button>
             <Link href="/" className="btn-secondary text-xs">
-              Create Your Passport
+              {t('create_your_passport')}
             </Link>
           </div>
         </div>
