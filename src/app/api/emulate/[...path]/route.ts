@@ -7,21 +7,10 @@
  *
  * @see https://github.com/vercel-labs/emulate#nextjs-integration
  */
-import { createEmulateHandler } from "@emulators/adapter-next";
-import * as github from "@emulators/github";
 import { apiError } from "@/lib/errors";
+import type { NextRequest } from "next/server";
 
-const services: Record<string, { emulator: typeof github; seed?: Record<string, unknown> }> = {};
-
-if (process.env.NEXT_PUBLIC_EMULATE_GITHUB === "true") {
-  services.github = {
-    emulator: github,
-    seed: {
-      users: [{ login: "axiomid-dev", name: "AxiomID Dev", email: "dev@axiomid.app" }],
-      repos: [{ owner: "axiomid-dev", name: "hello-world", auto_init: true }],
-    },
-  };
-}
+type RouteHandler = (req: NextRequest, ctx: unknown) => Response | Promise<Response>;
 
 // Never expose the emulator surface in production. The emulator route is a
 // dev/preview-only tool; in production every method returns 404.
@@ -38,12 +27,41 @@ const isProdDeployment =
 const isEmulatorEnabled =
   !isProdDeployment && process.env.EMULATE_ENABLED === "true";
 
-const handler = isEmulatorEnabled
-  ? createEmulateHandler({ services })
-  : { GET: notFound, POST: notFound, PUT: notFound, PATCH: notFound, DELETE: notFound };
+// Lazily build the emulator handler. The @emulators/* packages are dev/preview
+// tooling and are imported dynamically only when the emulator is enabled, so
+// they are never pulled into the production route bundle.
+let handlerPromise: Promise<Record<string, RouteHandler>> | null = null;
 
-export const GET = handler.GET;
-export const POST = handler.POST;
-export const PUT = handler.PUT;
-export const PATCH = handler.PATCH;
-export const DELETE = handler.DELETE;
+async function buildEmulatorHandler(): Promise<Record<string, RouteHandler>> {
+  const { createEmulateHandler } = await import("@emulators/adapter-next");
+  const github = await import("@emulators/github");
+
+  const services: Record<string, { emulator: typeof github; seed?: Record<string, unknown> }> = {};
+
+  if (process.env.NEXT_PUBLIC_EMULATE_GITHUB === "true") {
+    services.github = {
+      emulator: github,
+      seed: {
+        users: [{ login: "axiomid-dev", name: "AxiomID Dev", email: "dev@axiomid.app" }],
+        repos: [{ owner: "axiomid-dev", name: "hello-world", auto_init: true }],
+      },
+    };
+  }
+
+  return createEmulateHandler({ services });
+}
+
+function dispatch(method: string): RouteHandler {
+  return async (req, ctx) => {
+    if (!isEmulatorEnabled) return notFound();
+    handlerPromise ??= buildEmulatorHandler();
+    const handler = await handlerPromise;
+    return handler[method](req, ctx);
+  };
+}
+
+export const GET = dispatch("GET");
+export const POST = dispatch("POST");
+export const PUT = dispatch("PUT");
+export const PATCH = dispatch("PATCH");
+export const DELETE = dispatch("DELETE");
