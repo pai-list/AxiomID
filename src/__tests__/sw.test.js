@@ -298,3 +298,225 @@ describe("sw.js — fetch event: static assets (cache-first)", () => {
     expect(mockCaches.match).toHaveBeenCalled();
   });
 });
+
+describe("sw.js — fetch event: cross-origin and non-GET filtering", () => {
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  it("ignores requests from a different origin", () => {
+    const { event } = makeFetchEvent("https://external.example.com/resource.js");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("ignores non-GET requests from the same origin", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/status", "POST");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("ignores DELETE requests", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/status", "DELETE");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("ignores PUT requests", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/manifest.json", "PUT");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+});
+
+describe("sw.js — fetch event: private API routes are not intercepted", () => {
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  it("does NOT intercept /api/sync (authenticated route)", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/sync");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("does NOT intercept /api/user (authenticated route)", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/user");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("does NOT intercept /api/auth/login (authenticated route)", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/auth/login");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it("intercepts /api/health (public route)", () => {
+    global.fetch = jest.fn(() => Promise.resolve(makeResponse(true)));
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/health");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).toHaveBeenCalled();
+  });
+
+  it("intercepts /api/status (public route)", () => {
+    global.fetch = jest.fn(() => Promise.resolve(makeResponse(true)));
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/status");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).toHaveBeenCalled();
+  });
+
+  it("does NOT intercept /api/statusX (private route that is not a prefix match)", () => {
+    const { event } = makeFetchEvent("https://axiomid.app/api/statusX");
+    registeredListeners["fetch"](event);
+
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+});
+
+describe("sw.js — fetch event: API 503 fallback when offline and cache empty", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("returns a 503 JSON response when fetch fails and no cache entry exists", async () => {
+    global.fetch = jest.fn(() => Promise.reject(new Error("Network error")));
+    mockCaches.match.mockResolvedValue(undefined);
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/status");
+    registeredListeners["fetch"](event);
+    const result = await event.respondWith.mock.calls[0][0];
+
+    expect(result.status).toBe(503);
+    const body = await result.json();
+    expect(body).toEqual({ error: "Service unavailable" });
+  });
+
+  it("prefers cached response over 503 when cache has an entry", async () => {
+    global.fetch = jest.fn(() => Promise.reject(new Error("Network error")));
+    const cachedResponse = makeResponse(true);
+    mockCaches.match.mockResolvedValue(cachedResponse);
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/health");
+    registeredListeners["fetch"](event);
+    const result = await event.respondWith.mock.calls[0][0];
+
+    expect(result).toBe(cachedResponse);
+  });
+});
+
+describe("sw.js — fetch event: non-ok API responses are not cached", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("does not put a non-ok API response into the cache", async () => {
+    const errorResponse = makeResponse(false);
+    global.fetch = jest.fn(() => Promise.resolve(errorResponse));
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/status");
+    registeredListeners["fetch"](event);
+    await event.respondWith.mock.calls[0][0];
+
+    expect(mockCaches._cache.put).not.toHaveBeenCalled();
+  });
+
+  it("still returns the non-ok response to the caller", async () => {
+    const errorResponse = makeResponse(false);
+    global.fetch = jest.fn(() => Promise.resolve(errorResponse));
+
+    const { event } = makeFetchEvent("https://axiomid.app/api/health");
+    registeredListeners["fetch"](event);
+    const result = await event.respondWith.mock.calls[0][0];
+
+    expect(result).toBe(errorResponse);
+  });
+});
+
+describe("sw.js — install: skipWaiting inside waitUntil (PR change)", () => {
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  it("skipWaiting is called as part of the waitUntil promise chain", async () => {
+    const event = makeEvent();
+    registeredListeners["install"](event);
+
+    // Before awaiting, skipWaiting should not have been called yet
+    // (it's chained after addAll)
+    const promise = event.waitUntil.mock.calls[0][0];
+
+    // After awaiting the full chain, skipWaiting must have been called
+    await promise;
+
+    expect(global.self.skipWaiting).toHaveBeenCalled();
+  });
+
+  it("passes the combined addAll+skipWaiting promise to waitUntil", () => {
+    const event = makeEvent();
+    registeredListeners["install"](event);
+
+    expect(event.waitUntil).toHaveBeenCalledTimes(1);
+    // The argument to waitUntil must be a Promise
+    const arg = event.waitUntil.mock.calls[0][0];
+    expect(arg).toBeInstanceOf(Promise);
+  });
+});
+
+describe("sw.js — cacheResponse: called with wrong argument count (regression)", () => {
+  // cacheResponse is defined as cacheResponse(request, response) but called as
+  // cacheResponse(event, request, response) in sw.js. This means:
+  //  - the `request` param receives the event object
+  //  - the `response` param receives the actual request object
+  //  - cache.put() is called with (event, clonedRequest) instead of (request, clonedResponse)
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    loadServiceWorker();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it("calls cache.put with event (not the request) due to argument mismatch bug", async () => {
+    const response = makeResponse(true);
+    global.fetch = jest.fn(() => Promise.resolve(response));
+
+    const { event, request } = makeFetchEvent("https://axiomid.app/api/status");
+    registeredListeners["fetch"](event);
+    await event.respondWith.mock.calls[0][0];
+    // Let microtasks settle so caches.open().then() has fired
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockCaches._cache.put).toHaveBeenCalled();
+    const [cacheKey] = mockCaches._cache.put.mock.calls[0];
+    // Bug: cache key is the event object, NOT the request URL or request object
+    expect(cacheKey).toBe(event);
+    expect(cacheKey).not.toBe(request);
+  });
+});
