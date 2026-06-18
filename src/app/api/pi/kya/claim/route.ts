@@ -6,6 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
 import { KyaClaimSchema } from '@/lib/validators';
+import { createPiDid } from '@/lib/did';
 
 /**
  * Process a KYA claim request for an authenticated Pi Network user.
@@ -43,13 +44,19 @@ export async function POST(request: NextRequest) {
   const { username } = validation.data;
 
   try {
+    const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
+
+    if (!existing) {
+      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
+    }
+
     const updated = await prisma.user.update({
-      where: { piUid: user.piUid },
+      where: { id: existing.id },
       data: {
         kycStatus: 'PENDING',
         kycProvider: 'pi_network',
-        did: user.did || `did:axiom:${user.piUid}`,
-        piUsername: user.piUsername || username,
+        did: existing.did || createPiDid(user.piUid),
+        piUsername: existing.piUsername || username,
       },
     });
 
@@ -62,9 +69,6 @@ export async function POST(request: NextRequest) {
       xp: updated.xp,
     });
   } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code: string }).code === 'P2025') {
-      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
-    }
     logger.error('[KYA-CLAIM] Database error:', error);
     return apiError('INTERNAL_ERROR', 'Failed to claim KYA');
   }

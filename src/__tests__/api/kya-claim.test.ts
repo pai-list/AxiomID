@@ -59,9 +59,7 @@ describe('POST /api/pi/kya/claim', () => {
   });
 
   it('returns 404 for a user that has not authenticated', async () => {
-    const error = new Error('Not found');
-    (error as any).code = 'P2025';
-    mockPrisma.user.update.mockRejectedValue(error);
+    mockPrisma.user.findUnique.mockResolvedValue(null);
 
     const req = mockPostRequest({ username: 'testuser' });
     const res = await POST(req);
@@ -102,9 +100,7 @@ describe('POST /api/pi/kya/claim', () => {
   });
 
   it('returns 404 when user has not authenticated via Pi auth', async () => {
-    const error = new Error('Not found');
-    (error as any).code = 'P2025';
-    mockPrisma.user.update.mockRejectedValue(error);
+    mockPrisma.user.findUnique.mockResolvedValue(null);
 
     const req = mockPostRequest({ username: 'pi_user_abc' });
     const res = await POST(req);
@@ -151,9 +147,7 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'existing-user',
       piUid: 'mock-pi-uid',
     } as any);
-    const error = new Error('DB error');
-    (error as any).code = 'P2000'; // Not P2025
-    mockPrisma.user.update.mockRejectedValue(error);
+    mockPrisma.user.update.mockRejectedValue(new Error('DB error'));
 
     const req = mockPostRequest({ username: 'dbfailuser' });
     const res = await POST(req);
@@ -164,24 +158,18 @@ describe('POST /api/pi/kya/claim', () => {
   });
 
   it('keeps existing piUsername when user already has one', async () => {
-    const { requireAuth } = await import('@/lib/auth-middleware');
-    (requireAuth as jest.Mock).mockResolvedValueOnce({
-      error: null,
-      user: {
-        id: 'mock-user-id',
-        walletAddress: 'pi:mockuser',
-        piUid: 'mock-pi-uid',
-        piUsername: 'oldname',
-        did: 'did:axiom:mock-pi-uid',
-        xp: 0,
-        tier: 'Beginner',
-      },
-    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'named-user',
+      walletAddress: 'pi:nameduser',
+      piUid: 'mock-pi-uid',
+      piUsername: 'oldname',
+      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+    } as any);
     mockPrisma.user.update.mockResolvedValue({
       id: 'named-user',
       walletAddress: 'pi:nameduser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:mock-pi-uid',
+      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({ username: 'nameduser' });
