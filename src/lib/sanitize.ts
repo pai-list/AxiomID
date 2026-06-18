@@ -13,26 +13,6 @@ export function safeJsonStringify(data: unknown): string | null {
   }
 }
 
-export function safeJsonParse(str: string | null | undefined): unknown {
-  if (!str) return null;
-  try {
-    return JSON.parse(str);
-  } catch {
-    return null;
-  }
-}
-
-export function sanitizeForDisplay(value: string, maxLength: number): string {
-  let prev = value;
-  // Loop to strip nested HTML tags that become valid after each pass
-  while (true) {
-    const cleaned = prev.replace(/<[^>]*>/g, '');
-    if (cleaned === prev) break;
-    prev = cleaned;
-  }
-  return prev.trim().slice(0, maxLength);
-}
-
 export function canonicalize(obj: unknown): unknown {
   if (obj === null || typeof obj !== "object") return obj;
   if (Array.isArray(obj)) return obj.map(canonicalize);

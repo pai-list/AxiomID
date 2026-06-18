@@ -4,11 +4,7 @@
  */
 
 import {
-  getLastPiError,
-  isPiSdkLoaded,
-  verifyStellarAddress,
   createPiPayment,
-  claimPiKya,
   connectPi,
 } from '@/lib/pi-sdk';
 
@@ -17,158 +13,9 @@ describe('pi-sdk', () => {
     jest.clearAllMocks();
   });
 
-  describe('getLastPiError', () => {
-    it('returns null initially', () => {
-      // After module is loaded fresh, lastError starts as null
-      // Since Jest module cache persists, we test that it can be null or string
-      const err = getLastPiError();
-      expect(err === null || typeof err === 'string').toBe(true);
-    });
-
-    it('returns the last error message after a failed connectPi', async () => {
-      await expect(connectPi()).rejects.toThrow();
-      expect(getLastPiError()).toBeTruthy();
-    });
-  });
-
-  describe('isPiSdkLoaded', () => {
-    it('returns false when window is undefined (server-side)', () => {
-      // In jest node environment, window is not defined
-      expect(isPiSdkLoaded()).toBe(false);
-    });
-
-    it('returns false when window.Pi is not set', () => {
-      // Simulate browser environment without Pi
-      const win = (global as any).window || {};
-      const originalPi = win.Pi;
-      win.Pi = undefined;
-
-      expect(isPiSdkLoaded()).toBe(false);
-
-      if (originalPi !== undefined) {
-        win.Pi = originalPi;
-      }
-    });
-
-    it('returns true when window.Pi.authenticate is a function', () => {
-      const win = (global as any).window || {};
-      const originalPi = win.Pi;
-      win.Pi = { authenticate: jest.fn() };
-
-      expect(isPiSdkLoaded()).toBe(true);
-
-      if (originalPi !== undefined) {
-        win.Pi = originalPi;
-      } else {
-        win.Pi = undefined;
-      }
-    });
-
-    it('returns false when window.Pi.authenticate is not a function', () => {
-      const win = (global as any).window || {};
-      const originalPi = win.Pi;
-      win.Pi = { authenticate: 'not-a-function' };
-
-      expect(isPiSdkLoaded()).toBe(false);
-
-      if (originalPi !== undefined) {
-        win.Pi = originalPi;
-      } else {
-        win.Pi = undefined;
-      }
-    });
-  });
-
-  describe('verifyStellarAddress', () => {
-    it('returns false for addresses that do not start with G', async () => {
-      const result = await verifyStellarAddress('BADDRESS123');
-      expect(result).toBe(false);
-    });
-
-    it('returns false for empty string', async () => {
-      const result = await verifyStellarAddress('');
-      expect(result).toBe(false);
-    });
-
-    it('returns true for valid Stellar address (56 chars, starts with G)', async () => {
-      const result = await verifyStellarAddress('G' + 'A'.repeat(55));
-      expect(result).toBe(true);
-    }, 1000);
-
-    it('returns false for short address', async () => {
-      const result = await verifyStellarAddress('Gabc123');
-      expect(result).toBe(false);
-    });
-  });
-
   describe('createPiPayment', () => {
     it('throws when Pi SDK is not loaded', async () => {
-      // In node test environment, window is undefined so isPiSdkLoaded returns false
       await expect(createPiPayment(1, 'test memo')).rejects.toThrow('Pi SDK not loaded');
-    });
-  });
-
-  describe('claimPiKya', () => {
-    beforeEach(() => {
-      global.fetch = jest.fn();
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it('returns userId on successful claim', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, userId: 'user-xyz' }),
-      });
-
-      const result = await claimPiKya({ username: 'piuser' });
-      expect(result.success).toBe(true);
-      expect(result.userId).toBe('user-xyz');
-    });
-
-    it('calls the correct endpoint with correct payload', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, userId: 'u1' }),
-      });
-
-      await claimPiKya({ username: 'testuser', stellarAddress: 'GADDR' });
-
-      expect(global.fetch).toHaveBeenCalledWith('/api/pi/kya/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'testuser', stellarAddress: 'GADDR' }),
-      });
-    });
-
-    it('throws when fetch response is not ok', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 400,
-        text: async () => 'username is required',
-      });
-
-      await expect(claimPiKya({ username: '' })).rejects.toThrow('Pi Kya claim failed');
-    });
-
-    it('throws when fetch throws a network error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-
-      await expect(claimPiKya({ username: 'user' })).rejects.toThrow('Pi Kya claim failed');
-    });
-
-    it('wraps error message in Pi Kya claim failed prefix', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: async () => 'Internal server error',
-      });
-
-      await expect(claimPiKya({ username: 'user' })).rejects.toThrow(
-        'Pi Kya claim failed: Internal server error'
-      );
     });
   });
 

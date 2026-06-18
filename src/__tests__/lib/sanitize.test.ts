@@ -1,4 +1,4 @@
-import { safeJsonStringify, safeJsonParse, sanitizeForDisplay } from "@/lib/sanitize";
+import { safeJsonStringify, canonicalize } from "@/lib/sanitize";
 
 describe("Sanitize library", () => {
   describe("safeJsonStringify", () => {
@@ -24,30 +24,25 @@ describe("Sanitize library", () => {
     });
   });
 
-  describe("safeJsonParse", () => {
-    it("returns null for falsy inputs", () => {
-      expect(safeJsonParse(null)).toBeNull();
-      expect(safeJsonParse(undefined)).toBeNull();
-      expect(safeJsonParse("")).toBeNull();
+  describe("canonicalize", () => {
+    it("returns null for null input", () => {
+      expect(canonicalize(null)).toBeNull();
     });
 
-    it("parses valid JSON", () => {
-      const data = { count: 42 };
-      expect(safeJsonParse(JSON.stringify(data))).toEqual(data);
+    it("returns primitives as-is", () => {
+      expect(canonicalize(42)).toBe(42);
+      expect(canonicalize("hello")).toBe("hello");
     });
 
-    it("returns null for invalid JSON", () => {
-      expect(safeJsonParse("not-a-json")).toBeNull();
-    });
-  });
-
-  describe("sanitizeForDisplay", () => {
-    it("strips HTML tags and trims whitespace", () => {
-      expect(sanitizeForDisplay("  <b>Hello</b> <i>World</i>  ", 100)).toBe("Hello World");
+    it("sorts object keys", () => {
+      expect(canonicalize({ b: 2, a: 1 })).toEqual({ a: 1, b: 2 });
     });
 
-    it("respects max length constraint", () => {
-      expect(sanitizeForDisplay("1234567890", 5)).toBe("12345");
+    it("recursively sorts nested objects", () => {
+      expect(canonicalize({ z: { b: 2, a: 1 }, y: [3, 4] })).toEqual({
+        y: [3, 4],
+        z: { a: 1, b: 2 },
+      });
     });
   });
 });
