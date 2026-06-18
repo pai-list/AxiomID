@@ -12,3 +12,7 @@ export function createUserDid(userId: string): string {
 export function createIssuerDid(): string {
   return `${DID_METHOD}:issuer`;
 }
+
+export function createPiDid(uid: string): string {
+  return `${DID_METHOD}:axiomid.app:pi:${encodeURIComponent(uid)}`;
+}
