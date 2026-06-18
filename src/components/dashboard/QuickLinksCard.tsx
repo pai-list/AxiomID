@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useLanguage } from "@/app/context/language-context";
 import { AxiomRenderer } from "../ui/AxiomRenderer";
 
