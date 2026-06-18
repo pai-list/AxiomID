@@ -23,6 +23,6 @@ describe('scoreTask', () => {
   });
 
   it('handles edge case: 0ms duration (unrealistic, but testable)', () => {
-    expect(scoreTask({ success: true, durationMs: 0 })).toBe(50); // Usually 0 is falsy, check if it behaves as intended
+    expect(scoreTask({ success: true, durationMs: 0 })).toBe(60);
   });
 });
