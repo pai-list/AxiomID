@@ -37,51 +37,35 @@ const STATUS_MAP: Record<ErrorCode, number> = {
 };
 
 /**
- * Maps ErrorCode to the corresponding nostics diagnostic code.
- * Used by apiError to report structured diagnostics alongside HTTP responses.
+ * Maps each ErrorCode directly to a function that fires the corresponding
+ * nostics diagnostic. Collapsing the former DIAGNOSTIC_MAP + DIAGNOSTIC_PARAMS
+ * pair into a single map eliminates the double-lookup and the `any` cast on
+ * the diagnostics object.
  */
-const DIAGNOSTIC_MAP: Record<ErrorCode, string> = {
-  VALIDATION_ERROR: 'AXIOMID_E001',
-  UNAUTHORIZED: 'AXIOMID_E010',
-  FORBIDDEN: 'AXIOMID_E011',
-  NOT_FOUND: 'AXIOMID_E012',
-  RATE_LIMITED: 'AXIOMID_E013',
-  CONFLICT: 'AXIOMID_E030',
-  PI_AUTH_FAILED: 'AXIOMID_E020',
-  PI_PAYMENT_FAILED: 'AXIOMID_E021',
-  PAYMENT_VERIFICATION_FAILED: 'AXIOMID_E022',
-  PAYMENT_MISMATCH: 'AXIOMID_E023',
-  PAYMENT_INVALID: 'AXIOMID_E024',
-  INTERNAL_ERROR: 'AXIOMID_E040',
-};
-
-const DIAGNOSTIC_PARAMS: Record<ErrorCode, (message: string) => Record<string, unknown>> = {
-  VALIDATION_ERROR: (message) => ({ field: 'request', message, example: 'N/A' }),
-  NOT_FOUND: (message) => ({ resource: message }),
-  RATE_LIMITED: () => ({}),
-  PI_AUTH_FAILED: (message) => ({ piError: message }),
-  PI_PAYMENT_FAILED: (message) => ({ paymentId: 'unknown', piError: message }),
-  PAYMENT_VERIFICATION_FAILED: (message) => ({ paymentId: 'unknown', piError: message }),
-  PAYMENT_MISMATCH: (message) => ({ paymentId: 'unknown', piError: message }),
-  PAYMENT_INVALID: (message) => ({ paymentId: 'unknown', piError: message }),
-  INTERNAL_ERROR: (message) => ({ operation: 'unknown', error: message }),
-  UNAUTHORIZED: (message) => ({ reason: message }),
-  FORBIDDEN: (message) => ({ reason: message }),
-  CONFLICT: (message) => ({ resource: message }),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const REPORT_DIAGNOSTIC: Record<ErrorCode, (message: string) => any> = {
+  VALIDATION_ERROR:            (m) => diagnostics.AXIOMID_E001({ field: 'request', message: m, example: 'N/A' }),
+  UNAUTHORIZED:                (m) => diagnostics.AXIOMID_E010({ reason: m }),
+  FORBIDDEN:                   (m) => diagnostics.AXIOMID_E011({ reason: m }),
+  NOT_FOUND:                   (m) => diagnostics.AXIOMID_E012({ resource: m }),
+  RATE_LIMITED:                ()  => diagnostics.AXIOMID_E013({}),
+  CONFLICT:                    (m) => diagnostics.AXIOMID_E030({ resource: m }),
+  PI_AUTH_FAILED:              (m) => diagnostics.AXIOMID_E020({ piError: m }),
+  PI_PAYMENT_FAILED:           (m) => diagnostics.AXIOMID_E021({ paymentId: 'unknown', piError: m }),
+  PAYMENT_VERIFICATION_FAILED: (m) => diagnostics.AXIOMID_E022({ paymentId: 'unknown', piError: m }),
+  PAYMENT_MISMATCH:            (m) => diagnostics.AXIOMID_E023({ paymentId: 'unknown', piError: m }),
+  PAYMENT_INVALID:             (m) => diagnostics.AXIOMID_E024({ paymentId: 'unknown', piError: m }),
+  INTERNAL_ERROR:              (m) => diagnostics.AXIOMID_E040({ operation: 'unknown', error: m }),
 };
 
 export function apiError(code: ErrorCode, message: string, details?: unknown, headers?: Record<string, string>): NextResponse<ApiError> {
   const status = STATUS_MAP[code] ?? 500;
 
-  // Report structured diagnostic via nostics (non-blocking)
-  const diagCode = DIAGNOSTIC_MAP[code] as keyof typeof diagnostics;
+  // Report structured diagnostic via nostics (non-blocking, best-effort).
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (diagnostics as any)[diagCode](DIAGNOSTIC_PARAMS[code](message));
-    // The diagnostic fn may be sync or async; swallow any async rejection so it
-    // never surfaces as an unhandled promise rejection. Diagnostics are
-    // best-effort and must never break the response path.
-    Promise.resolve(result).catch(() => {});
+    // The fn may return a promise; swallow any rejection so it never surfaces
+    // as an unhandled rejection and never breaks the response path.
+    Promise.resolve(REPORT_DIAGNOSTIC[code](message)).catch(() => {});
   } catch {
     // Diagnostics are best-effort; never break the response path
   }

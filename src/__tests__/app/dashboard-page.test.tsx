@@ -21,7 +21,6 @@ jest.mock("@/app/context/wallet-context", () => ({
 
 const renderWithProvider = (ui: React.ReactElement) => {
   return render(
-     
     <JSONUIProvider registry={{} as any}>
       <VisibilityProvider>{ui}</VisibilityProvider>
     </JSONUIProvider>

@@ -53,8 +53,8 @@ const components = {
       </>
     );
 
-    if (isBento) {
-      return props.animate ? (
+    if (isBento && props.animate) {
+      return (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,16 +63,17 @@ const components = {
         >
           {body}
         </motion.div>
-      ) : (
-        <div className="bento-card p-5">{body}</div>
       );
     }
 
-    return <div className="p-4 border rounded shadow-sm bg-white dark:bg-gray-800">{body}</div>;
+    const className = isBento
+      ? "bento-card p-5"
+      : "p-4 border rounded shadow-sm bg-white dark:bg-gray-800";
+    return <div className={className}>{body}</div>;
   },
   LinkItem: ({ props }: { props: LinkItemProps }) => {
     const icon = LINK_ICONS[props.icon ?? "none"];
-    const colorClass = LINK_COLORS[props.color ?? "default"];
+
     return (
       // href is a runtime-generated string from the JSON spec, so it cannot be
       // statically verified against typedRoutes — cast to Route at this boundary.
