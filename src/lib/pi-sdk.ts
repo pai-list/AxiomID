@@ -137,7 +137,14 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
         isInitialized = true;
         pushLog?.("Pi SDK was already initialized.");
       } else {
-        pushLog?.(`Pi SDK init warning: ${errMsg}`);
+        // A genuine init failure: surface it instead of returning an
+        // uninitialized SDK that callers would treat as usable.
+        pushLog?.(`Pi SDK init failed: ${errMsg}`);
+        throw new PiSdkError(
+          PiSdkErrorCode.SDK_NOT_AVAILABLE,
+          `Pi SDK initialization failed: ${errMsg}`,
+          err
+        );
       }
     }
   }
