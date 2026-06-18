@@ -31,6 +31,13 @@ describe("emulate route — handler exports", () => {
     jest.resetModules();
     mockCreateEmulateHandler.mockClear();
     delete process.env.NEXT_PUBLIC_EMULATE_GITHUB;
+    // The emulator is now off by default; opt in so these tests exercise the
+    // enabled (createEmulateHandler) path.
+    process.env.EMULATE_ENABLED = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.EMULATE_ENABLED;
   });
 
   it("exports GET handler", async () => {
@@ -76,6 +83,13 @@ describe("emulate route — NEXT_PUBLIC_EMULATE_GITHUB disabled (default)", () =
     jest.resetModules();
     mockCreateEmulateHandler.mockClear();
     delete process.env.NEXT_PUBLIC_EMULATE_GITHUB;
+    // The emulator is now off by default; opt in so these tests exercise the
+    // enabled (createEmulateHandler) path.
+    process.env.EMULATE_ENABLED = "true";
+  });
+
+  afterEach(() => {
+    delete process.env.EMULATE_ENABLED;
   });
 
   it("does NOT register github service when env var is not set", async () => {
@@ -96,10 +110,14 @@ describe("emulate route — NEXT_PUBLIC_EMULATE_GITHUB enabled", () => {
     jest.resetModules();
     mockCreateEmulateHandler.mockClear();
     process.env.NEXT_PUBLIC_EMULATE_GITHUB = "true";
+    // The emulator is now off by default; opt in so these tests exercise the
+    // enabled (createEmulateHandler) path.
+    process.env.EMULATE_ENABLED = "true";
   });
 
   afterEach(() => {
     delete process.env.NEXT_PUBLIC_EMULATE_GITHUB;
+    delete process.env.EMULATE_ENABLED;
   });
 
   it("registers github service when NEXT_PUBLIC_EMULATE_GITHUB=true", async () => {
