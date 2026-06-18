@@ -7,6 +7,7 @@ describe('scoreTask', () => {
 
   it('scores an unsuccessful task', () => {
     expect(scoreTask({ success: false })).toBe(0);
+    expect(scoreTask({ success: false, durationMs: 500 })).toBe(0);
   });
 
   it('adds bonus points for fast execution', () => {
