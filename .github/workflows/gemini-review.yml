@@ -125,9 +125,10 @@ jobs:
           LOW=$(echo "$FINDINGS" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len([f for f in d.get('findings',[]) if f.get('severity')=='low']))" 2>/dev/null || echo 0)
           SUMMARY=$(echo "$FINDINGS" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('summary', 'No summary'))" 2>/dev/null || echo "")
 
-          BODY="## 🤖 Gemini AI Code Review
+          BODY="## 🤖 Amrikyy CI Intelligence: Gemini Review
 
           **Summary**: $SUMMARY
+          *Powered by Amrikyy AI Agents*
 
           | Severity | Count |
           |----------|-------|
