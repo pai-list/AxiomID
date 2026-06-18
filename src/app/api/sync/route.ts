@@ -35,7 +35,7 @@ const SyncRequestSchema = z.object({
 interface SyncResult {
   synced: number;
   errors: number;
-
+  retries: number;
   entropy: number;
   freshness: number;
 }
