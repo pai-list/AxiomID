@@ -90,7 +90,10 @@ export async function POST(request: NextRequest) {
 
     let user;
     if (existingUser) {
-      const needsDidRepair = !existingUser.did || !existingUser.didMethod;
+      const needsDidRepair =
+        !existingUser.did ||
+        !existingUser.didMethod ||
+        existingUser.did !== piDid;
       user = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
