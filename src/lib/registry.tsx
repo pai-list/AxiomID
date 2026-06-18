@@ -3,6 +3,9 @@ import { axiomCatalog } from "./catalog";
 import React from "react";
 import Link from "next/link";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LinkItemProps = { label: string; href: any };
+
 const components = {
   Card: ({ props, children }: { props: { title?: string }; children?: React.ReactNode }) => (
     <div className="p-4 border rounded shadow-sm bg-white dark:bg-gray-800">
@@ -10,8 +13,8 @@ const components = {
       {children && <div className="space-y-2">{children}</div>}
     </div>
   ),
-  LinkItem: ({ props }: { props: { label: string; href: string } }) => (
-    <Link href={props.href as any} className="flex items-center justify-between p-3 rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-700">
+  LinkItem: ({ props }: { props: LinkItemProps }) => (
+    <Link href={props.href} className="flex items-center justify-between p-3 rounded-xl border hover:bg-gray-100 dark:hover:bg-gray-700">
       <span className="text-sm">{props.label}</span>
     </Link>
   ),
