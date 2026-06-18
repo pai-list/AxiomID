@@ -11,7 +11,15 @@ interface TrustScoreGaugeProps {
 export function TrustScoreGauge({ score, size = 120 }: TrustScoreGaugeProps) {
   const { t } = useLanguage();
   const color = getScoreColor(score);
-  const label = score >= 90 ? t('score_excellent') : score >= 70 ? t('score_strong') : score >= 50 ? t('score_moderate') : score >= 30 ? t('score_low') : t('score_new');
+
+  const LABEL_THRESHOLDS = {
+    EXCELLENT: 90,
+    STRONG: 70,
+    MODERATE: 50,
+    LOW: 30,
+  };
+
+  const label = score >= LABEL_THRESHOLDS.EXCELLENT ? t('score_excellent') : score >= LABEL_THRESHOLDS.STRONG ? t('score_strong') : score >= LABEL_THRESHOLDS.MODERATE ? t('score_moderate') : score >= LABEL_THRESHOLDS.LOW ? t('score_low') : t('score_new');
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;

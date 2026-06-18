@@ -20,10 +20,16 @@ export function getTierColor(tier: Tier): string {
   return TIER_COLORS[tier] ?? TIER_COLORS.Visitor;
 }
 
+export const SCORE_THRESHOLDS = {
+  EXCELLENT: 80,
+  GOOD: 60,
+  FAIR: 40,
+};
+
 export function getScoreColor(score: number): string {
-  if (score >= 80) return '#00ff41';
-  if (score >= 60) return '#00d4ff';
-  if (score >= 40) return '#f59e0b';
+  if (score >= SCORE_THRESHOLDS.EXCELLENT) return '#00ff41';
+  if (score >= SCORE_THRESHOLDS.GOOD) return '#00d4ff';
+  if (score >= SCORE_THRESHOLDS.FAIR) return '#f59e0b';
   return '#ef4444';
 }
 
