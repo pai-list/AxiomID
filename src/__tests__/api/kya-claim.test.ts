@@ -40,9 +40,11 @@ jest.mock('@/lib/ip', () => ({
 import { POST } from '@/app/api/pi/kya/claim/route';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { requireAuth } from '@/lib/auth-middleware';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
+const mockRequireAuth = requireAuth as jest.Mock;
 
 function mockPostRequest(body: unknown) {
   return new Request('http://localhost/api/pi/kya/claim', {
@@ -164,8 +166,7 @@ describe('POST /api/pi/kya/claim', () => {
   });
 
   it('keeps existing piUsername when user already has one', async () => {
-    const requireAuth = require('@/lib/auth-middleware').requireAuth;
-    requireAuth.mockResolvedValueOnce({
+    mockRequireAuth.mockResolvedValueOnce({
       error: null,
       user: {
         id: 'mock-user-id',
