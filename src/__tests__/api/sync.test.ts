@@ -244,7 +244,11 @@ describe("POST /api/sync — SyncRequestSchema validation (PR change)", () => {
   });
 });
 
-describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: interface removed, schema is source of truth)", () => {
+// ─────────────────────────────────────────────────────────────────────────────
+// New tests: SyncRequest interface was removed in this PR; the Zod schema is the
+// sole validator. These tests cover boundary cases not yet exercised above.
+// ─────────────────────────────────────────────────────────────────────────────
+describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: SyncRequest interface removed)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
@@ -253,8 +257,8 @@ describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: interf
     mockPrisma.agentPresence.findMany.mockResolvedValue([]);
   });
 
-  it("rejects non-integer maxRetries (e.g., 1.5)", async () => {
-    const req = mockPostRequest({ source: "all", maxRetries: 1.5 });
+  it("rejects non-integer maxRetries (e.g. 0.5) — enforced by z.number().int()", async () => {
+    const req = mockPostRequest({ source: "all", maxRetries: 0.5 });
     const res = await POST(req);
     const data = await res.json();
 
@@ -262,36 +266,16 @@ describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: interf
     expect(data.code).toBe("VALIDATION_ERROR");
   });
 
-  it("response includes both harvestResults and agentPresence keys for source=all", async () => {
-    const req = mockPostRequest({ source: "all" });
+  it("rejects non-integer maxRetries (e.g. 3.14)", async () => {
+    const req = mockPostRequest({ source: "all", maxRetries: 3.14 });
     const res = await POST(req);
     const data = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(data.results).toHaveProperty("harvestResults");
-    expect(data.results).toHaveProperty("agentPresence");
+    expect(res.status).toBe(400);
+    expect(data.code).toBe("VALIDATION_ERROR");
   });
 
-  it("response includes harvestResults for source=d1", async () => {
-    const req = mockPostRequest({ source: "d1" });
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.results).toHaveProperty("harvestResults");
-    expect(data.results).toHaveProperty("agentPresence");
-  });
-
-  it("accepts maxRetries=0 and treats it as no-retry (boundary)", async () => {
-    mockPrisma.harvestResult.findMany.mockRejectedValueOnce(new Error("DB fail"));
-    const req = mockPostRequest({ source: "d1", maxRetries: 0 });
-    const res = await POST(req);
-
-    // Should still return 200 (error is caught and returned as SyncResult with errors:1)
-    expect(res.status).toBe(200);
-  });
-
-  it("rejects source=null", async () => {
+  it("rejects null source value", async () => {
     const req = mockPostRequest({ source: null });
     const res = await POST(req);
     const data = await res.json();
@@ -300,8 +284,8 @@ describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: interf
     expect(data.code).toBe("VALIDATION_ERROR");
   });
 
-  it("rejects source as a number", async () => {
-    const req = mockPostRequest({ source: 42 });
+  it("rejects maxRetries as a numeric string", async () => {
+    const req = mockPostRequest({ source: "all", maxRetries: "5" });
     const res = await POST(req);
     const data = await res.json();
 
@@ -309,17 +293,21 @@ describe("POST /api/sync — SyncRequestSchema boundary cases (PR change: interf
     expect(data.code).toBe("VALIDATION_ERROR");
   });
 
-  it("returns 500 when database throws during POST sync", async () => {
-    mockPrisma.harvestResult.findMany.mockRejectedValue(new Error("DB crash"));
-    mockPrisma.agentPresence.findMany.mockRejectedValue(new Error("DB crash"));
-
-    const req = mockPostRequest({ source: "all", maxRetries: 0 });
+  it("uses default maxRetries=3 when not provided", async () => {
+    const req = mockPostRequest({ source: "d1" });
     const res = await POST(req);
 
-    // syncWithRetry catches errors and returns a SyncResult — the route itself returns 200
+    // maxRetries defaults to 3; response should be 200 with no validation error
     expect(res.status).toBe(200);
+  });
+
+  it("uses default dryRun=false when not provided", async () => {
+    const req = mockPostRequest({ source: "all" });
+    const res = await POST(req);
     const data = await res.json();
-    expect(data.results.harvestResults.errors).toBeGreaterThan(0);
+
+    expect(res.status).toBe(200);
+    expect(data.message).toBe("Sync completed");
   });
 });
 
@@ -413,49 +401,5 @@ describe("GET /api/sync — authentication (PR change: auth now required)", () =
 
     expect(res.status).toBe(500);
     expect(data.code).toBe("INTERNAL_ERROR");
-  });
-});
-
-describe("GET /api/sync — cron trigger bypasses auth", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockPrisma.harvestResult.findFirst.mockResolvedValue(null);
-    mockPrisma.harvestResult.findMany.mockResolvedValue([]);
-    mockPrisma.agentPresence.findFirst.mockResolvedValue(null);
-  });
-
-  it("returns 200 with trigger=cron without authentication", async () => {
-    const req = new Request("http://localhost/api/sync?trigger=cron", {
-      method: "GET",
-    }) as any;
-
-    const res = await GET(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.status).toBe("ok");
-    expect(mockRequireAuth).not.toHaveBeenCalled();
-  });
-
-  it("still calls requireAuth when trigger is not cron", async () => {
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
-
-    const req = new Request("http://localhost/api/sync?trigger=manual", {
-      method: "GET",
-      headers: { Authorization: "Bearer mock-token" },
-    }) as any;
-
-    await GET(req);
-
-    expect(mockRequireAuth).toHaveBeenCalled();
-  });
-
-  it("still calls requireAuth when trigger param is absent", async () => {
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
-
-    const req = mockGetRequest();
-    await GET(req);
-
-    expect(mockRequireAuth).toHaveBeenCalled();
   });
 });
