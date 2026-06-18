@@ -35,7 +35,6 @@ const SyncRequestSchema = z.object({
 interface SyncResult {
   synced: number;
   errors: number;
-  retries: number;
   entropy: number;
   freshness: number;
 }
@@ -205,7 +204,6 @@ async function syncWithRetry(
   return {
     synced: 0,
     errors: 1,
-    retries: maxRetries,
     entropy: 0,
     freshness: 0,
   };
@@ -244,11 +242,11 @@ async function syncHarvestResults(_dryRun: boolean): Promise<SyncResult> {
 
     logger.info(`[Sync] Harvest results: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
 
-    return { synced, errors, retries: 0, entropy, freshness };
+    return { synced, errors, entropy, freshness };
   } catch (error) {
     logger.error("[Sync] Harvest sync error:", error);
     errors++;
-    return { synced, errors, retries: 0, entropy: 0, freshness: 0 };
+    return { synced, errors, entropy: 0, freshness: 0 };
   }
 }
 
@@ -286,10 +284,10 @@ async function syncAgentPresence(_dryRun: boolean): Promise<SyncResult> {
 
     logger.info(`[Sync] Agent presence: entropy=${entropy.toFixed(3)}, freshness=${freshness.toFixed(3)}`);
 
-    return { synced, errors, retries: 0, entropy, freshness };
+    return { synced, errors, entropy, freshness };
   } catch (error) {
     logger.error("[Sync] Presence sync error:", error);
     errors++;
-    return { synced, errors, retries: 0, entropy: 0, freshness: 0 };
+    return { synced, errors, entropy: 0, freshness: 0 };
   }
 }

@@ -139,4 +139,3 @@ export async function POST(request: NextRequest) {
     return apiError('INTERNAL_ERROR', 'Failed to create or update user');
   }
 }
-
