@@ -1,0 +1,41 @@
+--- src/app/api/pi/kya/claim/route.ts
++++ src/app/api/pi/kya/claim/route.ts
+@@ -43,18 +43,26 @@
+   const { username } = validation.data;
+
+   try {
+-    const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
+-
+-    if (!existing) {
+-      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
+-    }
+-
+     const updated = await prisma.user.update({
+-      where: { id: existing.id },
++      where: { piUid: user.piUid },
+       data: {
+         kycStatus: 'PENDING',
+         kycProvider: 'pi_network',
+-        did: existing.did || `did:axiom:${user.piUid}`,
+-        piUsername: existing.piUsername || username,
++        did: user.did || `did:axiom:${user.piUid}`,
++        piUsername: user.piUsername || username,
+       },
+     });
++
++    return apiSuccess({
++      userId: updated.id,
++      walletAddress: updated.walletAddress,
++      kycStatus: updated.kycStatus,
++      did: updated.did,
++      tier: updated.tier,
++      xp: updated.xp,
++    });
++  } catch (error: any) {
++    if (error && typeof error === 'object' && error.code === 'P2025') {
++      return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
++    }
++    logger.error('[KYA-CLAIM] Database error:', error);
++    return apiError('INTERNAL_ERROR', 'Failed to claim KYA');
++  }
++}
