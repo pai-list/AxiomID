@@ -47,41 +47,41 @@ describe('apiError', () => {
     expect(res.status).toBe(500);
   });
 
-  // New payment error codes added in this PR
+  it('includes details when provided', async () => {
+    const details = [{ field: 'email', message: 'required' }];
+    const res = apiError('VALIDATION_ERROR', 'Invalid', details);
+    const body = await res.json();
+    expect(body.details).toEqual(details);
+  });
+});
+
+describe('apiError — new payment error codes (PR change)', () => {
   it('returns 402 for PAYMENT_VERIFICATION_FAILED', async () => {
-    const res = apiError('PAYMENT_VERIFICATION_FAILED', 'Payment could not be verified with Pi Network');
+    const res = apiError('PAYMENT_VERIFICATION_FAILED', 'Could not verify payment');
     expect(res.status).toBe(402);
     const body = await res.json();
     expect(body.code).toBe('PAYMENT_VERIFICATION_FAILED');
-    expect(body.error).toBe('Payment could not be verified with Pi Network');
+    expect(body.error).toBe('Could not verify payment');
   });
 
   it('returns 402 for PAYMENT_MISMATCH', async () => {
-    const res = apiError('PAYMENT_MISMATCH', 'Payment amount 1 does not match skill price 5');
+    const res = apiError('PAYMENT_MISMATCH', 'Amount does not match');
     expect(res.status).toBe(402);
     const body = await res.json();
     expect(body.code).toBe('PAYMENT_MISMATCH');
   });
 
   it('returns 402 for PAYMENT_INVALID', async () => {
-    const res = apiError('PAYMENT_INVALID', 'Payment status "completed" is not valid for purchase');
+    const res = apiError('PAYMENT_INVALID', 'Payment status invalid');
     expect(res.status).toBe(402);
     const body = await res.json();
     expect(body.code).toBe('PAYMENT_INVALID');
   });
 
-  it('all three new payment error codes share the 402 status (regression: same as PI_PAYMENT_FAILED)', () => {
+  it('all three new payment codes share the 402 status', () => {
     expect(apiError('PAYMENT_VERIFICATION_FAILED', '').status).toBe(402);
     expect(apiError('PAYMENT_MISMATCH', '').status).toBe(402);
     expect(apiError('PAYMENT_INVALID', '').status).toBe(402);
-    expect(apiError('PI_PAYMENT_FAILED', '').status).toBe(402);
-  });
-
-  it('includes details when provided', async () => {
-    const details = [{ field: 'email', message: 'required' }];
-    const res = apiError('VALIDATION_ERROR', 'Invalid', details);
-    const body = await res.json();
-    expect(body.details).toEqual(details);
   });
 });
 

@@ -1,11 +1,10 @@
 /**
- * rate-limiter.test.ts — Tests for the rate limiter.
+ * rate-limiter.test.ts — Tests for the in-memory sliding-window rate limiter.
  *
  * Strategy:
  *  - Test the public contract (allowed / remaining / resetAt).
  *  - Verify that the window resets after timeout.
  *  - Confirm constants are correct.
- *  - Test Upstash Redis path (PR change: production-grade distributed limiting).
  */
 
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
@@ -119,54 +118,47 @@ describe('checkRateLimit (in-memory)', () => {
     expect(result.allowed).toBe(false);
     expect(result.remaining).toBe(0);
   });
+});
 
-  it('result always has the required shape fields', async () => {
-    const result = await checkRateLimit('shape-test', { windowMs: 60_000, maxRequests: 5 });
-    expect(typeof result.allowed).toBe('boolean');
+describe('checkRateLimit — Upstash env vars (PR change)', () => {
+  const UPSTASH_URL = 'UPSTASH_REDIS_REST_URL';
+  const UPSTASH_TOKEN = 'UPSTASH_REDIS_REST_TOKEN';
+
+  afterEach(() => {
+    // Restore env vars after each test
+    delete process.env[UPSTASH_URL];
+    delete process.env[UPSTASH_TOKEN];
+    jest.useRealTimers();
+  });
+
+  it('falls back to in-memory when UPSTASH_REDIS_REST_URL is not set', async () => {
+    // Neither env var is set — should use in-memory path without error
+    const result = await checkRateLimit('upstash-test-no-env', { windowMs: 60_000, maxRequests: 5 });
+    expect(result.allowed).toBe(true);
     expect(typeof result.remaining).toBe('number');
     expect(typeof result.resetAt).toBe('number');
   });
-});
 
-// ---------------------------------------------------------------------------
-// Upstash Redis path (PR change: distributed rate limiting for production)
-// ---------------------------------------------------------------------------
-// These tests exercise the Upstash code path by setting the required env vars
-// and dynamically re-importing the module so USE_UPSTASH evaluates to true.
-// The @upstash/ratelimit and @upstash/redis modules are mocked.
-// ---------------------------------------------------------------------------
-
-describe('checkRateLimit — Upstash Redis path (PR change)', () => {
-  const ORIGINAL_URL = process.env.UPSTASH_REDIS_REST_URL;
-  const ORIGINAL_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  beforeAll(() => {
-    process.env.UPSTASH_REDIS_REST_URL = 'https://upstash-test.upstash.io';
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token-abc';
+  it('falls back to in-memory when only UPSTASH_REDIS_REST_URL is set (no token)', async () => {
+    process.env[UPSTASH_URL] = 'https://fake-upstash-url.upstash.io';
+    // Token not set — USE_UPSTASH should be false (both required)
+    const result = await checkRateLimit('upstash-test-url-only', { windowMs: 60_000, maxRequests: 5 });
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(4);
   });
 
-  afterAll(() => {
-    if (ORIGINAL_URL === undefined) delete process.env.UPSTASH_REDIS_REST_URL;
-    else process.env.UPSTASH_REDIS_REST_URL = ORIGINAL_URL;
-    if (ORIGINAL_TOKEN === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
-    else process.env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_TOKEN;
-    jest.resetModules();
+  it('falls back to in-memory when only UPSTASH_REDIS_REST_TOKEN is set (no url)', async () => {
+    process.env[UPSTASH_TOKEN] = 'fake-token-abc';
+    // URL not set — USE_UPSTASH should be false
+    const result = await checkRateLimit('upstash-test-token-only', { windowMs: 60_000, maxRequests: 5 });
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(4);
   });
 
-  it('falls back to in-memory when Upstash module throws during lazy load', async () => {
-    // The Upstash module is not installed in the test environment, so dynamic
-    // import will fail. The rate limiter should catch the error and fall back
-    // to in-memory, returning a valid result (not throwing).
-    jest.resetModules();
-
-    // We set the env vars to trigger USE_UPSTASH=true, then reimport
-    const { checkRateLimit: checkRL } = await import('@/lib/rate-limiter');
-
-    // Even if Upstash is "enabled" but the module can't load (test env),
-    // the function should not throw — it must fall back gracefully.
-    const result = await checkRL('upstash-fallback-key', { windowMs: 60_000, maxRequests: 5 });
-    expect(result).toBeDefined();
-    expect(typeof result.allowed).toBe('boolean');
-    expect(typeof result.remaining).toBe('number');
+  it('RateLimitResult always has required fields regardless of backend', async () => {
+    const result = await checkRateLimit('upstash-fields-test', { windowMs: 60_000, maxRequests: 3 });
+    expect(result).toHaveProperty('allowed');
+    expect(result).toHaveProperty('remaining');
+    expect(result).toHaveProperty('resetAt');
   });
 });

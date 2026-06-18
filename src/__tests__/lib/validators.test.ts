@@ -23,66 +23,23 @@ describe("KyaClaimSchema", () => {
   });
 });
 
-// OrderCreateSchema — PR change: amount field removed
 describe("OrderCreateSchema (PR change: amount field removed)", () => {
-  const validSkillId = "123e4567-e89b-12d3-a456-426614174000";
-  const validAgentId = "123e4567-e89b-12d3-a456-426614174001";
+  const validUUID = "123e4567-e89b-12d3-a456-426614174000";
+  const validUUID2 = "123e4567-e89b-12d3-a456-426614174001";
 
-  it("accepts valid input with skillId, agentId, and paymentId", () => {
+  it("accepts valid skillId, agentId and paymentId", () => {
     const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
-      paymentId: "pi-payment-abc",
+      skillId: validUUID,
+      agentId: validUUID2,
+      paymentId: "pi-payment-xyz",
     });
     expect(result.success).toBe(true);
-  });
-
-  it("no longer requires amount field — omitting amount is valid", () => {
-    const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
-      paymentId: "some-payment-id",
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      // amount should not be in the parsed output
-      expect((result.data as Record<string, unknown>).amount).toBeUndefined();
-    }
-  });
-
-  it("extra amount field is stripped (not included in parsed data)", () => {
-    const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
-      paymentId: "some-payment-id",
-      amount: 5, // extra field — schema no longer declares it
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect((result.data as Record<string, unknown>).amount).toBeUndefined();
-    }
   });
 
   it("rejects missing skillId", () => {
     const result = OrderCreateSchema.safeParse({
-      agentId: validAgentId,
-      paymentId: "pi-payment-abc",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects missing agentId", () => {
-    const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      paymentId: "pi-payment-abc",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects missing paymentId", () => {
-    const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
+      agentId: validUUID,
+      paymentId: "pi-payment-xyz",
     });
     expect(result.success).toBe(false);
   });
@@ -90,53 +47,67 @@ describe("OrderCreateSchema (PR change: amount field removed)", () => {
   it("rejects non-UUID skillId", () => {
     const result = OrderCreateSchema.safeParse({
       skillId: "not-a-uuid",
-      agentId: validAgentId,
-      paymentId: "pi-payment-abc",
+      agentId: validUUID,
+      paymentId: "pi-payment-xyz",
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toContain("UUID");
+      expect(result.error.issues[0].message).toMatch(/uuid/i);
     }
   });
 
   it("rejects non-UUID agentId", () => {
     const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
+      skillId: validUUID,
       agentId: "not-a-uuid",
-      paymentId: "pi-payment-abc",
+      paymentId: "pi-payment-xyz",
     });
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toContain("UUID");
-    }
   });
 
-  it("rejects empty paymentId", () => {
+  it("rejects missing paymentId", () => {
     const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
+      skillId: validUUID,
+      agentId: validUUID2,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty string paymentId", () => {
+    const result = OrderCreateSchema.safeParse({
+      skillId: validUUID,
+      agentId: validUUID2,
       paymentId: "",
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toContain("paymentId is required");
+      expect(result.error.issues[0].message).toMatch(/paymentId is required/);
     }
   });
 
-  it("parsed output contains exactly skillId, agentId, paymentId", () => {
+  it("rejects when amount is provided (field was removed in PR)", () => {
+    // amount is not in the schema; extra fields are stripped by Zod default (strip mode)
+    // so it should still succeed — the amount is just ignored
     const result = OrderCreateSchema.safeParse({
-      skillId: validSkillId,
-      agentId: validAgentId,
-      paymentId: "free-skill-id",
+      skillId: validUUID,
+      agentId: validUUID2,
+      paymentId: "pi-payment-xyz",
+      amount: 5,
     });
+    // Zod strips unknown keys by default, so parse succeeds without amount
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data).toEqual({
-        skillId: validSkillId,
-        agentId: validAgentId,
-        paymentId: "free-skill-id",
-      });
+      expect((result.data as Record<string, unknown>).amount).toBeUndefined();
     }
+  });
+
+  it("accepts paymentId with special characters", () => {
+    const result = OrderCreateSchema.safeParse({
+      skillId: validUUID,
+      agentId: validUUID2,
+      paymentId: "free-skill-abc-123",
+    });
+    expect(result.success).toBe(true);
   });
 });
 

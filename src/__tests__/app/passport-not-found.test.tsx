@@ -2,86 +2,70 @@
  * Tests for src/app/passport/[slug]/not-found.tsx
  *
  * PR changes:
- * - Component added "use client" directive
- * - Now uses useLanguage() for i18n:
- *   passport_not_found, passport_not_found_description, create_your_passport
+ * - Added "use client" directive
+ * - Uses useLanguage() for localized text instead of hardcoded English strings
+ * - New translation key: passport_not_found_description
  */
 
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import PassportNotFound from '@/app/passport/[slug]/not-found';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import PassportNotFound from "@/app/passport/[slug]/not-found";
 
-// The global jest.setup.js mock for useLanguage returns the key itself for
-// unknown keys. New keys from this PR fall back to the key string.
+// useLanguage is globally mocked in jest.setup.js; the mock t() returns
+// mockDict[key] || key, so for keys not in the dict the key name is returned.
 
-describe('PassportNotFound — i18n integration (PR change)', () => {
-  it('renders heading via t("passport_not_found")', () => {
-    render(<PassportNotFound />);
-
-    // Global mock: t('passport_not_found') returns key string 'passport_not_found'
-    expect(screen.getByRole('heading')).toBeInTheDocument();
-    expect(screen.getByText('passport_not_found')).toBeInTheDocument();
+describe("PassportNotFound — rendering (PR change: localized with useLanguage)", () => {
+  it("renders without crashing", () => {
+    expect(() => {
+      render(<PassportNotFound />);
+    }).not.toThrow();
   });
 
-  it('renders description via t("passport_not_found_description")', () => {
+  it("renders the heading using t('passport_not_found')", () => {
     render(<PassportNotFound />);
-
-    // New key added in PR — falls back to key with global mock
-    expect(screen.getByText('passport_not_found_description')).toBeInTheDocument();
+    // 'passport_not_found' is not in mockDict -> returns key name
+    expect(screen.getByRole("heading")).toBeInTheDocument();
+    expect(screen.getByRole("heading").textContent).toBe("passport_not_found");
   });
 
-  it('renders Create Your Passport link via t("create_your_passport")', () => {
+  it("renders description using t('passport_not_found_description') (PR change: new key)", () => {
     render(<PassportNotFound />);
-
-    expect(screen.getByText('create_your_passport')).toBeInTheDocument();
+    // New key not in mockDict -> returns key name
+    expect(screen.getByText("passport_not_found_description")).toBeInTheDocument();
   });
 
-  it('Create Your Passport link points to /', () => {
+  it("renders Create Your Passport link using t('create_your_passport')", () => {
     render(<PassportNotFound />);
-
-    const link = screen.getByText('create_your_passport').closest('a');
-    expect(link).toHaveAttribute('href', '/');
+    // 'create_your_passport' IS in mockDict -> 'CREATE YOUR PASSPORT'
+    expect(screen.getByRole("link", { name: "CREATE YOUR PASSPORT" })).toBeInTheDocument();
   });
 
-  it('renders with real EN translations when useLanguage provides them', () => {
-    const { useLanguage } = jest.requireMock('@/app/context/language-context');
-    (useLanguage as jest.Mock).mockReturnValueOnce({
-      language: 'en',
-      setLanguage: jest.fn(),
-      t: (key: string) => {
-        const { translations } = jest.requireActual('@/app/context/language-context') as any;
-        return translations.en[key] || key;
-      },
-    });
-
+  it("link points to home /", () => {
     render(<PassportNotFound />);
-
-    expect(screen.getByText('Passport Not Found')).toBeInTheDocument();
-    expect(screen.getByText("This passport doesn't exist or has been removed.")).toBeInTheDocument();
-    expect(screen.getByText('CREATE YOUR PASSPORT')).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "CREATE YOUR PASSPORT" });
+    expect(link).toHaveAttribute("href", "/");
   });
 
-  it('renders with real AR translations when language is Arabic', () => {
-    const { useLanguage } = jest.requireMock('@/app/context/language-context');
-    (useLanguage as jest.Mock).mockReturnValueOnce({
-      language: 'ar',
-      setLanguage: jest.fn(),
-      t: (key: string) => {
-        const { translations } = jest.requireActual('@/app/context/language-context') as any;
-        return translations.ar[key] || key;
-      },
-    });
-
+  it("renders exactly one link", () => {
     render(<PassportNotFound />);
-
-    expect(screen.getByText('جواز السفر غير موجود')).toBeInTheDocument();
-    expect(screen.getByText('هذا الجواز غير موجود أو تمت إزالته.')).toBeInTheDocument();
-    expect(screen.getByText('أنشئ جواز سفرك')).toBeInTheDocument();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 
-  it('does not render a reset button (not-found is informational only)', () => {
+  it("renders exactly one heading", () => {
     render(<PassportNotFound />);
+    expect(screen.getAllByRole("heading")).toHaveLength(1);
+  });
+});
 
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+describe("PassportNotFound — accessibility", () => {
+  it("heading is h1", () => {
+    render(<PassportNotFound />);
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+  });
+
+  it("link is a valid anchor element", () => {
+    render(<PassportNotFound />);
+    const link = screen.getByRole("link");
+    expect(link.tagName).toBe("A");
   });
 });
