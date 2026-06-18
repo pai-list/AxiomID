@@ -53,6 +53,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      if (token) {
+        const { hashToken, clearAuthCache } = require('@/lib/auth-middleware');
+        clearAuthCache(hashToken(token));
+      }
+    }
+
     return apiSuccess({
       userId: updated.id,
       walletAddress: updated.walletAddress,
