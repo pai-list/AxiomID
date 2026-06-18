@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth-middleware";
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
-import { getClientIp } from '@/lib/ip';
+import { getClientIp } from "@/lib/ip";
 import { PresenceHeartbeatSchema } from "@/lib/validators";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     return apiSuccess({ status: "OK" });
   } catch (error) {
-    console.error("Presence heartbeat error:", error);
+    logger.error("[HEARTBEAT] Error:", error);
     return apiError("INTERNAL_ERROR", "Failed to update presence");
   }
 }
