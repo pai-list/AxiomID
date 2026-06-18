@@ -10,9 +10,10 @@
 import { apiError } from "@/lib/errors";
 import type { NextRequest } from "next/server";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ctx shape varies
-// across Next.js versions; we forward it opaquely to the emulator adapter.
-type RouteHandler = (req: NextRequest, ctx: any) => Response | Promise<Response>;
+type RouteHandler = (
+  req: NextRequest,
+  ctx: { params: Promise<{ path: string[] }> },
+) => Response | Promise<Response>;
 
 // Never expose the emulator surface in production. The emulator route is a
 // dev/preview-only tool; in production every method returns 404.
