@@ -12,6 +12,9 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@emulators/github$': '<rootDir>/node_modules/@emulators/github/dist/index.js',
+    '^@emulators/adapter-next$': '<rootDir>/node_modules/@emulators/adapter-next/dist/index.js',
+    '^@emulators/core$': '<rootDir>/node_modules/@emulators/core/dist/index.js',
   },
   testPathIgnorePatterns: [
     '/node_modules/',

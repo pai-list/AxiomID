@@ -21,7 +21,7 @@ jest.mock("@/app/context/wallet-context", () => ({
 
 const renderWithProvider = (ui: React.ReactElement) => {
   return render(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     <JSONUIProvider registry={{} as any}>
       <VisibilityProvider>{ui}</VisibilityProvider>
     </JSONUIProvider>

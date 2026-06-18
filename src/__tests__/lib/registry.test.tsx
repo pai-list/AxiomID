@@ -1,9 +1,12 @@
+import "jest-location-mock";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 
 // Capture arguments passed to defineRegistry so we can test components/actions
-let capturedComponents: Record<string, React.ComponentType<any>> = {};
-let capturedActions: Record<string, () => void> = {};
+// eslint-disable-next-line no-var
+var capturedComponents: Record<string, React.ComponentType<any>>;
+// eslint-disable-next-line no-var
+var capturedActions: Record<string, () => void>;
 
 jest.mock("@json-render/react", () => ({
   defineRegistry: jest.fn((_catalog: unknown, { components, actions }: { components: Record<string, React.ComponentType<any>>; actions: Record<string, () => void> }) => {
@@ -191,18 +194,12 @@ describe("registry — Metric component", () => {
 });
 
 describe("registry — refresh_data action", () => {
-  let reloadMock: jest.SpyInstance;
-
   beforeEach(() => {
-    reloadMock = jest.spyOn(window.location, "reload").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    reloadMock.mockRestore();
+    (window.location.reload as jest.Mock).mockClear();
   });
 
   it("calls window.location.reload when invoked", async () => {
     await capturedActions.refresh_data();
-    expect(reloadMock).toHaveBeenCalledTimes(1);
+    expect(window.location.reload).toHaveBeenCalledTimes(1);
   });
 });

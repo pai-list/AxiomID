@@ -49,6 +49,9 @@ const DIAGNOSTIC_MAP: Record<ErrorCode, string> = {
   CONFLICT: 'AXIOMID_E030',
   PI_AUTH_FAILED: 'AXIOMID_E020',
   PI_PAYMENT_FAILED: 'AXIOMID_E021',
+  PAYMENT_VERIFICATION_FAILED: 'AXIOMID_E021',
+  PAYMENT_MISMATCH: 'AXIOMID_E021',
+  PAYMENT_INVALID: 'AXIOMID_E021',
   INTERNAL_ERROR: 'AXIOMID_E040',
 };
 
@@ -58,6 +61,9 @@ const DIAGNOSTIC_PARAMS: Record<ErrorCode, (message: string) => Record<string, u
   RATE_LIMITED: () => ({ retryAfter: 60 }),
   PI_AUTH_FAILED: (message) => ({ piError: message }),
   PI_PAYMENT_FAILED: (message) => ({ paymentId: 'unknown', piError: message }),
+  PAYMENT_VERIFICATION_FAILED: (message) => ({ paymentId: 'unknown', piError: message }),
+  PAYMENT_MISMATCH: (message) => ({ paymentId: 'unknown', piError: message }),
+  PAYMENT_INVALID: (message) => ({ paymentId: 'unknown', piError: message }),
   INTERNAL_ERROR: (message) => ({ operation: 'unknown', error: message }),
   UNAUTHORIZED: (message) => ({ reason: message }),
   FORBIDDEN: (message) => ({ reason: message }),
