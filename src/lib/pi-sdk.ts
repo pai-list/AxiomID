@@ -196,16 +196,22 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
       // the module-scoped init guard is stale relative to the actual SDK
       // instance (e.g. after a script reload). If that specific error occurs,
       // force a re-init and retry authentication exactly once.
-      const authenticateWithTimeout = () =>
-        Promise.race([
+      const authenticateWithTimeout = () => {
+        let timer: ReturnType<typeof setTimeout>;
+        const timeout = new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new PiSdkError(
+            PiSdkErrorCode.AUTHENTICATION_TIMEOUT,
+            "Pi authentication timed out"
+          )), 15000);
+        });
+        // Clear the timer once the race settles so the loser's timer does not
+        // keep running (and, on the timeout branch, does not reject an
+        // unobserved promise on a subsequent retry).
+        return Promise.race([
           piInstance.authenticate({ scopes: ["username", "payments"] }),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new PiSdkError(
-              PiSdkErrorCode.AUTHENTICATION_TIMEOUT,
-              "Pi authentication timed out"
-            )), 15000),
-          ),
-        ]);
+          timeout,
+        ]).finally(() => clearTimeout(timer));
+      };
 
       let result: { user: { uid: string; username: string; name: string; stellarAddress?: string }; accessToken: string };
       try {
