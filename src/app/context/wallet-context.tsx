@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, u
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
 import { calculateTrustScore } from "@/lib/trust";
 import { connectPi, runWalletTest, checkPiBrowser, PiSdkError, PiSdkErrorCode } from "@/lib/pi-sdk";
+import { logger } from "@/lib/logger";
 
 export interface User {
   id: string;
@@ -92,7 +93,7 @@ function getStoredWallet(): string | null {
     }
     return walletAddress;
   } catch (e) {
-    console.warn("localStorage is inaccessible:", e);
+    logger.warn("localStorage is inaccessible:", e);
     return null;
   }
 }
@@ -107,7 +108,7 @@ function getLocalStorageItem(key: string): string | null {
   try {
     return localStorage.getItem(key);
   } catch (e) {
-    console.warn(`localStorage read failed for key ${key}:`, e);
+    logger.warn(`localStorage read failed for key ${key}:`, e);
     return null;
   }
 }
@@ -117,7 +118,7 @@ function setLocalStorageItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch (e) {
-    console.warn(`localStorage write failed for key ${key}:`, e);
+    logger.warn(`localStorage write failed for key ${key}:`, e);
   }
 }
 
@@ -126,7 +127,7 @@ function removeLocalStorageItem(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (e) {
-    console.warn(`localStorage remove failed for key ${key}:`, e);
+    logger.warn(`localStorage remove failed for key ${key}:`, e);
   }
 }
 
@@ -221,12 +222,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       if (isConnectionClosed) {
         event.preventDefault();
-        console.warn("Connection lost. Gracefully suppressing...");
       }
     };
 
     window.addEventListener("unhandledrejection", handleUnhandledRejection);
-    
+
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       const registerSW = async () => {
         try {
@@ -235,20 +235,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             await navigator.serviceWorker.register("/sw.js");
           }
         } catch (err) {
-          console.error("Service worker registration failed:", err);
+          logger.error("Service worker registration failed:", err);
         }
       };
       if (document.readyState === "complete") {
         registerSW();
       } else {
         window.addEventListener("load", registerSW);
-        return () => {
-          window.removeEventListener("load", registerSW);
-          window.removeEventListener("unhandledrejection", handleUnhandledRejection);
-        };
       }
     }
-    
+
     return () => window.removeEventListener("unhandledrejection", handleUnhandledRejection);
   }, []);
 
@@ -297,7 +293,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }));
       }
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     }
   }, []);
 
@@ -463,7 +459,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
-      console.error("Auth error:", message);
+      logger.error("Auth error:", message);
       pushLog(`❌ Error: ${message}`);
       setError(message);
       setTimeout(() => setError(null), 8000);
@@ -512,7 +508,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       } : prev);
       return true;
     } catch (err) {
-      console.error("Claim error:", err);
+      logger.error("Claim error:", err);
       return false;
     }
   }, [piAccessToken]);
@@ -554,52 +550,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       await refreshUser();
       return true;
     } catch (err) {
-      console.error("KYA claim error:", err);
+      logger.error("KYA claim error:", err);
       return false;
     }
   }, [refreshUser, piAccessToken]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-        if (!event.reason) return;
-
-        let reasonStr = "";
-        if (typeof event.reason === "string") {
-          reasonStr = event.reason;
-        } else if (event.reason instanceof Error) {
-          reasonStr = event.reason.message || event.reason.toString();
-        } else if (typeof event.reason === "object" && event.reason !== null) {
-          reasonStr = (event.reason as Record<string, unknown>).message as string || (event.reason as Record<string, unknown>).error as string || String(event.reason);
-        } else {
-          reasonStr = String(event.reason);
-        }
-
-        const isConnectionClosed =
-          reasonStr.toLowerCase().includes("connection closed") ||
-          reasonStr.toLowerCase().includes("connection_closed");
-
-        if (isConnectionClosed) {
-          event.preventDefault();
-          console.warn("[Pi SDK] Suppressed expected connection closure rejection:", event.reason);
-        }
-      };
-      window.addEventListener("unhandledrejection", handleUnhandledRejection);
-
-      if (window.Pi) {
-        try {
-          window.Pi.init({
-            version: "2.0",
-            sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
-          });
-        } catch (err) {
-          console.error("Failed to initialize Pi SDK:", err);
-        }
+    if (typeof window !== "undefined" && window.Pi) {
+      try {
+        window.Pi.init({
+          version: "2.0",
+          sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
+        });
+      } catch (err) {
+        logger.error("Failed to initialize Pi SDK:", err);
       }
-
-      return () => {
-        window.removeEventListener("unhandledrejection", handleUnhandledRejection);
-      };
     }
   }, []);
 

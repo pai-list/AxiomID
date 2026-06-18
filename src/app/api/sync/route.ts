@@ -8,6 +8,7 @@
  * - Leaky bucket for sync rate limiting
  */
 
+import { z } from "zod";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess } from "@/lib/errors";
@@ -23,11 +24,11 @@ import {
 import { requireAuth } from "@/lib/auth-middleware";
 import { logger } from "@/lib/logger";
 
-interface SyncRequest {
-  source: "d1" | "all";
-  dryRun?: boolean;
-  maxRetries?: number;
-}
+const SyncRequestSchema = z.object({
+  source: z.enum(["d1", "all"]).default("all"),
+  dryRun: z.boolean().default(false),
+  maxRetries: z.number().int().min(0).max(10).default(3),
+});
 
 interface SyncResult {
   synced: number;
@@ -65,7 +66,12 @@ export async function POST(req: NextRequest) {
       return apiError("VALIDATION_ERROR", "Invalid JSON body");
     }
 
-    const { source = "all", dryRun = false, maxRetries = 3 } = body as SyncRequest;
+    const parsed = SyncRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return apiError("VALIDATION_ERROR", parsed.error.issues[0].message, parsed.error.issues);
+    }
+
+    const { source, dryRun, maxRetries } = parsed.data;
 
     const results: Record<string, SyncResult> = {};
 
@@ -104,7 +110,10 @@ export async function POST(req: NextRequest) {
  * Get sync status and last sync time.
  * Uses Shannon entropy to measure data diversity.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAuth(req);
+  if (auth.error) return auth.error;
+
   try {
     const lastHarvest = await prisma.harvestResult.findFirst({
       orderBy: { createdAt: "desc" },

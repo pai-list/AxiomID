@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
-import { requireAuth, clearAuthCache } from '@/lib/auth-middleware';
+import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 
@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
       data: { piAccessToken: null },
     });
 
-    // Invalidate cached token in auth-middleware (same process)
+    // Invalidate only this user's cached token (not all users)
     if (accessToken) {
-      clearAuthCache();
+      clearAuthCache(hashToken(accessToken));
     }
 
     return apiSuccess({ message: 'Logged out successfully' });

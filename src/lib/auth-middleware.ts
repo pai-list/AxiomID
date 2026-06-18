@@ -21,7 +21,7 @@ const CACHE_TTL_MS = parseInt(process.env.PI_AUTH_CACHE_TTL || '300000', 10); //
 const MAX_CACHE_SIZE = parseInt(process.env.PI_AUTH_CACHE_MAX_SIZE || '1000', 10);
 const tokenCache = new Map<string, CacheEntry>();
 
-function hashToken(token: string): string {
+export function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
@@ -58,9 +58,16 @@ function invalidateCachedToken(tokenHash: string): void {
   tokenCache.delete(tokenHash);
 }
 
-/** Clear the in-memory auth cache. Exported for testing only. */
-export function clearAuthCache(): void {
-  tokenCache.clear();
+/**
+ * Invalidate a specific token from the auth cache, or clear all entries.
+ * @param tokenHash - If provided, only this entry is removed. If omitted (testing), clears all.
+ */
+export function clearAuthCache(tokenHash?: string): void {
+  if (tokenHash) {
+    tokenCache.delete(tokenHash);
+  } else {
+    tokenCache.clear();
+  }
 }
 
 export async function requireAuth(request: NextRequest): Promise<

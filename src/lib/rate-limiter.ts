@@ -6,9 +6,28 @@
  * If the bucket overflows, requests are rejected.
  *
  * Also implements sliding window fallback for backward compatibility.
+ *
+ * Production: Uses Upstash Redis (distributed, works across Vercel Serverless instances).
+ * Local dev: Falls back to in-memory Map (process-local).
  */
 
 import { leakyBucketCheck, idealGasPressure, type LeakyBucketConfig, type LeakyBucketState } from "./math-physics";
+import { logger } from "./logger";
+
+// Lazy-loaded Upstash modules (ESM-only, would break Jest if imported statically)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lazy-loaded ESM modules, types inferred at runtime
+let RatelimitClass: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lazy-loaded ESM modules, types inferred at runtime
+let RedisClass: any = null;
+
+async function loadUpstash() {
+  if (!RatelimitClass) {
+    const ratelimit = await import("@upstash/ratelimit");
+    const redis = await import("@upstash/redis");
+    RatelimitClass = ratelimit.Ratelimit;
+    RedisClass = redis.Redis;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,10 +37,10 @@ export interface RateLimitConfig {
   windowMs: number;
   maxRequests: number;
   // Physics-inspired config
-  drainRate?: number;      // Requests drained per second (Leaky Bucket)
-  inflowRate?: number;     // Requests allowed per second
-  idealGasConstant?: number; // R in PV=nRT
-  systemTemperature?: number; // T in PV=nRT (system load factor)
+  drainRate?: number;
+  inflowRate?: number;
+  idealGasConstant?: number;
+  systemTemperature?: number;
 }
 
 export interface RateLimitResult {
@@ -29,11 +48,11 @@ export interface RateLimitResult {
   remaining: number;
   resetAt: number;
   // Physics-inspired fields
-  bucketLevel?: number;    // Current water level in bucket
-  waitTimeMs?: number;     // Wait time if bucket overflow
-  overflowCount?: number;  // Number of overflows (pressure indicator)
-  systemPressure?: number; // Pressure from Ideal Gas Law
-  adaptiveCapacity?: number; // Capacity after pressure adjustment
+  bucketLevel?: number;
+  waitTimeMs?: number;
+  overflowCount?: number;
+  systemPressure?: number;
+  adaptiveCapacity?: number;
 }
 
 export const RATE_LIMITS = {
@@ -45,28 +64,77 @@ export const RATE_LIMITS = {
 } as const satisfies Record<string, RateLimitConfig>;
 
 // ---------------------------------------------------------------------------
-// In-memory store (process-local Map)
+// Upstash Redis instance (production) — lazy-initialized
+// ---------------------------------------------------------------------------
+
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const USE_UPSTASH = Boolean(UPSTASH_URL && UPSTASH_TOKEN);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lazy-loaded ESM modules, types inferred at runtime
+let redisInstance: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lazy-loaded ESM modules, types inferred at runtime
+let upstashLimiters: Map<string, any> | null = null;
+
+async function ensureUpstash() {
+  if (!USE_UPSTASH) return false;
+  if (redisInstance) return true;
+  try {
+    await loadUpstash();
+    if (!RedisClass || !RatelimitClass) return false;
+    redisInstance = new RedisClass({ url: UPSTASH_URL!, token: UPSTASH_TOKEN! });
+    upstashLimiters = new Map();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function getUpstashLimiter(config: RateLimitConfig) {
+  const key = `${config.windowMs}:${config.maxRequests}`;
+  if (!upstashLimiters!.has(key)) {
+    upstashLimiters!.set(
+      key,
+      new RatelimitClass!({
+        redis: redisInstance!,
+        limiter: RatelimitClass!.slidingWindow(config.maxRequests, `${config.windowMs} ms`),
+        analytics: false,
+        prefix: "axomid:ratelimit",
+      }),
+    );
+  }
+  return upstashLimiters!.get(key)!;
+}
+
+// ---------------------------------------------------------------------------
+// In-memory store (local dev fallback)
 // ---------------------------------------------------------------------------
 
 interface WindowEntry {
   count: number;
   resetAt: number;
-  // Leaky Bucket state
   bucket: LeakyBucketState;
 }
 
-const store = new Map<string, WindowEntry>();
+const memStore = new Map<string, WindowEntry>();
 
-function cleanupExpired(): void {
+function memCleanupExpired(): void {
   const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now >= entry.resetAt) store.delete(key);
+  for (const [key, entry] of memStore) {
+    if (now >= entry.resetAt) memStore.delete(key);
   }
 }
 
-// Cleanup runs every 50 writes to keep the map lean
 let writeCounter = 0;
 const CLEANUP_INTERVAL = 50;
+
+function memMaybeCleanup(): void {
+  writeCounter++;
+  if (writeCounter >= CLEANUP_INTERVAL) {
+    writeCounter = 0;
+    memCleanupExpired();
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Core function — Leaky Bucket + Sliding Window hybrid
@@ -81,6 +149,9 @@ const CLEANUP_INTERVAL = 50;
  *
  * Physics analogy: Water flows into a bucket that drains at constant rate.
  * If water level exceeds capacity, requests are rejected.
+ *
+ * Production: Uses Upstash Redis (distributed across all Vercel instances).
+ * Local dev: Falls back to in-memory Map (process-local, single instance only).
  */
 export async function checkRateLimit(
   key: string,
@@ -89,11 +160,30 @@ export async function checkRateLimit(
   const now = Date.now();
   const resetAt = now + config.windowMs;
 
-  const existing = store.get(key);
+  // --- Upstash path (production) ---
+  if (USE_UPSTASH) {
+    try {
+      const ready = await ensureUpstash();
+      if (ready) {
+        const limiter = await getUpstashLimiter(config);
+        const result = await limiter.limit(key);
+        return {
+          allowed: result.success,
+          remaining: result.remaining,
+          resetAt: result.reset,
+          overflowCount: result.success ? 0 : 1,
+          systemPressure: 0,
+          adaptiveCapacity: config.maxRequests,
+        };
+      }
+    } catch (error) {
+      // Fallback to in-memory if Redis fails (don't block requests)
+      logger.warn("[RateLimiter] Upstash failed, falling back to in-memory:", error);
+    }
+  }
 
-  // Compute system pressure using Ideal Gas Law (PV = nRT)
-  // Higher pressure = system under load = adaptive capacity reduction
-  const systemLoad = store.size; // Number of active rate limit entries
+  // --- In-memory path (local dev / fallback) ---
+  const systemLoad = memStore.size;
   const pressure = idealGasPressure(
     systemLoad,
     config.maxRequests * 10,
@@ -101,12 +191,10 @@ export async function checkRateLimit(
     config.idealGasConstant || 1.0,
   );
 
-  // Adaptive capacity: reduce when pressure is high
   const adaptiveCapacity = pressure > 1
     ? Math.max(1, Math.floor(config.maxRequests / pressure))
     : config.maxRequests;
 
-  // Initialize bucket state
   const bucketConfig: LeakyBucketConfig = {
     capacity: adaptiveCapacity,
     drainRate: config.drainRate || config.maxRequests / (config.windowMs / 1000),
@@ -119,16 +207,12 @@ export async function checkRateLimit(
     overflowCount: 0,
   };
 
-  if (!existing || now >= existing.resetAt) {
-    // New window — reset bucket
-    const bucketResult = leakyBucketCheck(initialBucket, bucketConfig, now);
+  const existing = memStore.get(key);
 
-    store.set(key, {
-      count: 1,
-      resetAt,
-      bucket: bucketResult.newState,
-    });
-    maybeCleanup();
+  if (!existing || now >= existing.resetAt) {
+    const bucketResult = leakyBucketCheck(initialBucket, bucketConfig, now);
+    memStore.set(key, { count: 1, resetAt, bucket: bucketResult.newState });
+    memMaybeCleanup();
 
     return {
       allowed: bucketResult.allowed,
@@ -142,18 +226,11 @@ export async function checkRateLimit(
     };
   }
 
-  // Existing window — apply Leaky Bucket
   const bucketResult = leakyBucketCheck(existing.bucket, bucketConfig, now);
-
   const newCount = existing.count + 1;
-  store.set(key, {
-    count: newCount,
-    resetAt: existing.resetAt,
-    bucket: bucketResult.newState,
-  });
-  maybeCleanup();
+  memStore.set(key, { count: newCount, resetAt: existing.resetAt, bucket: bucketResult.newState });
+  memMaybeCleanup();
 
-  // Use both bucket and window for decision
   const windowAllowed = newCount <= adaptiveCapacity;
   const bucketAllowed = bucketResult.allowed;
 
@@ -167,12 +244,4 @@ export async function checkRateLimit(
     systemPressure: pressure,
     adaptiveCapacity,
   };
-}
-
-function maybeCleanup(): void {
-  writeCounter++;
-  if (writeCounter >= CLEANUP_INTERVAL) {
-    writeCounter = 0;
-    cleanupExpired();
-  }
 }
