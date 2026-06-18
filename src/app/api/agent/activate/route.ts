@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
   const { user } = auth;
 
   try {
-    const now = new Date();
     const updatedAgents = await prisma.userAgent.updateManyAndReturn({
       where: {
         userId: user.id,
@@ -33,17 +32,17 @@ export async function POST(request: NextRequest) {
       },
       data: {
         status: 'ACTIVE',
-        lastActive: now,
-        lastHeartbeat: now,
+        lastActive: new Date(),
+        lastHeartbeat: new Date(),
       },
     });
 
-
-      const updated = updatedAgents[0];
+    const [updated] = updatedAgents;
+    if (updated) {
       return apiSuccess({
         agentId: updated.id,
         publicId: updated.publicId,
-        status: updated.status,
+
       });
     }
 
