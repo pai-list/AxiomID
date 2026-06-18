@@ -3,8 +3,7 @@ import { registry } from "@/lib/registry";
 import React from "react";
 
 interface AxiomRendererProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spec: any;
+  spec: unknown;
 }
 
 export function AxiomRenderer({ spec }: AxiomRendererProps) {
