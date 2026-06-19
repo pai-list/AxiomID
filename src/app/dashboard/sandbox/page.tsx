@@ -17,6 +17,34 @@ interface AuditItem {
   desc: string;
 }
 
+const INITIAL_AUDIT_STATES: Record<string, "pending" | "scanning" | "passed" | "failed"> = {
+  sandbox: "pending",
+  ast: "pending",
+  injection: "pending",
+  signature: "pending",
+  exfil: "pending",
+  dangerous: "pending",
+  privilege: "pending",
+  provenance: "pending",
+};
+
+const LOG_COLORS: Record<string, string> = {
+  "[ERROR]": "text-red-400",
+  "[FATAL]": "text-red-400",
+  "[SUCCESS]": "text-emerald-400",
+  "[SYSTEM]": "text-gray-500",
+  "[MANIFEST]": "text-electric-blue",
+  "[CRITIC]": "text-axiom-purple",
+  "[CREATOR]": "text-amber-400",
+};
+
+function getLogColor(log: string): string {
+  for (const [tag, cls] of Object.entries(LOG_COLORS)) {
+    if (log.includes(tag)) return cls;
+  }
+  return "text-subtle";
+}
+
 const DEFAULT_MANIFEST = `---
 name: my-first-custom-skill
 description: "A custom test skill to run inside the secure Vercel Sandbox"
@@ -42,22 +70,6 @@ const AUDIT_ITEMS: AuditItem[] = [
   { id: "provenance", label: "Provenance Check", desc: "Valid author historical rating >= 4.0." },
 ];
 
-type AuditState = "pending" | "scanning" | "passed" | "failed";
-
-const INITIAL_AUDIT_STATES: Record<string, AuditState> = Object.fromEntries(
-  AUDIT_ITEMS.map((item) => [item.id, "pending"])
-);
-
-function getLogColorClass(log: string): string {
-  if (log.includes("[ERROR]") || log.includes("[FATAL]")) return "text-red-400";
-  if (log.includes("[SUCCESS]")) return "text-emerald-400";
-  if (log.includes("[SYSTEM]")) return "text-gray-500";
-  if (log.includes("[MANIFEST]")) return "text-electric-blue";
-  if (log.includes("[CRITIC]")) return "text-axiom-purple";
-  if (log.includes("[CREATOR]")) return "text-amber-400";
-  return "text-subtle";
-}
-
 export default function SandboxPage() {
   const [manifest, setManifest] = useState(DEFAULT_MANIFEST);
   const [inputData, setInputData] = useState(`{"prompt": "Calculate prime sequence to 10"}`);
@@ -66,7 +78,7 @@ export default function SandboxPage() {
   const [skills, setSkills] = useState<SkillListItem[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [auditStates, setAuditStates] = useState<Record<string, AuditState>>(INITIAL_AUDIT_STATES);
+  const [auditStates, setAuditStates] = useState<Record<string, "pending" | "scanning" | "passed" | "failed">>(INITIAL_AUDIT_STATES);
 
   useEffect(() => {
     // Load skills from the marketplace list API to allow quick-loading manifests
@@ -149,9 +161,7 @@ export default function SandboxPage() {
         }
       }
     } catch (err) {
-      // Clear timeouts and fail active items
       timers.forEach(clearTimeout);
-
       setAuditStates(prev => {
         const next = { ...prev };
         Object.keys(next).forEach(k => {
@@ -167,6 +177,7 @@ export default function SandboxPage() {
         `[FATAL] ${err instanceof Error ? err.message : String(err)}`,
       ]);
     } finally {
+      timers.forEach(clearTimeout);
       setExecuting(false);
     }
   };
@@ -275,14 +286,14 @@ export default function SandboxPage() {
                 </span>
               ) : (
                 logs.map((log, idx) => (
-                  <div key={idx} className={`${getLogColorClass(log)} break-all`}>
+                  <div key={idx} className={`${getLogColor(log)} break-all`}>
                     {log}
                   </div>
                 ))
               )}
             </div>
           </div>
-        </div>
+
 
         {/* Sidebar Security & Templates (Right) */}
         <div className="lg:col-span-1 space-y-6">

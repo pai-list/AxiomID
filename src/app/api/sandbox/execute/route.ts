@@ -30,11 +30,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse name from manifest frontmatter if available
-  let skillName = "unnamed-skill";
   const nameMatch = manifestMd.match(/name:\s*([^\n\r]+)/);
-  if (nameMatch && nameMatch[1]) {
-    skillName = nameMatch[1].trim().replace(/['"]/g, "");
-  }
+  const skillName = nameMatch?.[1]?.trim().replace(/['"]/g, "") ?? "unnamed-skill";
 
   // Simulate streaming output of isolated sandbox VM execution
   const encoder = new TextEncoder();
