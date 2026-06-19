@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Renders a full-page error interface when AxiomID fails to initialize.
+ *
+ * Displays error information appropriate for the current environment, with a retry button to attempt recovery.
+ */
 export default function GlobalError({
   error,
   reset,

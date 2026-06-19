@@ -11,8 +11,8 @@ interface AgentQRProps {
  * Render a centered QR code for a DID with a small monospaced DID label below it.
  *
  * @param did - The Decentralized Identifier (DID) string to encode in the QR code.
- * @param size - The width and height in pixels of the generated QR code. Defaults to `160`.
- * @returns A JSX element containing the QR code for `did` and a monospaced, wrapped/truncated label showing the DID.
+ * @param size - The width and height in pixels of the QR code. Defaults to `160`.
+ * @returns A JSX element containing the QR code and a DID label.
  */
 export function AgentQR({ did, size = 160 }: AgentQRProps) {
   const qrValue = did;

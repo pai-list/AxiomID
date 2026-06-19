@@ -9,6 +9,13 @@ interface QuickLinksCardProps {
   did?: string;
 }
 
+/**
+ * Renders a card with quick navigation links to a passport view and DID document.
+ *
+ * @param passportSlug - The slug identifying the passport to link to
+ * @param did - Optional decentralized identifier to pass to the DID document endpoint
+ * @returns A card component with quick navigation links
+ */
 export function QuickLinksCard({ passportSlug, did }: QuickLinksCardProps) {
   const { t } = useLanguage();
   

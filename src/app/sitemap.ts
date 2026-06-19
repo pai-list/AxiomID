@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://axiomid.app';
 
+/**
+ * Generates an XML sitemap containing static application pages and dynamically added user passport pages.
+ *
+ * @returns A sitemap array that includes static dashboard pages and passport pages for users, or only static pages if retrieving user data fails.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE_URL, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },

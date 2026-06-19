@@ -7,6 +7,12 @@ interface PassportFooterProps {
   issuedDate: string;
 }
 
+/**
+ * Renders a footer displaying passport verification information and the issued date.
+ *
+ * @param issuedDate - The date string to display; shows "N/A" if the date cannot be parsed.
+ * @returns A footer element.
+ */
 export function PassportFooter({ issuedDate }: PassportFooterProps) {
   const { t } = useLanguage();
   const parsedDate = new Date(issuedDate);

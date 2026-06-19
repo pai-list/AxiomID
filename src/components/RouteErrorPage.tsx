@@ -11,15 +11,12 @@ interface RouteErrorPageProps {
 }
 
 /**
- * Renders a route-level error page with retry and dashboard navigation options.
- *
- * Displays the error message in development mode or a fallback message in production.
- * Provides a button to retry the route and a link to return to the dashboard.
+ * Error page for a failed route with retry and navigation options.
  *
  * @param title - Heading text for the error page
- * @param fallbackMessage - Message shown in production when error details should be hidden
- * @param error - The error object, optionally including a digest for tracking
- * @param reset - Callback invoked when the retry button is clicked
+ * @param fallbackMessage - Message displayed when error details should not be exposed
+ * @param error - The error object that caused the route to fail
+ * @param reset - Callback to retry rendering the route
  */
 export function RouteErrorPage({ title, fallbackMessage, error, reset }: RouteErrorPageProps) {
   useEffect(() => {

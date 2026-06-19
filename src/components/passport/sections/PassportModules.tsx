@@ -6,6 +6,11 @@ interface PassportModulesProps {
   activeModules: ModuleSlot[];
 }
 
+/**
+ * Displays a card showing which system module slots are currently active.
+ *
+ * @param activeModules - The list of module slots currently active
+ */
 export function PassportModules({ activeModules }: PassportModulesProps) {
   const totalSlots = MODULE_SLOTS.length;
   const activeCount = activeModules.length;

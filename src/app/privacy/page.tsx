@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+/**
+ * Renders the Privacy Policy page for AxiomID.
+ */
 export default function Privacy() {
   return (
     <main className="min-h-screen bg-grid relative">

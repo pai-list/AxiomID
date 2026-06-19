@@ -15,6 +15,12 @@ interface AgentCardProps {
   onClick?: () => void;
 }
 
+/**
+ * Returns styling configuration for a given status.
+ *
+ * @param status - The status to configure. Recognized values include "ACTIVE" and "PAUSED"
+ * @returns An object with Tailwind CSS classes for `color`, `bg`, and `border`, plus a `dot` boolean flag for visual indicators
+ */
 function getStatusConfig(status: string) {
   switch (status) {
     case "ACTIVE":
@@ -26,6 +32,15 @@ function getStatusConfig(status: string) {
   }
 }
 
+/**
+ * Displays an agent information card with configurable compact or full layout.
+ *
+ * In compact mode, shows an avatar, name, status badge, tier, XP, and a circular trust gauge.
+ * In full mode, displays additional details including a stats grid (trust, XP, status), an optional DID section, and a hover prompt.
+ *
+ * @param compact - If true, renders the compact layout; if false, renders the full layout (default: false)
+ * @returns A React component rendering the agent card
+ */
 export function AgentCard({
   name,
   tier,

@@ -9,6 +9,12 @@ interface WelcomeBannerProps {
   levelProgress: number;
 }
 
+/**
+ * Renders a welcome banner displaying the user's name, tier level, and progress towards the next level.
+ *
+ * @param levelProgress - The percentage of progress towards the next level, from 0 to 100
+ * @returns The welcome banner element
+ */
 export function WelcomeBanner({ username, tier, xp: _xp, levelProgress }: WelcomeBannerProps) {
   const { t } = useLanguage();
   return (

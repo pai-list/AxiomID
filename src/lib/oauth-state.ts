@@ -1,6 +1,11 @@
 import crypto from 'crypto';
 import { logger } from './logger';
 
+/**
+ * Reads the OAuth state secret from environment variables.
+ *
+ * @returns The OAuth state secret string if set, or `null` if not configured.
+ */
 function getSecret(): string | null {
   return process.env.OAUTH_STATE_SECRET || null;
 }

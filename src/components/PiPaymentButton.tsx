@@ -18,6 +18,17 @@ interface PiPaymentButtonProps {
 
 type PaymentState = "idle" | "creating" | "success" | "error";
 
+/**
+ * Renders a button that initiates a Pi Network payment with animated feedback for loading, success, and error states.
+ *
+ * The component calls `createPiPayment()` to process the payment using the provided amount, memo, and optional metadata.
+ * On successful completion, invokes the `onSuccess` callback with the transaction ID.
+ * On failure, invokes the `onError` callback with an error message.
+ *
+ * Displays a success confirmation with a check icon when payment completes,
+ * an error panel with a "Try again" button when payment fails,
+ * and a loading spinner during payment processing.
+ */
 export function PiPaymentButton({
   amount,
   memo,

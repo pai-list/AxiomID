@@ -10,6 +10,9 @@ interface AgentStatsCardProps {
   trustScore: number;
 }
 
+/**
+ * Displays agent statistics including level, experience points, trust score, and current operational status.
+ */
 export function AgentStatsCard({ tier, xp, agentName, agentStatus, trustScore }: AgentStatsCardProps) {
   const { t } = useLanguage();
 

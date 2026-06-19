@@ -15,6 +15,11 @@ interface AgentControlsCardProps {
   onPause: () => Promise<void>;
 }
 
+/**
+ * Renders a card displaying agent information and controls.
+ *
+ * Displays the agent's name, ID, status badge, and key metrics (trust score, XP, last active time). Provides conditional action buttons to activate, resume, or pause the agent based on its current status. Manages loading state during async operations.
+ */
 export function AgentControlsCard({
   agentName,
   agentId,

@@ -11,6 +11,16 @@ interface KYAVerificationCardProps {
   onVerify: (username: string) => Promise<void>;
 }
 
+/**
+ * Displays a Know Your Account (KYA) verification card with status and verification controls.
+ *
+ * Renders different content based on the verification status: a verified DID display
+ * if verified, a pending validation message if in progress, or a username input field
+ * with a verification button if unverified.
+ *
+ * @param kycStatus - The current verification status: `"VERIFIED"`, `"PENDING"`, or any other value for unverified.
+ * @param onVerify - Callback invoked with the trimmed username when verification is initiated.
+ */
 export function KYAVerificationCard({ kycStatus, did, piUsername, onVerify }: KYAVerificationCardProps) {
   const [username, setUsername] = useState(piUsername || "");
   const [loading, setLoading] = useState(false);

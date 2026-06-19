@@ -20,6 +20,11 @@ interface OnboardingModalProps {
   t: (key: string) => string;
 }
 
+/**
+ * Renders a three-step onboarding modal with focus management and keyboard navigation.
+ *
+ * Guides users through connecting a Pi wallet, creating an autonomous agent, and completing onboarding. Supports escape-to-skip and traps tab navigation within the modal.
+ */
 export function OnboardingModal({
   step,
   agentName,

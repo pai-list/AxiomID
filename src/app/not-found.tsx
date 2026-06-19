@@ -1,5 +1,12 @@
 import Link from "next/link";
 
+/**
+ * Renders a styled 404 Page Not Found page for the AxiomID application.
+ *
+ * Displays an error message indicating the requested route does not exist in the AxiomID namespace
+ * and the identity layer has not been provisioned. Provides navigation links to return home or
+ * access the dashboard.
+ */
 export default function NotFound() {
   return (
     <main className="min-h-screen bg-grid flex flex-col items-center justify-center p-6">

@@ -51,10 +51,20 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
+/**
+ * Determines if a wallet address is a demo wallet.
+ *
+ * @returns `true` if the address starts with `"demo:"`, `false` otherwise.
+ */
 function isDemoWalletAddress(walletAddress?: string | null): boolean {
   return walletAddress?.startsWith("demo:") ?? false;
 }
 
+/**
+ * Retrieves the persisted wallet address from storage.
+ *
+ * @returns The stored wallet address if present and not a demo wallet, `null` otherwise.
+ */
 function getStoredWallet(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -70,6 +80,12 @@ function getStoredWallet(): string | null {
   }
 }
 
+/**
+ * Safely retrieves a localStorage value.
+ *
+ * @param key - The localStorage key to read
+ * @returns The stored value, or null if unavailable due to server environment or access error
+ */
 function getLocalStorageItem(key: string): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -151,7 +167,7 @@ function mapApiUser(data: ApiResponse, fallback?: { stellarAddress?: string | nu
 /**
  * Manages wallet authentication and user state for the application.
  *
- * Initializes Pi SDK connection with demo wallet fallback, restores user sessions, and provides wallet operations
+ * Initializes Pi SDK, restores user sessions, and provides wallet operations
  * (authentication, action claiming, KYA verification, agent management), user state, and progression metrics to child
  * components via context.
  *

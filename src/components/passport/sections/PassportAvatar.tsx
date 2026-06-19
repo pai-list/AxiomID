@@ -9,6 +9,11 @@ function getInitial(name: string): string {
   return name ? name.charAt(0).toUpperCase() : "?";
 }
 
+/**
+ * Renders an animated avatar component displaying a user's initial.
+ *
+ * @returns A React element rendering the avatar visualization.
+ */
 export function PassportAvatar({ username, tierColor }: PassportAvatarProps) {
   return (
     <div className="relative w-28 h-28 flex items-center justify-center mb-2">

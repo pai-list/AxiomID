@@ -3,6 +3,9 @@
 import React from "react";
 import { useLanguage } from "@/app/context/language-context";
 
+/**
+ * Renders the Passport interface header, displaying the AXIOMID logo and agent passport label.
+ */
 export function PassportHeader() {
   const { t } = useLanguage();
 

@@ -7,6 +7,9 @@ interface SkillsCardProps {
   skills: Array<{ name: string }>;
 }
 
+/**
+ * Renders a card displaying installed skills or an empty-state message if none are available.
+ */
 export function SkillsCard({ skills }: SkillsCardProps) {
   const { t } = useLanguage();
   return (

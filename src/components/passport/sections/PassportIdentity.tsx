@@ -14,6 +14,11 @@ interface PassportIdentityProps {
   copyToClipboard: (text: string) => void;
 }
 
+/**
+ * Renders a passport identity UI displaying the user's username, DID, wallet address, and optional agent information.
+ *
+ * Provides copy controls for the DID and wallet address. The agent information section is rendered only when an agent name is provided, displaying the agent's status in a badge.
+ */
 export function PassportIdentity({
   username,
   did,

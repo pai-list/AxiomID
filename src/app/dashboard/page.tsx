@@ -25,6 +25,14 @@ import { PiBrowserGuard, PiBrowserBanner } from "@/components/PiBrowserGuard";
 
 type TabId = "passport" | "actions" | "terminal" | "marketplace" | "agent";
 
+/**
+ * Renders the user dashboard with tab-based navigation and agent management.
+ *
+ * Displays different views based on wallet connection state: a connection prompt when
+ * not authenticated, or a full dashboard with tabs for passport, actions, agent, and
+ * terminal when authenticated. Manages an onboarding modal on first visit and provides
+ * controls for agent creation, activation, and pause operations.
+ */
 export default function Dashboard() {
   const router = useRouter();
   const { t, language } = useLanguage();

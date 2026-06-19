@@ -72,6 +72,15 @@ const REPORT_DIAGNOSTIC: Record<ErrorCode, (message: string) => any> = {
   INTERNAL_ERROR:              (m) => diagnostics.AXIOMID_E040({ operation: 'unknown', error: m } as any),
 };
 
+/**
+ * Constructs an API error response.
+ *
+ * @param code - The error code category
+ * @param message - The error message
+ * @param details - Additional error context
+ * @param headers - Response headers
+ * @returns A response containing the error with an appropriate HTTP status code
+ */
 export function apiError(code: ErrorCode, message: string, details?: unknown, headers?: Record<string, string>): NextResponse<ApiError> {
   const status = STATUS_MAP[code] ?? 500;
 

@@ -7,6 +7,15 @@ interface XPBurstProps {
   trigger: boolean;
 }
 
+/**
+ * Displays a floating XP burst animation triggered by the `trigger` prop.
+ *
+ * When `trigger` becomes truthy, renders a brief animation with "+{xp} XP" text
+ * and eight particles arranged in a circle. The animation disappears after 1200ms.
+ *
+ * @param xp - The amount of XP to display
+ * @param trigger - Activates the animation when true
+ */
 export function XPBurst({ xp, trigger }: XPBurstProps) {
   const [active, setActive] = useState(false);
 

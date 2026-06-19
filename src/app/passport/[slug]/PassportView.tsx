@@ -29,11 +29,9 @@ interface PassportData {
 }
 
 /**
- * Render the passport detail view for the current route `slug`, including loading state, error UI, and sharing.
+ * Displays a passport detail page for the current dynamic route.
  *
- * Fetches passport data for the `slug` when mounted or when `slug` changes, localizes UI strings based on `language`, and provides a share action that uses the Web Share API when available or copies the page URL to the clipboard.
- *
- * @returns A React element that displays a loading skeleton, an error panel with a CTA, the rendered passport with QR and share button, or `null` when no UI should be shown.
+ * @returns A React element showing a loading skeleton, error panel, passport display with QR and share button, or `null` when no UI is applicable.
  */
 export function PassportView() {
   const { slug } = useParams<{ slug: string }>();

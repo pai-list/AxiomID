@@ -11,6 +11,13 @@ interface CreateAgentCardProps {
   paymentAmount?: number;
 }
 
+/**
+ * Renders a card interface for creating a new agent, with optional payment integration.
+ *
+ * @param onCreate - Async callback invoked when the user creates an agent, passed the agent name
+ * @param requiresPayment - If true, creation requires payment authentication
+ * @param paymentAmount - Amount to charge for agent creation when payment is required
+ */
 export function CreateAgentCard({ 
   onCreate, 
   requiresPayment = false,

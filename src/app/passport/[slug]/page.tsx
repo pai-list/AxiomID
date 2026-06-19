@@ -24,12 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 /**
- * Render the passport page layout for an agent, composing the header, passport view, and footer.
+ * Renders the passport page layout for an agent.
  *
- * The layout includes a full-height grid background with a scanline, the PassportHeader component,
- * a centered area containing PassportView, and a bottom footer with copyright text.
- *
- * @returns A JSX element containing the assembled passport page layout
+ * @returns A JSX element containing the assembled passport page
  */
 export default function PassportPage() {
   return (

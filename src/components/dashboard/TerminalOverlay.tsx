@@ -13,6 +13,13 @@ interface TerminalOverlayProps {
   onClose: () => void;
 }
 
+/**
+ * Renders an animated terminal-style overlay displaying log entries and action buttons.
+ *
+ * The overlay appears fixed at the bottom of the screen with an animated entrance and exit. It displays two categories of logs: primary logs and wallet-specific logs, with visual distinction between them. The content automatically scrolls to show the latest entries. Header buttons allow clearing logs, running tests, and closing the overlay. An empty-state message appears when minimal logs are present.
+ *
+ * @returns A React element representing the terminal overlay component.
+ */
 export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose }: TerminalOverlayProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();

@@ -13,6 +13,9 @@ const sizeMap = {
   lg: "w-5 h-5",
 } as const;
 
+/**
+ * Renders a spinning loader icon.
+ */
 export function LoadingSpinner({ size = "md", className = "" }: LoadingSpinnerProps) {
   return <Loader2 className={`animate-spin text-current ${sizeMap[size]} ${className}`} />;
 }

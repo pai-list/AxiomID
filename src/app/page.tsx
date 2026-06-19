@@ -13,6 +13,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
+/**
+ * Displays an interactive agent passport card with pointer-responsive 3D tilt effects.
+ */
 function PassportHero({ user }: { user: { piUsername?: string | null; walletAddress?: string; tier?: Tier | null } | null }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -122,6 +125,9 @@ const _cardHover = {
   hover: { scale: 1.02, y: -4, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
+/**
+ * Renders the AxiomID public landing page with wallet integration, Agent Passport card, animated hero section, live network statistics, feature guides, and identity tier cards. Supports English and Arabic.
+ */
 export default function Home() {
   const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
   const { t, language } = useLanguage();
@@ -556,6 +562,13 @@ export default function Home() {
   );
 }
 
+/**
+ * Renders an animated section header that fades in when scrolled into view.
+ *
+ * @param label - Small uppercase label text displayed above the title
+ * @param title - Main heading text
+ * @param labelColor - CSS class name(s) applied to the label for styling
+ */
 function SectionHeader({ label, title, labelColor }: { label: string; title: string; labelColor: string }) {
   return (
     <motion.div

@@ -15,6 +15,11 @@ interface PublishSkillFormProps {
   onPublished: () => void;
 }
 
+/**
+ * Form for publishing skills to the marketplace.
+ *
+ * @param onPublished - Callback invoked after a successful skill publication.
+ */
 export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
   const [form, setForm] = useState({
     slug: "",

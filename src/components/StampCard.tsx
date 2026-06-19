@@ -17,11 +17,11 @@ interface StampCardProps {
 }
 
 /**
- * Renders a stamp reward card with manual or automatic claim workflow.
+ * Displays a reward card for claiming credentials with manual or automatic verification.
  *
- * Displays a form or auto-claim button based on `isAutomatic`. When connected, shows the verified handle and provides credential inspection. Triggers an XP animation on successful claim.
+ * When claimed, shows the verified handle and provides credential inspection. Triggers an XP animation on success.
  *
- * @param metadata - Optional JSON string containing credential data; the handle or username is displayed when connected.
+ * @param metadata - Optional JSON string containing credential metadata; the handle or username is extracted and displayed when the credential is verified.
  */
 export function StampCard({
   type,

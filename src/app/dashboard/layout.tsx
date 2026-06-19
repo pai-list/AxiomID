@@ -14,6 +14,11 @@ const NAV_ITEMS = [
   { href: "/dashboard/settings" as const, labelKey: "settings_page_title", icon: Settings },
 ];
 
+/**
+ * Provides the layout structure for dashboard pages.
+ *
+ * @param children - The page content to render within the layout
+ */
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useLanguage();

@@ -22,6 +22,11 @@ const sizeClasses = {
   lg: "text-sm px-5 py-2.5 min-h-[48px]",
 } as const;
 
+/**
+ * A styled, customizable button component with loading state support.
+ *
+ * When loading, displays a spinner and optional text while automatically disabling the button.
+ */
 export function ActionButton({
   variant = "primary",
   size = "md",
