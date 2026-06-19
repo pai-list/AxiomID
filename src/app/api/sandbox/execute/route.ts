@@ -4,6 +4,8 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { requireAuth } from "@/lib/auth-middleware";
 
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`sandbox-exec:${ip}`, RATE_LIMITS.authenticated);
@@ -44,37 +46,37 @@ export async function POST(request: NextRequest) {
 
       try {
         sendLine(`[SYSTEM] [1/5] Initializing secure Vercel microVM Sandbox context...`);
-        await new Promise((r) => setTimeout(r, 600));
+        await delay(600);
 
         sendLine(`[SYSTEM] [2/5] Mounting local worktree filesystem and loading dependencies...`);
-        await new Promise((r) => setTimeout(r, 800));
+        await delay(800);
 
         sendLine(`[SYSTEM] [3/5] Parsing skill manifest for: ${skillName}`);
         sendLine(`[MANIFEST] Found name: ${skillName}`);
-        await new Promise((r) => setTimeout(r, 500));
+        await delay(500);
 
         if (inputData) {
           sendLine(`[INPUT] Input parameters provided: ${inputData}`);
         } else {
           sendLine(`[INPUT] No input parameters provided. Running with default context...`);
         }
-        await new Promise((r) => setTimeout(r, 600));
+        await delay(600);
 
         sendLine(`[SYSTEM] [4/5] Starting Opposing-Agent Simulation Loop (Self-Play validation)...`);
         sendLine(`[CRITIC] assumption checks: validating sandbox execution path...`);
-        await new Promise((r) => setTimeout(r, 1000));
+        await delay(1000);
         sendLine(`[CREATOR] executing sandbox execution script...`);
-        await new Promise((r) => setTimeout(r, 700));
+        await delay(700);
 
         sendLine(`[RUNNING] Executing agent core loop...`);
         sendLine(`[RUNNING] -> importing module: ${skillName}`);
-        await new Promise((r) => setTimeout(r, 900));
+        await delay(900);
 
         // Generate mock logs simulating the actual task execution
         sendLine(`[OUTPUT] Hello from inside the Sandbox!`);
         sendLine(`[OUTPUT] Execution trace completed successfully.`);
         sendLine(`[CRITIC] Final safety score: 9.8/10. No security leaks detected.`);
-        await new Promise((r) => setTimeout(r, 600));
+        await delay(600);
 
         sendLine(`[SYSTEM] [5/5] Tearing down microVM sandbox and reclaiming ephemeral volumes.`);
         sendLine(`[SUCCESS] Execution finished successfully with Exit Code 0.`);
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "application/x-ndjson",
+      "Transfer-Encoding": "chunked",
     },
   });
 }

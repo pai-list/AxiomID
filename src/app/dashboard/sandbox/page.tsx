@@ -42,6 +42,22 @@ const AUDIT_ITEMS: AuditItem[] = [
   { id: "provenance", label: "Provenance Check", desc: "Valid author historical rating >= 4.0." },
 ];
 
+type AuditState = "pending" | "scanning" | "passed" | "failed";
+
+const INITIAL_AUDIT_STATES: Record<string, AuditState> = Object.fromEntries(
+  AUDIT_ITEMS.map((item) => [item.id, "pending"])
+);
+
+function getLogColorClass(log: string): string {
+  if (log.includes("[ERROR]") || log.includes("[FATAL]")) return "text-red-400";
+  if (log.includes("[SUCCESS]")) return "text-emerald-400";
+  if (log.includes("[SYSTEM]")) return "text-gray-500";
+  if (log.includes("[MANIFEST]")) return "text-electric-blue";
+  if (log.includes("[CRITIC]")) return "text-axiom-purple";
+  if (log.includes("[CREATOR]")) return "text-amber-400";
+  return "text-subtle";
+}
+
 export default function SandboxPage() {
   const [manifest, setManifest] = useState(DEFAULT_MANIFEST);
   const [inputData, setInputData] = useState(`{"prompt": "Calculate prime sequence to 10"}`);
@@ -50,16 +66,7 @@ export default function SandboxPage() {
   const [skills, setSkills] = useState<SkillListItem[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [auditStates, setAuditStates] = useState<Record<string, "pending" | "scanning" | "passed" | "failed">>({
-    sandbox: "pending",
-    ast: "pending",
-    injection: "pending",
-    signature: "pending",
-    exfil: "pending",
-    dangerous: "pending",
-    privilege: "pending",
-    provenance: "pending",
-  });
+  const [auditStates, setAuditStates] = useState<Record<string, AuditState>>(INITIAL_AUDIT_STATES);
 
   useEffect(() => {
     // Load skills from the marketplace list API to allow quick-loading manifests
@@ -91,23 +98,16 @@ export default function SandboxPage() {
   const handleExecute = async () => {
     setExecuting(true);
     setLogs([`[SYSTEM] Triggering sandbox initialization...`]);
-    setAuditStates({
-      sandbox: "scanning",
-      ast: "pending",
-      injection: "pending",
-      signature: "pending",
-      exfil: "pending",
-      dangerous: "pending",
-      privilege: "pending",
-      provenance: "pending",
-    });
+    setAuditStates({ ...INITIAL_AUDIT_STATES, sandbox: "scanning" });
 
     // Animate security checkpoints step-by-step
-    const t1 = setTimeout(() => setAuditStates(prev => ({ ...prev, sandbox: "passed", ast: "scanning" })), 600);
-    const t2 = setTimeout(() => setAuditStates(prev => ({ ...prev, ast: "passed", injection: "scanning", signature: "scanning" })), 1400);
-    const t3 = setTimeout(() => setAuditStates(prev => ({ ...prev, injection: "passed", signature: "passed", exfil: "scanning", dangerous: "scanning", privilege: "scanning" })), 2000);
-    const t4 = setTimeout(() => setAuditStates(prev => ({ ...prev, exfil: "passed", dangerous: "passed", privilege: "passed", provenance: "scanning" })), 2900);
-    const t5 = setTimeout(() => setAuditStates(prev => ({ ...prev, provenance: "passed" })), 3600);
+    const timers = [
+      setTimeout(() => setAuditStates(prev => ({ ...prev, sandbox: "passed", ast: "scanning" })), 600),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, ast: "passed", injection: "scanning", signature: "scanning" })), 1400),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, injection: "passed", signature: "passed", exfil: "scanning", dangerous: "scanning", privilege: "scanning" })), 2000),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, exfil: "passed", dangerous: "passed", privilege: "passed", provenance: "scanning" })), 2900),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, provenance: "passed" })), 3600),
+    ];
 
     try {
       const res = await fetch("/api/sandbox/execute", {
@@ -150,12 +150,8 @@ export default function SandboxPage() {
       }
     } catch (err) {
       // Clear timeouts and fail active items
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
-      
+      timers.forEach(clearTimeout);
+
       setAuditStates(prev => {
         const next = { ...prev };
         Object.keys(next).forEach(k => {
@@ -278,27 +274,11 @@ export default function SandboxPage() {
                   Waiting for execution triggers... (Click "Run Test" to start sandbox session)
                 </span>
               ) : (
-                logs.map((log, idx) => {
-                  let colorClass = "text-subtle";
-                  if (log.includes("[ERROR]") || log.includes("[FATAL]")) {
-                    colorClass = "text-red-400";
-                  } else if (log.includes("[SUCCESS]")) {
-                    colorClass = "text-emerald-400";
-                  } else if (log.includes("[SYSTEM]")) {
-                    colorClass = "text-gray-500";
-                  } else if (log.includes("[MANIFEST]")) {
-                    colorClass = "text-electric-blue";
-                  } else if (log.includes("[CRITIC]")) {
-                    colorClass = "text-axiom-purple";
-                  } else if (log.includes("[CREATOR]")) {
-                    colorClass = "text-amber-400";
-                  }
-                  return (
-                    <div key={idx} className={`${colorClass} break-all`}>
-                      {log}
-                    </div>
-                  );
-                })
+                logs.map((log, idx) => (
+                  <div key={idx} className={`${getLogColorClass(log)} break-all`}>
+                    {log}
+                  </div>
+                ))
               )}
             </div>
           </div>

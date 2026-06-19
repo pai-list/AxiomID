@@ -137,16 +137,14 @@ export function determineSandboxMode(): boolean {
       }
     }
   } catch {}
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("sandbox") === "true") {
-      return true;
-    }
-  } catch {}
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("sandbox") === "true") {
+    return true;
+  }
   return false;
 }
 
-export async function ensurePiInitialized(pushLog?: (msg: string) => void): Promise<unknown> {
+
   if (typeof window === "undefined") return null;
   const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void } };
   
