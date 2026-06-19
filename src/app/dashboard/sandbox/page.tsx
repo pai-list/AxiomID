@@ -169,7 +169,7 @@ export default function SandboxPage() {
       setLogs((prev) => [
         ...prev,
         `[FATAL] ${err instanceof Error ? err.message : String(err)}`,
-      ]);
+      ].slice(-200));
     } finally {
       setExecuting(false);
     }
