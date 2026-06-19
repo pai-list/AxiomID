@@ -32,10 +32,10 @@ interface SkillDetail extends Skill {
 
 const TIER_COLORS: Record<string, string> = {
   BASIC_TOOL: "#64748b",
-  ADVANCED_TOOL: "var(--color-primary)",
-  ADVANCED_INFRASTRUCTURE: "var(--color-warning)",
-  PRO: "var(--axiom-purple)",
-  SOVEREIGN: "var(--color-success)",
+  ADVANCED_TOOL: "#3b82f6",
+  ADVANCED_INFRASTRUCTURE: "#f59e0b",
+  PRO: "#a855f7",
+  SOVEREIGN: "#22c55e",
 };
 
 const TIER_LABELS: Record<string, string> = {
@@ -112,6 +112,21 @@ export default function MarketplacePage() {
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const shouldBeOpen = !!selectedSkill || detailLoading;
+    if (shouldBeOpen) {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    } else {
+      if (dialog.open) {
+        dialog.close();
+      }
+    }
+  }, [selectedSkill, detailLoading]);
 
   const openDetail = async (slug: string) => {
     previousFocusRef.current = document.activeElement as HTMLElement;
@@ -337,7 +352,6 @@ export default function MarketplacePage() {
       {/* Skill Detail Modal */}
       <dialog
         ref={dialogRef}
-        open={!!selectedSkill || detailLoading}
         onClose={closeModal}
         className="bg-transparent p-0 rounded-xl backdrop:bg-black/80 backdrop:backdrop-blur-sm"
         role="dialog"

@@ -13,7 +13,7 @@ export const logger = {
     }
   },
   warn: (...args: unknown[]) => {
-    if (!isTest && !isProd) {
+    if (!isTest) {
       console.warn(...args);
     }
   }

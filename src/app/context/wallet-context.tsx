@@ -364,6 +364,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               username: piUser.username,
             }),
             signal: AbortSignal.timeout(10000),
+          }).catch((err) => {
+            if (err.name === "TimeoutError") {
+              throw new Error("Authentication request timed out. Please try again.");
+            }
+            throw err;
           });
 
           if (!res.ok) {

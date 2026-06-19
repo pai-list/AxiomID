@@ -83,7 +83,7 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
             <span className="text-neon-green/80">{line}</span>
           </div>
         ))}
-        {walletLogs.length === 0 && logs.length === 4 && (
+        {walletLogs.length === 0 && logs.length <= 1 && (
           <div className="italic mt-2" style={{ color: "var(--text-muted)" }}>
             {t('terminal_waiting')}
           </div>
