@@ -97,7 +97,7 @@ export async function POST(
     const trustScore = calculateTrustScore(user.xp || 0, stamps.length);
 
     const passportAttestation = {
-      username: user.piUsername || "AxiomID Agent",
+      username: user.piUsername ?? null,
       xp: user.xp,
       tier: user.tier,
       trustScore,
