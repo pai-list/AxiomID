@@ -154,7 +154,8 @@ describe("pi-sandbox", () => {
       expect(options.targetOrigin).toBe("https://app.minepi.com");
     });
 
-    it("should set targetOrigin to '*' if event origin is 'null' (sandboxed unique origin fallback)", () => {
+    it("should skip response for null origin (sandboxed unique origin — security)", () => {
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
       const requestMsg = {
         type: "@pi:app:sdk:communication_information_request",
         id: "request-id-456",
@@ -168,9 +169,11 @@ describe("pi-sandbox", () => {
 
       window.dispatchEvent(event);
 
-      expect(mockSource.postMessage).toHaveBeenCalled();
-      const [, options] = mockSource.postMessage.mock.calls[0];
-      expect(options.targetOrigin).toBe("*");
+      expect(mockSource.postMessage).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("null origin")
+      );
+      warnSpy.mockRestore();
     });
 
     it("should ignore messages with incorrect origins", () => {
