@@ -148,6 +148,16 @@ export default function SandboxPage() {
           }
         }
       }
+
+      // Process any trailing data left in the buffer (stream may not end with a newline)
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer);
+          setLogs((prev) => [...prev, parsed.text].slice(-200));
+        } catch {
+          // Ignore invalid lines
+        }
+      }
     } catch (err) {
       // Clear timeouts and fail active items
       clearTimeout(t1);

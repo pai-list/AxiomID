@@ -9,6 +9,7 @@ import { Bot, Users, Ticket, Zap, ArrowLeft, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 const NetworkGraph = dynamic(() => import("@/components/ui/NetworkGraph"), { ssr: false });
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { Tier } from "@/lib/tiers";
 
 interface ExplorerData {
   stats: {
@@ -34,7 +35,7 @@ interface ExplorerData {
     piUsername: string | null;
     walletAddress: string;
     did: string | null;
-    tier: string;
+    tier: Tier;
     xp: number;
     agent: {
       name: string;
@@ -152,7 +153,7 @@ export default function ExplorerPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
               {/* SVG Node Graph */}
               <div className="lg:col-span-7">
-                <NetworkGraph nodes={data.activeNodes as any} />
+                <NetworkGraph nodes={data.activeNodes} />
               </div>
 
               {/* Recent Ledger + Tier Distribution */}
