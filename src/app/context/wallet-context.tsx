@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from "react";
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
 import { calculateTrustScore } from "@/lib/trust";
-import { connectPi, runWalletTest, checkPiBrowser, PiSdkError, PiSdkErrorCode } from "@/lib/pi-sdk";
+import { connectPi, runWalletTest, checkPiBrowser, PiSdkError, PiSdkErrorCode, determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 
 export interface User {
@@ -535,7 +535,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         try {
           window.Pi.init({
             version: "2.0",
-            sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
+            sandbox: determineSandboxMode(),
           });
         } catch (err) {
           logger.error("Failed to initialize Pi SDK:", err);

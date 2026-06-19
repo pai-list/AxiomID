@@ -86,10 +86,10 @@ AxiomID uses a progressive trust model. You don't just "have" an ID; you **level
 | **Sovereign** | 1000 | 🟣 Elite | High reputation. Financial stake locked. Vouching power. |
 
 ### 🛠️ Tech Stack
-- **Frontend:** Next.js 16 (App Router), Tailwind CSS, Framer Motion (Bento Grids, Floating Elements).
-- **Backend:** Next.js API Routes (Serverless).
+- **Frontend:** Next.js 16 (App Router), Vanilla CSS & Custom CSS Variables (Premium Glassmorphism & Cyberpunk Theme), Framer Motion.
+- **Backend:** Next.js API Routes (Serverless & Edge-ready).
 - **Database:** PostgreSQL (via **Prisma ORM**).
-- **Auth:** Web3 First (Wallet Connect).
+- **Auth:** Web3 First (Pi Network SDK + Wallet connection).
 
 ### 📂 Project Structure
 ```
@@ -105,6 +105,7 @@ axiomid/
 │   │   ├── dashboard/
 │   │   │   ├── page.tsx              # User dashboard (tabs: passport, actions, agent, terminal)
 │   │   │   ├── marketplace/page.tsx  # Skills marketplace
+│   │   │   ├── sandbox/page.tsx      # 🛡️ Developer Sandbox Playground
 │   │   │   └── settings/page.tsx     # User settings & profile
 │   │   ├── passport/[slug]/
 │   │   │   ├── page.tsx              # Public agent passport view
@@ -116,7 +117,7 @@ axiomid/
 │   │   │   ├── wallet-context.tsx    # 🧠 Global State Management
 │   │   │   ├── language-context.tsx  # i18n (EN/AR) context
 │   │   │   └── sandbox-provider.tsx  # Pi Browser sandbox init
-│   │   └── api/                      # ⚡ Backend Logic (20+ routes)
+│   │   └── api/                      # ⚡ Backend Logic (22+ routes)
 │   │       ├── auth/connect/         # Wallet Authentication
 │   │       ├── auth/logout/          # Session logout
 │   │       ├── auth/pi/              # Pi Network Authentication
@@ -133,7 +134,9 @@ axiomid/
 │   │       ├── pi/kya/claim/         # KYA verification
 │   │       ├── pi/payment/approve/   # Payment approval
 │   │       ├── pi/payment/complete/  # Payment completion
-│   │       ├── skills/               # Skills marketplace API
+│   │       ├── skills/               # Skills marketplace index & auto-seed
+│   │       ├── skills/[slug]/install/ # Skill installation executor
+│   │       ├── sandbox/execute/      # ⚙️ Isolated VM Sandbox execution stream
 │   │       ├── stamp/                # Stamp listing
 │   │       ├── stamp/claim/          # Stamp claiming
 │   │       ├── status/               # Network status
@@ -150,67 +153,61 @@ axiomid/
 │   │   ├── VerificationBadge.tsx     # KYA/KYC status badge
 │   │   └── XPBurst.tsx              # XP animation effect
 │   ├── lib/
-│   │   ├── prisma.ts                 # Database Client (Prisma singleton)
 │   │   ├── actions.ts                # "Proof of Work" Definitions
-│   │   ├── tiers.ts                  # Gamification Logic
-│   │   ├── trust.ts                  # Trust score algorithm (70/30 XP/stamp)
-│   │   ├── auth-middleware.ts         # Pi token verification + cache
+│   │   ├── auth-middleware.ts        # Pi token verification + cache
+│   │   ├── catalog.ts                # Skill catalog configurations
 │   │   ├── crypto.ts                 # VC signing + token encryption
-│   │   ├── did.ts                    # DID generation (did:axiom:*)
-│   │   ├── errors.ts                 # Standardized API error/success
-│   │   ├── ip.ts                     # Client IP resolver
-│   │   ├── logger.ts                 # Structured logger
-│   │   ├── oauth-state.ts            # CSRF state token signing
-│   │   ├── pi-sdk.ts                 # Pi SDK v2.0 integration
-│   │   ├── pi-sandbox.ts             # Pi Browser sandbox compat
-│   │   ├── rate-limiter.ts           # In-memory sliding window
-│   │   ├── sanitize.ts               # Input sanitization
-│   │   ├── validators.ts             # Zod schemas for all inputs
-│   │   ├── vc.ts                     # W3C Verifiable Credential signing
-│   │   ├── did.ts                    # Decentralized Identifier creation
 │   │   ├── did-document.ts           # W3C DID Document builder
 │   │   ├── did-resolver.ts           # DID resolution
-│   │   ├── trust.ts                  # Trust scoring
-│   │   ├── trust-chain.ts            # Trust chain verification
-│   │   ├── tiers.ts                  # Tier calculation
+│   │   ├── did.ts                    # DID generation (did:axiom:*)
 │   │   ├── env.ts                    # Environment variable validation
-│   │   ├── crypto.ts                 # Encryption utilities
-│   │   ├── images.ts                 # Image processing
-│   │   ├── catalog.ts                # Skill catalog
-│   │   ├── math-physics.ts           # Physics-inspired algorithms
-│   │   ├── prisma.ts                 # Prisma client
-│   │   ├── supabase/                 # Supabase client
-│   │   │   ├── server.ts             # Server-side client
-│   │   │   └── client.ts             # Browser client
-│   │   └── agents/                   # Agent-specific utilities
+│   │   ├── errors.ts                 # Standardized API error/success
+│   │   ├── images.ts                 # Image processing helpers
+│   │   ├── ip.ts                     # Client IP resolver
+│   │   ├── logger.ts                 # Structured logger
+│   │   ├── math-physics.ts           # Physics-inspired algorithms (Carnot, Fick, Fourier)
+│   │   ├── oauth-state.ts            # CSRF state token signing
+│   │   ├── pi-sandbox.ts             # Pi Browser sandbox compatibility
+│   │   ├── pi-sdk.ts                 # Pi SDK v2.0 dynamic integration
+│   │   ├── prisma.ts                 # Database Client (Prisma singleton)
+│   │   ├── rate-limiter.ts           # In-memory sliding window
+│   │   ├── registry.tsx              # Marketplace visual layout registry
+│   │   ├── sanitize.ts               # Input sanitization
+│   │   ├── stitch-tokens.ts          # Authentication token stitching
+│   │   ├── supabase/                 # Supabase server & client scripts
+│   │   ├── tiers.ts                  # Tier calculation & Gamification Logic
+│   │   ├── trust-chain.ts            # Trust chain verification
+│   │   ├── trust.ts                  # Trust score algorithm (70/30 XP/stamp)
+│   │   ├── validators.ts             # Zod schemas for all inputs
+│   │   └── vc.ts                     # W3C Verifiable Credential signing
 │   ├── data/
-│   │   └── skills.json               # Agent skill registry (90+ skills)
+│   │   └── skills.json               # Agent skill registry (auto-seeded)
 │   ├── middleware.ts                  # Subdomain rewrite + body size limit
 │   └── types/
 │       └── global.d.ts               # Pi Browser global types
 ├── backend/
 │   ├── src/
-│   │   ├── index.ts              # Cloudflare Worker entry
-│   │   ├── router.ts             # Route handler (15+ routes)
+│   │   ├── index.ts                  # Cloudflare Worker entry
+│   │   ├── router.ts                 # Route handler (15+ routes)
 │   │   ├── mcp/
-│   │   │   ├── server.ts         # 11 MCP tools with Zod schemas
-│   │   │   └── handler.ts        # JSON-RPC handler for /mcp
+│   │   │   ├── server.ts             # 11 MCP tools with Zod schemas
+│   │   │   └── handler.ts            # JSON-RPC handler for /mcp
 │   │   ├── routes/
-│   │   │   ├── search.ts         # GET /api/search
-│   │   │   ├── agent-dispatch.ts # 5 skill executors
-│   │   │   ├── skills.ts         # Marketplace + install tracking
+│   │   │   ├── search.ts             # GET /api/search
+│   │   │   ├── agent-dispatch.ts     # 5 skill executors
+│   │   │   ├── skills.ts             # Marketplace + install tracking
 │   │   │   └── ...
 │   │   └── lib/
-│   │       ├── auth.ts           # Timing-safe auth + rate limit headers
-│   │       ├── trust.ts          # Dialectic trust engine
-│   │       ├── delegation.ts     # BFS trust chain resolver
-│   │       └── rate-limiter.ts   # KV-backed distributed rate limiter
++   │   │   ├── auth.ts               # Timing-safe auth + rate limit headers
+│   │   │   ├── trust.ts              # Dialectic trust engine
+│   │   │   ├── delegation.ts         # BFS trust chain resolver
+│   │   │   └── rate-limiter.ts       # KV-backed distributed rate limiter
 │   ├── migrations/
-│   │   ├── 0001_init.sql         # D1 schema
-│   │   └── 0002_seed_skills.sql  # 5 core skills seed
+│   │   ├── 0001_init.sql             # D1 schema
+│   │   └── 0002_seed_skills.sql      # 5 core skills seed
 │   ├── workers/
-│   │   └── harvest-processor.ts  # Queue consumer
-│   └── wrangler.toml             # Cloudflare config (D1, KV, AI, Vectorize, Queues, DO)
+│   │   └── harvest-processor.ts      # Queue consumer
+│   └── wrangler.toml                 # Cloudflare config (D1, KV, AI, Vectorize, Queues, DO)
 ├── prisma/
 │   ├── schema.prisma                 # Database Schema (PostgreSQL)
 │   └── migrations/                   # Migration files (baseline: 0_init)

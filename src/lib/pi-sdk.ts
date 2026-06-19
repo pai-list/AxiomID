@@ -104,6 +104,41 @@ export function loadPiSdk(): Promise<unknown> {
   });
 }
 
+export function determineSandboxMode(): boolean {
+  if (typeof window === "undefined") return false;
+  if (process.env.NEXT_PUBLIC_PI_SANDBOX !== undefined) {
+    return process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
+  }
+  const hostname = window.location.hostname;
+  if (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".localhost") ||
+    hostname.includes("192.168.") ||
+    hostname.includes("10.0.")
+  ) {
+    return true;
+  }
+  if (hostname.includes("vercel.app") || hostname.includes("staging")) {
+    return true;
+  }
+  try {
+    if (window.self !== window.top) {
+      const referrer = document.referrer || "";
+      if (referrer.includes("sandbox.minepi.com")) {
+        return true;
+      }
+    }
+  } catch {}
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("sandbox") === "true") {
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 export async function ensurePiInitialized(pushLog?: (msg: string) => void): Promise<unknown> {
   if (typeof window === "undefined") return null;
   const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void } };
@@ -129,7 +164,7 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
       pushLog?.("Initializing Pi SDK v2.0...");
       piInstance.init({
         version: "2.0",
-        sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
+        sandbox: determineSandboxMode(),
       });
       isInitialized = true;
       pushLog?.("Pi SDK initialized successfully.");
@@ -211,7 +246,7 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
           timer = setTimeout(() => reject(new PiSdkError(
             PiSdkErrorCode.AUTHENTICATION_TIMEOUT,
             "Pi authentication timed out"
-          )), 15000);
+          )), 45000);
         });
         // Clear the timer once the race settles so the loser's timer does not
         // keep running (and, on the timeout branch, does not reject an

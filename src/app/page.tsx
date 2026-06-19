@@ -73,12 +73,22 @@ export default function Home() {
         className="w-full max-w-6xl flex flex-wrap justify-between items-center gap-3 px-4 sm:px-6 py-4 sm:py-6 z-10"
       >
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-              <span className="text-blue-500 font-bold">A</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/10 bg-black/40 relative group overflow-hidden transition-all duration-300 hover:border-electric-blue/40">
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 via-electric-blue/5 to-axiom-purple/5 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <svg className="w-5.5 h-5.5 z-10 filter drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="42" stroke="url(#logoGrad)" strokeWidth="3" strokeDasharray="4 16 28 6" className="animate-spin" style={{ animationDuration: '24s' }} />
+                <path d="M50 24 L74 74 L62 74 L50 48 L38 74 L26 74 Z" fill="#ffffff" />
+                <path d="M40 64 H60 L58 68 H42 Z" fill="#39FF14" />
+                <defs>
+                  <linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100">
+                    <stop offset="0%" stop-color="#39FF14"/>
+                    <stop offset="50%" stop-color="#00d4ff"/>
+                    <stop offset="100%" stop-color="#a855f7"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
-            <span className="font-mono text-lg sm:text-xl tracking-tighter" style={{ color: 'var(--text-primary)' }}>AXIOM<span style={{ color: 'var(--text-muted)' }}>ID</span></span>
-          </div>
+            <span className="font-mono text-lg sm:text-xl tracking-tighter" style={{ color: 'var(--text-primary)' }}>AXIOM<span className="text-electric-blue">ID</span></span>
           <div className="w-px h-6 bg-white/10 hidden sm:block" />
           <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
             <svg viewBox="0 0 100 100" className="w-4 h-4" fill="currentColor">
