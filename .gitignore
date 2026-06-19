@@ -50,3 +50,4 @@ next-env.d.ts
 # misc caches
 .cache/
 .swc/
+stitch-*.html

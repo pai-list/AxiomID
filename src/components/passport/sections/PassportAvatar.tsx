@@ -9,6 +9,11 @@ function getInitial(name: string): string {
   return name ? name.charAt(0).toUpperCase() : "?";
 }
 
+/**
+ * Renders an animated avatar component displaying a user's initial.
+ *
+ * @returns A React element rendering the avatar visualization.
+ */
 export function PassportAvatar({ username, tierColor }: PassportAvatarProps) {
   return (
     <div className="relative w-28 h-28 flex items-center justify-center mb-2">
@@ -27,7 +32,7 @@ export function PassportAvatar({ username, tierColor }: PassportAvatarProps) {
         }}
       >
         {/* Scanner line scanning up and down */}
-        <div className="absolute left-0 w-full h-[2px] bg-neon-green/80 shadow-[0_0_8px_#00ff41] animate-bounce" style={{ top: '50%', animationDuration: '4s' }} />
+        <div className="absolute left-0 w-full h-[2px] bg-neon-green/80 shadow-[0_0_8px_var(--neon-green)] animate-bounce" style={{ top: '50%', animationDuration: '4s' }} />
         {/* Holographic matrix grid pattern */}
         <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,_rgba(0,0,0,0.25)_50%),_linear-gradient(90deg,_rgba(255,0,0,0.06),_rgba(0,255,0,0.02),_rgba(0,0,255,0.06))] bg-[size:100%_4px,_6px_100%]" />
         {getInitial(username)}

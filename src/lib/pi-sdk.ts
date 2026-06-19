@@ -178,6 +178,13 @@ export function checkPiBrowser(): boolean {
   return false;
 }
 
+/**
+ * Authenticates the user with the Pi Browser wallet.
+ *
+ * @param pushLog - Optional callback for logging progress messages
+ * @returns An object containing the authenticated user information and access token
+ * @throws PiSdkError if authentication fails or the Pi Browser environment is not available
+ */
 export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuthResult> {
   try {
     if (typeof window === "undefined") {
@@ -243,9 +250,15 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
         );
       }
       pushLog?.(`Authenticated: ${result.user.name || result.user.uid}`);
+      if (!result.user.uid) {
+        throw new PiSdkError(
+          PiSdkErrorCode.AUTHENTICATION_FAILED,
+          "Authentication failed - no UID received from Pi SDK"
+        );
+      }
       return {
         user: {
-          uid: result.user.uid ?? result.user.name,
+          uid: result.user.uid,
           username: result.user.username ?? result.user.name,
           name: result.user.name,
           stellarAddress: result.user.stellarAddress,

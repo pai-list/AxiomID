@@ -25,20 +25,14 @@ import { PiBrowserGuard, PiBrowserBanner } from "@/components/PiBrowserGuard";
 
 type TabId = "passport" | "actions" | "terminal" | "marketplace" | "agent";
 
-const DEMO_PROFILE = {
-  name: "Demo Agent",
-  tier: "Sovereign" as const,
-  xp: 2450,
-  status: "ACTIVE" as const,
-};
-
-const INITIAL_LOGS = [
-  "SYSTEM: initializing did:axiom resolver...",
-  "RESOLVER: resolved did:axiom:user-********",
-  "SECURITY: gRPC auth interceptor active",
-  "SYSTEM: Agentic OS online. Ready for task routing.",
-];
-
+/**
+ * Renders the user dashboard with tab-based navigation and agent management.
+ *
+ * Displays different views based on wallet connection state: a connection prompt when
+ * not authenticated, or a full dashboard with tabs for passport, actions, agent, and
+ * terminal when authenticated. Manages an onboarding modal on first visit and provides
+ * controls for agent creation, activation, and pause operations.
+ */
 export default function Dashboard() {
   const router = useRouter();
   const { t, language } = useLanguage();
@@ -58,13 +52,11 @@ export default function Dashboard() {
     pauseAgent,
     claimKya,
     isPiBrowser,
-    isDemoWallet,
-    isDemoWalletEnabled,
   } = useWallet();
 
   const [activeTab, setActiveTab] = useState<TabId>("passport");
   const [showTerminal, setShowTerminal] = useState(false);
-  const [logs, setLogs] = useState<string[]>(INITIAL_LOGS);
+  const [logs, setLogs] = useState<string[]>([]);
   const [agentName, setAgentName] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -77,8 +69,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  const isDemo = !user && !isLoading;
-  const shouldShowPiBrowserPrompt = !isPiBrowser && !isDemoWalletEnabled;
+  const shouldShowPiBrowserPrompt = !isPiBrowser;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -136,8 +127,8 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      ) : isDemo ? (
-        /* ── DEMO VIEW ── */
+      ) : !user ? (
+        /* ── NOT CONNECTED ── */
         <div className="space-y-6">
           <div className="bento-card p-5 border border-electric-blue/20 bg-electric-blue/5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -146,44 +137,21 @@ export default function Dashboard() {
                   <Zap className="w-5 h-5 text-electric-blue" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Demo Mode</h3>
-                  <p className="text-xs text-gray-400">Connect your wallet to manage your agent.</p>
+                  <h3 className="text-sm font-bold text-surface">Connect Your Pi Wallet</h3>
+                  <p className="text-xs text-subtle">Open Pi Browser to authenticate and manage your agent.</p>
                 </div>
               </div>
               {shouldShowPiBrowserPrompt ? (
                 <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-center text-amber-200 text-xs">
-                  Open in Pi Browser (Demo Disabled)
+                  Open in Pi Browser
                 </div>
               ) : (
-                <button onClick={connectWallet} disabled={isConnecting} className="btn-primary text-xs px-4 py-2">
+                <button type="button" onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? "Connecting" : "Connect Wallet"} className="btn-primary text-xs px-4 py-2">
                   {isConnecting ? "CONNECTING..." : "CONNECT WALLET"}
                 </button>
               )}
             </div>
           </div>
-
-          {/* Demo agent card */}
-          <AgentCard
-            name={DEMO_PROFILE.name}
-            tier={DEMO_PROFILE.tier}
-            trustScore={85}
-            xp={DEMO_PROFILE.xp}
-            status={DEMO_PROFILE.status as "ACTIVE"}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <AgentStatsCard
-              tier={DEMO_PROFILE.tier}
-              xp={DEMO_PROFILE.xp}
-              agentName={DEMO_PROFILE.name}
-              agentStatus={DEMO_PROFILE.status}
-              trustScore={85}
-            />
-            <SkillsCard skills={skillsData.skills.slice(0, 4)} />
-            <QuickLinksCard passportSlug="demo" />
-          </div>
-
-          <StampBoard user={null} claimAction={claimAction} connectWallet={connectWallet} />
         </div>
       ) : user ? (
         /* ── AUTHENTICATED VIEW ── */
@@ -191,9 +159,7 @@ export default function Dashboard() {
           <WelcomeBanner
             username={user.piUsername || "User"}
             tier={user.tier}
-            xp={user.xp}
             levelProgress={levelProgress}
-            isDemoWallet={isDemoWallet}
           />
 
           {/* Tab content */}
@@ -226,7 +192,7 @@ export default function Dashboard() {
               {/* Skills marketplace preview */}
               <div className="bento-card p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-surface flex items-center gap-2">
                     <Store className="w-4 h-4 text-axiom-purple" />
                     Skills Marketplace
                   </h3>
@@ -241,14 +207,14 @@ export default function Dashboard() {
                       className="p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-axiom-purple/30 transition-colors cursor-default"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-white font-mono">{skill.name}</span>
+                        <span className="text-sm text-surface font-mono">{skill.name}</span>
                         {skill.tier && (
                           <span className="text-[9px] font-mono text-axiom-purple bg-axiom-purple/10 px-1.5 py-0.5 rounded">
                             {skill.tier}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 line-clamp-2">{skill.description}</p>
+                      <p className="text-xs text-faint line-clamp-2">{skill.description}</p>
                     </div>
                   ))}
                 </div>
@@ -309,7 +275,7 @@ export default function Dashboard() {
                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[40px] rounded-lg text-xs font-mono transition-all flex-shrink-0 ${
                   isActive
                     ? "bg-neon-green/20 text-neon-green shadow-[0_0_12px_rgba(16,185,129,0.1)]"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                    : "text-subtle hover:text-surface hover:bg-white/5"
                 }`}
               >
                 {tab.icon}
@@ -326,7 +292,7 @@ export default function Dashboard() {
           <TerminalOverlay
             logs={logs}
             walletLogs={walletLogs}
-            onClear={() => { clearWalletLogs(); setLogs(INITIAL_LOGS); }}
+            onClear={() => { clearWalletLogs(); setLogs([]); }}
             onRunTest={runWalletTest}
             onClose={() => { setShowTerminal(false); setActiveTab("passport"); }}
           />

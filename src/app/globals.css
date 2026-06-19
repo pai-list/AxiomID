@@ -1,27 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --neon-green: #10b981;
-  --neon-green-glow: rgba(16, 185, 129, 0.12);
-  --electric-blue: #3b82f6;
-  --axiom-purple: #8b5cf6;
-  --axiom-gold: #f59e0b;
-  --badge-red: #ef4444;
-  --bg-deep: #09090b;
-  --bg-card: #18181b;
-  --bg-card-hover: #27272a;
-  --card-border: rgba(255, 255, 255, 0.06);
-  --card-border-hover: rgba(255, 255, 255, 0.12);
+  /* ── Enterprise Palette ──────────────────────────────── */
+  --color-primary: #3b82f6;        /* Blue-500 — professional, trusted */
+  --color-primary-hover: #2563eb;  /* Blue-600 */
+  --color-success: #22c55e;        /* Green-500 — subtle, not neon */
+  --color-warning: #f59e0b;        /* Amber-500 */
+  --color-danger: #ef4444;         /* Red-500 */
+  --color-info: #06b6d4;           /* Cyan-500 */
+
+  /* ── Legacy aliases (backward compat) ────────────────── */
+  --neon-green: var(--color-success);
+  --neon-green-glow: rgba(34, 197, 94, 0.08);
+  --electric-blue: var(--color-primary);
+  --axiom-purple: #6366f1;         /* Indigo-500 — less garish than purple */
+  --axiom-gold: var(--color-warning);
+  --badge-red: var(--color-danger);
+
+  /* ── Surfaces (Stitch-inspired depth layers) ─────────── */
+  --bg-deep: #10131a;
+  --bg-card: #1d2027;
+  --bg-card-hover: #272a31;
+  --bg-card-high: #32353c;
+  --bg-card-dim: #191b23;
+  --card-border: #424754;
+  --card-border-hover: #8c909f;
+
+  /* ── Typography ──────────────────────────────────────── */
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
   --font-mono: var(--font-geist-mono), 'SF Mono', monospace;
 
-  /* ── Semantic design-token aliases ──────────────────────────
-     These map clean, intent-based names onto the existing palette.
-     They reference the raw tokens above (via var()), so they stay
-     theme-correct automatically across :root and [data-theme="light"].
-     New components should prefer these over the raw color names. */
+  /* ── Semantic Tokens ─────────────────────────────────── */
   --surface: var(--bg-card);
   --surface-hover: var(--bg-card-hover);
   --surface-deep: var(--bg-deep);
@@ -30,29 +41,39 @@
   --text: var(--text-primary);
   --text-subtle: var(--text-secondary);
   --text-faint: var(--text-muted);
-  --primary: var(--neon-green);
-  --primary-glow: var(--neon-green-glow);
-  --accent: var(--electric-blue);
+  --primary: var(--color-primary);
+  --primary-glow: rgba(59, 130, 246, 0.08);
+  --accent: var(--axiom-purple);
   --highlight: var(--axiom-purple);
-  --warning: var(--axiom-gold);
-  --danger: var(--badge-red);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
 }
 
 [data-theme="light"] {
-  --neon-green: #059669;
-  --neon-green-glow: rgba(5, 150, 105, 0.08);
-  --electric-blue: #2563eb;
-  --axiom-purple: #7c3aed;
-  --axiom-gold: #d97706;
-  --badge-red: #dc2626;
-  --bg-deep: #fafafa;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #0891b2;
+
+  --neon-green: var(--color-success);
+  --neon-green-glow: rgba(22, 163, 74, 0.06);
+  --electric-blue: var(--color-primary);
+  --axiom-purple: #4f46e5;
+  --axiom-gold: var(--color-warning);
+  --badge-red: var(--color-danger);
+
+  --bg-deep: #f8f9fc;
   --bg-card: #ffffff;
-  --bg-card-hover: #f4f4f5;
-  --card-border: rgba(0, 0, 0, 0.06);
-  --card-border-hover: rgba(0, 0, 0, 0.12);
+  --bg-card-hover: #f1f3f7;
+  --bg-card-high: #e8ecf2;
+  --bg-card-dim: #f4f5f8;
+  --card-border: #d4d8e3;
+  --card-border-hover: #9ca3b0;
   --text-primary: #18181b;
   --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
+  --text-muted: #71717a;
 }
 
 @theme inline {
@@ -63,6 +84,118 @@
   --color-bg-deep: var(--bg-deep);
   --color-bg-card: var(--bg-card);
   --font-mono: var(--font-mono);
+}
+
+/* Theme-aware text utilities (replace hardcoded text-white/text-gray-*) */
+.text-surface { color: var(--text-primary); }
+.text-subtle { color: var(--text-secondary); }
+.text-faint { color: var(--text-muted); }
+
+/* Stitch UI components */
+.stitch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: var(--bg-card-high);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+}
+
+.stitch-feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stitch-feature-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 20px -4px rgba(59, 130, 246, 0.08);
+}
+
+[data-theme="light"] .stitch-feature-card:hover {
+  box-shadow: 0 0 16px -4px rgba(59, 130, 246, 0.06);
+}
+
+/* Spotlight radial gradients for depth/energy */
+.spotlight-primary {
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+}
+.spotlight-accent {
+  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.06) 0%, transparent 70%);
+}
+.spotlight-card {
+  background: radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.04) 0%, rgba(59, 130, 246, 0.03) 40%, transparent 70%);
+}
+
+[data-theme="light"] .spotlight-primary {
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+}
+[data-theme="light"] .spotlight-accent {
+  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.03) 0%, transparent 70%);
+}
+[data-theme="light"] .spotlight-card {
+  background: radial-gradient(ellipse at 50% 0%, rgba(34, 197, 94, 0.02) 0%, rgba(59, 130, 246, 0.02) 40%, transparent 70%);
+}
+
+/* ============================================
+   STAMP HIERARCHY
+   ============================================ */
+.stamp-earned {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.15),
+    0 0 20px -4px rgba(34, 197, 94, 0.08),
+    0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
+
+.stamp-earned:hover {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.25),
+    0 0 30px -4px rgba(34, 197, 94, 0.12),
+    0 8px 20px -4px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.stamp-earned .stamp-icon {
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.25));
+}
+
+.stamp-pending {
+  opacity: 0.7;
+}
+
+.stamp-pending:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .stamp-earned {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.2),
+    0 0 16px -4px rgba(34, 197, 94, 0.06),
+    0 4px 10px -2px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .stamp-earned:hover {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.3),
+    0 0 24px -4px rgba(34, 197, 94, 0.1),
+    0 8px 16px -4px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .stamp-pending {
+  opacity: 0.65;
+}
+
+[data-theme="light"] .stamp-pending:hover {
+  opacity: 1;
 }
 
 * {
@@ -111,7 +244,7 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(to bottom, rgba(16, 185, 129, 0.06), transparent);
+  background: linear-gradient(to bottom, rgba(34, 197, 94, 0.06), transparent);
   opacity: 0.3;
   animation: scanline 12s linear infinite;
   pointer-events: none;
@@ -172,26 +305,45 @@ body {
 /* ============================================
    BUTTONS
    ============================================ */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-danger,
+.btn-toggle {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 .btn-primary {
-  background: var(--neon-green);
+  background: var(--color-primary);
   border: 1px solid transparent;
   color: #fff;
   padding: 10px 20px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
   text-transform: uppercase;
   position: relative;
   cursor: pointer;
 }
 
 .btn-primary:hover {
-  background: color-mix(in srgb, var(--neon-green) 85%, black);
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
-  transform: translateY(-1px);
+  background: var(--color-primary-hover);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 [data-theme="light"] .btn-primary {
@@ -203,14 +355,60 @@ body {
   box-shadow: 0 2px 12px rgba(5, 150, 105, 0.25);
 }
 
+.btn-secondary {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--card-border-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary:disabled,
+.btn-secondary[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+[data-theme="light"] .btn-secondary {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--card-border);
   color: var(--text-secondary);
   padding: 8px 16px;
   border-radius: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 0.75rem;
+  letter-spacing: 0.02em;
   transition: all 0.15s ease;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
@@ -218,6 +416,17 @@ body {
   border-color: var(--card-border-hover);
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-ghost:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-ghost:disabled,
+.btn-ghost[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 [data-theme="light"] .btn-ghost {
@@ -228,12 +437,68 @@ body {
   background: rgba(0, 0, 0, 0.04);
 }
 
+[data-theme="light"] .btn-ghost:active:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--badge-red);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-danger:disabled,
+.btn-danger[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  min-height: 36px;
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 639px) {
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 0.75rem;
+  }
+}
+
 /* ============================================
    PASSPORT CARD
    ============================================ */
 .passport-card {
-  background: linear-gradient(145deg, #111118 0%, #0a0a0a 50%, #111118 100%);
-  border: 1px solid rgba(0, 255, 65, 0.12);
+  background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-dim) 50%, var(--bg-card) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.12);
   border-radius: 20px;
   position: relative;
   overflow: hidden;
@@ -246,9 +511,9 @@ body {
 }
 
 .passport-card:hover {
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: rgba(34, 197, 94, 0.25);
   box-shadow: 
-    0 0 30px rgba(16, 185, 129, 0.06),
+    0 0 30px rgba(34, 197, 94, 0.06),
     0 15px 40px -10px rgba(0, 0, 0, 0.4);
   transform: perspective(800px) rotateY(1deg) translateY(-2px);
 }
@@ -268,7 +533,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(16, 185, 129, 0.02),
+    rgba(34, 197, 94, 0.02),
     rgba(59, 130, 246, 0.02),
     transparent
   );
@@ -298,9 +563,9 @@ body {
 }
 
 .badge-verified {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(34, 197, 94, 0.1);
   color: var(--neon-green);
-  border-color: rgba(16, 185, 129, 0.25);
+  border-color: rgba(34, 197, 94, 0.25);
 }
 
 [data-theme="light"] .badge-verified {
@@ -423,21 +688,31 @@ body {
 }
 
 .animate-holographic {
+  position: relative;
+}
+
+.animate-holographic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(16, 185, 129, 0.02) 25%,
-    rgba(59, 130, 246, 0.02) 50%,
-    rgba(139, 92, 246, 0.02) 75%,
+    rgba(34, 197, 94, 0.03) 25%,
+    rgba(59, 130, 246, 0.03) 50%,
+    rgba(139, 92, 246, 0.03) 75%,
     transparent 100%
   );
   background-size: 200% 100%;
   animation: holographic 10s linear infinite;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.15); }
-  50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
+  0%, 100% { box-shadow: 0 0 12px rgba(34, 197, 94, 0.15); }
+  50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.25); }
 }
 
 /* ============================================
@@ -514,7 +789,7 @@ a:focus-visible {
 @keyframes stamp-unlock {
   0% { transform: scale(0.95); border-color: var(--card-border); }
   50% { transform: scale(1.01); border-color: var(--neon-green); }
-  100% { transform: scale(1); border-color: rgba(16, 185, 129, 0.25); }
+  100% { transform: scale(1); border-color: rgba(34, 197, 94, 0.25); }
 }
 
 .animate-stamp-unlock {

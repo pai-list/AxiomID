@@ -3,6 +3,8 @@ export {};
 interface PiUser {
   uid: string;
   username: string;
+  name?: string;
+  stellarAddress?: string;
 }
 
 interface PiAuthResult {

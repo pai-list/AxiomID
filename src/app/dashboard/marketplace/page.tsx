@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins } from "lucide-react";
 import { PublishSkillForm } from "@/components/dashboard/PublishSkillForm";
@@ -32,10 +32,10 @@ interface SkillDetail extends Skill {
 
 const TIER_COLORS: Record<string, string> = {
   BASIC_TOOL: "#64748b",
-  ADVANCED_TOOL: "#00d4ff",
+  ADVANCED_TOOL: "#3b82f6",
   ADVANCED_INFRASTRUCTURE: "#f59e0b",
   PRO: "#a855f7",
-  SOVEREIGN: "#00ff41",
+  SOVEREIGN: "#22c55e",
 };
 
 const TIER_LABELS: Record<string, string> = {
@@ -46,11 +46,6 @@ const TIER_LABELS: Record<string, string> = {
   SOVEREIGN: "Sovereign",
 };
 
-/**
- * Renders the AI skill marketplace with browsing, filtering, detail viewing, and installation features.
- *
- * Users can search and filter published skills by tier, click to view details in a modal, and install selected skills. The component also provides a publish mode to add new skills to the marketplace.
- */
 export default function MarketplacePage() {
   const { user, connectWallet, isConnecting } = useWallet();
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -110,22 +105,47 @@ export default function MarketplacePage() {
     setOffset(0);
   };
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const fetchAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (selectedSkill && !dialog.open) {
+      dialog.showModal();
+    } else if (!selectedSkill && dialog.open) {
+      dialog.close();
+    }
+  }, [selectedSkill]);
+
   const openDetail = async (slug: string) => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    fetchAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchAbortRef.current = controller;
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/skills/${slug}`);
+      const res = await fetch(`/api/skills/${slug}`, { signal: controller.signal });
       if (!res.ok) {
         setError(`Failed to load skill (${res.status})`);
         return;
       }
       const data = await res.json();
       setSelectedSkill(data);
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError("Failed to load skill details");
     } finally {
       setDetailLoading(false);
     }
   };
+
+  const closeModal = useCallback(() => {
+    fetchAbortRef.current?.abort();
+    setSelectedSkill(null);
+    previousFocusRef.current?.focus();
+  }, []);
 
   const handleInstall = async (slug: string) => {
     if (!user) {
@@ -184,14 +204,16 @@ export default function MarketplacePage() {
           <>
             {/* Search + Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <label htmlFor="marketplace-search" className="sr-only">Search skills</label>
               <input
+                id="marketplace-search"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search skills... (agent-memory, voice-wizard, sovereign-constitution)"
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-neon-green/40 font-mono"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-surface placeholder-gray-600 focus:outline-none focus:border-neon-green/40 font-mono"
               />
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by tier">
                 {["", "BASIC_TOOL", "ADVANCED_TOOL", "ADVANCED_INFRASTRUCTURE", "PRO", "SOVEREIGN"].map((tier) => (
                   <button
                     key={tier}
@@ -199,7 +221,7 @@ export default function MarketplacePage() {
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-mono border transition-colors ${
                       filterTier === tier
                         ? "bg-neon-green/10 text-neon-green border-neon-green/30"
-                        : "bg-white/5 text-gray-500 border-white/10 hover:border-white/20"
+                        : "bg-white/5 text-faint border-white/10 hover:border-white/20"
                     }`}
                   >
                     {tier ? TIER_LABELS[tier] || tier : "ALL"}
@@ -248,8 +270,8 @@ export default function MarketplacePage() {
             ) : skills.length === 0 ? (
               <div className="bento-card p-12 text-center">
                 <span className="mb-4 block"><Dna className="w-12 h-12 text-emerald-400/40 mx-auto" /></span>
-                <h3 className="text-lg font-bold text-white mb-2">No Skills Available</h3>
-                <p className="text-sm text-gray-400 mb-6">
+                <h3 className="text-lg font-bold text-surface mb-2">No Skills Available</h3>
+                <p className="text-sm text-subtle mb-6">
                   Publish the first skill to the marketplace.
                 </p>
                 <button onClick={() => setShowPublish(true)} className="btn-primary">
@@ -268,7 +290,7 @@ export default function MarketplacePage() {
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-white font-mono truncate group-hover:text-neon-green transition-colors">
+                          <h4 className="text-sm font-bold text-surface font-mono truncate group-hover:text-neon-green transition-colors">
                             {skill.name}
                           </h4>
                           <p className="text-[10px] font-mono mt-0.5" style={{ color: tierColor }}>
@@ -287,7 +309,7 @@ export default function MarketplacePage() {
                         </span>
                       </div>
 
-                      <p className="text-xs text-gray-400 line-clamp-2 mb-4 min-h-[32px]">
+                      <p className="text-xs text-subtle line-clamp-2 mb-4 min-h-[32px]">
                         {skill.description || "No description"}
                       </p>
 
@@ -324,11 +346,15 @@ export default function MarketplacePage() {
         )}
 
       {/* Skill Detail Modal */}
-      {(selectedSkill || detailLoading) && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          onClick={() => setSelectedSkill(null)}
-        >
+      <dialog
+        ref={dialogRef}
+        onClose={closeModal}
+        className="bg-transparent p-0 rounded-xl backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        aria-label={selectedSkill ? `${selectedSkill.name} skill details` : "Loading skill details"}
+        onClick={(e) => { if (e.target === dialogRef.current) closeModal(); }}
+      >
           <div
             className="bento-card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 border border-white/10"
             onClick={(e) => e.stopPropagation()}
@@ -343,20 +369,20 @@ export default function MarketplacePage() {
               <>
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-xl font-bold text-white font-mono">{selectedSkill.name}</h2>
+                    <h2 className="text-xl font-bold text-surface font-mono">{selectedSkill.name}</h2>
                     <p className="text-xs font-mono mt-1" style={{ color: TIER_COLORS[selectedSkill.tier] }}>
                       {selectedSkill.slug} v{selectedSkill.version} — {TIER_LABELS[selectedSkill.tier] || selectedSkill.tier}
                     </p>
                   </div>
                   <button
-                    onClick={() => setSelectedSkill(null)}
-                    className="text-gray-500 hover:text-white text-xs font-mono px-2 py-0.5 border border-white/5 rounded"
+                    onClick={closeModal}
+                    className="text-faint hover:text-surface text-xs font-mono px-2 py-0.5 border border-white/5 rounded"
                   >
                     CLOSE
                   </button>
                 </div>
 
-                <p className="text-sm text-gray-300 mb-4">{selectedSkill.description}</p>
+                <p className="text-sm text-subtle mb-4">{selectedSkill.description}</p>
 
                 <div className="flex items-center gap-4 text-[10px] font-mono mb-6">
                   <span className="text-neon-green"><Download className="w-3 h-3 inline me-1" />{selectedSkill.installCount} installs</span>
@@ -402,6 +428,8 @@ export default function MarketplacePage() {
                   <button
                     onClick={() => handleInstall(selectedSkill.slug)}
                     disabled={installing || isConnecting}
+                    aria-busy={installing}
+                    aria-label={installing ? "Installing" : isConnecting ? "Connecting" : "Install Skill"}
                     className="flex-1 btn-primary py-2.5 text-xs font-mono"
                   >
                     {installing ? "INSTALLING..." : isConnecting ? "CONNECTING..." : !user ? "CONNECT WALLET TO INSTALL" : "INSTALL SKILL → AGENT"}
@@ -422,8 +450,7 @@ export default function MarketplacePage() {
               </>
             )}
           </div>
-        </div>
-      )}
+      </dialog>
     </>
   );
 }

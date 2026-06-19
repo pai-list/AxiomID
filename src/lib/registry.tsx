@@ -25,8 +25,8 @@ const LINK_ICONS: Record<LinkIcon, React.ReactNode> = {
 };
 
 const LINK_COLORS: Record<LinkColor, string> = {
-  "neon-green": "hover:text-neon-green hover:border-neon-green/30",
-  "electric-blue": "hover:text-electric-blue hover:border-electric-blue/30",
+  "neon-green": "hover:text-blue-500 hover:border-blue-500/30",
+  "electric-blue": "hover:text-blue-500 hover:border-blue-500/30",
   default: "",
 };
 
@@ -73,13 +73,14 @@ const components = {
   },
   LinkItem: ({ props }: { props: LinkItemProps }) => {
     const icon = LINK_ICONS[props.icon ?? "none"];
+    const colorClass = LINK_COLORS[props.color ?? "default"];
 
     return (
       // href is a runtime-generated string from the JSON spec, so it cannot be
       // statically verified against typedRoutes — cast to Route at this boundary.
       <Link
         href={props.href as Route}
-        className={`flex items-center justify-between p-3 rounded-xl border transition-colors group hover:bg-gray-100 dark:hover:bg-gray-700 ${LINK_COLORS[props.color ?? "default"]}`}
+        className={`flex items-center justify-between p-3 rounded-xl border transition-colors group hover:bg-gray-100 dark:hover:bg-gray-700 ${colorClass}`}
       >
         <div className="flex items-center gap-3">
           {icon && (
@@ -97,7 +98,7 @@ const components = {
   },
   Button: ({ props, actions }: { props: { label: string; action?: string }; actions?: Record<string, () => void> }) => (
     <button 
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      className="px-4 py-2 rounded btn-primary text-sm"
       onClick={props.action && actions?.[props.action] ? () => actions[props.action!]() : undefined}
     >
       {props.label}
@@ -105,7 +106,7 @@ const components = {
   ),
   Metric: ({ props }: { props: { label: string; value: string } }) => (
     <div className="p-2">
-      <div className="text-sm text-gray-500">{props.label}</div>
+      <div className="text-sm text-faint">{props.label}</div>
       <div className="text-lg font-bold">{props.value}</div>
     </div>
   ),

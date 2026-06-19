@@ -15,6 +15,11 @@ interface PublishSkillFormProps {
   onPublished: () => void;
 }
 
+/**
+ * Form for publishing skills to the marketplace.
+ *
+ * @param onPublished - Callback invoked after a successful skill publication.
+ */
 export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
   const [form, setForm] = useState({
     slug: "",
@@ -59,48 +64,52 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="bento-card p-6">
-        <h2 className="text-lg font-bold text-white font-mono mb-2 flex items-center"><Package className="w-5 h-5 text-emerald-400 inline me-2" />Publish Skill</h2>
-        <p className="text-xs text-gray-400 mb-6">
+        <h2 className="text-lg font-bold text-surface font-mono mb-2 flex items-center"><Package className="w-5 h-5 text-emerald-400 inline me-2" />Publish Skill</h2>
+        <p className="text-xs text-subtle mb-6">
           Skills are executable modules that agents can install and run.
         </p>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>SLUG *</label>
+              <label htmlFor="skill-slug" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>SLUG *</label>
               <input
+                id="skill-slug"
                 value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 placeholder="my-skill-name"
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none focus:border-neon-green/40"
               />
             </div>
             <div>
-              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>NAME *</label>
+              <label htmlFor="skill-name" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>NAME *</label>
               <input
+                id="skill-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="My Skill Name"
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none focus:border-neon-green/40"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>DESCRIPTION</label>
+            <label htmlFor="skill-description" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>DESCRIPTION</label>
             <input
+              id="skill-description"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Short description of what this skill does"
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-neon-green/40"
+              className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none focus:border-neon-green/40"
             />
           </div>
 
           <div>
-            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+            <label htmlFor="skill-manifest" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
               MANIFEST (SKILL.md) * — Full XML-tagged content
             </label>
             <textarea
+              id="skill-manifest"
               value={form.manifestMd}
               onChange={(e) => setForm({ ...form, manifestMd: e.target.value })}
               placeholder={`<skill name="my-skill">\n  <context>How the agent should use this skill...</context>\n  <commands>\n    <command trigger="/my-skill:run">Description</command>\n  </commands>\n</skill>`}
@@ -110,10 +119,11 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
           </div>
 
           <div>
-            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+            <label htmlFor="skill-script" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
               SPECIALIST AGENT SCRIPT (TypeScript)
             </label>
             <textarea
+              id="skill-script"
               value={form.agentScript}
               onChange={(e) => setForm({ ...form, agentScript: e.target.value })}
               placeholder={`export async function runSkill(context) {\n  // Agent logic here\n  return { success: true };\n}`}
@@ -123,10 +133,11 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
           </div>
 
           <div>
-            <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
+            <label htmlFor="skill-tests" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>
               TEST SUITE
             </label>
             <textarea
+              id="skill-tests"
               value={form.testSuite}
               onChange={(e) => setForm({ ...form, testSuite: e.target.value })}
               placeholder={`describe('my-skill', () => {\n  it('should do something', () => {\n    expect(true).toBe(true);\n  });\n});`}
@@ -137,11 +148,12 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>TIER</label>
+              <label htmlFor="skill-tier" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>TIER</label>
               <select
+                id="skill-tier"
                 value={form.tier}
                 onChange={(e) => setForm({ ...form, tier: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none"
               >
                 {Object.entries(TIER_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
@@ -149,22 +161,24 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>PRICE (π)</label>
+              <label htmlFor="skill-price" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>PRICE (π)</label>
               <input
+                id="skill-price"
                 type="number"
                 value={form.pricePi}
                 onChange={(e) => setForm({ ...form, pricePi: parseFloat(e.target.value) || 0 })}
                 min="0"
                 step="0.01"
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>VERSION</label>
+              <label htmlFor="skill-version" className="text-[10px] font-mono block mb-1" style={{ color: "var(--text-muted)" }}>VERSION</label>
               <input
+                id="skill-version"
                 value={form.version}
                 onChange={(e) => setForm({ ...form, version: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none"
+                className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-surface font-mono focus:outline-none"
               />
             </div>
           </div>

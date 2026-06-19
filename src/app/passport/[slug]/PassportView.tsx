@@ -29,11 +29,9 @@ interface PassportData {
 }
 
 /**
- * Render the passport detail view for the current route `slug`, including loading state, error UI, and sharing.
+ * Displays a passport detail page for the current dynamic route.
  *
- * Fetches passport data for the `slug` when mounted or when `slug` changes, localizes UI strings based on `language`, and provides a share action that uses the Web Share API when available or copies the page URL to the clipboard.
- *
- * @returns A React element that displays a loading skeleton, an error panel with a CTA, the rendered passport with QR and share button, or `null` when no UI should be shown.
+ * @returns A React element showing a loading skeleton, error panel, passport display with QR and share button, or `null` when no UI is applicable.
  */
 export function PassportView() {
   const { slug } = useParams<{ slug: string }>();
@@ -101,15 +99,18 @@ export function PassportView() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">{t('passport_not_found')}</h2>
-          <p className="text-gray-400 mb-8">{error}</p>
+          <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
+          <p className="text-subtle mb-8">{error}</p>
           <Link href="/" className="btn-primary text-xs">
             {t('create_your_passport')}
           </Link>
         </div>
       ) : passport ? (
         <>
-          <AgentPassport
+          <div className="relative">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[400px] h-[400px] spotlight-accent rounded-full pointer-events-none" />
+            <div className="absolute -bottom-10 right-0 w-[300px] h-[300px] spotlight-primary rounded-full pointer-events-none" />
+            <AgentPassport
             username={passport.username}
             walletAddress={passport.walletAddress || undefined}
             stellarAddress={passport.stellarAddress || undefined}
@@ -124,7 +125,8 @@ export function PassportView() {
             agentName={passport.agentName || undefined}
             agentStatus={passport.agentStatus || undefined}
           />
-
+          </div>
+ 
           <div className="mt-8 flex flex-col items-center gap-3">
             <AgentQR did={passport.did} />
             <button
@@ -139,7 +141,7 @@ export function PassportView() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-faint mb-4">
               {t('passport_verified_by')}
             </p>
             <Link href="/" className="btn-primary text-xs">

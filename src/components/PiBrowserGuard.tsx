@@ -3,6 +3,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Smartphone, Globe, Loader2, ExternalLink } from "lucide-react";
+import { checkPiBrowser } from "@/lib/pi-sdk";
 
 interface PiBrowserContextType {
   isPiBrowser: boolean;
@@ -22,36 +23,6 @@ interface PiBrowserGuardProps {
   children: ReactNode;
   fallback?: ReactNode;
   showSplash?: boolean;
-}
-
-function detectPiBrowser(): boolean {
-  if (typeof window === "undefined") return false;
-  
-  const win = window as unknown as { Pi?: unknown };
-  if (win.Pi) return true;
-  
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent;
-  if (/Pi Browser|minepi|PiApp/i.test(ua)) return true;
-  
-  try {
-    if (window.self !== window.top) {
-      const referrer = document.referrer || "";
-      if (referrer) {
-        const referrerHost = new URL(referrer).hostname.toLowerCase();
-        if (referrerHost === "minepi.com" || referrerHost.endsWith(".minepi.com")) return true;
-      }
-    }
-  } catch {}
-  
-  try {
-    if (typeof window.location !== "undefined") {
-      const host = window.location.hostname.toLowerCase();
-      if (host === "minepi.com" || host.endsWith(".minepi.com")) return true;
-    }
-  } catch {}
-  
-  return false;
 }
 
 function detectSandbox(): boolean {
@@ -83,7 +54,7 @@ export function PiBrowserGuard({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsPiBrowser(detectPiBrowser());
+      setIsPiBrowser(checkPiBrowser());
       setIsSandbox(detectSandbox());
       setIsDetecting(false);
     }, 500);

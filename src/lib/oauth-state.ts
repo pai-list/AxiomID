@@ -1,5 +1,11 @@
 import crypto from 'crypto';
+import { logger } from './logger';
 
+/**
+ * Reads the OAuth state secret from environment variables.
+ *
+ * @returns The OAuth state secret string if set, or `null` if not configured.
+ */
 function getSecret(): string | null {
   return process.env.OAUTH_STATE_SECRET || null;
 }
@@ -23,6 +29,7 @@ export function verifyState(stateToken: string): string | null {
     const { payload, signature } = envelope;
 
     if (!secret) {
+      logger.warn('[OAUTH-STATE] OAUTH_STATE_SECRET not set — verification skipped');
       return null;
     }
 
@@ -32,16 +39,19 @@ export function verifyState(stateToken: string): string | null {
       .digest('hex');
 
     if (!safeEqual(signature, expectedSignature)) {
+      logger.warn('[OAUTH-STATE] Signature mismatch — possible tampered state token');
       return null;
     }
 
     const { walletAddress, expiresAt } = JSON.parse(payload);
     if (Date.now() > expiresAt) {
+      logger.warn('[OAUTH-STATE] State token expired for wallet:', walletAddress ? walletAddress.slice(0, 6) + '...' : 'unknown');
       return null;
     }
 
     return walletAddress;
-  } catch {
+  } catch (err) {
+    logger.warn('[OAUTH-STATE] Failed to parse state token:', err);
     return null;
   }
 }

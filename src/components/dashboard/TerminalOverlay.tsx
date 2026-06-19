@@ -13,6 +13,13 @@ interface TerminalOverlayProps {
   onClose: () => void;
 }
 
+/**
+ * Renders an animated terminal-style overlay displaying log entries and action buttons.
+ *
+ * The overlay appears fixed at the bottom of the screen with an animated entrance and exit. It displays two categories of logs: primary logs and wallet-specific logs, with visual distinction between them. The content automatically scrolls to show the latest entries. Header buttons allow clearing logs, running tests, and closing the overlay. An empty-state message appears when minimal logs are present.
+ *
+ * @returns A React element representing the terminal overlay component.
+ */
 export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose }: TerminalOverlayProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
@@ -29,8 +36,8 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-16 left-0 right-0 z-40 backdrop-blur-md max-h-[50vh] sm:max-h-[40vh] overflow-hidden flex flex-col border-t"
-      style={{ background: "color-mix(in srgb, var(--bg-card) 95%, transparent)", borderColor: "var(--card-border)" }}
+      className="fixed bottom-[72px] left-0 right-0 z-40 backdrop-blur-md max-h-[50vh] sm:max-h-[40vh] overflow-hidden flex flex-col border-t"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)", background: "color-mix(in srgb, var(--bg-card) 95%, transparent)", borderColor: "var(--card-border)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "var(--card-border)" }}>
@@ -73,7 +80,7 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
       <div ref={scrollRef} className="overflow-y-auto flex-1 p-4 font-mono text-[11px] leading-relaxed">
         {logs.map((line, i) => (
           <div key={`init-${i}`} className="flex items-start gap-2">
-            <span className="text-gray-600 select-none shrink-0">{'>'}</span>
+            <span className="text-faint select-none shrink-0">{'>'}</span>
             <span style={{ color: "var(--text-muted)" }}>{line}</span>
           </div>
         ))}
@@ -83,7 +90,7 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
             <span className="text-neon-green/80">{line}</span>
           </div>
         ))}
-        {walletLogs.length === 0 && logs.length === 4 && (
+        {walletLogs.length === 0 && logs.length <= 1 && (
           <div className="italic mt-2" style={{ color: "var(--text-muted)" }}>
             {t('terminal_waiting')}
           </div>
