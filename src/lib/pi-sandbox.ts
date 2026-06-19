@@ -27,7 +27,7 @@ export function patchPostMessageForSandbox(): void {
 export function listenForPiSDKMessages(): () => void {
   function handlePiMessage(event: MessageEvent) {
     if (typeof event.data !== "string") return;
-    if (event.origin !== "https://app.minepi.com" && event.origin !== "https://sandbox.minepi.com" && event.origin !== "null") return;
+    if (event.origin !== "https://app.minepi.com" && event.origin !== "https://sandbox.minepi.com" && (event.origin as string) !== "null") return;
 
     try {
       const msg = JSON.parse(event.data);
