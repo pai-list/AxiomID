@@ -17,12 +17,14 @@
   --axiom-gold: var(--color-warning);
   --badge-red: var(--color-danger);
 
-  /* ── Surfaces ────────────────────────────────────────── */
-  --bg-deep: #09090b;
-  --bg-card: #18181b;
-  --bg-card-hover: #27272a;
-  --card-border: rgba(255, 255, 255, 0.06);
-  --card-border-hover: rgba(255, 255, 255, 0.12);
+  /* ── Surfaces (Stitch-inspired depth layers) ─────────── */
+  --bg-deep: #10131a;
+  --bg-card: #1d2027;
+  --bg-card-hover: #272a31;
+  --bg-card-high: #32353c;
+  --bg-card-dim: #191b23;
+  --card-border: #424754;
+  --card-border-hover: #8c909f;
 
   /* ── Typography ──────────────────────────────────────── */
   --text-primary: #fafafa;
@@ -62,11 +64,13 @@
   --axiom-gold: var(--color-warning);
   --badge-red: var(--color-danger);
 
-  --bg-deep: #fafafa;
+  --bg-deep: #f8f9fc;
   --bg-card: #ffffff;
-  --bg-card-hover: #f4f4f5;
-  --card-border: rgba(0, 0, 0, 0.06);
-  --card-border-hover: rgba(0, 0, 0, 0.12);
+  --bg-card-hover: #f1f3f7;
+  --bg-card-high: #e8ecf2;
+  --bg-card-dim: #f4f5f8;
+  --card-border: #d4d8e3;
+  --card-border-hover: #9ca3b0;
   --text-primary: #18181b;
   --text-secondary: #52525b;
   --text-muted: #71717a;
@@ -86,6 +90,38 @@
 .text-surface { color: var(--text-primary); }
 .text-subtle { color: var(--text-secondary); }
 .text-faint { color: var(--text-muted); }
+
+/* Stitch UI components */
+.stitch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  background: var(--bg-card-high);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+}
+
+.stitch-feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stitch-feature-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 20px -4px rgba(59, 130, 246, 0.08);
+}
+
+[data-theme="light"] .stitch-feature-card:hover {
+  box-shadow: 0 0 16px -4px rgba(59, 130, 246, 0.06);
+}
 
 /* Spotlight radial gradients for depth/energy */
 .spotlight-primary {
@@ -461,7 +497,7 @@ body {
    PASSPORT CARD
    ============================================ */
 .passport-card {
-  background: linear-gradient(145deg, #111118 0%, #0a0a0a 50%, #111118 100%);
+  background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-dim) 50%, var(--bg-card) 100%);
   border: 1px solid rgba(34, 197, 94, 0.12);
   border-radius: 20px;
   position: relative;
