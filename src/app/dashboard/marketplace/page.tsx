@@ -369,7 +369,6 @@ export default function MarketplacePage() {
         aria-modal="true"
         aria-label={selectedSkill ? `${selectedSkill.name} skill details` : "Loading skill details"}
         onClick={(e) => { if (e.target === dialogRef.current) closeModal(); }}
-        onKeyDown={(e) => { if (e.key === "Escape") closeModal(); }}
       >
           <div
             className="bento-card max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 border border-white/10"
