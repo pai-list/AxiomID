@@ -78,6 +78,18 @@ const mockSkill = {
   createdAt: "2024-01-01T00:00:00Z",
 };
 
+const mockSkillDetail = {
+  ...mockSkill,
+  manifestMd: "# Test Skill",
+  agentScript: null,
+  testSuite: null,
+  status: "PUBLISHED",
+  isPublished: true,
+  installationCount: 42,
+  reviewCount: 10,
+  updatedAt: "2024-01-01T00:00:00Z",
+};
+
 describe("MarketplacePage — initial load and error handling (PR change)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -192,20 +204,7 @@ describe("MarketplacePage — install button state (PR change: wallet integratio
         ok: true,
         json: async () => ({ skills: [mockSkill] }),
       })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          ...mockSkill,
-          manifestMd: "# Test",
-          agentScript: null,
-          testSuite: null,
-          status: "PUBLISHED",
-          isPublished: true,
-          installationCount: 42,
-          reviewCount: 10,
-          updatedAt: "2024-01-01T00:00:00Z",
-        }),
-      });
+      .mockResolvedValueOnce({ ok: true, json: async () => mockSkillDetail });
 
     render(<MarketplacePage />);
 
@@ -228,20 +227,7 @@ describe("MarketplacePage — install button state (PR change: wallet integratio
         ok: true,
         json: async () => ({ skills: [mockSkill] }),
       })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          ...mockSkill,
-          manifestMd: "# Test",
-          agentScript: null,
-          testSuite: null,
-          status: "PUBLISHED",
-          isPublished: true,
-          installationCount: 42,
-          reviewCount: 10,
-          updatedAt: "2024-01-01T00:00:00Z",
-        }),
-      });
+      .mockResolvedValueOnce({ ok: true, json: async () => mockSkillDetail });
 
     render(<MarketplacePage />);
 
@@ -263,20 +249,7 @@ describe("MarketplacePage — install button state (PR change: wallet integratio
         ok: true,
         json: async () => ({ skills: [mockSkill] }),
       })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          ...mockSkill,
-          manifestMd: "# Test",
-          agentScript: null,
-          testSuite: null,
-          status: "PUBLISHED",
-          isPublished: true,
-          installationCount: 42,
-          reviewCount: 10,
-          updatedAt: "2024-01-01T00:00:00Z",
-        }),
-      });
+      .mockResolvedValueOnce({ ok: true, json: async () => mockSkillDetail });
 
     render(<MarketplacePage />);
 
@@ -308,20 +281,7 @@ describe("MarketplacePage — handleInstall wallet flow (PR change)", () => {
         ok: true,
         json: async () => ({ skills: [mockSkill] }),
       })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          ...mockSkill,
-          manifestMd: "# Test",
-          agentScript: null,
-          testSuite: null,
-          status: "PUBLISHED",
-          isPublished: true,
-          installationCount: 42,
-          reviewCount: 10,
-          updatedAt: "2024-01-01T00:00:00Z",
-        }),
-      });
+      .mockResolvedValueOnce({ ok: true, json: async () => mockSkillDetail });
 
     render(<MarketplacePage />);
 
@@ -406,18 +366,6 @@ describe("MarketplacePage — handleInstall wallet flow (PR change)", () => {
 });
 
 describe("MarketplacePage — install button aria-label states (PR change)", () => {
-  const mockSkillDetail = {
-    ...mockSkill,
-    manifestMd: "# Test Skill",
-    agentScript: null,
-    testSuite: null,
-    status: "PUBLISHED",
-    isPublished: true,
-    installationCount: 42,
-    reviewCount: 10,
-    updatedAt: "2024-01-01T00:00:00Z",
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
