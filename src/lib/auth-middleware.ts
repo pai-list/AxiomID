@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   walletAddress: string;
   piUid: string;
   piUsername: string | null;
+  did: string | null;
   xp: number;
   tier: string;
 }
@@ -141,6 +142,7 @@ export async function requireAuth(request: NextRequest): Promise<
         walletAddress: true,
         piUid: true,
         piUsername: true,
+        did: true,
         xp: true,
         tier: true,
       },

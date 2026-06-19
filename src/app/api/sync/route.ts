@@ -31,6 +31,7 @@ const SyncRequestSchema = z.object({
   dryRun: z.boolean().default(false),
   maxRetries: z.number().int().min(0).max(10).default(3),
 });
+export type SyncRequest = z.infer<typeof SyncRequestSchema>;
 
 
 

@@ -22,6 +22,7 @@ const customJestConfig = {
     '<rootDir>/src/app/context/dna-context.test.ts',
     '<rootDir>/src/app/api/__tests__/test-harness.ts',
     '<rootDir>/src/__tests__/app/wallet-test-helpers.ts',
+    '<rootDir>/src/__tests__/api/emulate-route.test.ts',
   ],
   coverageThreshold: {
     global: {
