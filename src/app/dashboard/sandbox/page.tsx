@@ -275,7 +275,7 @@ export default function SandboxPage() {
             <div className="font-mono text-[10px] space-y-1.5 max-h-60 overflow-y-auto scrollbar-thin p-1 min-h-[120px]">
               {logs.length === 0 ? (
                 <span className="text-gray-600 block">
-                  Waiting for execution triggers... (Click "Run Test" to start sandbox session)
+                  Waiting for execution triggers... (Click &quot;Run Test&quot; to start sandbox session)
                 </span>
               ) : (
                 logs.map((log, idx) => {
