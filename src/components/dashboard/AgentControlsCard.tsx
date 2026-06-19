@@ -12,8 +12,8 @@ interface AgentControlsCardProps {
   trustScore: number;
   xp: number;
   lastActive: string | null;
-  onActivate: () => Promise<void>;
-  onPause: () => Promise<void>;
+  onActivate: () => Promise<boolean | void>;
+  onPause: () => Promise<boolean | void>;
 }
 
 export function AgentControlsCard({

@@ -340,7 +340,6 @@ export default function MarketplacePage() {
         open={!!selectedSkill || detailLoading}
         onClose={closeModal}
         className="bg-transparent p-0 rounded-xl backdrop:bg-black/80 backdrop:backdrop-blur-sm"
-        role="dialog"
         aria-modal="true"
         aria-label={selectedSkill ? `${selectedSkill.name} skill details` : "Loading skill details"}
         onClick={(e) => { if (e.target === dialogRef.current) closeModal(); }}

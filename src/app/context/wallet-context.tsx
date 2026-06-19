@@ -51,6 +51,8 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
+const PI_BROWSER_REQUIRED_MSG = "Pi Browser required. Open this app inside Pi Browser to authenticate.";
+
 function isDemoWalletAddress(walletAddress?: string | null): boolean {
   return walletAddress?.startsWith("demo:") ?? false;
 }
@@ -274,16 +276,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const createAgent = useCallback(async (name?: string) => {
+  /** Shared helper: POST to an agent endpoint with auth headers, then refresh user. */
+  const callAgentEndpoint = useCallback(async (path: string, body?: unknown): Promise<boolean> => {
     if (!userRef.current) return false;
     try {
-      const res = await fetch("/api/agent", {
+      const res = await fetch(path, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
-        body: name !== undefined ? JSON.stringify({ name }) : undefined,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
       });
       if (!res.ok) return false;
       await refreshUser();
@@ -292,42 +295,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return false;
     }
   }, [refreshUser, piAccessToken]);
+
+  const createAgent = useCallback(async (name?: string) => {
+    return callAgentEndpoint("/api/agent", name !== undefined ? { name } : undefined);
+  }, [callAgentEndpoint]);
 
   const activateAgent = useCallback(async () => {
-    if (!userRef.current) return false;
-    try {
-      const res = await fetch("/api/agent/activate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [refreshUser, piAccessToken]);
+    return callAgentEndpoint("/api/agent/activate");
+  }, [callAgentEndpoint]);
 
   const pauseAgent = useCallback(async () => {
-    if (!userRef.current) return false;
-    try {
-      const res = await fetch("/api/agent/pause", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
-        },
-      });
-      if (!res.ok) return false;
-      await refreshUser();
-      return true;
-    } catch {
-      return false;
-    }
-  }, [refreshUser, piAccessToken]);
+    return callAgentEndpoint("/api/agent/pause");
+  }, [callAgentEndpoint]);
 
   const connectWallet = useCallback(async () => {
     setIsConnecting(true);
@@ -386,13 +365,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           );
 
           if (isPiSdkUnavailable) {
-            throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
+            throw new Error(PI_BROWSER_REQUIRED_MSG);
           }
           throw err;
         }
       }
 
-      throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
+      throw new Error(PI_BROWSER_REQUIRED_MSG);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
       logger.error("Auth error:", message);

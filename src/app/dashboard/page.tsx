@@ -89,14 +89,6 @@ export default function Dashboard() {
     setAgentName("");
   };
 
-  const handleActivateAgent = async () => {
-    await activateAgent();
-  };
-
-  const handlePauseAgent = async () => {
-    await pauseAgent();
-  };
-
   const agent = user?.agent;
   const hasAgent = !!agent;
   const agentStatus = (agent?.status ?? "NONE") as "ACTIVE" | "INACTIVE" | "PAUSED";
@@ -145,7 +137,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      ) : user ? (
+      ) : (
         /* ── AUTHENTICATED VIEW ── */
         <>
           <WelcomeBanner
@@ -228,8 +220,8 @@ export default function Dashboard() {
                     trustScore={user.trustScore}
                     xp={user.xp}
                     lastActive={agent!.lastActive}
-                    onActivate={handleActivateAgent}
-                    onPause={handlePauseAgent}
+                    onActivate={() => activateAgent()}
+                    onPause={() => pauseAgent()}
                   />
 
                   {/* Agent card preview */}
@@ -247,7 +239,7 @@ export default function Dashboard() {
             </div>
           </TabPanel>
         </>
-      ) : null}
+      )}
 
       {/* ── TAB NAVIGATION ── */}
       {user && (
