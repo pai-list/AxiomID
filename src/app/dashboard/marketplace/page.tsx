@@ -112,6 +112,7 @@ export default function MarketplacePage() {
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const detailAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -130,23 +131,33 @@ export default function MarketplacePage() {
 
   const openDetail = async (slug: string) => {
     previousFocusRef.current = document.activeElement as HTMLElement;
+    detailAbortRef.current?.abort();
+    const controller = new AbortController();
+    detailAbortRef.current = controller;
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/skills/${slug}`);
+      const res = await fetch(`/api/skills/${slug}`, { signal: controller.signal });
       if (!res.ok) {
         setError(`Failed to load skill (${res.status})`);
         return;
       }
       const data = await res.json();
       setSelectedSkill(data);
-    } catch {
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return;
       setError("Failed to load skill details");
     } finally {
-      setDetailLoading(false);
+      if (detailAbortRef.current === controller) {
+        setDetailLoading(false);
+        detailAbortRef.current = null;
+      }
     }
   };
 
   const closeModal = useCallback(() => {
+    detailAbortRef.current?.abort();
+    detailAbortRef.current = null;
+    setDetailLoading(false);
     setSelectedSkill(null);
     previousFocusRef.current?.focus();
   }, []);
