@@ -460,7 +460,7 @@ export default function MarketplacePage() {
                     className="flex-1 btn-primary py-2.5 text-xs font-mono uppercase"
                   >
                     {installing ? "Installing..." : isConnecting ? "Connecting..." : !user ? "Connect Wallet to Install" : "Install Skill → Agent"}
-
+                  </button>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(JSON.stringify({
