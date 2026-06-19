@@ -92,10 +92,42 @@ describe("Exponential Backoff", () => {
     const unique = new Set(delays);
     expect(unique.size).toBeGreaterThan(1);
   });
+
+  it("attempt=2 with jitter=0.5 produces delays within unclamped range [2000, 6000]", () => {
+    // attempt=2: base = 1000 * 2^2 = 4000; jitter range = ±(4000 * 0.5) = ±2000
+    // raw range = [2000, 6000] — no clamping occurs since maxDelay=30000
+    for (let i = 0; i < 50; i++) {
+      const delay = exponentialBackoff(2, 1000, 30000, 0.5);
+      expect(delay).toBeGreaterThanOrEqual(2000);
+      expect(delay).toBeLessThanOrEqual(6000);
+    }
+  });
+
+  it("attempt=2 with zero jitter returns exactly the base exponential delay", () => {
+    // 1000 * 2^2 = 4000 with no jitter
+    const delay = exponentialBackoff(2, 1000, 30000, 0);
+    expect(delay).toBe(4000);
+  });
+
+  it("attempt=2 delays never reach maxDelay=30000 (no clamping at upper bound)", () => {
+    // With attempt=2 and jitter=0.5, max possible raw delay is 6000, well below 30000
+    for (let i = 0; i < 50; i++) {
+      const delay = exponentialBackoff(2, 1000, 30000, 0.5);
+      expect(delay).toBeLessThan(30000);
+    }
+  });
+
+  it("attempt=2 delays are always positive (no clamping at lower bound)", () => {
+    // Min possible raw delay = 4000 - 2000 = 2000, always > 0
+    for (let i = 0; i < 50; i++) {
+      const delay = exponentialBackoff(2, 1000, 30000, 0.5);
+      expect(delay).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe("Shannon Entropy", () => {
-  it("returns 0 for empty string", () => {
+
     expect(shannonEntropy("")).toBe(0);
   });
 
