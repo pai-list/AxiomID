@@ -517,19 +517,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshUser, piAccessToken]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.Pi) {
-      try {
-        window.Pi.init({
-          version: "2.0",
-          sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
-        });
-      } catch (err) {
-        logger.error("Failed to initialize Pi SDK:", err);
-      }
-    }
-  }, []);
-
   const initRef = useRef(false);
   useEffect(() => {
     if (initRef.current) return;
@@ -539,69 +526,94 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const inPiBrowser = checkPiBrowser();
+    // Single init path: eagerly init window.Pi if already present, then
+    // either authenticate (in Pi Browser) or restore a stored session.
+    let checkInterval: ReturnType<typeof setInterval> | undefined;
 
-    if (inPiBrowser) {
-      (async () => {
-        setIsLoading(true);
+    const initPiSdk = () => {
+      if (typeof window !== "undefined" && window.Pi) {
         try {
-          await connectWallet();
-        } finally {
-          setIsLoading(false);
+          window.Pi.init({
+            version: "2.0",
+            sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
+          });
+        } catch (err) {
+          logger.error("Failed to initialize Pi SDK:", err);
         }
-      })();
-      return;
-    } else {
-      let checkCount = 0;
-      const checkInterval = setInterval(() => {
-        checkCount++;
-        if (checkPiBrowser()) {
-          clearInterval(checkInterval);
-          (async () => {
-            setIsLoading(true);
-            try {
-              await connectWallet();
-            } finally {
-              setIsLoading(false);
-            }
-          })();
-        } else if (checkCount > 15) {
-          clearInterval(checkInterval);
-        }
-      }, 200);
-    }
+      }
+    };
 
-    const storedWallet = getStoredWallet();
-    const storedToken = getLocalStorageItem("pi_access_token");
-    if (!storedWallet && !storedToken) {
-      return;
-    }
-
-    const headers: Record<string, string> = {};
-    if (storedToken) {
-      headers["Authorization"] = `Bearer ${storedToken}`;
-    }
-
-    fetch(`/api/user/status`, { headers }).then(res => {
-      if (!res.ok) {
-        removeLocalStorageItem("axiomid_wallet");
-        removeLocalStorageItem("pi_access_token");
+    const authenticate = async () => {
+      setIsLoading(true);
+      try {
+        await connectWallet();
+      } finally {
         setIsLoading(false);
+      }
+    };
+
+    const restoreSession = () => {
+      const storedWallet = getStoredWallet();
+      const storedToken = getLocalStorageItem("pi_access_token");
+      if (!storedWallet && !storedToken) {
         return;
       }
-      return res.json().then(data => {
-        setUser(mapApiUser(data));
-        setIsLoading(false);
+
+      const headers: Record<string, string> = {};
+      if (storedToken) {
+        headers["Authorization"] = `Bearer ${storedToken}`;
+      }
+
+      fetch(`/api/user/status`, { headers }).then(res => {
+        if (!res.ok) {
+          removeLocalStorageItem("axiomid_wallet");
+          removeLocalStorageItem("pi_access_token");
+          setIsLoading(false);
+          return;
+        }
+        return res.json().then(data => {
+          setUser(mapApiUser(data));
+          setIsLoading(false);
+        }).catch(() => {
+          removeLocalStorageItem("axiomid_wallet");
+          removeLocalStorageItem("pi_access_token");
+          setIsLoading(false);
+        });
       }).catch(() => {
         removeLocalStorageItem("axiomid_wallet");
         removeLocalStorageItem("pi_access_token");
         setIsLoading(false);
       });
-    }).catch(() => {
-      removeLocalStorageItem("axiomid_wallet");
-      removeLocalStorageItem("pi_access_token");
-      setIsLoading(false);
-    });
+    };
+
+    initPiSdk();
+
+    if (checkPiBrowser()) {
+      authenticate();
+      return;
+    }
+
+    // Not (yet) in Pi Browser: retry detection briefly, then fall back to
+    // restoring any stored session.
+    let checkCount = 0;
+    checkInterval = setInterval(() => {
+      checkCount++;
+      if (checkPiBrowser()) {
+        clearInterval(checkInterval);
+        checkInterval = undefined;
+        initPiSdk();
+        authenticate();
+      } else if (checkCount > 15) {
+        clearInterval(checkInterval);
+        checkInterval = undefined;
+      }
+    }, 200);
+
+    restoreSession();
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+    };
   }, [connectWallet]);
 
   const contextValue = useMemo(
