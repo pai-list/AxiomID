@@ -8,7 +8,7 @@
 
 [![AIX Stack](https://img.shields.io/badge/AIX%20STACK-Echo369-FFD700?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/aix-format/blob/main/AXIOM.md)
 [![Spec](https://img.shields.io/badge/SPEC-AIX%2F1.0-FFD700?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/aix-format/blob/main/AXIOM.md)
-[![Layer](https://img.shields.io/badge/LAYER-L0%20%C2%B7%20ROOT%20AUTHORITY-FFD700?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/axiomid-project)
+[![Layer](https://img.shields.io/badge/LAYER-L0%20%C2%B7%20ROOT%20AUTHORITY-FFD700?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/AxiomID)
 [![Version](https://img.shields.io/badge/version-v1.0.0-FFD700?style=for-the-badge&labelColor=050505)](./package.json)
 [![License](https://img.shields.io/badge/LICENSE-Proprietary-FFD700?style=for-the-badge&labelColor=050505)](./LICENSE)
 
@@ -16,7 +16,7 @@
 
 <div align="center">
 
-**Root Authority** &nbsp;.&nbsp; **👑 L0 . `axiomid-project` . YOU ARE HERE** &nbsp;.&nbsp; Sovereign Core: [**L1 `aix-format`**](https://github.com/Moeabdelaziz007/aix-format) &nbsp;.&nbsp; [**L2 `iqra`**](https://github.com/Moeabdelaziz007/iqra) &nbsp;.&nbsp; [**L3 `aix-agent-skills`**](https://github.com/Moeabdelaziz007/aix-agent-skills)
+**Root Authority** &nbsp;.&nbsp; **👑 L0 . `AxiomID` . YOU ARE HERE** &nbsp;.&nbsp; Sovereign Core: [**L1 `aix-format`**](https://github.com/Moeabdelaziz007/aix-format) &nbsp;.&nbsp; [**L2 `iqra`**](https://github.com/Moeabdelaziz007/iqra) &nbsp;.&nbsp; [**L3 `aix-agent-skills`**](https://github.com/Moeabdelaziz007/aix-agent-skills)
 
 </div>
 
@@ -167,14 +167,22 @@ axiomid/
 │   │   ├── sanitize.ts               # Input sanitization
 │   │   ├── validators.ts             # Zod schemas for all inputs
 │   │   ├── vc.ts                     # W3C Verifiable Credential signing
-│   │   └── memory/                   # 🧠 Memory Graph System
-│   │       ├── builder.ts            # Graph builder (extractors → JSON)
-│   │       ├── graph.ts              # MemoryGraph types + validation
-│   │       ├── router.ts             # TopologicalRouter (BFS context)
-│   │       └── extractors/           # Code/doc/git extractors
-│   │           ├── ast-extractor.ts  # TypeScript AST extraction
-│   │           ├── doc-extractor.ts  # Markdown/wikilink extraction
-│   │           └── git-extractor.ts  # Git commit extraction
+│   │   ├── did.ts                    # Decentralized Identifier creation
+│   │   ├── did-document.ts           # W3C DID Document builder
+│   │   ├── did-resolver.ts           # DID resolution
+│   │   ├── trust.ts                  # Trust scoring
+│   │   ├── trust-chain.ts            # Trust chain verification
+│   │   ├── tiers.ts                  # Tier calculation
+│   │   ├── env.ts                    # Environment variable validation
+│   │   ├── crypto.ts                 # Encryption utilities
+│   │   ├── images.ts                 # Image processing
+│   │   ├── catalog.ts                # Skill catalog
+│   │   ├── math-physics.ts           # Physics-inspired algorithms
+│   │   ├── prisma.ts                 # Prisma client
+│   │   ├── supabase/                 # Supabase client
+│   │   │   ├── server.ts             # Server-side client
+│   │   │   └── client.ts             # Browser client
+│   │   └── agents/                   # Agent-specific utilities
 │   ├── data/
 │   │   └── skills.json               # Agent skill registry (90+ skills)
 │   ├── middleware.ts                  # Subdomain rewrite + body size limit
@@ -307,7 +315,7 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 | :--- | :--- | :--- | :--- |
 | **Frontend** | Vercel | https://axiomid.app | ✅ Live |
 | **Backend** | Cloudflare Workers | https://axiomid-backend.workers.dev | ✅ Live |
-| **Database** | PostgreSQL (Prisma) | db.prisma.io:5432 | ✅ Connected |
+| **Database** | PostgreSQL (Prisma + Supabase) | Supabase Cloud | ✅ Connected |
 | **Queue** | Cloudflare Queues | harvest-queue | ✅ Provisioned |
 | **DO** | Cloudflare Durable Objects | PresenceDO | ✅ Deployed |
 | **KV** | Cloudflare KV | BRAIN_MEMORY | ✅ Reuse for harvest dedup |
@@ -332,8 +340,8 @@ We have conducted a deep **[Competitive Analysis](./STRATEGY.md)** of World Netw
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/Moeabdelaziz007/axiomid-project.git
-cd axiomid-project
+git clone https://github.com/Moeabdelaziz007/AxiomID.git
+cd AxiomID
 
 # 2. Install dependencies
 npm install
@@ -492,8 +500,8 @@ Contributions are welcome via PR. All PRs require passing CI (type-check, lint, 
 
 ```bash
 # Fork, then clone
-git clone https://github.com/<your-fork>/axiomid-project.git
-cd axiomid-project
+git clone https://github.com/<your-fork>/AxiomID.git
+cd AxiomID
 
 # Install & verify
 npm install
@@ -555,8 +563,8 @@ See [`LICENSE`](./LICENSE) for full terms. This repository is private (`package.
 
 ```bash
 # 1. استنساخ المستودع
-git clone https://github.com/Moeabdelaziz007/axiomid-project.git
-cd axiomid-project
+git clone https://github.com/Moeabdelaziz007/AxiomID.git
+cd AxiomID
 
 # 2. تثبيت التبعيات
 npm install
@@ -582,7 +590,7 @@ npm run dev
 
 | Tier | Layer | Repository | Role / Description |
 | :--- | :--- | :--- | :--- |
-| 👑 **Root** | **L0** | [**`axiomid-project`**](https://github.com/Moeabdelaziz007/axiomid-project) | **📍 YOU ARE HERE** · Sole Issuer of `did:axiom:*` |
+| 👑 **Root** | **L0** | [**`AxiomID`**](https://github.com/Moeabdelaziz007/AxiomID) | **📍 YOU ARE HERE** · Sole Issuer of `did:axiom:*` |
 
 </div>
 
