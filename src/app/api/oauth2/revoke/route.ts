@@ -27,6 +27,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export function isTokenRevoked(token: string): boolean {
+function isTokenRevoked(token: string): boolean {
   return revokedTokens.has(token);
 }
