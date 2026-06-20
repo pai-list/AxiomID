@@ -59,6 +59,13 @@ export async function POST(request: NextRequest) {
   const { accessToken, uid, username } = parsed.data;
   let verifiedStellarAddress: string | null = null;
 
+  const host = request.headers.get("host") || "";
+  const isSandboxOrDev =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_PI_SANDBOX === "true" ||
+    host.includes("localhost") ||
+    host.includes("127.0.0.1");
+
   try {
     const piResponse = await fetch('https://api.minepi.com/v2/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
