@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useLanguage } from "../context/language-context";
 import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowLeft, Trophy, Search, Loader2, Award } from "lucide-react";
+import { ArrowLeft, Trophy, Search, Loader2 } from "lucide-react";
 import TopThreeCards from "@/components/ui/TopThreeCards";
-import { getTierColor } from "@/lib/tiers";
+import { getTierColor, Tier } from "@/lib/tiers";
 
 interface LeaderboardUser {
   rank: number;
@@ -22,13 +22,13 @@ interface LeaderboardUser {
 }
 
 export default function LeaderboardPage() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    let active = true;
+    const active = true;
     const fetchLeaderboard = async () => {
       try {
         const res = await fetch("/api/leaderboard");
@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {tableUsers.map((user) => {
-                    const tierColor = getTierColor(user.tier as any);
+                    const tierColor = getTierColor(user.tier as Tier);
                     return (
                       <tr key={user.id} className="hover:bg-white/[0.01] transition-colors">
                         <td className="py-3 px-4 text-center font-bold text-zinc-400">

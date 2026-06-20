@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Award, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { getTierColor, Tier } from "@/lib/tiers";
 
 interface LeaderboardUser {

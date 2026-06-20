@@ -26,8 +26,8 @@ export class PiSdkError extends Error {
   }
 }
 
-export interface PiAuthResult {
-  user: any;
+export interface PiSdkAuthResult {
+  user: PiUser;
   token: string;
   stellarAddress?: string;
 }
@@ -204,7 +204,7 @@ export function checkPiBrowser(): boolean {
  * @returns An object containing the authenticated user information and access token
  * @throws PiSdkError if authentication fails or the Pi Browser environment is not available
  */
-export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuthResult> {
+export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkAuthResult> {
   try {
     if (typeof window === "undefined") {
       throw new PiSdkError(
@@ -216,11 +216,11 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
     pushLog?.("Browser environment detected — loading Pi SDK...");
     const Pi = await ensurePiInitialized(pushLog);
 
-    const piInstance = Pi as { authenticate: (scopes: string[], onIncompletePaymentFound: (payment: any) => void) => Promise<unknown> };
+    const piInstance = Pi as { authenticate: (scopes: string[], onIncompletePaymentFound: (payment: PiPaymentDTO) => void) => Promise<unknown> };
     if (piInstance && typeof piInstance.authenticate === "function") {
       pushLog?.("Requesting Pi authentication token...");
 
-      const onIncompletePaymentFound = async (payment: any) => {
+      const onIncompletePaymentFound = async (payment: PiPaymentDTO) => {
         logger.info("[Pi Auth] Incomplete payment found:", payment);
         pushLog?.("Incomplete payment detected — completing payment...");
         try {
@@ -339,13 +339,13 @@ function assertPiSdkLoaded(): void {
   }
 }
 
-export async function runWalletTest(pushLog?: any): Promise<void> {
+export async function runWalletTest(pushLog?: (msg: string) => void): Promise<void> {
   assertPiSdkLoaded();
   try {
     if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
-      const result = await window.Pi.authenticate(["username"], (payment: any) => {
+      const result = await window.Pi.authenticate(["username"], (payment: PiPaymentDTO) => {
         logger.info("[Pi Wallet Test] Incomplete payment found:", payment);
-      }) as any;
+      }) as unknown as PiSdkAuthResult;
       pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
       return;
     }

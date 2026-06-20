@@ -105,7 +105,7 @@ export async function POST(
       mock: ipfsResult.mock,
       verifiableCredential: vc,
     }, 200);
-  } catch (error) {
+  } catch {
     return apiError("INTERNAL_ERROR", "Failed to publish passport to IPFS");
   }
 }

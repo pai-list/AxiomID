@@ -126,7 +126,7 @@ console.log("Active Agent status:", passport.agent.status);`;
               <span className="stitch-badge">Trust Engine</span>
               <h2 className="text-xl md:text-2xl font-bold text-white">Verifiable Stamps & Trust Scores</h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Trust is verified via cryptographically signed stamps. Earning stamps increments the user's overall **Trust Score** and awards **XP (Experience Points)**, elevating their Identity Tier.
+                Trust is verified via cryptographically signed stamps. Earning stamps increments the user&apos;s overall **Trust Score** and awards **XP (Experience Points)**, elevating their Identity Tier.
               </p>
               
               <div className="space-y-3 pt-2">

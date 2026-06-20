@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Circle, HelpCircle } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 
 interface TimelineItem {
   phase: string;

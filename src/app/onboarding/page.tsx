@@ -13,8 +13,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { t, language } = useLanguage();
-  const { user, connectWallet, isConnecting, createAgent, isPiBrowser } = useWallet();
+  const { language } = useLanguage();
+  const { user, connectWallet, isConnecting, createAgent } = useWallet();
 
   const [step, setStep] = useState(1);
   const [agentName, setAgentName] = useState("");

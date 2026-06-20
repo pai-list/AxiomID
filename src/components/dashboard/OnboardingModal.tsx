@@ -45,7 +45,7 @@ export function OnboardingModal({
 
   type OnboardingState = "VISITOR" | "CONNECTED" | "PARTIAL_VERIFIED" | "VERIFIED" | "PENDING_REVIEW" | "ERROR";
 
-  const getOnboardingState = (u: any): OnboardingState => {
+  const getOnboardingState = (u: { kycStatus?: string | null } | null | undefined): OnboardingState => {
     if (!u) return "VISITOR";
     if (u.kycStatus === "VERIFIED") return "VERIFIED";
     if (u.kycStatus === "PENDING" || u.kycStatus === "PENDING_REVIEW") return "PENDING_REVIEW";
