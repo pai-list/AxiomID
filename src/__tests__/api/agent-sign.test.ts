@@ -9,6 +9,9 @@ jest.mock("@/lib/rate-limiter", () => ({
 jest.mock("@/lib/logger", () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
+jest.mock("@/lib/auth-middleware", () => ({
+  requireAuth: jest.fn().mockResolvedValue({ error: null, user: { id: "user-1", walletAddress: "test", piUid: "pi-1", piUsername: "tester", did: null, xp: 0, tier: "Visitor" } }),
+}));
 jest.mock("@/lib/sovereign-keys", () => ({
   signPayloadWithAgentKey: jest.fn(),
   deriveSovereignAgentKeypair: jest.fn(),
