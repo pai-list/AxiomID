@@ -64,7 +64,17 @@ function getKycStatus(kycStatus: string | undefined | null): "verified" | "pendi
 function buildPassportResponse(user: PassportUser) {
   const did = user.did || createUserDid(user.id);
   const stamps = user.stamps || [];
-  const trustScore = calculateTrustScore(user.xp || 0, stamps.length);
+  const trustScore = calculateTrustScore(user.xp, stamps.length);
+
+  let agentPublicKey: string | null = null;
+  if (user.agent && (user.stellarAddress || user.walletAddress)) {
+    try {
+      const keys = deriveSovereignAgentKeypair(user.stellarAddress || user.walletAddress, user.agent.publicId);
+      agentPublicKey = keys.publicKey;
+    } catch (e) {
+      logger.error('[PASSPORT-API] Key derivation failed:', e);
+    }
+  }
 
   return {
     username: user.piUsername || "AxiomID Agent",
