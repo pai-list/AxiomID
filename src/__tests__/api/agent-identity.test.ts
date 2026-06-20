@@ -89,4 +89,98 @@ describe("POST /api/agent/identity", () => {
 
     expect(res.status).toBe(400);
   });
+
+  it("returns 400 for invalid JSON body", async () => {
+    const req = new NextRequest("http://localhost/api/agent/identity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "not-valid-json",
+    });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("returns 400 when assertion is missing for identity_assertion type", async () => {
+    const req = mockPostRequest({ type: "identity_assertion" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when assertion is empty string for identity_assertion type", async () => {
+    const req = mockPostRequest({ type: "identity_assertion", assertion: "" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+  });
+
+  it("identity_assertion response includes did field", async () => {
+    mockCreateAssertion.mockResolvedValue("mock-jwt-token");
+
+    const req = mockPostRequest({ type: "identity_assertion", assertion: "valid-pi-jwt" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.did).toBeDefined();
+    expect(typeof data.did).toBe("string");
+    expect(data.did).toContain("did:");
+  });
+
+  it("anonymous response includes verification_uri in claim", async () => {
+    mockCreateClaim.mockReturnValue({
+      token: "claim-xyz",
+      userCode: "AXIO-ABCD",
+      verificationUri: "https://axiomid.app/claim",
+      expiresAt: Date.now() + 600000,
+      status: "pending",
+    });
+
+    const req = mockPostRequest({ type: "anonymous" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.claim.verification_uri).toBe("https://axiomid.app/claim");
+  });
+
+  it("anonymous response includes expires_in in claim", async () => {
+    const futureExpiry = Date.now() + 600000;
+    mockCreateClaim.mockReturnValue({
+      token: "claim-xyz",
+      userCode: "AXIO-ABCD",
+      verificationUri: "https://axiomid.app/claim",
+      expiresAt: futureExpiry,
+      status: "pending",
+    });
+
+    const req = mockPostRequest({ type: "anonymous" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.claim.expires_in).toBeGreaterThan(0);
+    expect(data.claim.expires_in).toBeLessThanOrEqual(600);
+  });
+
+  it("rate limit headers are set when rate limited", async () => {
+    const resetAt = Date.now() + 60000;
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt });
+
+    const req = mockPostRequest({ type: "anonymous" });
+    const res = await POST(req);
+
+    expect(res.headers.get("x-ratelimit-remaining")).toBe("0");
+  });
+
+  it("returns 500 when createIdentityAssertion throws", async () => {
+    mockCreateAssertion.mockRejectedValue(new Error("Token creation failed"));
+
+    const req = mockPostRequest({ type: "identity_assertion", assertion: "valid-pi-jwt" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.code).toBe("INTERNAL_ERROR");
+  });
 });

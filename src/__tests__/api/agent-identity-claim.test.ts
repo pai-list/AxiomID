@@ -95,4 +95,76 @@ describe("POST /api/agent/identity/claim", () => {
     expect(res.status).toBe(500);
     expect(data.code).toBe("INTERNAL_ERROR");
   });
+
+  it("response includes user_code in body", async () => {
+    mockFindClaim.mockReturnValue({
+      token: "claim-abc",
+      userCode: "AXIO-1234",
+      status: "pending",
+      verificationUri: "https://axiomid.app/claim",
+      expiresAt: Date.now() + 600000,
+      userId: null,
+    });
+
+    const req = mockPostRequest({ user_code: "AXIO-1234" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.user_code).toBe("AXIO-1234");
+  });
+
+  it("response includes verification_uri", async () => {
+    mockFindClaim.mockReturnValue({
+      token: "claim-abc",
+      userCode: "AXIO-5678",
+      status: "pending",
+      verificationUri: "https://axiomid.app/claim",
+      expiresAt: Date.now() + 600000,
+      userId: null,
+    });
+
+    const req = mockPostRequest({ user_code: "AXIO-5678" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.verification_uri).toBe("https://axiomid.app/claim");
+  });
+
+  it("response includes expires_at", async () => {
+    const expiresAt = Date.now() + 600000;
+    mockFindClaim.mockReturnValue({
+      token: "claim-abc",
+      userCode: "AXIO-ABCD",
+      status: "pending",
+      verificationUri: "https://axiomid.app/claim",
+      expiresAt,
+      userId: null,
+    });
+
+    const req = mockPostRequest({ user_code: "AXIO-ABCD" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(data.expires_at).toBe(expiresAt);
+  });
+
+  it("returns NOT_FOUND error code for 404", async () => {
+    mockFindClaim.mockReturnValue(null);
+
+    const req = mockPostRequest({ user_code: "AXIO-XXXX" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(404);
+    expect(data.code).toBe("NOT_FOUND");
+  });
+
+  it("returns 400 for empty user_code string", async () => {
+    const req = mockPostRequest({ user_code: "" });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.code).toBe("VALIDATION_ERROR");
+  });
 });

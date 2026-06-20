@@ -11,11 +11,14 @@ import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
 
 const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 
+// Valid Ed25519 key PEM (generated for test purposes)
+const VALID_ED25519_PUBLIC_PEM = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOKH3MUqXr7DXFp9IHtf6LebKtA+Mtwfon8CHJX6tz5E=\n-----END PUBLIC KEY-----\n";
+
 describe("JWKS", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockDerive.mockReturnValue({
-      publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOKH3MUqXr7DXFp9IHtf6LebKtA+Mtwfon8CHJX6tz5E=\n-----END PUBLIC KEY-----\n",
+      publicKey: VALID_ED25519_PUBLIC_PEM,
       privateKey: "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIMA5vVnREIasSgrFZI8aJgMCoPEyYm21lk5c4N6nuLd/\n-----END PRIVATE KEY-----\n",
     });
   });
@@ -39,5 +42,49 @@ describe("JWKS", () => {
   it("derives the correct kid from DID and key version", async () => {
     const jwks = await exportJwks("did:axiom:axiomid.app:pi:abc123");
     expect(jwks.keys[0].kid).toBe("did:axiom:axiomid.app:pi:abc123#key-1");
+  });
+
+  it("returns empty keys array for wildcard '*'", () => {
+    const jwks = exportJwks("*");
+
+    expect(jwks).toHaveProperty("keys");
+    expect(jwks.keys).toHaveLength(0);
+    expect(mockDerive).not.toHaveBeenCalled();
+  });
+
+  it("returns empty keys array for empty string DID", () => {
+    const jwks = exportJwks("");
+
+    expect(jwks.keys).toHaveLength(0);
+    expect(mockDerive).not.toHaveBeenCalled();
+  });
+
+  it("calls deriveSovereignAgentKeypair with the DID and 'axiom-root'", () => {
+    const did = "did:axiom:axiomid.app:pi:abc123";
+    exportJwks(did);
+
+    expect(mockDerive).toHaveBeenCalledWith(did, "axiom-root");
+  });
+
+  it("x field is a base64url string", () => {
+    const jwks = exportJwks("did:axiom:axiomid.app:pi:abc123");
+    const x = jwks.keys[0].x;
+
+    // base64url: no padding, uses - and _ instead of + and /
+    expect(x).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+
+  it("exports exactly one key for a single DID", () => {
+    const jwks = exportJwks("did:axiom:axiomid.app:pi:abc123");
+    expect(jwks.keys).toHaveLength(1);
+  });
+
+  it("throws when deriveSovereignAgentKeypair returns invalid PEM", () => {
+    mockDerive.mockReturnValue({
+      publicKey: "-----BEGIN PUBLIC KEY-----\nINVALID_PEM\n-----END PUBLIC KEY-----\n",
+      privateKey: "",
+    });
+
+    expect(() => exportJwks("did:axiom:axiomid.app:pi:abc123")).toThrow();
   });
 });
