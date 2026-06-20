@@ -110,7 +110,26 @@ export default function SandboxPage() {
     const t4 = setTimeout(() => setAuditStates(prev => ({ ...prev, exfil: "passed", dangerous: "passed", privilege: "passed", provenance: "scanning" })), 2900);
     const t5 = setTimeout(() => setAuditStates(prev => ({ ...prev, provenance: "passed" })), 3600);
 
+    // Buffer streamed lines and flush on a fixed interval so the main thread
+    // is not hit with a setState on every incoming chunk (per AGENTS.md:
+    // throttle stream-driven UI updates to 16ms–30ms intervals).
+    const pendingLines: string[] = [];
+    let flushTimer: ReturnType<typeof setInterval> | null = null;
+    const flushPending = () => {
+      if (pendingLines.length === 0) return;
+      const batch = pendingLines.splice(0, pendingLines.length);
+      setLogs((prev) => [...prev, ...batch].slice(-200));
+    };
+    const stopFlushTimer = () => {
+      if (flushTimer) {
+        clearInterval(flushTimer);
+        flushTimer = null;
+      }
+    };
+
     try {
+      flushTimer = setInterval(flushPending, 30);
+
       const res = await fetch("/api/sandbox/execute", {
         method: "POST",
         headers: { 
@@ -145,7 +164,7 @@ export default function SandboxPage() {
           if (line.trim()) {
             try {
               const parsed = JSON.parse(line);
-              setLogs((prev) => [...prev, parsed.text].slice(-200));
+              pendingLines.push(parsed.text);
             } catch {
               // Ignore invalid lines
             }
@@ -157,13 +176,18 @@ export default function SandboxPage() {
       if (buffer.trim()) {
         try {
           const parsed = JSON.parse(buffer);
-          setLogs((prev) => [...prev, parsed.text].slice(-200));
+          pendingLines.push(parsed.text);
         } catch {
           // Ignore invalid lines
         }
       }
+
+      // Stop the throttle timer and flush any remaining buffered lines.
+      stopFlushTimer();
+      flushPending();
     } catch (err) {
-      // Clear timeouts and fail active items
+      // Stop the throttle timer, clear audit timeouts, and fail active items
+      stopFlushTimer();
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);

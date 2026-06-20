@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
+        sendLine(`[NOTICE] SIMULATION MODE — no real code is executed. Output below is a scripted preview of the isolated-sandbox pipeline slated for full hardware isolation in Stage 4.`);
         sendLine(`[SYSTEM] [1/5] Initializing secure Vercel microVM Sandbox context...`);
         await new Promise((r) => setTimeout(r, 600));
 

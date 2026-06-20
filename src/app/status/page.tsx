@@ -185,29 +185,11 @@ export default function StatusPage() {
               </div>
             </div>
 
-            {/* Network Info & Uptime Tracker */}
+            {/* Protocol Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bento-card p-6 md:col-span-2">
-                <h3 className="text-sm font-bold text-surface font-mono mb-4">UPLOADING & RUNTIME UPTIME (90 DAYS)</h3>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-2xl font-bold text-white font-mono">100.0%</span>
-                  <span className="text-neon-green text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-neon-green/10 border border-neon-green/20">OPERATIONAL</span>
-                </div>
-                {/* 30 grid ticks simulating uptime */}
-                <div className="flex gap-[3px] h-6 items-end mt-4">
-                  {[...Array(30)].map((_, i) => (
-                    <div key={i} className="flex-1 h-full bg-neon-green rounded-sm opacity-85 hover:opacity-100 transition-opacity" title="Day uptime: 100%" />
-                  ))}
-                </div>
-                <div className="flex justify-between text-[8px] font-mono text-zinc-600 mt-2">
-                  <span>90 DAYS AGO</span>
-                  <span>TODAY</span>
-                </div>
-              </div>
-
-              <div className="bento-card p-6">
+              <div className="bento-card p-6 md:col-span-3">
                 <h3 className="text-sm font-bold text-surface font-mono mb-4">PROTOCOL DETAILS</h3>
-                <div className="space-y-2 text-[10px] font-mono">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] font-mono">
                   <div className="flex justify-between p-2 border-b border-white/5">
                     <span className="text-faint">Network</span>
                     <span className="text-surface">{network}</span>
@@ -216,23 +198,10 @@ export default function StatusPage() {
                     <span className="text-faint">Version</span>
                     <span className="text-surface">1.0.0</span>
                   </div>
-                  <div className="flex justify-between p-2">
+                  <div className="flex justify-between p-2 border-b border-white/5">
                     <span className="text-faint">Refreshed</span>
                     <span className="text-neon-green">{timeSince}s ago</span>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Incident Log */}
-            <div className="bento-card p-6 mt-6">
-              <h3 className="text-sm font-bold text-surface font-mono mb-4">SYSTEM INCIDENTS</h3>
-              <div className="border-l border-zinc-800 ml-2 pl-4 py-1 text-[11px] font-mono">
-                <div className="relative">
-                  <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-neon-green" />
-                  <span className="text-zinc-500 text-[9px] block">JUNE 2026</span>
-                  <span className="text-white font-bold block mt-1">All Systems Operational</span>
-                  <span className="text-zinc-400 block mt-0.5">No incidents or downtime recorded this month.</span>
                 </div>
               </div>
             </div>

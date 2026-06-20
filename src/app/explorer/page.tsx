@@ -72,10 +72,39 @@ export default function ExplorerPage() {
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 15000);
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startPolling = () => {
+      if (interval === null) {
+        interval = setInterval(fetchData, 15000);
+      }
+    };
+    const stopPolling = () => {
+      if (interval !== null) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    // Only poll while the tab is visible to avoid wasteful background DB load.
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchData();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       active = false;
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 

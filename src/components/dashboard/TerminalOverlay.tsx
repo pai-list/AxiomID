@@ -2,7 +2,7 @@
  
 import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Terminal, Trash2, Play, Cpu, Shield, Activity, HardDrive, HelpCircle } from "lucide-react";
+import { Terminal, Trash2, Play, Cpu, Activity, HardDrive } from "lucide-react";
 import { useLanguage } from "@/app/context/language-context";
 import { useWallet } from "@/app/context/wallet-context";
  
@@ -22,7 +22,6 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
   // Simulated state for live telemetry vibes
   const [cpuLoad, setCpuLoad] = useState(42);
   const [memUsage, setMemUsage] = useState(68);
-  const [activeTab, setActiveTab] = useState<"logs" | "telemetry">("logs");
  
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,7 +35,7 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [logs, walletLogs, activeTab]);
+  }, [logs, walletLogs]);
  
   const getProgressBar = (value: number) => {
     const totalBlocks = 10;

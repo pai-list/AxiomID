@@ -27,11 +27,21 @@ export function generateCIDv0(data: string): string {
   return encodeBase58(multihash);
 }
 
-export async function publishToMockGateway(payload: any): Promise<{ cid: string; url: string }> {
+/**
+ * Computes a deterministic CIDv0 for the payload and returns a gateway URL.
+ *
+ * NOTE: This is a MOCK gateway — it does NOT actually pin the payload to IPFS.
+ * The returned `cid` is a real, correctly-formatted CIDv0 derived from the
+ * payload, but no node hosts the content, so the URL will not resolve until a
+ * real pinning service is wired up. The `mock: true` flag is returned so
+ * callers/consumers can distinguish simulated publication from real anchoring.
+ */
+export async function publishToMockGateway(payload: unknown): Promise<{ cid: string; url: string; mock: true }> {
   const serialized = JSON.stringify(payload);
   const cid = generateCIDv0(serialized);
   return {
     cid,
-    url: `https://ipfs.io/ipfs/${cid}`
+    url: `https://ipfs.io/ipfs/${cid}`,
+    mock: true,
   };
 }
