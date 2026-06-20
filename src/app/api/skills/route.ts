@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const parsedQuery = SkillsListQuerySchema.safeParse({
-    tier: searchParams.get('tier'),
-    q: searchParams.get('q'),
-    limit: searchParams.get('limit'),
-    offset: searchParams.get('offset'),
+    tier: searchParams.get('tier') ?? undefined,
+    q: searchParams.get('q') ?? undefined,
+    limit: searchParams.get('limit') ?? undefined,
+    offset: searchParams.get('offset') ?? undefined,
   });
 
   if (!parsedQuery.success) {
