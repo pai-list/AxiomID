@@ -4,6 +4,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { AuthStateSchema } from '@/lib/validators';
+import { logger } from '@/lib/logger';
 
 /**
  * Retrieve the OAuth state HMAC secret from the `OAUTH_STATE_SECRET` environment variable.
@@ -29,13 +30,15 @@ export async function POST(request: NextRequest) {
 
   const secret = getSecret();
   if (!secret) {
+    logger.error("[AUTH-STATE] OAUTH_STATE_SECRET environment variable is not configured");
     return apiError('INTERNAL_ERROR', 'OAUTH_STATE_SECRET not configured');
   }
 
   let body: unknown;
   try {
     body = await request.json();
-  } catch {
+  } catch (error) {
+    logger.error("[AUTH-STATE] Failed to parse JSON body", error);
     return apiError('VALIDATION_ERROR', 'Invalid JSON body');
   }
 

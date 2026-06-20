@@ -9,6 +9,7 @@
  */
 import { apiError } from "@/lib/errors";
 import type { NextRequest } from "next/server";
+import { logger } from "@/lib/logger";
 
 type RouteHandler = (
   req: NextRequest,
@@ -60,6 +61,7 @@ function dispatch(method: string): RouteHandler {
     if (!isEmulatorEnabled) return notFound();
     handlerPromise ??= buildEmulatorHandler().catch((err) => {
       handlerPromise = null;
+      logger.error("[EMULATOR] Failed to build emulator handler", err);
       throw err;
     });
     const handler = await handlerPromise;
