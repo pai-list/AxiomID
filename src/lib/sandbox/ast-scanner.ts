@@ -9,9 +9,19 @@ export function scanScript(code: string): { allowed: boolean; reason?: string } 
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .replace(/\/\/.*/g, " ");
 
-  // Strip string literals to prevent false positives inside comments/strings
-  // Matches double-quoted, single-quoted, and template string literals
-  clean = clean.replace(/"(\\.|[^"\\])*"|'(\\.|[^'\\])*'|`(\\.|[^`\\])*`/g, " ");
+  // Strip string literals to prevent false positives inside comments/strings.
+  // Matches double-quoted and single-quoted literals.
+  clean = clean.replace(/"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/g, " ");
+
+  // Strip ONLY the static (non-interpolated) portions of template literals so
+  // that code inside `${ ... }` interpolations is still scanned. Without this,
+  // a payload like `${require('fs')}` would have the entire backtick region
+  // (including the forbidden identifier) consumed and silently bypass the scan.
+  clean = clean.replace(/`(\\.|\$\{[^}]*\}|[^`\\$]|\$(?!\{))*`/g, (match) => {
+    // Keep the contents of each ${...} interpolation, drop the literal text.
+    const interpolations = match.match(/\$\{[^}]*\}/g) || [];
+    return " " + interpolations.map((expr) => expr.slice(2, -1)).join(" ") + " ";
+  });
 
   // Strip regular expression literals
   clean = clean.replace(/\/(\\.|[^\/\\\n])+\/[gimy]*/g, " ");

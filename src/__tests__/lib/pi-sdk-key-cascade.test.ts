@@ -1,4 +1,4 @@
-import { deriveSovereignAgentKeypair, signPayloadWithAgentKey, verifyAgentSignature } from "@/lib/pi-sdk";
+import { deriveSovereignAgentKeypair, signPayloadWithAgentKey, verifyAgentSignature } from "@/lib/sovereign-keys";
 
 describe("Sovereign Key Cascade Derivation", () => {
   const stellarAddress = "GD5T6YZRMCK7O4JRGXNKH2S3W3E42J2DT3R4J33J4H46J4G4H4K4L4M4";

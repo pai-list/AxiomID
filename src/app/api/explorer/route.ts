@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       prisma.userAgent.count(),
       prisma.userAgent.count({ where: { status: "ACTIVE" } }),
       prisma.piPayment.count(),
-      prisma.xpLedger.aggregate({ _sum: { amount: true } }),
+      prisma.user.aggregate({ _sum: { xp: true } }),
     ]);
 
     // 2. Fetch recent payments
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
         totalAgents: agentCount,
         activeAgents: activeAgentCount,
         totalPayments: paymentCount,
-        totalXpEarned: xpSum._sum.amount ?? 0,
+        totalXpEarned: xpSum._sum.xp ?? 0,
       },
       recentPayments,
       activeNodes,

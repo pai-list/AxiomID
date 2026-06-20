@@ -6,7 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { createUserDid } from "@/lib/did";
 import { calculateTrustScore } from "@/lib/trust";
-import { deriveSovereignAgentKeypair } from "@/lib/pi-sdk";
+import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
 
 interface PassportStamp {
   type: string;

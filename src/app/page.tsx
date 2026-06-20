@@ -486,10 +486,10 @@ export default function Home() {
       >
         <div>&copy; 2026 AxiomID. All rights reserved.</div>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link href={"/explorer" as any} className="hover:text-surface transition-colors">{t("nav_explorer")}</Link>
-          <Link href={"/docs" as any} className="hover:text-surface transition-colors">{t("nav_docs")}</Link>
-          <Link href={"/about" as any} className="hover:text-surface transition-colors">{t("nav_about")}</Link>
-          <Link href={"/leaderboard" as any} className="hover:text-surface transition-colors">{t("nav_leaderboard")}</Link>
+          <Link href="/explorer" className="hover:text-surface transition-colors">{t("nav_explorer")}</Link>
+          <Link href="/docs" className="hover:text-surface transition-colors">{t("nav_docs")}</Link>
+          <Link href="/about" className="hover:text-surface transition-colors">{t("nav_about")}</Link>
+          <Link href="/leaderboard" className="hover:text-surface transition-colors">{t("nav_leaderboard")}</Link>
           <Link href="/status" className="hover:text-surface transition-colors">{t("nav_status")}</Link>
           <Link href="/privacy" className="hover:text-surface transition-colors">{t("nav_privacy")}</Link>
           <Link href="/terms" className="hover:text-surface transition-colors">{t("nav_terms")}</Link>
