@@ -162,7 +162,19 @@ export const AgentSignSchema = z.object({
   did: z.string().startsWith("did:axiom:", "Invalid AxiomID DID"),
 });
 
+export const ModerationActionSchema = z.object({
+  action: z.enum(["approve", "reject"], { message: "action must be 'approve' or 'reject'" }),
+  reason: z.string().max(1000).optional().nullable(),
+  notes: z.string().optional().nullable(),
+});
+
+export const ModerationIdParamSchema = z.object({
+  id: z.string().uuid("id must be a valid UUID"),
+});
+
 export type AgentIdentityInput = z.infer<typeof AgentIdentitySchema>;
 export type TokenExchangeInput = z.infer<typeof TokenExchangeSchema>;
 export type TokenRevocationInput = z.infer<typeof TokenRevocationSchema>;
 export type AgentSignInput = z.infer<typeof AgentSignSchema>;
+export type ModerationActionInput = z.infer<typeof ModerationActionSchema>;
+export type ModerationIdParamInput = z.infer<typeof ModerationIdParamSchema>;
