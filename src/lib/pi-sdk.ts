@@ -1,6 +1,28 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { logger } from "@/lib/logger";
 
-
+declare global {
+  interface Window {
+    Pi?: {
+      init: (args: { version: string; sandbox: boolean }) => void;
+      authenticate: (args: { scopes: string[] }) => Promise<{
+        user: { uid: string; username: string; name: string; stellarAddress?: string };
+        accessToken: string;
+      }>;
+      createPayment: (args: {
+        amount: number;
+        memo: string;
+        metadata?: Record<string, unknown>;
+      }, serverControllers: {
+        onReadyForServerApproval: (paymentId: string) => void;
+        onReadyForServerCompletion: (paymentId: string, txid: string) => void;
+        onError: (error: Error) => void;
+        onCancel: () => void;
+      }) => Promise<{ status: string; identifier: string }>;
+    };
+  }
+}
 
 export enum PiSdkErrorCode {
   NOT_IN_PI_BROWSER = "NOT_IN_PI_BROWSER",
@@ -26,8 +48,8 @@ export class PiSdkError extends Error {
   }
 }
 
-export interface PiSdkAuthResult {
-  user: PiUser;
+export interface PiAuthResult {
+  user: any;
   token: string;
   stellarAddress?: string;
 }
@@ -82,47 +104,6 @@ export function loadPiSdk(): Promise<unknown> {
   });
 }
 
-export function determineSandboxMode(): boolean {
-  if (typeof window === "undefined") return false;
-  if (process.env.NEXT_PUBLIC_PI_SANDBOX !== undefined) {
-    return process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
-  }
-  const hostname = window.location.hostname;
-  if (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname.endsWith(".localhost") ||
-    hostname.includes("192.168.") ||
-    hostname.includes("10.0.")
-  ) {
-    return true;
-  }
-  if (hostname.includes("vercel.app") || hostname.includes("staging")) {
-    return true;
-  }
-  try {
-    if (window.self !== window.top) {
-      const referrer = document.referrer || "";
-      if (referrer) {
-        const referrerHost = new URL(referrer).hostname.toLowerCase();
-        if (
-          referrerHost === "sandbox.minepi.com" ||
-          referrerHost.endsWith(".sandbox.minepi.com")
-        ) {
-          return true;
-        }
-      }
-    }
-  } catch {}
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("sandbox") === "true") {
-      return true;
-    }
-  } catch {}
-  return false;
-}
-
 export async function ensurePiInitialized(pushLog?: (msg: string) => void): Promise<unknown> {
   if (typeof window === "undefined") return null;
   const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void } };
@@ -148,7 +129,7 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
       pushLog?.("Initializing Pi SDK v2.0...");
       piInstance.init({
         version: "2.0",
-        sandbox: determineSandboxMode(),
+        sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === "true",
       });
       isInitialized = true;
       pushLog?.("Pi SDK initialized successfully.");
@@ -204,7 +185,7 @@ export function checkPiBrowser(): boolean {
  * @returns An object containing the authenticated user information and access token
  * @throws PiSdkError if authentication fails or the Pi Browser environment is not available
  */
-export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkAuthResult> {
+export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuthResult> {
   try {
     if (typeof window === "undefined") {
       throw new PiSdkError(
@@ -216,28 +197,9 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkA
     pushLog?.("Browser environment detected — loading Pi SDK...");
     const Pi = await ensurePiInitialized(pushLog);
 
-    const piInstance = Pi as { authenticate: (scopes: string[], onIncompletePaymentFound: (payment: PiPaymentDTO) => void) => Promise<unknown> };
+    const piInstance = Pi as { authenticate: (args: { scopes: string[] }) => Promise<unknown> };
     if (piInstance && typeof piInstance.authenticate === "function") {
       pushLog?.("Requesting Pi authentication token...");
-
-      const onIncompletePaymentFound = async (payment: PiPaymentDTO) => {
-        logger.info("[Pi Auth] Incomplete payment found:", payment);
-        pushLog?.("Incomplete payment detected — completing payment...");
-        try {
-          const response = await fetch("/api/pi/payment/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction?.txid || "" }),
-          });
-          if (response.ok) {
-            pushLog?.("Incomplete payment resolved successfully.");
-          } else {
-            logger.error("[Pi Auth] Incomplete payment completion failed:", await response.json());
-          }
-        } catch (err) {
-          logger.error("[Pi Auth] Incomplete payment resolution error:", err);
-        }
-      };
 
       // Defensive: authenticate() can reject with "SDK was not initialized" if
       // the module-scoped init guard is stale relative to the actual SDK
@@ -249,13 +211,13 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkA
           timer = setTimeout(() => reject(new PiSdkError(
             PiSdkErrorCode.AUTHENTICATION_TIMEOUT,
             "Pi authentication timed out"
-          )), 45000);
+          )), 15000);
         });
         // Clear the timer once the race settles so the loser's timer does not
         // keep running (and, on the timeout branch, does not reject an
         // unobserved promise on a subsequent retry).
         return Promise.race([
-          piInstance.authenticate(["username", "payments"], onIncompletePaymentFound),
+          piInstance.authenticate({ scopes: ["username", "payments"] }),
           timeout,
         ]).finally(() => clearTimeout(timer));
       };
@@ -339,13 +301,11 @@ function assertPiSdkLoaded(): void {
   }
 }
 
-export async function runWalletTest(pushLog?: (msg: string) => void): Promise<void> {
+export async function runWalletTest(pushLog?: any): Promise<void> {
   assertPiSdkLoaded();
   try {
     if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
-      const result = await window.Pi.authenticate(["username"], (payment: PiPaymentDTO) => {
-        logger.info("[Pi Wallet Test] Incomplete payment found:", payment);
-      }) as unknown as PiSdkAuthResult;
+      const result = await window.Pi.authenticate({ scopes: ["username"] });
       pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
       return;
     }
@@ -420,4 +380,3 @@ export async function createPiPayment(amount: number, memo: string, metadata?: R
     });
   });
 }
-

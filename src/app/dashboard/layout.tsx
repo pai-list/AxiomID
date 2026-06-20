@@ -6,20 +6,12 @@ import { ErrorBanner } from "@/components/ErrorBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "../context/language-context";
-import type { Route } from "next";
-import { Fingerprint, Store, Settings, Cpu } from "lucide-react";
+import { Fingerprint, Store, Settings } from "lucide-react";
 
-interface NavItem {
-  href: Route;
-  labelKey: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard_title", icon: Fingerprint },
-  { href: "/dashboard/marketplace", labelKey: "marketplace", icon: Store },
-  { href: "/dashboard/sandbox", labelKey: "sandbox", icon: Cpu },
-  { href: "/dashboard/settings", labelKey: "settings_page_title", icon: Settings },
+const NAV_ITEMS = [
+  { href: "/dashboard" as const, labelKey: "dashboard_title", icon: Fingerprint },
+  { href: "/dashboard/marketplace" as const, labelKey: "marketplace", icon: Store },
+  { href: "/dashboard/settings" as const, labelKey: "settings_page_title", icon: Settings },
 ];
 
 /**
