@@ -35,6 +35,10 @@ describe('pi-sdk', () => {
 
       const result = await connectPi();
 
+      expect(mockAuthenticate).toHaveBeenCalledWith(
+        expect.arrayContaining(["username", "payments"]),
+        expect.any(Function)
+      );
       expect(result.token).toBe('token-abc');
       expect(result.user.uid).toBe('uid-123');
       expect(result.user.username).toBe('piuser');
@@ -53,6 +57,10 @@ describe('pi-sdk', () => {
 
       const result = await connectPi();
 
+      expect(mockAuthenticate).toHaveBeenCalledWith(
+        expect.arrayContaining(["username", "payments"]),
+        expect.any(Function)
+      );
       expect(mockAuthenticate).toHaveBeenCalled();
       expect(result.token).toBe('pb-token');
       expect(result.user.uid).toBe('pb-uid');
@@ -99,6 +107,10 @@ describe('pi-sdk', () => {
 
       await connectPi(pushLog);
 
+      expect(window.Pi.authenticate).toHaveBeenCalledWith(
+        expect.arrayContaining(["username", "payments"]),
+        expect.any(Function)
+      );
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Authenticated'));
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Pi Browser User'));
 

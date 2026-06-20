@@ -237,9 +237,28 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
     pushLog?.("Browser environment detected — loading Pi SDK...");
     const Pi = await ensurePiInitialized(pushLog);
 
-    const piInstance = Pi as { authenticate: (args: { scopes: string[] }) => Promise<unknown> };
+    const piInstance = Pi as { authenticate: (scopes: string[], onIncompletePaymentFound: (payment: any) => void) => Promise<unknown> };
     if (piInstance && typeof piInstance.authenticate === "function") {
       pushLog?.("Requesting Pi authentication token...");
+
+      const onIncompletePaymentFound = async (payment: any) => {
+        logger.info("[Pi Auth] Incomplete payment found:", payment);
+        pushLog?.("Incomplete payment detected — completing payment...");
+        try {
+          const response = await fetch("/api/pi/payment/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction?.txid || "" }),
+          });
+          if (response.ok) {
+            pushLog?.("Incomplete payment resolved successfully.");
+          } else {
+            logger.error("[Pi Auth] Incomplete payment completion failed:", await response.json());
+          }
+        } catch (err) {
+          logger.error("[Pi Auth] Incomplete payment resolution error:", err);
+        }
+      };
 
       // Defensive: authenticate() can reject with "SDK was not initialized" if
       // the module-scoped init guard is stale relative to the actual SDK
@@ -257,7 +276,7 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiAuth
         // keep running (and, on the timeout branch, does not reject an
         // unobserved promise on a subsequent retry).
         return Promise.race([
-          piInstance.authenticate({ scopes: ["username", "payments"] }),
+          piInstance.authenticate(["username", "payments"], onIncompletePaymentFound),
           timeout,
         ]).finally(() => clearTimeout(timer));
       };
@@ -345,7 +364,9 @@ export async function runWalletTest(pushLog?: any): Promise<void> {
   assertPiSdkLoaded();
   try {
     if (typeof window !== "undefined" && typeof window.Pi?.authenticate === "function") {
-      const result = await window.Pi.authenticate({ scopes: ["username"] });
+      const result = await window.Pi.authenticate(["username"], (payment: any) => {
+        logger.info("[Pi Wallet Test] Incomplete payment found:", payment);
+      }) as any;
       pushLog?.(`Wallet test passed: ${result?.user?.username || result?.user?.uid || "unknown"}`);
       return;
     }
