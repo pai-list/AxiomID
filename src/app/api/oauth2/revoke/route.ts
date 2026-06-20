@@ -6,9 +6,12 @@ import { logger } from "@/lib/logger";
 const revokedTokens = new Set<string>();
 
 /**
- * Revokes an OAuth2 token.
+ * Processes an OAuth2 token revocation request.
  *
- * @returns An API response indicating success or failure.
+ * Validates the request body and adds the token to the revocation list.
+ *
+ * @param request - The incoming HTTP request with the token to revoke
+ * @returns An API response with a success flag or error details
  */
 export async function POST(request: NextRequest) {
   let body: unknown;

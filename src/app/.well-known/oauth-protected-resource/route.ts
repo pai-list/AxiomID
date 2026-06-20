@@ -2,9 +2,9 @@ import { NextRequest } from "next/server";
 import { apiSuccess } from "@/lib/errors";
 
 /**
- * Provides protected resource discovery metadata for OAuth/OpenID servers.
+ * Handles GET requests for protected resource discovery metadata.
  *
- * @returns A successful response containing protected resource discovery metadata.
+ * @returns A response containing the protected resource identifier, supported authorization servers, scopes, and bearer token methods. The response is cached for 24 hours.
  */
 export async function GET(_request: NextRequest) {
   return apiSuccess({

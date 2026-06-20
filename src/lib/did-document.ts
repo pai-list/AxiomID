@@ -53,10 +53,10 @@ export function buildDidDocument(
 }
 
 /**
- * Resolves a DID document for the specified DID identifier.
+ * Resolves a DID document.
  *
- * @param _did - The DID to resolve
- * @returns The resolved DID document, or `null` if the document cannot be resolved
+ * @param _did - The DID identifier to resolve
+ * @returns The resolved DID document, or `null` if it cannot be resolved
  */
 export async function resolveDidDocument(_did: string): Promise<DidDocument | null> {
   return null;

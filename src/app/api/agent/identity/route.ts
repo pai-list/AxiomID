@@ -10,7 +10,7 @@ import { createClaimToken } from "@/lib/claim-ceremony";
 /**
  * Derives a deterministic DID from an assertion string.
  *
- * @returns A DID string in the format `did:axiom:user:<hash>`.
+ * @returns A DID string with the format `did:axiom:user:` followed by the first 16 hex characters of the UTF-8-encoded assertion.
  */
 function deriveDid(assertion: string): string {
   const hash = Array.from(new TextEncoder().encode(assertion))
@@ -20,9 +20,7 @@ function deriveDid(assertion: string): string {
 }
 
 /**
- * Processes agent identity requests to generate identity assertions or claim tokens.
- *
- * Enforces per-IP rate limiting and validates the request body against the agent identity schema before processing.
+ * Processes an agent identity request and returns either a scoped identity assertion or a claim token.
  *
  * @returns An API response containing either an identity assertion with its derived DID and scopes, or a claim token with verification details.
  */

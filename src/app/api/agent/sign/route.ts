@@ -7,12 +7,10 @@ import { signPayloadWithAgentKey, deriveSovereignAgentKeypair } from "@/lib/sove
 import { logger } from "@/lib/logger";
 
 /**
- * Handles authenticated agent payload signing requests.
+ * Signs an authenticated agent payload.
  *
- * Enforces rate limiting and input validation, derives a keypair from the provided DID, and signs the payload.
- *
- * @param request - The incoming HTTP request
- * @returns A JSON response containing the signature and metadata on success, or an error response
+ * @param request - The HTTP request containing the DID and payload to sign
+ * @returns A JSON response with the signature, DID, and key version
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);

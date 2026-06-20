@@ -4,7 +4,9 @@ import { apiSuccess, apiError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 
 /**
- * Exports all JSON Web Keys for the well-known JWKS endpoint.
+ * Handles GET requests for the well-known JWKS endpoint.
+ *
+ * @returns A response containing the JSON Web Keys and cache headers on success; an error response otherwise.
  */
 export async function GET(_request: NextRequest) {
   try {

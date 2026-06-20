@@ -9,9 +9,9 @@ import { prisma } from "@/lib/prisma";
 /**
  * Pauses the authenticated user's agent.
  *
- * The agent must have ACTIVE status; otherwise an error is returned.
+ * The agent must be in ACTIVE status.
  *
- * @returns The updated agent with its ID, public ID, and new PAUSED status
+ * @returns The updated agent's ID, public ID, and status.
  */
 export async function POST(request: NextRequest) {
   const auth = await requireAuth(request);

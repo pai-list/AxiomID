@@ -14,9 +14,9 @@ interface ClaimRecord {
 const claimStore = new Map<string, ClaimRecord>();
 
 /**
- * Generates a random user code with the format AXIO-XXXX.
+ * Generates a random user code.
  *
- * @returns A string starting with `AXIO-` followed by four random uppercase letters or digits.
+ * @returns A string in the format `AXIO-` followed by four random uppercase letters or digits.
  */
 function generateUserCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
