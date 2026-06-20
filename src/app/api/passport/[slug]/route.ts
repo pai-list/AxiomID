@@ -40,7 +40,7 @@ const AGENT_SELECT = {
 function buildPassportResponse(user: PassportUser) {
   const did = user.did || createUserDid(user.id);
   const stamps = user.stamps || [];
-
+  const trustScore = calculateTrustScore(user.xp, stamps.length);
 
   let agentPublicKey: string | null = null;
   if (user.agent && (user.stellarAddress || user.walletAddress)) {
