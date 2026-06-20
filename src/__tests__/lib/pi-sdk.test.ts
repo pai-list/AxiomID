@@ -119,20 +119,27 @@ describe('pi-sdk', () => {
   });
 
   describe('checkPiBrowser', () => {
-    const originalWindow = (global as any).window;
-    const originalNavigator = (global as any).navigator;
-    const originalDocument = (global as any).document;
+    interface MutableGlobals {
+      window: any;
+      navigator: any;
+      document: any;
+    }
+
+    const g = global as unknown as MutableGlobals;
+    const originalWindow = g.window;
+    const originalNavigator = g.navigator;
+    const originalDocument = g.document;
 
     beforeEach(() => {
-      (global as any).window = undefined;
-      (global as any).navigator = undefined;
-      (global as any).document = undefined;
+      g.window = undefined;
+      g.navigator = undefined;
+      g.document = undefined;
     });
 
     afterEach(() => {
-      (global as any).window = originalWindow;
-      (global as any).navigator = originalNavigator;
-      (global as any).document = originalDocument;
+      g.window = originalWindow;
+      g.navigator = originalNavigator;
+      g.document = originalDocument;
     });
 
     it('returns false when window is undefined', () => {
@@ -140,41 +147,41 @@ describe('pi-sdk', () => {
     });
 
     it('returns true when window.Pi is defined', () => {
-      (global as any).window = { Pi: {} };
+      g.window = { Pi: {} };
       expect(checkPiBrowser()).toBe(true);
     });
 
     it('returns true when userAgent contains Pi Browser', () => {
-      (global as any).window = {};
-      (global as any).navigator = { userAgent: 'Pi Browser' };
+      g.window = {};
+      g.navigator = { userAgent: 'Pi Browser' };
       expect(checkPiBrowser()).toBe(true);
     });
 
     it('returns true when inside iframe with minepi.com referrer', () => {
-      (global as any).window = { self: {}, top: {} };
-      (global as any).navigator = { userAgent: '' };
-      (global as any).document = { referrer: 'https://minepi.com/auth' };
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'https://minepi.com/auth' };
       expect(checkPiBrowser()).toBe(true);
     });
 
     it('returns true when inside iframe with sandbox.minepi.com referrer', () => {
-      (global as any).window = { self: {}, top: {} };
-      (global as any).navigator = { userAgent: '' };
-      (global as any).document = { referrer: 'https://sandbox.minepi.com/auth' };
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'https://sandbox.minepi.com/auth' };
       expect(checkPiBrowser()).toBe(true);
     });
 
     it('returns false when inside iframe with evil-minepi.com referrer', () => {
-      (global as any).window = { self: {}, top: {} };
-      (global as any).navigator = { userAgent: '' };
-      (global as any).document = { referrer: 'https://evil-minepi.com/auth' };
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'https://evil-minepi.com/auth' };
       expect(checkPiBrowser()).toBe(false);
     });
 
     it('returns false when inside iframe with sandbox.minepi.com.attacker.com referrer', () => {
-      (global as any).window = { self: {}, top: {} };
-      (global as any).navigator = { userAgent: '' };
-      (global as any).document = { referrer: 'https://sandbox.minepi.com.attacker.com/auth' };
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'https://sandbox.minepi.com.attacker.com/auth' };
       expect(checkPiBrowser()).toBe(false);
     });
   });

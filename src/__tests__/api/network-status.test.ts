@@ -55,7 +55,7 @@ describe('GET /api/status', () => {
       .mockResolvedValueOnce(856) // total agents
       .mockResolvedValueOnce(312); // active agents
     mockPrisma.piPayment.count.mockResolvedValue(8934);
-    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 456789 } } as any);
+    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 456789 } });
 
     const req = mockGetRequest();
     const res = await GET(req);
@@ -83,7 +83,7 @@ describe('GET /api/status', () => {
       .mockResolvedValueOnce(0)
       .mockResolvedValueOnce(0);
     mockPrisma.piPayment.count.mockResolvedValue(0);
-    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: null } } as any);
+    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: null } });
 
     const req = mockGetRequest();
     const res = await GET(req);
@@ -127,7 +127,7 @@ describe('GET /api/status', () => {
       .mockResolvedValueOnce(5)
       .mockResolvedValueOnce(2);
     mockPrisma.piPayment.count.mockResolvedValue(0);
-    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 100 } } as any);
+    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 100 } });
 
     const req = mockGetRequest();
     await GET(req);
@@ -148,7 +148,7 @@ describe('GET /api/status', () => {
       .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(1);
     mockPrisma.piPayment.count.mockResolvedValue(2);
-    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 500 } } as any);
+    (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: 500 } });
 
     const req = mockGetRequest();
     const res = await GET(req);
