@@ -201,7 +201,7 @@ export default function Home() {
                   <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </Link>
               )}
-              <Link href={"/docs" as any} className="btn-ghost flex items-center justify-center text-xs sm:text-sm px-6 py-3 min-h-[48px]">
+              <Link href="/docs" className="btn-ghost flex items-center justify-center text-xs sm:text-sm px-6 py-3 min-h-[48px]">
                 {language === "en" ? "Documentation" : "الوثائق التقنية"}
               </Link>
             </motion.div>
