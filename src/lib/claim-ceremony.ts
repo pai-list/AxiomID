@@ -54,7 +54,7 @@ export async function createClaimToken(expiresInMs: number = CLAIM_TOKEN_EXPIRY_
     verificationUri: claim.verificationUri,
     expiresAt: claim.expiresAt.getTime(),
     userId: claim.userId,
-    status: claim.status as any,
+    status: claim.status as "pending" | "confirmed" | "expired",
   };
 }
 
@@ -87,7 +87,7 @@ export async function verifyClaimToken(token: string): Promise<ClaimRecord | nul
     verificationUri: claim.verificationUri,
     expiresAt: claim.expiresAt.getTime(),
     userId: claim.userId,
-    status: claim.status as any,
+    status: claim.status as "pending" | "confirmed" | "expired",
   };
 }
 
@@ -147,6 +147,6 @@ export async function findClaimByUserCode(userCode: string): Promise<ClaimRecord
     verificationUri: claim.verificationUri,
     expiresAt: claim.expiresAt.getTime(),
     userId: claim.userId,
-    status: claim.status as any,
+    status: claim.status as "pending" | "confirmed" | "expired",
   };
 }

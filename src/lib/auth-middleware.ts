@@ -131,9 +131,11 @@ export async function requireAuth(request: NextRequest): Promise<
 
     try {
       const payload = await verifyPiTokenWithJwks(accessToken);
+      const usernameVal = typeof payload.username === "string" ? payload.username : null;
+      const piUsernameVal = typeof payload.pi_username === "string" ? payload.pi_username : null;
       piUser = {
         uid: payload.sub,
-        username: payload.username || payload.pi_username || null,
+        username: usernameVal || piUsernameVal || null,
       };
     } catch {
       // Fallback: Verify Pi token via online API

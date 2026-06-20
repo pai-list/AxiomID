@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWallet } from "./context/wallet-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import Link from "next/link";
@@ -9,9 +9,9 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Users, Bot, Ticket, Zap, AlertTriangle, Shield, Fingerprint } from "lucide-react";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import dynamic from "next/dynamic";
+
 const InteractivePassportCard = dynamic(() => import("@/components/ui/InteractivePassportCard"), { ssr: false });
 
 const fadeUp = {
@@ -28,11 +28,6 @@ const staggerContainer = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const _cardHover = {
-  rest: { scale: 1, y: 0 },
-  hover: { scale: 1.02, y: -4, transition: { duration: 0.3, ease: "easeOut" } },
-};
-
 /**
  * Renders the AxiomID public landing page with wallet integration, Agent Passport card, animated hero section, live network statistics, feature guides, and identity tier cards. Supports English and Arabic.
  */
@@ -43,6 +38,18 @@ export default function Home() {
 
   const statsRef = useRef<HTMLDivElement>(null);
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
+
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const main = mainRef.current;
+    if (!main) return;
+    const rect = main.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    main.style.setProperty("--mouse-x", `${x}px`);
+    main.style.setProperty("--mouse-y", `${y}px`);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -63,9 +70,21 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-grid flex flex-col items-center relative overflow-hidden">
+    <main 
+      ref={mainRef}
+      onMouseMove={handleMouseMove}
+      className="min-h-screen bg-grid flex flex-col items-center relative overflow-hidden"
+    >
       <div className="scanline" />
       <ErrorBanner />
+
+      {/* Dynamic Ambient Glow Layer */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-20 transition-opacity duration-500 z-0"
+        style={{
+          background: `radial-gradient(800px circle at var(--mouse-x, 50vw) var(--mouse-y, 30vh), rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.05) 50%, transparent 100%)`
+        }}
+      />
 
       {/* Header */}
       <motion.header
@@ -168,9 +187,9 @@ export default function Home() {
               className="text-3.5xl sm:text-4.5xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-white"
             >
               {language === "en" ? (
-                <>Your Identity, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">Sovereign.</span></>
+                <>Your Identity, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple animate-pulse">Sovereign.</span></>
               ) : (
-                <>هويتك، <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">سيادية.</span></>
+                <>هويتك، <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple animate-pulse">سيادية.</span></>
               )}
             </motion.h1>
 
@@ -194,7 +213,14 @@ export default function Home() {
               {!user ? (
                 <>
                   {isPiBrowser ? (
-                    <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]">
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={connectWallet} 
+                      disabled={isConnecting} 
+                      aria-busy={isConnecting} 
+                      className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]"
+                    >
                       {isConnecting ? (
                         <><span className="animate-spin">⟳</span> {t("connecting")}</>
                       ) : (
@@ -203,23 +229,29 @@ export default function Home() {
                           <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </>
                       )}
-                    </button>
+                    </motion.button>
                   ) : (
-                    <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]">
-                      {t("enter_dashboard")}
-                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                    </Link>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px] w-full">
+                        {t("enter_dashboard")}
+                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                      </Link>
+                    </motion.div>
                   )}
                 </>
               ) : (
-                <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]">
-                  {t("enter_dashboard")}
-                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                </Link>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px] w-full">
+                    {t("enter_dashboard")}
+                    <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                  </Link>
+                </motion.div>
               )}
-              <Link href="/docs" className="btn-ghost flex items-center justify-center text-xs sm:text-sm px-6 py-3 min-h-[48px]">
-                {language === "en" ? "Documentation" : "الوثائق التقنية"}
-              </Link>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link href="/docs" className="btn-ghost flex items-center justify-center text-xs sm:text-sm px-6 py-3 min-h-[48px] w-full">
+                  {language === "en" ? "Documentation" : "الوثائق التقنية"}
+                </Link>
+              </motion.div>
             </motion.div>
 
             {/* Trust Badges */}
@@ -282,33 +314,35 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Live Stats Bar */}
+      {/* Live Stats Bento Grid */}
       <div ref={statsRef} className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={statsInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 sm:px-6 bento-card"
+          variants={staggerContainer}
+          initial="hidden"
+          animate={statsInView ? "visible" : "hidden"}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {[
-            { label: t("stat_users"), value: networkStats?.users ?? 0, icon: <Users className="w-5 h-5" /> },
-            { label: t("stat_agents"), value: networkStats?.agents ?? 0, icon: <Bot className="w-5 h-5" /> },
-            { label: t("total_xp"), value: networkStats?.xp ?? 0, icon: <Ticket className="w-5 h-5" /> },
-            { label: t("stat_tx"), value: networkStats?.payments ?? 0, icon: <Zap className="w-5 h-5" /> },
+            { label: t("stat_users"), value: networkStats?.users ?? 0, icon: <Users className="w-5 h-5 text-electric-blue" /> },
+            { label: t("stat_agents"), value: networkStats?.agents ?? 0, icon: <Bot className="w-5 h-5 text-axiom-purple" /> },
+            { label: t("total_xp"), value: networkStats?.xp ?? 0, icon: <Ticket className="w-5 h-5 text-emerald-400" /> },
+            { label: t("stat_tx"), value: networkStats?.payments ?? 0, icon: <Zap className="w-5 h-5 text-amber-400" /> },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 15 }}
-              animate={statsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
-              className="text-center md:text-left md:border-r last:border-0 md:px-4 flex flex-col md:flex-row md:items-center gap-3"
-              style={{ borderColor: 'var(--card-border)' }}
+              variants={fadeUp}
+              custom={i}
+              className="p-5 bento-card flex flex-col justify-between relative group overflow-hidden transition-all duration-300 hover:border-electric-blue/30 hover:shadow-lg hover:shadow-electric-blue/[0.02] min-h-[110px]"
             >
-              <span className="hidden md:inline" style={{ color: 'var(--text-muted)' }}>{stat.icon}</span>
-              <div>
-                <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
-                <h4 className="text-lg md:text-xl font-bold font-mono mt-0.5" style={{ color: 'var(--text-primary)' }}>
-                  {statsInView ? <AnimatedCounter target={stat.value} duration={1200} /> : "—"}
+              {/* Card border glow decoration */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.01] to-white/[0.04] opacity-50 group-hover:opacity-100 transition-opacity" />
+              <div className="flex justify-between items-start z-10">
+                <span className="p-2 rounded-lg bg-white/5 border border-white/10 group-hover:border-electric-blue/20 transition-all duration-300">{stat.icon}</span>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">{stat.label}</span>
+              </div>
+              <div className="mt-4 z-10">
+                <h4 className="text-xl sm:text-2xl font-bold font-mono text-white tracking-tight">
+                  {statsInView ? <AnimatedCounter target={stat.value} duration={1400} /> : "—"}
                 </h4>
               </div>
             </motion.div>
@@ -321,61 +355,67 @@ export default function Home() {
         <SectionHeader
           label={language === "en" ? "How It Works" : "كيف يعمل النظام؟"}
           title={language === "en" ? "Three Steps to Agent Identity" : "ثلاث خطوات لبناء هوية العميل"}
-          labelColor="text-blue-500"
+          labelColor="text-electric-blue"
         />
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-60px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 relative"
         >
+          {/* Connector line behind cards in desktop layout */}
+          <div className="hidden md:block absolute top-24 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0" />
+
           {[
             {
               step: "01",
               title: language === "en" ? "Connect" : "الاتصال",
               desc: language === "en" ? "Link your Pi wallet or any Stellar address. Your identity starts here." : "اربط محفظتك للبدء فورا في تأسيس هويتك الرقمية.",
-              icon: <Fingerprint className="w-6 h-6" />,
+              icon: <Fingerprint className="w-6 h-6 text-electric-blue" />,
               badge: "W3C DID Standard",
             },
             {
               step: "02",
               title: language === "en" ? "Verify" : "التحقق",
               desc: language === "en" ? "Complete KYA + KYC. Build trust through social actions and on-chain activity." : "أكمل خطوات التوثيق (KYA) واربح طوابع الهوية الرقمية.",
-              icon: <Shield className="w-6 h-6" />,
+              icon: <Shield className="w-6 h-6 text-axiom-purple" />,
               badge: "ZKP Privacy Ready",
             },
             {
               step: "03",
               title: language === "en" ? "Deploy" : "التشغيل",
               desc: language === "en" ? "Your Agent Passport is ready. Use it across the Pi ecosystem with Pi token payments only." : "جواز سفر العميل الخاص بك جاهز للاستخدام في نظام Pi البيئي مع مدفوعات Pi فقط.",
-              icon: <Zap className="w-6 h-6" />,
+              icon: <Zap className="w-6 h-6 text-emerald-400" />,
               badge: "Pi Network Compatible",
             },
-          ].map((item) => (
+          ].map((item, i) => (
             <motion.div
               key={item.step}
               variants={fadeUp}
-              custom={0}
-              className="stitch-feature-card flex flex-col gap-4 cursor-default group"
+              custom={i}
+              className="stitch-feature-card flex flex-col gap-4 cursor-default group relative z-10"
             >
+              {/* Highlight number */}
+              <div className="absolute top-4 right-4 text-3xl font-mono font-bold text-white/5 group-hover:text-electric-blue/5 transition-colors">{item.step}</div>
+
               {/* Icon container */}
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--color-primary)' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-electric-blue/20 transition-all duration-300">
                 {item.icon}
               </div>
 
-              {/* Step + Title */}
+              {/* Title */}
               <div>
-                <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{item.title}</h3>
+                <h3 className="text-lg font-bold text-white group-hover:text-electric-blue transition-colors duration-300">{item.title}</h3>
               </div>
 
               {/* Description */}
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item.desc}</p>
+              <p className="text-sm leading-relaxed text-zinc-400">{item.desc}</p>
 
               {/* Protocol badge */}
-              <div className="mt-auto pt-4 border-t flex items-center gap-2" style={{ borderColor: 'var(--card-border)' }}>
-                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--color-primary)' }} />
-                <span className="text-[11px] font-medium tracking-wide" style={{ color: 'var(--text-secondary)' }}>{item.badge}</span>
+              <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-electric-blue animate-pulse" />
+                <span className="text-[11px] font-mono text-zinc-500">{item.badge}</span>
               </div>
             </motion.div>
           ))}
@@ -387,7 +427,7 @@ export default function Home() {
         <SectionHeader
           label={language === "en" ? "The Sovereign Advantage" : "الميزة السيادية"}
           title={language === "en" ? "Why Choose AxiomID?" : "لماذا تختار AxiomID؟"}
-          labelColor="text-white/60"
+          labelColor="text-zinc-500"
         />
         <motion.div
           variants={staggerContainer}
@@ -397,13 +437,17 @@ export default function Home() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {/* Traditional Identity */}
-          <motion.div variants={fadeUp} custom={0} className="bento-card p-6 border border-red-500/10 bg-red-500/[0.01] flex flex-col justify-between">
+          <motion.div 
+            variants={fadeUp} 
+            custom={0} 
+            className="p-6 rounded-3xl border border-red-500/10 bg-[#0f0a0d]/40 backdrop-blur-md flex flex-col justify-between min-h-[300px]"
+          >
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-4 h-4 text-red-400" />
-                <h3 className="text-base font-bold text-red-400 font-mono">{language === "en" ? "Traditional Identity (Web2)" : "الهوية التقليدية (Web2)"}</h3>
+                <AlertTriangle className="w-4 h-4 text-red-400 animate-pulse" />
+                <h3 className="text-base font-bold text-red-400 font-mono tracking-tight">{language === "en" ? "Traditional Identity (Web2)" : "الهوية التقليدية (Web2)"}</h3>
               </div>
-              <ul className="space-y-3.5 text-xs text-subtle font-mono">
+              <ul className="space-y-3 text-xs font-mono text-zinc-500">
                 {[
                   language === "en" ? "Siloed data: Your profiles are owned by third-party platforms." : "بيانات معزولة: ملفاتك الشخصية مملوكة لمنصات خارجية.",
                   language === "en" ? "High friction: Repeated manual KYC checks for every app." : "خطوات معقدة: فحوصات KYC متكررة لكل تطبيق.",
@@ -411,25 +455,29 @@ export default function Home() {
                   language === "en" ? "No AI integration: Machine agents cannot prove their authority." : "لا تكامل مع الذكاء الاصطناعي: لا يمكن للعملاء الآليين إثبات هويتهم.",
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <span className="text-red-500/70">✗</span>
+                    <span className="text-red-500/50">✗</span>
                     <span>{text}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="border-t border-white/5 pt-4 mt-6 text-[10px] text-faint font-mono">
+            <div className="border-t border-red-500/5 pt-4 mt-6 text-[10px] text-zinc-600 font-mono">
               {language === "en" ? "Result: Fragile security, high friction, no agent trust." : "النتيجة: أمان هش، خطوات معقدة، غياب للثقة."}
             </div>
           </motion.div>
 
           {/* AxiomID */}
-          <motion.div variants={fadeUp} custom={1} className="bento-card p-6 flex flex-col justify-between" style={{ borderColor: 'rgba(59, 130, 246, 0.2)', background: 'rgba(59, 130, 246, 0.02)' }}>
+          <motion.div 
+            variants={fadeUp} 
+            custom={1} 
+            className="p-6 rounded-3xl border border-emerald-500/20 bg-[#07130e]/40 backdrop-blur-md flex flex-col justify-between min-h-[300px] shadow-lg shadow-emerald-500/[0.01]"
+          >
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg" style={{ color: '#22c55e' }}>✓</span>
-                <h3 className="text-base font-bold font-mono" style={{ color: '#22c55e' }}>{language === "en" ? "AxiomID Stamps Passport" : "جواز سفر طوابع AxiomID"}</h3>
+                <Shield className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-base font-bold text-emerald-400 font-mono tracking-tight">{language === "en" ? "AxiomID Stamps Passport" : "جواز سفر طوابع AxiomID"}</h3>
               </div>
-              <ul className="space-y-3.5 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
+              <ul className="space-y-3 text-xs font-mono text-zinc-300">
                 {[
                   language === "en" ? "Decentralized: You own your credentials via W3C DIDs." : "لامركزي: أنت تمتلك بياناتك عبر W3C DIDs.",
                   language === "en" ? "Verify once, prove everywhere: Single dashboard for all stamps." : "تحقق مرة، أثبت في كل مكان: لوحة تحكم واحدة لجميع طوابعك.",
@@ -437,13 +485,13 @@ export default function Home() {
                   language === "en" ? "Agent-native: Built for AI agents to represent you securely." : "مصمم للذكاء الاصطناعي: يمثلك عميلك الآلي بأمان.",
                 ].map((text, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <span style={{ color: '#22c55e' }}>✓</span>
+                    <span className="text-emerald-400">✓</span>
                     <span>{text}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="border-t pt-4 mt-6 text-[10px] font-mono" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
+            <div className="border-t border-emerald-500/10 pt-4 mt-6 text-[10px] text-zinc-400 font-mono">
               {language === "en" ? "Result: Frictionless auth, resilient trust, delegation-ready." : "النتيجة: مصادقة خالية من الاحتكاك، ثقة مرنة، تفويض آمن."}
             </div>
           </motion.div>
@@ -455,7 +503,7 @@ export default function Home() {
         <SectionHeader
           label={t("tier")}
           title={language === "en" ? "Level Up Your Identity" : "ارفع مستوى هويتك الرقمية"}
-          labelColor="text-blue-500"
+          labelColor="text-electric-blue"
         />
         <motion.div
           variants={staggerContainer}
@@ -469,15 +517,15 @@ export default function Home() {
             { name: t("citizen"), xp: "100", desc: language === "en" ? "Social + actions" : "تأكيدات وحسابات اجتماعية", tier: "C" },
             { name: t("validator"), xp: "500", desc: language === "en" ? "KYC verified" : "توثيق الهوية KYC", tier: "V" },
             { name: t("sovereign"), xp: "1000", desc: language === "en" ? "Full delegation" : "تفويض كامل للذكاء الاصطناعي", tier: "S" },
-          ].map((tier) => (
+          ].map((tier, i) => (
             <motion.div
               key={tier.name}
               variants={fadeUp}
-              custom={0}
+              custom={i}
               className="stitch-feature-card text-center cursor-default group"
             >
               {/* Icon */}
-              <div className="w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--color-primary)' }}>
+              <div className="w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-electric-blue/20 transition-all duration-300" style={{ color: 'var(--color-primary)' }}>
                 <span className="font-bold text-lg">{tier.tier}</span>
               </div>
               {/* Title */}

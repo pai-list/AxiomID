@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify, errors, createRemoteJWKSet, decodeJwt } from "jose";
+import { SignJWT, jwtVerify, errors, createRemoteJWKSet, decodeJwt, type JWTPayload } from "jose";
 
 
 const ISSUER = "https://axiomid.app";
@@ -129,7 +129,7 @@ export async function verifyAccessToken(token: string): Promise<{ sub: string; s
  * @param token - The Pi access token to verify
  * @returns The verified token payload
  */
-export async function verifyPiTokenWithJwks(token: string): Promise<any> {
+export async function verifyPiTokenWithJwks(token: string): Promise<JWTPayload> {
   const decoded = decodeJwt(token);
   const iss = decoded.iss;
   if (!iss) {
