@@ -138,23 +138,7 @@ export default function LeaderboardPage() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {tableUsers.map((user) => {
-import { getTierColor, type Tier } from "`@/lib/tiers`";
-
-interface LeaderboardUser {
-  rank: number;
-  id: string;
-  piUsername?: string | null;
-  walletAddress: string;
-  tier: Tier;
-  xp: number;
-  trustScore: number;
-  stampsCount: number;
-  createdAt: string;
-}
-
-// ... elsewhere in the file at line 141
-
-const tierColor = getTierColor(user.tier);
+                    const tierColor = getTierColor(user.tier as any);
                     return (
                       <tr key={user.id} className="hover:bg-white/[0.01] transition-colors">
                         <td className="py-3 px-4 text-center font-bold text-zinc-400">
