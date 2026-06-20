@@ -62,8 +62,8 @@ export default function ExplorerPage() {
         const res = await fetch("/api/explorer");
         if (!res.ok) throw new Error("Failed to fetch explorer datasets");
         const json = await res.json();
-        if (active && json.success) {
-          setData(json.data);
+        if (active && json) {
+          setData(json);
         }
       } catch (err) {
         console.error("Failed to load explorer data:", err);
