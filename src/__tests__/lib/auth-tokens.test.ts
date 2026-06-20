@@ -31,7 +31,8 @@ describe("Auth Tokens", () => {
   });
 
   it("rejects expired tokens", async () => {
-    const token = await createIdentityAssertion(TEST_DID, [...TEST_SCOPES], 0);
+    const token = await createIdentityAssertion(TEST_DID, [...TEST_SCOPES], 1);
+    await new Promise(resolve => setTimeout(resolve, 1100));
     await expect(verifyIdentityAssertion(token)).rejects.toThrow("Token has expired");
   });
 
