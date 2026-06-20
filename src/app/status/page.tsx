@@ -175,7 +175,11 @@ export default function StatusPage() {
                       strokeWidth="6"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 40}`}
+                      stroke="`#00ff41`"
+                      strokeWidth="6"
+                      fill="none"
                       strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - (stats.verificationRate ?? 0) / 100)}`}
                       strokeDashoffset={`${2 * Math.PI * 40 * (1 - (stats.verificationRate ?? 0) / 100)}`}
                       strokeLinecap="round"
                     />
