@@ -1,17 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLanguage } from "../context/language-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { BookOpen, Key, Cpu, HelpCircle } from "lucide-react";
+import { BookOpen, Key, Cpu, HelpCircle, Search } from "lucide-react";
 import CodeBlock from "@/components/ui/CodeBlock";
 
 type SectionId = "intro" | "sdk" | "api" | "stamps";
 
+const SECTIONS: { id: SectionId; en: string; ar: string; icon: React.ReactNode; keywords: string[] }[] = [
+  { id: "intro", en: "1. Introduction", ar: "١. مقدمة", icon: <BookOpen className="w-4 h-4" />, keywords: ["introduction", "did", "axiom", "protocol", "identity", "decentralized", "mقدمة", "بروتوكول"] },
+  { id: "stamps", en: "2. Identity Stamps", ar: "٢. طوابع الهوية", icon: <Key className="w-4 h-4" />, keywords: ["stamps", "trust", "kyc", "wallet", "social", "agent", "transaction", "xp", "طوابع", "ثقة", "تحقق"] },
+  { id: "sdk", en: "3. SDK & Integration", ar: "٣. مكتبة المطورين", icon: <Cpu className="w-4 h-4" />, keywords: ["sdk", "npm", "install", "integration", "code", "typescript", "مكتبة", "دمج"] },
+  { id: "api", en: "4. API Reference", ar: "٤. مرجع API", icon: <HelpCircle className="w-4 h-4" />, keywords: ["api", "endpoint", "get", "post", "rest", "http", "reference", "مرجع", "واجهة"] },
+];
+
 export default function DocsPage() {
   const { language } = useLanguage();
   const [activeSection, setActiveSection] = useState<SectionId>("intro");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredSections = useMemo(() => {
+    if (!searchQuery.trim()) return SECTIONS;
+    const q = searchQuery.toLowerCase();
+    return SECTIONS.filter((s) => s.keywords.some((k) => k.includes(q)) || s.en.toLowerCase().includes(q) || s.ar.includes(searchQuery));
+  }, [searchQuery]);
 
   const didExample = `{
   "@context": "https://www.w3.org/ns/did/v1",
@@ -27,15 +41,29 @@ export default function DocsPage() {
   ]
 }`;
 
+  const sdkInstallCode = `npm install @axiomid/sdk`;
+
   const sdkExample = `import { AxiomSDK } from "@axiomid/sdk";
 
-// Initialize
-const axiom = new AxiomSDK({ network: "mainnet" });
+const axiom = new AxiomSDK({
+  network: "mainnet",
+  apiKey: process.env.AXIOM_API_KEY,
+});
 
-// Authenticate and verify user DID passport
+// Verify a user's passport
 const passport = await axiom.verifyPassport("pioneer.username");
 console.log("Trust Score:", passport.trustScore);
-console.log("Active Agent status:", passport.agent.status);`;
+console.log("Tier:", passport.tier);
+console.log("Agent Status:", passport.agent?.status);
+
+// Check specific stamps
+const stamps = await axiom.getStamps("pioneer.username");
+console.log("KYC Verified:", stamps.kycBound.verified);
+console.log("Wallet Age:", stamps.walletAge.days, "days");
+
+// Resolve DID document
+const did = await axiom.resolveDID("did:axiom:pioneer.username");
+console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
 
   const apiResponseExample = `{
   "success": true,
@@ -44,9 +72,33 @@ console.log("Active Agent status:", passport.agent.status);`;
     "walletAddress": "GD5T...",
     "tier": "Sovereign",
     "trustScore": 98,
-    "xp": 1250
+    "xp": 1250,
+    "stamps": [
+      { "type": "KYC_BOUND", "verified": true },
+      { "type": "WALLET_AGE", "days": 365 }
+    ],
+    "agent": {
+      "name": "MyAgent",
+      "status": "ACTIVE"
+    }
   }
 }`;
+
+  const API_ROUTES = [
+    { method: "GET", path: "/api/passport/:slug", desc: "Retrieve public passport profile, DID, stamps, and trust score.", auth: "No" },
+    { method: "GET", path: "/api/did-document?did=:did", desc: "Resolve a did:axiom identifier to its W3C DID document.", auth: "No" },
+    { method: "GET", path: "/api/status", desc: "Real-time protocol metrics: users, agents, XP, payments.", auth: "No" },
+    { method: "GET", path: "/api/health", desc: "Service health checks: DB, Stellar, Pi Network, Workers AI.", auth: "No" },
+    { method: "GET", path: "/api/explorer", desc: "Live explorer data: stats, recent payments, tier distribution.", auth: "No" },
+    { method: "GET", path: "/api/leaderboard", desc: "Top 50 users ranked by XP with trust scores.", auth: "No" },
+    { method: "GET", path: "/api/credential-status?did=", desc: "Check credential revocation status for a DID.", auth: "No" },
+    { method: "POST", path: "/api/agent/identity", desc: "Generate or resolve agent DID identity.", auth: "Yes" },
+    { method: "POST", path: "/api/agent/sign", desc: "Sign a payload with agent's sovereign keypair.", auth: "Yes" },
+    { method: "POST", path: "/api/skills", desc: "Publish a new skill to the marketplace.", auth: "Yes" },
+    { method: "GET", path: "/api/skills", desc: "Search marketplace skills with filters.", auth: "No" },
+    { method: "POST", path: "/api/oauth2/token", desc: "OAuth2 device flow token exchange.", auth: "No" },
+    { method: "POST", path: "/api/oauth2/revoke", desc: "Revoke an active OAuth2 token.", auth: "Yes" },
+  ];
 
   return (
     <main className="min-h-screen bg-grid relative pb-20">
@@ -62,16 +114,24 @@ console.log("Active Agent status:", passport.agent.status);`;
           <div className="p-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
             {language === "en" ? "Documentation" : "الوثائق التقنية"}
           </div>
-          {[
-            { id: "intro" as SectionId, label: language === "en" ? "1. Introduction" : "١. مقدمة عن البروتوكول", icon: <BookOpen className="w-4 h-4" /> },
-            { id: "stamps" as SectionId, label: language === "en" ? "2. Identity Stamps" : "٢. طوابع الهوية", icon: <Key className="w-4 h-4" /> },
-            { id: "sdk" as SectionId, label: language === "en" ? "3. SDK & Integration" : "٣. مكتبة المطورين والدمج", icon: <Cpu className="w-4 h-4" /> },
-            { id: "api" as SectionId, label: language === "en" ? "4. API Reference" : "٤. مرجع واجهة البرمجة", icon: <HelpCircle className="w-4 h-4" /> },
-          ].map((sec) => (
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={language === "en" ? "Search docs..." : "ابحث في الوثائق..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-[11px] text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-electric-blue/30 transition-colors"
+            />
+          </div>
+
+          {filteredSections.map((sec) => (
             <button
               key={sec.id}
               type="button"
-              onClick={() => setActiveSection(sec.id)}
+              onClick={() => { setActiveSection(sec.id); setSearchQuery(""); }}
               className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-left text-xs font-mono transition-all ${
                 activeSection === sec.id
                   ? "bg-electric-blue/15 text-electric-blue border border-electric-blue/20"
@@ -79,7 +139,7 @@ console.log("Active Agent status:", passport.agent.status);`;
               }`}
             >
               {sec.icon}
-              <span>{sec.label}</span>
+              <span>{language === "en" ? sec.en : sec.ar}</span>
             </button>
           ))}
         </div>
@@ -89,14 +149,20 @@ console.log("Active Agent status:", passport.agent.status);`;
           {activeSection === "intro" && (
             <div className="space-y-6">
               <span className="stitch-badge">Core Protocol</span>
-              <h2 className="text-xl md:text-2xl font-bold text-white">Introduction to AxiomID</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">{language === "en" ? "Introduction to AxiomID" : "مقدمة عن AxiomID"}</h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                AxiomID is a decentralized identity and human-authorization layer engineered to manage sybil-resistant agentic loops. By using W3C compliant Verifiable Credentials (VCs) and Decentralized Identifiers (DIDs), AxiomID allows humans to safely delegate transactional, computational, or social tasks to autonomous AI agents.
+                {language === "en"
+                  ? "AxiomID is a decentralized identity and human-authorization layer engineered to manage sybil-resistant agentic loops. By using W3C compliant Verifiable Credentials (VCs) and Decentralized Identifiers (DIDs), AxiomID allows humans to safely delegate transactional, computational, or social tasks to autonomous AI agents."
+                  : "AxiomID طبقة هوية لامركزية وتفويض بشري مصممة لإدارة حلقات عملاء مقاومة للتزوير. باستخدام بيانات اعتماد يمكن التحقق منها المتوافقة مع W3C والمعرفات اللامركزية (DIDs)، تسمح AxiomID للبشر بتفويض المهام بشكل آمن لعملاء الذكاء الاصطناعي المستقلين."}
               </p>
               
-              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">The did:axiom DID Method</h3>
+              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
+                {language === "en" ? "The did:axiom DID Method" : "طريقة did:axiom DID"}
+              </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Each verified Pioneer generates a unique sovereign DID formatted as <code className="text-neon-green font-mono bg-white/5 px-1.5 py-0.5 rounded text-xs">did:axiom:piUsername</code>. This document is cryptographically resolved by our oracle network, binding public keys directly to ledger accounts.
+                {language === "en"
+                  ? "Each verified Pioneer generates a unique sovereign DID formatted as did:axiom:piUsername. This document is cryptographically resolved by our oracle network, binding public keys directly to ledger accounts."
+                  : "كل رائد موثّق يولّد معرفاً فريداً sovereignty بصيغة did:axiom:piUsername. يتم حل هذه الوثيقة تشفيرياً من شبكة الأوراكل الخاصة بنا."}
               </p>
               <CodeBlock code={didExample} language="json" />
             </div>
@@ -105,28 +171,48 @@ console.log("Active Agent status:", passport.agent.status);`;
           {activeSection === "stamps" && (
             <div className="space-y-6">
               <span className="stitch-badge">Trust Engine</span>
-              <h2 className="text-xl md:text-2xl font-bold text-white">Verifiable Stamps & Trust Scores</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">
+                {language === "en" ? "Identity Stamps" : "طوابع الهوية"}
+              </h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Trust is verified via cryptographically signed stamps. Earning stamps increments the user&apos;s overall **Trust Score** and awards **XP (Experience Points)**, elevating their Identity Tier.
+                {language === "en"
+                  ? "Trust is verified via cryptographically signed stamps. Each stamp earns XP and increases your Trust Score, elevating your Identity Tier from Visitor → Citizen → Validator → Sovereign."
+                  : "يتم التحقق من الثقة عبر طوابع موقعة تشفيرياً. كل طابع يكسب نقاط XP ويزيد من نقاط الثقة، مما يرفع مستوى الهوية من زائر → مواطن → مدقق → سيادي."}
               </p>
               
               <div className="space-y-3 pt-2">
                 {[
-                  { name: "Wallet Age Stamp", xp: "100 XP", desc: "Verifies the antiquity and active transactions of the connected Stellar/Pi address." },
-                  { name: "KYC Bound Stamp", xp: "250 XP", desc: "Anchors proof of Pi Network KYC verification without disclosing real names or data." },
-                  { name: "Social Identity Stamp", xp: "100 XP each", desc: "Validates ownership of Twitter, Discord, and Google accounts via protocol signatures." },
-                  { name: "Daily PoW Proof Stamp", xp: "10 XP daily", desc: "Establishes daily active human participation through lightweight cryptographic proof-of-work tasks." }
+                  { name: "KYC Bound Stamp", xp: "250 XP", desc: language === "en" ? "Anchors proof of Pi Network KYC verification without exposing personal data. This is the highest-trust stamp — proves you are a verified human on Pi Network." : "يثبت التحقق من KYC على شبكة Pi بدون الكشف عن البيانات الشخصية. هذا أعلى طابع ثقة — يثبت أنك إنسان موثّق.", color: "text-axiom-purple" },
+                  { name: "Wallet Age Stamp", xp: "100 XP", desc: language === "en" ? "Verifies the age and transaction history of your connected Stellar/Pi wallet. Older wallets with active history earn higher trust." : "يتحقق من عمر محفظتك وسجل المعاملات. المحافظ الأقدم مع نشاط أعلى تكسب ثقة أعلى.", color: "text-electric-blue" },
+                  { name: "Social Identity Stamp", xp: "100 XP each", desc: language === "en" ? "Validates ownership of Twitter, Discord, and Google accounts via cryptographic protocol signatures. Each social link is an independent stamp." : "يتحقق من ملكية حسابات Twitter وDiscord وGoogle عبر توقيعات بروتوكول تشفيرية. كل رابط اجتماعي طابع مستقل.", color: "text-neon-green" },
+                  { name: "Transaction Stamp", xp: "50 XP each", desc: language === "en" ? "Proves on-chain activity through verified Pi or Stellar transactions. More transactions = higher trust signal." : "يثبت النشاط على السلسلة عبر معاملات Pi أو Stellar موثقة. المزيد من المعاملات = إشارة ثقة أعلى.", color: "text-amber-400" },
+                  { name: "Agent Stamp", xp: "150 XP", desc: language === "en" ? "Verifies that an AI agent is deployed, active, and working under your delegation. Ties agent behavior to your trust score." : "يتحقق من أن عميل الذكاء الاصطناعي نشط ويعمل تحت تفويضك. يربط سلوك العميل بنقاط ثقتك.", color: "text-emerald-400" },
+                  { name: "Daily PoW Proof", xp: "10 XP daily", desc: language === "en" ? "Establishes daily active human participation through lightweight cryptographic proof-of-work tasks. Consistency builds trust." : "يثبت المشاركة البشرية النشطة يومياً عبر مهام إثبات عمل تشفيرية خفيفة. الاتساق يبني الثقة.", color: "text-zinc-400" },
                 ].map((stamp, i) => (
-                  <div key={i} className="flex justify-between items-start p-3 rounded-xl border border-white/5 bg-white/[0.01]">
-                    <div>
-                      <h4 className="text-xs font-bold text-white font-mono">{stamp.name}</h4>
-                      <p className="text-[11px] text-zinc-500 mt-1">{stamp.desc}</p>
+                  <div key={i} className="flex justify-between items-start p-3 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`text-xs font-bold font-mono ${stamp.color}`}>{stamp.name}</h4>
+                      <p className="text-[11px] text-zinc-500 mt-1 leading-relaxed">{stamp.desc}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[10px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded font-bold ml-3 flex-shrink-0">
                       {stamp.xp}
                     </span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-6 p-4 rounded-xl border border-electric-blue/20 bg-electric-blue/5">
+                <h4 className="text-xs font-bold font-mono text-electric-blue mb-2">
+                  {language === "en" ? "Trust Score Formula" : "صيغة نقاط الثقة"}
+                </h4>
+                <p className="text-[11px] text-zinc-400 font-mono">
+                  Trust = (XP Score × 0.7) + (Stamp Score × 0.3)  →  0–100%
+                </p>
+                <p className="text-[10px] text-zinc-500 mt-1">
+                  {language === "en"
+                    ? "XP Score = min(100, XP/10). Stamp Score = (stamps claimed / 6 total) × 100."
+                    : "نقاط XP = min(100, XP/10). نقاط الطوابع = (الطوابع المكتسبة / 6) × 100."}
+                </p>
               </div>
             </div>
           )}
@@ -134,12 +220,23 @@ console.log("Active Agent status:", passport.agent.status);`;
           {activeSection === "sdk" && (
             <div className="space-y-6">
               <span className="stitch-badge">Client Integration</span>
-              <h2 className="text-xl md:text-2xl font-bold text-white">SDK & App Integration</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">
+                {language === "en" ? "SDK & Integration" : "مكتبة المطورين والدمج"}
+              </h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                App developers can query AxiomID directly to guard endpoints, restrict API rates, or authorize transaction delegations for AI agents.
+                {language === "en"
+                  ? "App developers can query AxiomID directly to guard endpoints, restrict API rates, or authorize transaction delegations for AI agents."
+                  : "يمكن للمطورين الاستعلام عن AxiomID مباشرة لحماية النقاط النهائية وتقييد معدلات API أو تفويض معاملات عملاء الذكاء الاصطناعي."}
               </p>
+
+              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
+                {language === "en" ? "Installation" : "التثبيت"}
+              </h3>
+              <CodeBlock code={sdkInstallCode} language="bash" />
               
-              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">Example SDK Usage</h3>
+              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
+                {language === "en" ? "Usage Example" : "مثال الاستخدام"}
+              </h3>
               <CodeBlock code={sdkExample} language="typescript" />
             </div>
           )}
@@ -147,29 +244,65 @@ console.log("Active Agent status:", passport.agent.status);`;
           {activeSection === "api" && (
             <div className="space-y-6">
               <span className="stitch-badge">HTTP Reference</span>
-              <h2 className="text-xl md:text-2xl font-bold text-white">API References</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">
+                {language === "en" ? "API Reference" : "مرجع واجهة البرمجة"}
+              </h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                AxiomID exposes public read-only endpoints to inspect active identities, retrieve DID documents, and fetch sandbox logs.
+                {language === "en"
+                  ? "AxiomID exposes public read-only endpoints and authenticated write endpoints. All public endpoints are rate-limited."
+                  : "توفر AxiomID نقاط نهاية عامة للقراءة فقط ونقاط نهاية مصادقة للكتابة. جميع النقاط العامة مقيّدة المعدل."}
               </p>
               
-              <div className="space-y-4 pt-2">
-                {[
-                  { method: "GET", path: "/api/passport/:slug", desc: "Retrieve public profile credentials and stamps configuration." },
-                  { method: "GET", path: "/api/did-document?did=:did", desc: "Resolve a sovereign did:axiom identifier to its W3C JSON DID document." },
-                  { method: "GET", path: "/api/status", desc: "Retrieve real-time protocol transaction metrics and average trust score." },
-                ].map((route, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex items-center gap-2 font-mono text-xs">
-                      <span className="px-2 py-0.5 bg-electric-blue/20 text-electric-blue border border-electric-blue/30 rounded font-bold">{route.method}</span>
-                      <span className="text-white font-semibold">{route.path}</span>
-                    </div>
-                    <p className="text-xs text-zinc-500 font-mono pl-2 border-l border-zinc-700">{route.desc}</p>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-xs">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[10px] text-zinc-500">
+                      <th className="py-2 pr-3 w-16">METHOD</th>
+                      <th className="py-2 pr-3">ENDPOINT</th>
+                      <th className="py-2 pr-3">DESCRIPTION</th>
+                      <th className="py-2 w-16">AUTH</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {API_ROUTES.map((route, i) => (
+                      <tr key={i} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="py-2.5 pr-3">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                            route.method === "GET" ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-green/20 text-neon-green"
+                          }`}>
+                            {route.method}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-3 text-white font-semibold">{route.path}</td>
+                        <td className="py-2.5 pr-3 text-zinc-500">{route.desc}</td>
+                        <td className="py-2.5">
+                          <span className={`text-[9px] font-bold ${route.auth === "Yes" ? "text-amber-400" : "text-zinc-600"}`}>
+                            {route.auth}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <h3 className="text-sm font-bold font-mono text-white pt-4 border-b border-white/5 pb-2">Response Envelope</h3>
+              <h3 className="text-sm font-bold font-mono text-white pt-4 border-b border-white/5 pb-2">
+                {language === "en" ? "Response Envelope" : "مغلف الاستجابة"}
+              </h3>
               <CodeBlock code={apiResponseExample} language="json" />
+
+              <h3 className="text-sm font-bold font-mono text-white pt-4 border-b border-white/5 pb-2">
+                {language === "en" ? "OpenAPI Specification" : "مواصفة OpenAPI"}
+              </h3>
+              <p className="text-xs text-zinc-500 mb-2">
+                {language === "en"
+                  ? "Full OpenAPI 3.1 spec available at:"
+                  : "مواصفة OpenAPI 3.1 كاملة متاحة على:"}
+              </p>
+              <div className="bg-black/80 border border-white/5 rounded-xl p-3 font-mono text-[11px]">
+                <span className="text-neon-green">GET</span>{" "}
+                <span className="text-white">https://axiomid.app/openapi.json</span>
+              </div>
             </div>
           )}
         </div>

@@ -40,7 +40,9 @@ describe("semanticIntentAnalysis", () => {
   });
 
   it("falls back to keyword verdict when AI times out", async () => {
-    // Mock fetch to reject when abort signal fires
+    jest.useFakeTimers();
+
+    // Mock fetch to block until abort signal fires
     mockFetch.mockImplementation((_url: string, opts: { signal?: AbortSignal }) => {
       return new Promise((_, reject) => {
         if (opts?.signal) {
@@ -48,10 +50,16 @@ describe("semanticIntentAnalysis", () => {
             reject(new DOMException("The operation was aborted.", "AbortError"));
           });
         }
+        // Keep the promise pending forever (abort will reject it)
       });
     });
 
-    const result = await semanticIntentAnalysis("delete_cache", true);
+    // Start the call and advance timers past the 5000ms timeout
+    const resultPromise = semanticIntentAnalysis("delete_cache", true);
+    jest.advanceTimersByTime(5100);
+    const result = await resultPromise;
+
+    jest.useRealTimers();
     expect(result).toBe("YES"); // keyword fallback = true
   });
 

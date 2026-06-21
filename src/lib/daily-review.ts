@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { createHereNowClient } from "./herenow";
 import { logger } from "./logger";
+import { calculateTrustScore } from "./trust";
 
 export interface DailyReviewData {
   date: string;
@@ -108,6 +109,7 @@ export async function runDailyReview(): Promise<{ url: string }> {
       tier: true,
       did: true,
       walletAddress: true,
+      stamps: { select: { id: true } },
     },
   });
 
@@ -120,7 +122,7 @@ export async function runDailyReview(): Promise<{ url: string }> {
       username: u.piUsername || u.walletAddress.slice(0, 10),
       xp: u.xp,
       tier: u.tier,
-      trustScore: 0,
+      trustScore: calculateTrustScore(u.xp, u.stamps.length),
     })),
     newStamps,
     totalPayments: recentPayments.length,
