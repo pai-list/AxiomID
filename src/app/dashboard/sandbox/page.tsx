@@ -157,7 +157,7 @@ const AUDIT_ITEMS: AuditItem[] = [
 ];
 
 export default function SandboxPage() {
-  const piAccessToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+  const [piAccessToken] = useState(() => typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null);
   const [manifest, setManifest] = useState(DEFAULT_MANIFEST);
   const [inputData, setInputData] = useState(`{"prompt": "Calculate prime sequence to 10"}`);
   const [logs, setLogs] = useState<string[]>([]);

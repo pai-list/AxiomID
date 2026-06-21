@@ -75,6 +75,7 @@ export function KYAVerificationCard({ kycStatus, did, piUsername, onVerify }: KY
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={t('kya_pi_username')}
+            aria-label={t('kya_pi_username')}
             className="flex-1 rounded-lg px-4 py-2 text-sm font-mono transition-colors focus:outline-none focus:border-blue-500/40"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
           />

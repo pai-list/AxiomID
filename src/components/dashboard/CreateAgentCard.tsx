@@ -55,6 +55,7 @@ export function CreateAgentCard({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t('create_agent_placeholder')}
+          aria-label={t('create_agent_placeholder')}
           className="flex-1 rounded-lg px-4 py-2 text-sm font-mono transition-colors focus:outline-none focus:border-blue-500/40"
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
         />

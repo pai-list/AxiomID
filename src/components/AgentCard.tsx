@@ -60,6 +60,9 @@ export function AgentCard({
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
+        onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
         className="bento-card p-4 cursor-pointer group"
       >
         <div className="flex items-center gap-3">
@@ -113,6 +116,9 @@ export function AgentCard({
       whileHover={{ scale: 1.01, y: -3 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className="bento-card p-5 cursor-pointer group"
     >
       <div className="flex items-start justify-between mb-4">
