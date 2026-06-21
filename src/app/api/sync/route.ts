@@ -377,13 +377,13 @@ async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
             where: { agentId: item.agent_id },
             update: {
               status: item.status,
-              lastHeartbeat: item.last_heartbeat ? BigInt(item.last_heartbeat) : null,
+              lastHeartbeat: item.last_heartbeat ? BigInt(Math.floor(item.last_heartbeat)) : null,
               metadata: item.metadata,
             },
             create: {
               agentId: item.agent_id,
               status: item.status,
-              lastHeartbeat: item.last_heartbeat ? BigInt(item.last_heartbeat) : null,
+              lastHeartbeat: item.last_heartbeat ? BigInt(Math.floor(item.last_heartbeat)) : null,
               metadata: item.metadata,
             },
           });

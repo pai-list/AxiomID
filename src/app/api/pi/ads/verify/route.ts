@@ -50,22 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 1. Check for double claiming
-    // 1. Check for double claiming
-    const duplicate = await prisma.xpLedger.findFirst({
-      where: {
-        reason: "watch_ad",
-        reference: {
-          contains: `"adId":"${adId}"`,
-        },
-      },
-    });
-
-    if (duplicate) {
-      return apiError("CONFLICT", "This ad reward has already been claimed");
-    }
-
-    // 2. Fetch ad reward status from Pi Platform API
+    // 1. Fetch ad reward status from Pi Platform API
     const response = await fetch(`https://api.minepi.com/v2/ads_network/status/${adId}`, {
       method: "GET",
       headers: {
@@ -84,15 +69,29 @@ export async function POST(request: NextRequest) {
       granted_at?: string;
     };
 
-    // 3. Verify status is "granted"
+    // 2. Verify status is "granted"
     if (adData.mediator_ack_status !== "granted") {
       return apiError("FORBIDDEN", "Ad reward has not been granted by the Pi Network");
     }
 
     const xpReward = 10;
 
-    // 4. Atomically record XP reward in transaction
+    // 3. Atomically check duplicate + record XP reward in transaction (prevents race condition)
     const result = await prisma.$transaction(async (tx) => {
+      // Duplicate check INSIDE transaction to prevent TOCTOU race condition
+      const duplicate = await tx.xpLedger.findFirst({
+        where: {
+          reason: "watch_ad",
+          reference: {
+            contains: `"adId":"${adId}"`,
+          },
+        },
+      });
+
+      if (duplicate) {
+        throw new Error("ALREADY_CLAIMED");
+      }
+
       const user = await tx.user.findUnique({ where: { id: auth.user.id } });
       if (!user) {
         throw new Error("USER_NOT_FOUND");
@@ -135,6 +134,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Error && error.message === "USER_NOT_FOUND") {
       return apiError("NOT_FOUND", "User not found");
+    }
+    if (error instanceof Error && error.message === "ALREADY_CLAIMED") {
+      return apiError("CONFLICT", "This ad reward has already been claimed");
     }
     logger.error("[PI-ADS] Verification error:", error);
     return apiError("INTERNAL_ERROR", "Failed to verify ad reward");
