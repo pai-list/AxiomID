@@ -37,6 +37,15 @@ declare global {
     onError: (error: Error, payment?: PiPaymentDTO) => void;
   }
 
+  interface PiAdsInstance {
+    isAdReady: (adType: "interstitial" | "rewarded") => Promise<boolean>;
+    requestAd: (adType: "interstitial" | "rewarded") => Promise<void>;
+    showAd: (adType: "interstitial" | "rewarded") => Promise<{
+      result: "AD_REWARDED" | "AD_CLOSED" | "AD_ERROR";
+      adId?: string;
+    }>;
+  }
+
   interface PiInstance {
     init: (options: { version: string; sandbox?: boolean }) => void;
     authenticate: (
@@ -51,6 +60,7 @@ declare global {
       },
       callbacks: PiPaymentCallbacks
     ) => Promise<PiPaymentDTO>;
+    Ads: PiAdsInstance;
   }
 
   interface Window {

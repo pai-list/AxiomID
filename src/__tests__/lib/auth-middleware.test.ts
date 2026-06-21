@@ -20,6 +20,10 @@ jest.mock('@/lib/errors', () => ({
   })),
 }));
 
+jest.mock('@/lib/auth-tokens', () => ({
+  verifyPiTokenWithJwks: jest.fn().mockRejectedValue(new Error("JWKS verification not available in tests")),
+}));
+
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 

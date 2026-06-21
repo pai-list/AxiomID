@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify, errors } from "jose";
+import { SignJWT, jwtVerify, errors, importJWK, JWTPayload } from "jose";
 import { logger } from "./logger";
 
 const ISSUER = "https://axiomid.app";
@@ -115,4 +115,55 @@ export async function createAccessToken(did: string, scopes: string[]): Promise<
 export async function verifyAccessToken(token: string): Promise<{ sub: string; scopes: string[] }> {
   const payload = await verifyIdentityAssertion(token);
   return { sub: payload.sub, scopes: payload.scopes };
+}
+
+const PI_JWKS_URL = "https://api.minepi.com/.well-known/jwks.json";
+const PI_JWKS_CACHE_TTL_MS = 3_600_000; // 1 hour
+
+let piJwksCache: { keys: Awaited<ReturnType<typeof importJWK>>[]; fetchedAt: number } | null = null;
+
+/**
+ * Fetches Pi Network's JWKS with a 1-hour in-memory cache.
+ */
+async function fetchPiJwks() {
+  if (piJwksCache && Date.now() - piJwksCache.fetchedAt < PI_JWKS_CACHE_TTL_MS) {
+    return piJwksCache.keys;
+  }
+
+  const res = await fetch(PI_JWKS_URL, { signal: AbortSignal.timeout(5000) });
+  if (!res.ok) throw new Error(`Failed to fetch Pi JWKS: ${res.status}`);
+  const data = (await res.json()) as { keys: { kid: string; kty: string; alg: string; crv: string; x: string }[] };
+
+  const keys = await Promise.all(
+    data.keys.map((k) => importJWK({ ...k, use: "sig" }, k.alg))
+  );
+
+  piJwksCache = { keys, fetchedAt: Date.now() };
+  return keys;
+}
+
+/**
+ * Verifies a Pi Network access token using their JWKS endpoint.
+ *
+ * @param token - Pi Network access token (JWT)
+ * @returns Verified payload containing `sub`, `username`, and `pi_username`
+ * @throws If token is invalid, expired, or signature verification fails
+ */
+export async function verifyPiTokenWithJwks(
+  token: string
+): Promise<JWTPayload & { sub: string; username?: string; pi_username?: string }> {
+  const keys = await fetchPiJwks();
+
+  let lastError: unknown;
+  for (const key of keys) {
+    try {
+      const { payload } = await jwtVerify(token, key);
+      if (typeof payload.sub !== "string") throw new Error("Pi token missing sub claim");
+      return payload as JWTPayload & { sub: string; username?: string; pi_username?: string };
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError ?? new Error("Pi token verification failed: no matching key");
 }

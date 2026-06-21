@@ -140,6 +140,10 @@ export class Router {
       return this.handleSync(request);
     }
 
+    if (path === "/api/sync/export" && method === "GET") {
+      return this.handleSyncExport(url);
+    }
+
     // --- Skills Marketplace ---
     if (path === "/api/skills" && method === "GET") {
       const skills = await this.skills.listSkills();
@@ -286,6 +290,43 @@ export class Router {
       });
     } catch {
       return errorResponse("Sync failed", 500);
+    }
+  }
+
+  /**
+   * Export D1 edge data since timestamp.
+   */
+  private async handleSyncExport(url: URL): Promise<Response> {
+    try {
+      const since = parseInt(url.searchParams.get("since") || "0", 10);
+
+      const queryWithSince = (sqlWithFilter: string, sqlWithout: string) => {
+        const stmt = this.d1.db.prepare(since > 0 ? sqlWithFilter : sqlWithout);
+        return since > 0 ? stmt.bind(since) : stmt;
+      };
+
+      const [harvests, presence] = await Promise.all([
+        queryWithSince(
+          "SELECT * FROM harvest_results WHERE CAST(strftime('%s', created_at) AS INTEGER) * 1000 > ? ORDER BY created_at DESC LIMIT 1000",
+          "SELECT * FROM harvest_results ORDER BY created_at DESC LIMIT 1000"
+        ).all(),
+        queryWithSince(
+          "SELECT * FROM agent_presence WHERE last_heartbeat > ? ORDER BY last_heartbeat DESC",
+          "SELECT * FROM agent_presence ORDER BY last_heartbeat DESC"
+        ).all(),
+      ]);
+
+      return jsonResponse({
+        success: true,
+        data: {
+          harvestResults: harvests.results,
+          agentPresence: presence.results,
+        },
+        timestamp: Date.now(),
+      });
+    } catch (err) {
+      console.error("Export failed:", err);
+      return errorResponse("Failed to export sync data", 500);
     }
   }
 }

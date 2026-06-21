@@ -3,6 +3,120 @@
 import { useState, useEffect } from "react";
 import { Play, ShieldAlert, Cpu, Dna, Terminal, Copy, Check, ShieldCheck, Loader2 } from "lucide-react";
 
+interface AstNode {
+  type: string;
+  level?: number;
+  text?: string;
+  items?: string[];
+}
+
+function parseManifestToAst(manifestStr: string) {
+  try {
+    const lines = manifestStr.split("\n");
+    let inFrontmatter = false;
+    const frontmatterLines: string[] = [];
+    const bodyLines: string[] = [];
+
+    for (const line of lines) {
+      if (line.trim() === "---") {
+        inFrontmatter = !inFrontmatter;
+        continue;
+      }
+      if (inFrontmatter) {
+        frontmatterLines.push(line);
+      } else {
+        bodyLines.push(line);
+      }
+    }
+
+    const metadata: Record<string, string> = {};
+    for (const fl of frontmatterLines) {
+      const idx = fl.indexOf(":");
+      if (idx !== -1) {
+        const key = fl.slice(0, idx).trim();
+        const value = fl.slice(idx + 1).trim().replace(/^['"]|['"]$/g, "");
+        metadata[key] = value;
+      }
+    }
+
+    const body: AstNode[] = [];
+    let currentList: string[] | null = null;
+
+    for (const bl of bodyLines) {
+      const trimmed = bl.trim();
+      if (!trimmed) continue;
+
+      if (trimmed.startsWith("#")) {
+        if (currentList) {
+          body.push({ type: "List", items: currentList });
+          currentList = null;
+        }
+        const level = (trimmed.match(/^#+/) || ["#"])[0].length;
+        const text = trimmed.replace(/^#+\s*/, "");
+        body.push({ type: "Heading", level, text });
+      } else if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
+        if (!currentList) currentList = [];
+        currentList.push(trimmed.replace(/^[-*]\s*/, ""));
+      } else {
+        if (currentList) {
+          body.push({ type: "List", items: currentList });
+          currentList = null;
+        }
+        body.push({ type: "Paragraph", text: trimmed });
+      }
+    }
+    if (currentList) {
+      body.push({ type: "List", items: currentList });
+    }
+
+    return {
+      type: "SkillManifest",
+      metadata,
+      body,
+      entropy: parseFloat(Math.min(8.0, Math.max(1.0, manifestStr.length / 120 + 2.5)).toFixed(4))
+    };
+  } catch (e) {
+    return { error: "Failed to parse manifest AST: " + String(e) };
+  }
+}
+
+function renderAstJson(obj: unknown) {
+  const jsonStr = JSON.stringify(obj, null, 2);
+  const lines = jsonStr.split("\n");
+  
+  return (
+    <pre className="text-[10px] font-mono leading-relaxed overflow-auto h-full max-h-[290px] pr-2 scrollbar-thin text-zinc-300">
+      {lines.map((line, i) => {
+        const keyMatch = line.match(/^(\s*)("[^"]+"):\s*(.*)$/);
+        if (keyMatch) {
+          const indent = keyMatch[1];
+          const key = keyMatch[2];
+          const val = keyMatch[3];
+          
+          let valColor = "text-zinc-400";
+          if (val.startsWith('"')) {
+            valColor = "text-emerald-400";
+          } else if (val.match(/^(true|false)/)) {
+            valColor = "text-electric-blue";
+          } else if (val.match(/^\d/)) {
+            valColor = "text-amber-400";
+          }
+          
+          return (
+            <div key={i} className="break-all">
+              {indent}
+              <span className="text-axiom-purple">{key}</span>:{" "}
+              <span className={valColor}>{val}</span>
+            </div>
+          );
+        }
+        
+        return <div key={i} className="text-zinc-500 break-all">{line}</div>;
+      })}
+    </pre>
+  );
+}
+
 interface SkillListItem {
   id: string;
   slug: string;
@@ -51,6 +165,7 @@ export default function SandboxPage() {
   const [skills, setSkills] = useState<SkillListItem[]>([]);
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [editorTab, setEditorTab] = useState<"edit" | "ast">("edit");
   const [auditStates, setAuditStates] = useState<Record<string, "pending" | "scanning" | "passed" | "failed">>({
     sandbox: "pending",
     ast: "pending",
@@ -249,19 +364,46 @@ export default function SandboxPage() {
             {/* Manifest Editor */}
             <div className="bento-card p-4 flex flex-col min-h-[350px]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono font-bold text-subtle">
-                  EDIT MANIFEST (SKILL.md)
-                </span>
+                <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setEditorTab("edit")}
+                    className={`text-[10px] font-mono px-2.5 py-1 rounded-md transition-all ${
+                      editorTab === "edit"
+                        ? "bg-electric-blue/20 text-electric-blue shadow-[0_0_8px_rgba(59,130,246,0.15)]"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    EDIT MANIFEST
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditorTab("ast")}
+                    className={`text-[10px] font-mono px-2.5 py-1 rounded-md transition-all ${
+                      editorTab === "ast"
+                        ? "bg-axiom-purple/20 text-axiom-purple shadow-[0_0_8px_rgba(168,85,247,0.15)]"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    AST PREVIEW
+                  </button>
+                </div>
                 <span className="text-[9px] font-mono text-electric-blue border border-electric-blue/20 px-1.5 py-0.5 rounded">
-                  YAML + Markdown
+                  {editorTab === "edit" ? "YAML + Markdown" : "Syntax Tree"}
                 </span>
               </div>
-              <textarea
-                value={manifest}
-                onChange={(e) => setManifest(e.target.value)}
-                className="flex-1 w-full bg-black/40 border border-white/5 rounded-lg p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-electric-blue/40 resize-none"
-                placeholder="--- \nname: my-skill ...\n"
-              />
+              {editorTab === "edit" ? (
+                <textarea
+                  value={manifest}
+                  onChange={(e) => setManifest(e.target.value)}
+                  className="flex-1 w-full bg-black/40 border border-white/5 rounded-lg p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-electric-blue/40 resize-none"
+                  placeholder="--- \nname: my-skill ...\n"
+                />
+              ) : (
+                <div className="flex-1 w-full bg-black/50 border border-white/5 rounded-lg p-3 overflow-hidden min-h-[250px]">
+                  {renderAstJson(parseManifestToAst(manifest))}
+                </div>
+              )}
             </div>
 
             {/* Input Parameters Editor */}
@@ -303,9 +445,9 @@ export default function SandboxPage() {
           </div>
 
           {/* Terminal Logs Output */}
-          <div className="bento-card p-5 bg-black/85 border border-white/10 rounded-xl">
-            <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
-              <Terminal className="w-4 h-4 text-emerald-400" />
+          <div className="bento-card p-5 bg-black/90 border border-emerald-500/20 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.08)]">
+            <div className="flex items-center gap-2 mb-3 border-b border-emerald-500/10 pb-2">
+              <Terminal className="w-4 h-4 text-emerald-400 animate-pulse" />
               <span className="text-xs font-mono font-bold text-surface">
                 Isolated VM Terminal Output
               </span>
@@ -319,9 +461,9 @@ export default function SandboxPage() {
                 logs.map((log, idx) => {
                   let colorClass = "text-subtle";
                   if (log.includes("[ERROR]") || log.includes("[FATAL]")) {
-                    colorClass = "text-red-400";
+                    colorClass = "text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.15)]";
                   } else if (log.includes("[SUCCESS]")) {
-                    colorClass = "text-emerald-400";
+                    colorClass = "text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]";
                   } else if (log.includes("[SYSTEM]")) {
                     colorClass = "text-gray-500";
                   } else if (log.includes("[MANIFEST]")) {
