@@ -9,6 +9,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Users, Bot, Ticket, Zap, AlertTriangle, Shield, Fingerprint } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import Script from "next/script";
 import { useRef } from "react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import dynamic from "next/dynamic";
@@ -40,9 +41,15 @@ export default function Home() {
   const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
   const { t, language } = useLanguage();
   const [networkStats, setNetworkStats] = useState<{ users: number; agents: number; xp: number; payments: number } | null>(null);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   const statsRef = useRef<HTMLDivElement>(null);
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +70,47 @@ export default function Home() {
   }, []);
 
   return (
+    <>
+    <Script
+      id="axiomid-jsonld"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "AxiomID",
+          url: "https://axiomid.app",
+          description: "W3C DID-based identity layer for humans delegating authority to AI agents on Pi Network and Stellar. Cryptographic proof that an AI agent is working with human authorization.",
+          applicationCategory: "Identity Application",
+          operatingSystem: "Web",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "XLM"
+          },
+          provider: {
+            "@type": "Organization",
+            name: "AxiomID",
+            url: "https://axiomid.app"
+          },
+          featureList: [
+            "W3C DID Document Generation",
+            "Ed25519 Key Pair Management",
+            "Verifiable Credential Issuance",
+            "Agent Identity Verification",
+            "Pi Network Integration",
+            "Stellar Blockchain Anchoring",
+            "AI Agent Delegation",
+            "Zero-Knowledge Proof Privacy"
+          ],
+          inLanguage: ["en", "ar"],
+          isAccessibleForFree: true
+        })
+      }}
+    />
+    {!isPageLoaded ? (
+      <SkeletonScreen />
+    ) : (
     <main className="min-h-screen bg-grid flex flex-col items-center relative overflow-hidden">
       <div className="scanline" />
       <ErrorBanner />
@@ -513,6 +561,8 @@ export default function Home() {
         </div>
       </motion.footer>
     </main>
+    )}
+    </>
   );
 }
 
@@ -535,5 +585,54 @@ function SectionHeader({ label, title, labelColor }: { label: string; title: str
       <span className={`text-[10px] font-mono ${labelColor} tracking-widest uppercase`}>{label}</span>
       <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface mt-2">{title}</h2>
     </motion.div>
+  );
+}
+
+function SkeletonScreen() {
+  return (
+    <main className="min-h-screen bg-grid flex flex-col items-center relative overflow-hidden">
+      <div className="scanline" />
+      {/* Header skeleton */}
+      <header className="sticky top-0 w-full z-50 bg-[#0a0b10]/90 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/5 animate-pulse" />
+            <div className="w-24 h-5 bg-white/5 rounded animate-pulse" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/5 rounded animate-pulse" />
+            <div className="w-20 h-8 bg-white/5 rounded animate-pulse" />
+          </div>
+        </div>
+      </header>
+      {/* Hero skeleton */}
+      <div className="relative w-full max-w-6xl px-4 sm:px-6 mt-6 md:mt-16 z-10 min-h-[70vh] flex items-center">
+        <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center py-8">
+          <div className="md:col-span-7 space-y-5">
+            <div className="w-48 h-6 bg-white/5 rounded animate-pulse" />
+            <div className="w-full max-w-lg h-12 bg-white/5 rounded animate-pulse" />
+            <div className="w-full max-w-md h-16 bg-white/5 rounded animate-pulse" />
+            <div className="flex gap-3">
+              <div className="w-32 h-12 bg-white/5 rounded animate-pulse" />
+              <div className="w-32 h-12 bg-white/5 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="md:col-span-5 flex justify-center">
+            <div className="w-64 h-80 bg-white/5 rounded-3xl animate-pulse" />
+          </div>
+        </div>
+      </div>
+      {/* Stats skeleton */}
+      <div className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 sm:px-6 bento-card">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="text-center md:text-left md:border-r last:border-0 md:px-4">
+              <div className="w-20 h-3 bg-white/5 rounded animate-pulse mx-auto md:mx-0 mb-2" />
+              <div className="w-16 h-6 bg-white/5 rounded animate-pulse mx-auto md:mx-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }

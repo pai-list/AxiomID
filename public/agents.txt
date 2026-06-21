@@ -1,0 +1,33 @@
+# agents.txt — axiomid.app
+# Version: 2.0
+# Updated: 2026-06-21
+
+## Identity
+- Name: AxiomID
+- Website: https://axiomid.app
+- Description: W3C DID-based identity layer for AI agents on Pi Network and Stellar
+
+## Terms of Use
+| Agent | Allowed | Conditions |
+|-------|---------|------------|
+| GPTBot | Yes | Attribute source: AxiomID |
+| ClaudeBot | Yes | Attribute source: AxiomID |
+| PerplexityBot | Yes | Attribute source: AxiomID |
+| Bytespider | No | Training data use denied |
+| AhrefsBot | No | Crawling denied |
+
+## Services
+- Identity Verification: DID-based human authorization for AI agents
+- Skills Marketplace: Buy and sell AI agent skills (Pi Coin payments)
+- Agent Signing: Cryptographic payload signing via sovereign keys
+- Verifiable Credentials: W3C VC issuance and verification
+
+## Public APIs (currently deployed)
+- /api/did-document — W3C DID resolution (public, no auth)
+- /auth.md — Protocol discovery
+- /.well-known/jwks.json — Public key verification
+
+## Agentic Endpoints
+- OpenAPI: /api (JSON endpoint catalog)
+- MCP: Coming soon
+- OAuth2: /.well-known/oauth-authorization-server (not yet deployed)
