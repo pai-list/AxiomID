@@ -1,4 +1,4 @@
-import { createHereNowClient, HereNowError } from "./herenow";
+import { createHereNowClient } from "./herenow";
 import { prisma } from "./prisma";
 import { logger } from "./logger";
 
