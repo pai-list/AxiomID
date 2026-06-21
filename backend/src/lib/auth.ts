@@ -11,7 +11,12 @@ export function verifyAuth(request: Request, env: Env): { authorized: boolean; a
   const url = new URL(request.url);
   const agentId = url.searchParams.get("agentId") || undefined;
 
-  const isPublic = PUBLIC_ROUTES.some((r) => url.pathname.startsWith(r));
+  const isPublic = PUBLIC_ROUTES.some((r) => {
+    if (r === "/api/sync") {
+      return url.pathname === "/api/sync";
+    }
+    return url.pathname.startsWith(r);
+  });
   if (isPublic) {
     return { authorized: true, agentId };
   }

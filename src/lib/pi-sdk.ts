@@ -421,3 +421,40 @@ export async function createPiPayment(amount: number, memo: string, metadata?: R
   });
 }
 
+export async function showRewardedAd(pushLog?: (msg: string) => void): Promise<{ success: boolean; adId?: string }> {
+  assertPiSdkLoaded();
+  try {
+    if (typeof window !== "undefined" && typeof window.Pi?.Ads?.showAd === "function") {
+      pushLog?.("Initializing rewarded ad request...");
+      
+      const isReady = await window.Pi.Ads.isAdReady("rewarded");
+      if (!isReady) {
+        pushLog?.("Ad not cached. Requesting ad load...");
+        await window.Pi.Ads.requestAd("rewarded");
+      }
+
+      pushLog?.("Displaying rewarded ad...");
+      const response = await window.Pi.Ads.showAd("rewarded");
+      
+      if (response.result === "AD_REWARDED") {
+        pushLog?.(`Ad watched successfully! adId: ${response.adId || "none"}`);
+        return { success: true, adId: response.adId };
+      } else if (response.result === "AD_CLOSED") {
+        pushLog?.("Ad was closed before completion.");
+        return { success: false };
+      } else {
+        throw new Error("Ad playback error occurred");
+      }
+    }
+    throw new PiSdkError(
+      PiSdkErrorCode.NOT_IN_PI_BROWSER,
+      "Pi Browser and SDK required to display ads"
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Ad display failed";
+    pushLog?.(`Ad error: ${message}`);
+    throw error;
+  }
+}
+
+

@@ -80,6 +80,82 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, []);
 
+  const [adLoading, setAdLoading] = useState(false);
+
+  const handleWatchAd = async () => {
+    setAdLoading(true);
+    const pushLog = (msg: string) => {
+      setLogs((prev) => [...prev, `[ADS] ${msg}`]);
+    };
+    try {
+      pushLog("Starting Pi Network rewarded ad...");
+      const { showRewardedAd } = await import("@/lib/pi-sdk");
+      const result = await showRewardedAd(pushLog);
+      
+      if (result.success && result.adId) {
+        pushLog("Verifying ad reward on backend...");
+        const response = await fetch("/api/pi/ads/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ adId: result.adId }),
+        });
+        
+        if (response.ok) {
+          const verifyData = await response.json();
+          pushLog(`Reward claimed! +${verifyData.xpEarned || 10} XP awarded.`);
+          if (typeof window !== "undefined" && typeof window.location !== "undefined") {
+            window.location.reload();
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          pushLog(`Verification failed: ${errorData.message || "Unknown error"}`);
+        }
+      } else {
+        pushLog("Ad playback failed or cancelled.");
+      }
+    } catch (err) {
+      pushLog(`Error watching ad: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setAdLoading(false);
+    }
+  };
+
+  const handleRunTest = async () => {
+    setLogs((prev) => [...prev, "SYSTEM: Starting diagnostic verification...", "SYSTEM: Checking Pi Wallet connection..."]);
+    try {
+      await runWalletTest();
+    } catch {
+      // Ignored: runWalletTest already logs to walletLogs
+    }
+
+    setLogs((prev) => [...prev, "SYSTEM: Triggering edge database synchronization..."]);
+    try {
+      const response = await fetch("/api/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ source: "all", dryRun: false }),
+      });
+      
+      if (response.ok) {
+        const syncData = await response.json();
+        setLogs((prev) => [
+          ...prev,
+          `SYSTEM: Sync status: ${syncData.message}`,
+          `SYSTEM: Harvest Results synced: ${syncData.results?.harvestResults?.synced ?? 0}`,
+          `SYSTEM: Agent Presence synced: ${syncData.results?.agentPresence?.synced ?? 0}`,
+          `SYSTEM: Shannon Entropy: ${syncData.results?.harvestResults?.entropy?.toFixed(4) ?? "0.0000"}`
+        ]);
+      } else {
+        const errorText = await response.text();
+        setLogs((prev) => [...prev, `SYSTEM: Sync failed: ${errorText}`]);
+      }
+    } catch (err) {
+      setLogs((prev) => [...prev, `SYSTEM: Sync network error: ${err instanceof Error ? err.message : String(err)}`]);
+    }
+  };
+
   const handleTabClick = (tabId: TabId) => {
     if (tabId === "marketplace") {
       router.push("/dashboard/marketplace");
@@ -239,6 +315,37 @@ export default function Dashboard() {
                     <QuickLinksCard passportSlug={user.piUsername || user.walletAddress || "user"} did={user.did || undefined} />
                   </div>
                   
+                  {/* Pi Network Ads Reward Card */}
+                  <div className="bento-card p-5 border border-amber-400/20 bg-amber-500/5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-full filter blur-xl opacity-60 pointer-events-none" />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-bold text-amber-200 flex items-center gap-1.5 font-mono">
+                          <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
+                          {language === "ar" ? "إعلانات مكافأة PI" : "REWARDED PI ADS"}
+                        </h3>
+                        <p className="text-xs text-zinc-400">
+                          {language === "ar" 
+                            ? "شاهد إعلاناً قصيراً للحصول على 10 XP إضافية على الفور ورفع مستوى التوثيق الخاص بك."
+                            : "Watch a short ad to earn +10 XP immediately and upgrade your authorization tier."}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleWatchAd}
+                        disabled={adLoading}
+                        className="btn-primary text-xs font-semibold py-2.5 px-4 bg-amber-500 hover:bg-amber-400 text-black border-amber-600 hover:border-amber-500 shrink-0 font-mono tracking-wider transition-all disabled:opacity-50"
+                      >
+                        {adLoading ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="animate-spin">⟳</span> {language === "ar" ? "جاري التحميل..." : "LOADING..."}
+                          </span>
+                        ) : (
+                          language === "ar" ? "شاهد الإعلان (+10 XP)" : "WATCH AD (+10 XP)"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
                   <SkillsCard skills={skillsData.skills.slice(0, 3)} />
                 </div>
 
@@ -361,7 +468,7 @@ export default function Dashboard() {
             logs={logs}
             walletLogs={walletLogs}
             onClear={() => { clearWalletLogs(); setLogs([]); }}
-            onRunTest={runWalletTest}
+            onRunTest={handleRunTest}
             onClose={() => { setShowTerminal(false); setActiveTab("passport"); }}
           />
         )}

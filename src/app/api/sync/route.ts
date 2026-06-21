@@ -220,28 +220,100 @@ async function syncWithRetry(
  * Sync harvest results from D1 to PostgreSQL.
  * Uses entropy scoring to measure data quality.
  */
-async function syncHarvestResults(_dryRun: boolean): Promise<SyncResult> {
-  const synced = 0;
+async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
+  let synced = 0;
   let errors = 0;
 
   try {
-    // In production: fetch from D1 via Cloudflare API
-    // const d1Response = await fetch(`${CLOUDFLARE_BACKEND_URL}/api/harvest/recent`, {
-    //   headers: { "Authorization": `Bearer ${SHARED_SECRET}` }
-    // });
-    // const d1Data = await d1Response.json();
+    const backendUrl = process.env.CLOUDFLARE_BACKEND_URL;
+    const sharedSecret = process.env.SHARED_SECRET_TOKEN_VERCEL_CF;
 
-    // Calculate entropy of synced data
+    if (!backendUrl || !sharedSecret) {
+      throw new Error("Backend URL or shared secret is missing");
+    }
+
+    const lastRecord = await prisma.harvestResult.findFirst({
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    const since = lastRecord ? lastRecord.createdAt.getTime() : 0;
+
+    const response = await fetch(`${backendUrl}/api/sync/export?since=${since}`, {
+      method: "GET",
+      headers: {
+        "X-Shared-Secret": sharedSecret,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Cloudflare export API error: ${response.status}`);
+    }
+
+    const body = await response.json() as {
+      success: boolean;
+      data: {
+        harvestResults: Array<{
+          id: string;
+          query: string;
+          result: string;
+          citations: string | null;
+          user_did: string | null;
+          created_at: string;
+        }>;
+      };
+    };
+
+    if (!body.success || !body.data?.harvestResults) {
+      throw new Error("Export returned invalid structure");
+    }
+
+    const items = body.data.harvestResults;
+
+    const parseDate = (dStr: string) => {
+      if (!dStr.endsWith("Z") && !dStr.includes("+") && !dStr.includes("GMT")) {
+        return new Date(dStr.replace(" ", "T") + "Z");
+      }
+      return new Date(dStr);
+    };
+
+    if (!dryRun) {
+      for (const item of items) {
+        try {
+          await prisma.harvestResult.upsert({
+            where: { id: item.id },
+            update: {
+              query: item.query,
+              result: item.result,
+              citations: item.citations,
+              userDid: item.user_did,
+              createdAt: parseDate(item.created_at),
+            },
+            create: {
+              id: item.id,
+              query: item.query,
+              result: item.result,
+              citations: item.citations,
+              userDid: item.user_did,
+              createdAt: parseDate(item.created_at),
+            },
+          });
+          synced++;
+        } catch (err) {
+          logger.error(`Failed to upsert harvest result ${item.id}:`, err);
+          errors++;
+        }
+      }
+    } else {
+      synced = items.length;
+    }
+
     const recentHarvests = await prisma.harvestResult.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
       select: { query: true, result: true, id: true, createdAt: true },
     });
 
-    const dataString = recentHarvests
-      .map((h) => h.query + h.result)
-      .join("");
-
+    const dataString = recentHarvests.map((h) => h.query + h.result).join("");
     const entropy = shannonEntropy(dataString);
     const freshness = recentHarvests.length > 0
       ? dataFreshness(recentHarvests[0].createdAt.getTime())
@@ -257,22 +329,74 @@ async function syncHarvestResults(_dryRun: boolean): Promise<SyncResult> {
   }
 }
 
-/**
- * Sync agent presence from D1 to PostgreSQL.
- * Uses entropy scoring to measure status diversity.
- */
-async function syncAgentPresence(_dryRun: boolean): Promise<SyncResult> {
-  const synced = 0;
+async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
+  let synced = 0;
   let errors = 0;
 
   try {
-    // In production: fetch from D1 via Cloudflare API
-    // const d1Response = await fetch(`${CLOUDFLARE_BACKEND_URL}/api/presence/all`, {
-    //   headers: { "Authorization": `Bearer ${SHARED_SECRET}` }
-    // });
-    // const d1Data = await d1Response.json();
+    const backendUrl = process.env.CLOUDFLARE_BACKEND_URL;
+    const sharedSecret = process.env.SHARED_SECRET_TOKEN_VERCEL_CF;
 
-    // Calculate entropy of presence statuses
+    if (!backendUrl || !sharedSecret) {
+      throw new Error("Backend URL or shared secret is missing");
+    }
+
+    const response = await fetch(`${backendUrl}/api/sync/export?since=0`, {
+      method: "GET",
+      headers: {
+        "X-Shared-Secret": sharedSecret,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Cloudflare export API error: ${response.status}`);
+    }
+
+    const body = await response.json() as {
+      success: boolean;
+      data: {
+        agentPresence: Array<{
+          agent_id: string;
+          status: string;
+          last_heartbeat: number | null;
+          metadata: string | null;
+        }>;
+      };
+    };
+
+    if (!body.success || !body.data?.agentPresence) {
+      throw new Error("Export returned invalid structure");
+    }
+
+    const items = body.data.agentPresence;
+
+    if (!dryRun) {
+      for (const item of items) {
+        try {
+          await prisma.agentPresence.upsert({
+            where: { agentId: item.agent_id },
+            update: {
+              status: item.status,
+              lastHeartbeat: item.last_heartbeat ? BigInt(item.last_heartbeat) : null,
+              metadata: item.metadata,
+            },
+            create: {
+              agentId: item.agent_id,
+              status: item.status,
+              lastHeartbeat: item.last_heartbeat ? BigInt(item.last_heartbeat) : null,
+              metadata: item.metadata,
+            },
+          });
+          synced++;
+        } catch (err) {
+          logger.error(`Failed to upsert agent presence ${item.agent_id}:`, err);
+          errors++;
+        }
+      }
+    } else {
+      synced = items.length;
+    }
+
     const presenceRecords = await prisma.agentPresence.findMany({
       select: { status: true },
     });
@@ -298,3 +422,4 @@ async function syncAgentPresence(_dryRun: boolean): Promise<SyncResult> {
     return { synced, errors, maxRetries: 0, entropy: 0, freshness: 0 };
   }
 }
+
