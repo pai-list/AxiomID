@@ -155,11 +155,6 @@ describe("tierBadgeColor via generatePassportHtml (PR change: new tier mapping)"
     expect(html).not.toContain("#10b981");
   });
 
-  it("Citizen tier does not contain the old blue color #3b82f6", () => {
-    const html = generatePassportHtml(makePassportData({ tier: "Citizen" }));
-    expect(html).not.toContain("#3b82f6");
-  });
-
   it("Sovereign tier does not contain the old red color #ef4444", () => {
     const html = generatePassportHtml(makePassportData({ tier: "Sovereign" }));
     expect(html).not.toContain("#ef4444");

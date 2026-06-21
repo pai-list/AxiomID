@@ -84,15 +84,6 @@ export class Router {
       return handleSearchSimilar(request, this.env);
     }
 
-    // --- IQRA Quran RAG ---
-    if (path === "/api/iqra/ask" && method === "GET") {
-      return handleIqraAsk(request, this.env);
-    }
-
-    if (path === "/api/iqra/daily-ayah" && method === "GET") {
-      return handleDailyAyah(request, this.env);
-    }
-
     // --- Health ---
     if (path === "/health" || path === "/") {
       return jsonResponse({ status: "ok", timestamp: Date.now() });
@@ -115,6 +106,15 @@ export class Router {
     const rl = await this.rateLimiter.check(`${clientIp}:${path}`, tier);
     if (!rl.allowed) {
       return errorResponse("Rate limit exceeded", 429, rateLimitHeaders(rl));
+    }
+
+    // --- IQRA Quran RAG (after rate limiting — Workers AI is expensive) ---
+    if (path === "/api/iqra/ask" && method === "GET") {
+      return handleIqraAsk(request, this.env);
+    }
+
+    if (path === "/api/iqra/daily-ayah" && method === "GET") {
+      return handleDailyAyah(request, this.env);
     }
 
     // --- Presence ---

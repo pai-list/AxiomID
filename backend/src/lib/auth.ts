@@ -7,6 +7,9 @@ import type { Env } from "./types";
 
 export const PUBLIC_ROUTES = ["/health", "/status", "/api/trust/", "/api/skills", "/api/iqra/"];
 
+const PUBLIC_EXACT = new Set(["/health", "/status", "/api/skills"]);
+const PUBLIC_PREFIXES = ["/api/trust/", "/api/iqra/"];
+
 export function verifyAuth(request: Request, env: Env): { authorized: boolean; agentId?: string } {
   const url = new URL(request.url);
   const agentId = url.searchParams.get("agentId") || undefined;

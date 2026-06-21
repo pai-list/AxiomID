@@ -20,7 +20,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-beta_v1.0-blue" alt="Status" />
-  <img src="https://img.shields.io/badge/tests-1259%20passing-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/tests-1260%20passing-brightgreen" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage" />
   <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
@@ -87,7 +87,7 @@ Trust is earned through actions, not purchases. The algorithm weighs contributio
 | **AI** | Workers AI — Llama 3.1 8B (intent analysis, RAG generation) · BGE-small-en-v1.5 (embeddings) |
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID documents |
 | **Storage** | Cloudflare KV (cache) · Vercel Blob (uploads) |
-| **CI/CD** | GitHub Actions → Vercel (auto-deploy on push) · 101 test suites, 1259 tests |
+| **CI/CD** | GitHub Actions → Vercel (auto-deploy on push) · 99 test suites, 1260 tests |
 
 ---
 
@@ -146,7 +146,7 @@ See [`docs/SUBDOMAIN-SETUP.md`](./docs/SUBDOMAIN-SETUP.md) for DNS configuration
 ## Testing
 
 ```bash
-npm test           # 1259 tests, 101 suites
+npm test           # 1260 tests, 99 suites
 npm run lint       # 0 errors, 0 warnings
 npx tsc --noEmit   # type check
 ```
@@ -183,6 +183,7 @@ CI runs on every PR: **type-check → lint → tests**. Zero tolerance for red C
 | `/api/trust/:did` | GET | Trust chain resolution |
 | `/api/search` | GET | Semantic search (Vectorize) |
 | `/api/iqra/ask` | GET | Quran RAG — ask a question |
+| `/api/iqra/daily-ayah` | GET | Quran RAG — daily verse |
 
 Full docs: [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) · [`STRATEGY.md`](./STRATEGY.md)
 
