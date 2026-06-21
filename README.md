@@ -121,8 +121,8 @@ Open [http://localhost:3000](http://localhost:3000).
 cd backend && npm install
 
 # D1 database
-npx wrangler d1 execute axiomid-edge --file=./migrations/0001_init.sql
-npx wrangler d1 execute axiomid-edge --file=./migrations/0002_seed_skills.sql
+npx wrangler d1 execute axiomid-edge --remote --file=./migrations/0001_init.sql
+npx wrangler d1 execute axiomid-edge --remote --file=./migrations/0002_seed_skills.sql
 
 # Secrets
 echo "token" | npx wrangler secret put SHARED_SECRET_TOKEN_VERCEL_CF
