@@ -682,34 +682,6 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
-@keyframes holographic {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-holographic {
-  position: relative;
-}
-
-.animate-holographic::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(34, 197, 94, 0.03) 25%,
-    rgba(59, 130, 246, 0.03) 50%,
-    rgba(139, 92, 246, 0.03) 75%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: holographic 10s linear infinite;
-  pointer-events: none;
-  z-index: 1;
-}
-
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 12px rgba(34, 197, 94, 0.15); }
   50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.25); }

@@ -76,8 +76,8 @@ const components = {
     const colorClass = LINK_COLORS[props.color ?? "default"];
 
     return (
-      // href is a runtime-generated string from the JSON spec, so it cannot be
-      // statically verified against typedRoutes — cast to Route at this boundary.
+      // ponytail: href is a runtime string from JSON specs — can't be statically
+      // verified against typedRoutes. Cast to Route at this trust boundary.
       <Link
         href={props.href as Route}
         className={`flex items-center justify-between p-3 rounded-xl border transition-colors group hover:bg-gray-100 dark:hover:bg-gray-700 ${colorClass}`}

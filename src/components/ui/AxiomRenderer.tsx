@@ -1,3 +1,5 @@
+"use client";
+
 import { Renderer, JSONUIProvider, VisibilityProvider } from "@json-render/react";
 import { registry } from "@/lib/registry";
 import React from "react";

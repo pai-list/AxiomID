@@ -28,14 +28,12 @@ function escapeHtml(str: string): string {
 
 function tierBadgeColor(tier: string): string {
   const colors: Record<string, string> = {
-    Visitor: "#6b7280",
-    Citizen: "#3b82f6",
-    Sentinel: "#8b5cf6",
-    Guardian: "#f59e0b",
-    Architect: "#10b981",
-    Sovereign: "#ef4444",
+    Visitor: "#64748b",
+    Citizen: "#00ff41",
+    Validator: "#00d4ff",
+    Sovereign: "#a855f7",
   };
-  return colors[tier] || "#6b7280";
+  return colors[tier] || "#64748b";
 }
 
 function statusIcon(status: string): string {

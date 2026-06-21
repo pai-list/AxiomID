@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { apiError } from '@/lib/errors';
 import { createHash } from 'crypto';
-import { isTokenRevoked } from '@/lib/revocation';
+import { isTokenRevoked } from '@/lib/revocation-store';
 import { verifyPiTokenWithJwks } from '@/lib/auth-tokens';
 
 export interface AuthenticatedUser {

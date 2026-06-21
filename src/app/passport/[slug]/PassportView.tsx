@@ -6,11 +6,7 @@ import { AgentPassport } from "@/components/AgentPassport";
 import { AgentQR } from "@/components/AgentQR";
 import Link from "next/link";
 import { useLanguage } from "../../context/language-context";
-
-interface PassportStamp {
-  type: string;
-  provider: string;
-}
+import type { PassportStamp } from "@/components/passport/types";
 
 interface PassportData {
   username: string;
