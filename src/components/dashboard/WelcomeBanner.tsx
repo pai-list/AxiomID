@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/app/context/language-context";
+import { Tier, getNextLevelXP } from "@/lib/tiers";
 
 interface WelcomeBannerProps {
   username: string;
@@ -17,6 +18,8 @@ interface WelcomeBannerProps {
  */
 export function WelcomeBanner({ username, tier, levelProgress, xp }: WelcomeBannerProps) {
   const { t } = useLanguage();
+  const nextXP = getNextLevelXP(tier as Tier);
+
   return (
     <div className="bento-card p-6 sm:p-8 mb-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -38,7 +41,9 @@ export function WelcomeBanner({ username, tier, levelProgress, xp }: WelcomeBann
       <div className="mt-4">
         <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500 mb-1">
           <span>{t('level_progress')}</span>
-          <span>{Math.round(levelProgress)}%</span>
+          <span>
+            {xp.toLocaleString()} {nextXP ? `/ ${nextXP.toLocaleString()} XP` : "XP (MAX)"} ({Math.round(levelProgress)}%)
+          </span>
         </div>
         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
           <div
