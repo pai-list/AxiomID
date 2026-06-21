@@ -67,19 +67,11 @@ export function signPayloadWithAgentKey(payload: string, privateKeyPem: string):
  * @throws If `SOVEREIGN_KEY_SALT` is not configured in a production environment
  */
 export function deriveUserRootKey(piUid: string): { publicKey: string; privateKey: string } {
-  try {
-    const salt = process.env.SOVEREIGN_KEY_SALT || (process.env.NODE_ENV === "production" ? undefined : "development_fallback_salt_3f43ec47");
-    if (!salt) {
-      throw new Error("SOVEREIGN_KEY_SALT is not configured in production environment");
-    }
-    return deriveSovereignAgentKeypair(piUid, "axiom-root");
-  } catch (error) {
-    throw new Error(`Failed to derive user root key: ${(error as Error).message}`);
-  }
+  return deriveSovereignAgentKeypair(piUid, "axiom-root");
 }
 
 /**
- * Verifies that a signature is valid for a payload.
+
  *
  * @returns `true` if the signature is valid, `false` otherwise.
  */

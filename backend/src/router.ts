@@ -140,7 +140,7 @@ export class Router {
     }
 
     if (path === "/api/sync/export" && method === "GET") {
-      return this.handleSyncExport(request);
+      return this.handleSyncExport(url);
     }
 
     // --- Skills Marketplace ---
@@ -299,25 +299,21 @@ export class Router {
     try {
       const since = parseInt(url.searchParams.get("since") || "0", 10);
 
-      let harvestsQuery = this.d1.db.prepare(
-        since > 0
-          ? "SELECT * FROM harvest_results WHERE CAST(strftime('%s', created_at) AS INTEGER) * 1000 > ? ORDER BY created_at DESC LIMIT 1000"
-          : "SELECT * FROM harvest_results ORDER BY created_at DESC LIMIT 1000"
-      );
-      if (since > 0) {
-        harvestsQuery = harvestsQuery.bind(since);
-      }
-      const harvests = await harvestsQuery.all();
+      const queryWithSince = (sqlWithFilter: string, sqlWithout: string) => {
+        const stmt = this.d1.db.prepare(since > 0 ? sqlWithFilter : sqlWithout);
+        return since > 0 ? stmt.bind(since) : stmt;
+      };
 
-      let presenceQuery = this.d1.db.prepare(
-        since > 0
-          ? "SELECT * FROM agent_presence WHERE last_heartbeat > ? ORDER BY last_heartbeat DESC"
-          : "SELECT * FROM agent_presence ORDER BY last_heartbeat DESC"
-      );
-      if (since > 0) {
-        presenceQuery = presenceQuery.bind(since);
-      }
-      const presence = await presenceQuery.all();
+      const [harvests, presence] = await Promise.all([
+        queryWithSince(
+          "SELECT * FROM harvest_results WHERE CAST(strftime('%s', created_at) AS INTEGER) * 1000 > ? ORDER BY created_at DESC LIMIT 1000",
+          "SELECT * FROM harvest_results ORDER BY created_at DESC LIMIT 1000"
+        ).all(),
+        queryWithSince(
+          "SELECT * FROM agent_presence WHERE last_heartbeat > ? ORDER BY last_heartbeat DESC",
+          "SELECT * FROM agent_presence ORDER BY last_heartbeat DESC"
+        ).all(),
+      ]);
 
       return jsonResponse({
         success: true,

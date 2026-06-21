@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
-import { apiError, apiSuccess } from "@/lib/errors";
+import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 import { TokenRevocationSchema } from "@/lib/validators";
-import { logger } from "@/lib/logger";
-
 import { revokeToken } from "@/lib/revocation";
+import { logger } from "@/lib/logger";
 
 /**
  * Processes an OAuth2 token revocation request.
@@ -13,10 +14,6 @@ import { revokeToken } from "@/lib/revocation";
  * @param request - The incoming HTTP request with the token to revoke
  * @returns An API response with a success flag or error details
  */
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
-import { getClientIp } from "@/lib/ip";
-import { rateLimitHeaders } from "@/lib/errors";
-
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`oauth2-revoke:${ip}`, RATE_LIMITS.authenticated);
