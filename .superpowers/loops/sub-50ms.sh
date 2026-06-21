@@ -22,7 +22,16 @@ npm run build --silent 2>/dev/null || true
 echo "🚀 Starting dev server..."
 npx next start -p 3999 &
 SERVER_PID=$!
-sleep 6
+
+# Wait for server to be ready
+echo "⏳ Waiting for Next.js server to start..."
+for i in {1..20}; do
+  if curl -s -o /dev/null "http://localhost:3999/" 2>/dev/null; then
+    echo "⚡ Server is ready!"
+    break
+  fi
+  sleep 1
+done
 
 # Pages to test
 PAGES=(
