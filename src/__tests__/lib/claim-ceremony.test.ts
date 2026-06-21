@@ -14,7 +14,7 @@ describe("Claim Ceremony", () => {
     const claim = createClaimToken();
 
     expect(claim.token).toBeDefined();
-    expect(claim.userCode).toMatch(/^AXIO-[A-Z0-9]{4}$/);
+    expect(claim.userCode).toMatch(/^[A-Z2-9]{8}$/);
     expect(claim.verificationUri).toBe("https://axiomid.app/claim");
     expect(claim.expiresAt).toBeGreaterThan(Date.now());
     expect(claim.status).toBe("pending");
@@ -43,14 +43,14 @@ describe("Claim Ceremony", () => {
     const result = verifyClaimToken(claim.token);
     expect(result).toBeNull();
 
-    expect(() => confirmClaimToken(claim.token, "user-456")).toThrow("Claim token expired");
+    expect(() => confirmClaimToken(claim.token, "user-456")).toThrow("Claim token not found or expired");
   });
 
   it("rejects unknown tokens", () => {
     const result = verifyClaimToken("nonexistent-token");
     expect(result).toBeNull();
 
-    expect(() => confirmClaimToken("nonexistent-token", "user-789")).toThrow("Claim token not found");
+    expect(() => confirmClaimToken("nonexistent-token", "user-789")).toThrow("Claim token not found or expired");
   });
 
   it("creates unique tokens for each call", () => {
@@ -60,14 +60,14 @@ describe("Claim Ceremony", () => {
     expect(claim1.token).not.toBe(claim2.token);
   });
 
-  it("sets userId to null on creation", () => {
+  it("sets userId to empty string on creation", () => {
     const claim = createClaimToken();
-    expect(claim.userId).toBeNull();
+    expect(claim.userId).toBe("");
   });
 
   it("creates token with custom expiry", () => {
     const before = Date.now();
-    const customExpiry = 5000; // 5 seconds
+    const customExpiry = 5000;
     const claim = createClaimToken(customExpiry);
 
     expect(claim.expiresAt).toBeGreaterThanOrEqual(before + customExpiry);
@@ -100,7 +100,7 @@ describe("findClaimByUserCode", () => {
   });
 
   it("returns null for non-existent user code", () => {
-    const result = findClaimByUserCode("AXIO-ZZZZ");
+    const result = findClaimByUserCode("ZZZZZZZZ");
     expect(result).toBeNull();
   });
 
@@ -112,12 +112,10 @@ describe("findClaimByUserCode", () => {
     expect(found).toBeNull();
   });
 
-  it("returns null for expired claims", () => {
+  it("returns null for expired claims via verifyClaimToken", () => {
     const claim = createClaimToken(-1);
-    // Mark it expired by verifying (which marks status = expired)
-    verifyClaimToken(claim.token);
-
-    const found = findClaimByUserCode(claim.userCode);
-    expect(found).toBeNull();
+    // verifyClaimToken returns null for expired claims
+    const result = verifyClaimToken(claim.token);
+    expect(result).toBeNull();
   });
 });

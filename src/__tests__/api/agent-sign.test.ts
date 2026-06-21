@@ -12,6 +12,7 @@ jest.mock("@/lib/logger", () => ({
 jest.mock("@/lib/sovereign-keys", () => ({
   signPayloadWithAgentKey: jest.fn(),
   deriveSovereignAgentKeypair: jest.fn(),
+  ROOT_AGENT_ID: "axiom-root",
 }));
 
 import { NextRequest } from "next/server";

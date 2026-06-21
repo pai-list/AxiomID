@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, errors } from "jose";
+import { logger } from "./logger";
 
 const ISSUER = "https://axiomid.app";
 const AUDIENCE = "https://axiomid.app";
@@ -14,13 +15,16 @@ export interface IdentityAssertionPayload {
 
 /**
  * Retrieves the HS256 signing key for JWT operations.
- *
- * Reads from the `AUTH_TOKEN_SECRET` environment variable, falling back to a development key if unset.
- *
- * @returns The signing key as a `Uint8Array`
  */
 function getSigningKey(): Uint8Array {
-  const key = process.env.AUTH_TOKEN_SECRET || "dev-auth-token-secret-change-in-production";
+  const key = process.env.AUTH_TOKEN_SECRET;
+  if (!key) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_TOKEN_SECRET is required in production");
+    }
+    logger.warn("[AUTH-TOKENS] AUTH_TOKEN_SECRET not set — using dev fallback");
+    return new TextEncoder().encode("dev-auth-token-secret-change-in-production");
+  }
   return new TextEncoder().encode(key);
 }
 

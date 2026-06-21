@@ -4,6 +4,7 @@
 
 jest.mock("@/lib/sovereign-keys", () => ({
   deriveSovereignAgentKeypair: jest.fn(),
+  ROOT_AGENT_ID: "axiom-root",
 }));
 
 import { exportJwks } from "@/lib/jwks";
@@ -59,7 +60,7 @@ describe("JWKS", () => {
     expect(mockDerive).not.toHaveBeenCalled();
   });
 
-  it("calls deriveSovereignAgentKeypair with the DID and 'axiom-root'", () => {
+  it("calls deriveSovereignAgentKeypair with the DID and ROOT_AGENT_ID", () => {
     const did = "did:axiom:axiomid.app:pi:abc123";
     exportJwks(did);
 

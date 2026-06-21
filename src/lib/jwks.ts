@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
+import { deriveSovereignAgentKeypair, ROOT_AGENT_ID } from "@/lib/sovereign-keys";
 
 interface Jwk {
   kty: string;
@@ -24,7 +24,7 @@ export function exportJwks(did: string): Jwks {
   const keys: Jwk[] = [];
 
   if (did && did !== "*") {
-    const keypair = deriveSovereignAgentKeypair(did, "axiom-root");
+    const keypair = deriveSovereignAgentKeypair(did, ROOT_AGENT_ID);
     const kid = `${did}#key-1`;
     keys.push(pemToJwk(keypair.publicKey, kid));
   }

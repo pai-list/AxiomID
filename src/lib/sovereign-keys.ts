@@ -1,5 +1,7 @@
 import crypto from "crypto";
 
+export const ROOT_AGENT_ID = "axiom-root";
+
 /**
  * Deterministically derives an agent keypair from a Stellar address and agent ID.
  *
@@ -63,7 +65,7 @@ export function deriveUserRootKey(piUid: string): { publicKey: string; privateKe
   if (!salt) {
     throw new Error("SOVEREIGN_KEY_SALT is not configured in production environment");
   }
-  return deriveSovereignAgentKeypair(piUid, "axiom-root");
+  return deriveSovereignAgentKeypair(piUid, ROOT_AGENT_ID);
 }
 
 /**

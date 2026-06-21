@@ -3,7 +3,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { AgentSignSchema } from "@/lib/validators";
-import { signPayloadWithAgentKey, deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
+import { signPayloadWithAgentKey, deriveSovereignAgentKeypair, ROOT_AGENT_ID } from "@/lib/sovereign-keys";
 import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/auth-middleware";
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const didParts = parsed.data.did.split(":");
     const uid = didParts[didParts.length - 1];
 
-    const keys = deriveSovereignAgentKeypair(uid, "axiom-root");
+    const keys = deriveSovereignAgentKeypair(uid, ROOT_AGENT_ID);
     const signature = signPayloadWithAgentKey(parsed.data.payload, keys.privateKey);
 
     return apiSuccess({
