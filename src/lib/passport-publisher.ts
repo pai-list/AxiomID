@@ -1,6 +1,7 @@
 import { createHereNowClient } from "./herenow";
 import { prisma } from "./prisma";
 import { logger } from "./logger";
+import { TIER_COLORS, type Tier } from "./tiers";
 
 export interface PassportData {
   userId: string;
@@ -27,13 +28,7 @@ function escapeHtml(str: string): string {
 }
 
 function tierBadgeColor(tier: string): string {
-  const colors: Record<string, string> = {
-    Visitor: "#64748b",
-    Citizen: "#00ff41",
-    Validator: "#00d4ff",
-    Sovereign: "#a855f7",
-  };
-  return colors[tier] || "#64748b";
+  return TIER_COLORS[tier as Tier] ?? TIER_COLORS.Visitor;
 }
 
 function statusIcon(status: string): string {

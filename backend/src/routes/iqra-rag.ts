@@ -8,6 +8,7 @@
  */
 
 import type { Env } from "../lib/types";
+import { jsonResponse, errorResponse } from "../lib/auth";
 
 const EMBEDDING_MODEL = "@cf/baai/bge-small-en-v1.5";
 const GENERATION_MODEL = "@cf/meta/llama-3.1-8b-instruct";
@@ -191,10 +192,7 @@ export async function handleIqraAsk(
   const query = url.searchParams.get("q");
 
   if (!query || query.trim().length === 0) {
-    return new Response(
-      JSON.stringify({ error: "Missing query parameter 'q'" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
+    return errorResponse("Missing query parameter 'q'", 400);
   }
 
   const normalized = normalizeQuery(query);
@@ -203,16 +201,7 @@ export async function handleIqraAsk(
   // Check KV cache
   const cached = await env.CACHE_KV.get(cacheKey, "json");
   if (cached) {
-    return new Response(
-      JSON.stringify({ ...cached, source: "cache" }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Cache": "HIT",
-        },
-      }
-    );
+    return jsonResponse({ ...cached, source: "cache" }, 200, { "X-Cache": "HIT" });
   }
 
   try {
@@ -245,24 +234,12 @@ export async function handleIqraAsk(
       expirationTtl: CACHE_TTL_SECONDS,
     });
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "X-Cache": "MISS",
-      },
-    });
+    return jsonResponse(response, 200, { "X-Cache": "MISS" });
   } catch (err) {
     console.error("[IQRA-RAG] Error:", err);
-    return new Response(
-      JSON.stringify({
-        error: "RAG pipeline failed",
-        detail: err instanceof Error ? err.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+    return errorResponse(
+      err instanceof Error ? err.message : "RAG pipeline failed",
+      500
     );
   }
 }
@@ -295,16 +272,13 @@ export async function handleDailyAyah(
       }>();
 
     if (existing) {
-      return new Response(
-        JSON.stringify({
-          surah: existing.surah_id,
-          verse: existing.verse_number,
-          text_ar: existing.text_ar,
-          text_en: existing.text_en,
-          date: today,
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({
+        surah: existing.surah_id,
+        verse: existing.verse_number,
+        text_ar: existing.text_ar,
+        text_en: existing.text_en,
+        date: today,
+      });
     }
 
     // Pick a random verse for today (seeded by date for consistency)
@@ -324,10 +298,7 @@ export async function handleDailyAyah(
       }>();
 
     if (!randomVerse) {
-      return new Response(
-        JSON.stringify({ error: "No verses found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return errorResponse("No verses found", 404);
     }
 
     // Store for today
@@ -337,21 +308,15 @@ export async function handleDailyAyah(
       .bind(randomVerse.id, today)
       .run();
 
-    return new Response(
-      JSON.stringify({
-        surah: randomVerse.surah_id,
-        verse: randomVerse.verse_number,
-        text_ar: randomVerse.text_ar,
-        text_en: randomVerse.text_en,
-        date: today,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      surah: randomVerse.surah_id,
+      verse: randomVerse.verse_number,
+      text_ar: randomVerse.text_ar,
+      text_en: randomVerse.text_en,
+      date: today,
+    });
   } catch (err) {
     console.error("[IQRA] Daily ayah error:", err);
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch daily ayah" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return errorResponse("Failed to fetch daily ayah", 500);
   }
 }

@@ -9,7 +9,6 @@
  */
 
 // Import the module under test.
-import { revokeToken, isTokenRevoked } from "`@/lib/revocation-store`";
 import { revokeToken, isTokenRevoked } from "@/lib/revocation-store";
 
 describe("isTokenRevoked — basic behaviour", () => {
