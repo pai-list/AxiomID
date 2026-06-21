@@ -54,6 +54,7 @@ export default function Dashboard() {
     pauseAgent,
     claimKya,
     isPiBrowser,
+    connectDemo,
   } = useWallet();
 
   const [activeTab, setActiveTab] = useState<TabId>("passport");
@@ -226,8 +227,18 @@ export default function Dashboard() {
                   
                   <div className="pt-2">
                     {shouldShowPiBrowserPrompt ? (
-                      <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-center text-amber-200 text-xs font-mono">
-                        {t("pi_browser_required")}
+                      <div className="space-y-3">
+                        <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-center text-amber-200 text-xs font-mono">
+                          {t("pi_browser_required")}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={connectDemo}
+                          className="btn-primary w-full text-xs py-3 font-semibold uppercase tracking-wider flex items-center justify-center gap-2 bg-gradient-to-r from-axiom-purple to-electric-blue hover:from-axiom-purple/90 hover:to-electric-blue/90 text-white font-mono"
+                        >
+                          Explore Demo Mode
+                          <Zap className="w-4 h-4 text-amber-400" />
+                        </button>
                       </div>
                     ) : (
                       <button type="button" onClick={connectWallet} disabled={isConnecting} className="btn-primary w-full text-xs py-3 font-semibold uppercase tracking-wider flex items-center justify-center gap-2">
@@ -486,6 +497,7 @@ export default function Dashboard() {
             isConnecting={isConnecting}
             user={user}
             onConnect={connectWallet}
+            onConnectDemo={connectDemo}
             onCreateAgent={handleCreateAgent}
             onSkip={() => {
               localStorage.setItem("axiom_onboarding_completed", "true");

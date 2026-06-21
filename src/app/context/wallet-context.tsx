@@ -47,6 +47,7 @@ interface WalletContextType {
   runWalletTest: () => Promise<void>;
   clearWalletLogs: () => void;
   disconnectWallet: () => Promise<void>;
+  connectDemo: () => void;
 }
 
 export const WalletContext = createContext<WalletContextType | null>(null);
@@ -512,6 +513,46 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     logout();
   }, [logout]);
 
+  const connectDemo = useCallback(() => {
+    setIsConnecting(true);
+    setError(null);
+    pushLog("Initializing Offline Demo Mode...");
+    removeLocalStorageItem("axiomid_logged_out");
+
+    const demoUser: User = {
+      id: "demo-user-id",
+      walletAddress: "pi:demo_alice",
+      stellarAddress: "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2",
+      piUsername: "AliceDemo",
+      kycStatus: "verified",
+      did: "did:axiom:demo_alice_did_hash_12345",
+      xp: 450,
+      tier: "Citizen",
+      trustScore: 85,
+      createdAt: new Date().toISOString(),
+      actions: [
+        { type: "connect_wallet", xp: 100, timestamp: new Date(Date.now() - 86400000).toISOString() },
+        { type: "verify_kya", xp: 150, timestamp: new Date(Date.now() - 3600000).toISOString() }
+      ],
+      stamps: [
+        { type: "connect_wallet", provider: "pi_network", xpAwarded: 100, createdAt: new Date(Date.now() - 86400000).toISOString() },
+        { type: "verify_kya", provider: "axiom_protocol", xpAwarded: 150, createdAt: new Date(Date.now() - 3600000).toISOString() }
+      ],
+      agent: {
+        id: "demo-agent-id",
+        name: "Axiom Sentinel",
+        status: "ACTIVE",
+        lastActive: new Date().toISOString()
+      }
+    };
+
+    setLocalStorageItem("axiomid_wallet", "pi:demo_alice");
+    setLocalStorageItem("pi_access_token", "sandbox-dev-token-abc-123");
+    setUser(demoUser);
+    setIsConnecting(false);
+    pushLog("Demo Mode initialized successfully!");
+  }, [pushLog]);
+
   const claimKya = useCallback(async (username: string) => {
     if (!userRef.current) return false;
     try {
@@ -659,6 +700,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       runWalletTest: runTest,
       clearWalletLogs,
       disconnectWallet,
+      connectDemo,
     }),
     [
       user,
@@ -680,6 +722,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       runTest,
       clearWalletLogs,
       disconnectWallet,
+      connectDemo,
     ]
   );
 
@@ -719,6 +762,7 @@ export function useWallet() {
       runWalletTest: async () => {},
       clearWalletLogs: () => {},
       disconnectWallet: async () => {},
+      connectDemo: () => {},
     };
   }
   return ctx;

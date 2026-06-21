@@ -129,9 +129,10 @@ export function PiBrowserBanner() {
 interface PiBrowserPromptProps {
   onConnect?: () => void;
   onDismiss?: () => void;
+  onConnectDemo?: () => void;
 }
 
-export function PiBrowserPrompt({ onConnect, onDismiss }: PiBrowserPromptProps) {
+export function PiBrowserPrompt({ onConnect, onDismiss, onConnectDemo }: PiBrowserPromptProps) {
   const { isPiBrowser } = usePiBrowser();
   
   if (isPiBrowser) return null;
@@ -155,7 +156,7 @@ export function PiBrowserPrompt({ onConnect, onDismiss }: PiBrowserPromptProps) 
             <p className="text-xs text-[var(--text-secondary)] mt-1">
               For full functionality, open this app in Pi Browser.
             </p>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               {onConnect && (
                 <button
                   onClick={onConnect}
@@ -163,6 +164,14 @@ export function PiBrowserPrompt({ onConnect, onDismiss }: PiBrowserPromptProps) 
                 >
                   <ExternalLink className="w-3 h-3 inline mr-1" />
                   Open in Pi
+                </button>
+              )}
+              {onConnectDemo && (
+                <button
+                  onClick={onConnectDemo}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-axiom-purple to-electric-blue text-white hover:opacity-90 transition-opacity"
+                >
+                  Demo Mode
                 </button>
               )}
               {onDismiss && (

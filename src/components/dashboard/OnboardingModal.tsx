@@ -15,6 +15,7 @@ interface OnboardingModalProps {
   isConnecting: boolean;
   user: User | null;
   onConnect: () => void;
+  onConnectDemo?: () => void;
   onCreateAgent: (name?: string) => Promise<void>;
   onSkip: () => void;
   onComplete: () => void;
@@ -35,6 +36,7 @@ export function OnboardingModal({
   isConnecting,
   user,
   onConnect,
+  onConnectDemo,
   onCreateAgent,
   onSkip,
   onComplete,
@@ -138,8 +140,18 @@ export function OnboardingModal({
                 Link your secure Pi cryptographic identity to anchor your autonomous agent.
               </p>
               {shouldShowPiBrowserPrompt && (
-                <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-center text-amber-200 text-xs">
-                  Open in Pi Browser
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-center text-amber-200 text-xs">
+                    Open in Pi Browser
+                  </div>
+                  {onConnectDemo && (
+                    <button
+                      onClick={onConnectDemo}
+                      className="btn-primary w-full py-3 text-xs tracking-wider bg-gradient-to-r from-axiom-purple to-electric-blue text-white hover:opacity-90 transition-opacity"
+                    >
+                      EXPLORE DEMO MODE
+                    </button>
+                  )}
                 </div>
               )}
               <div className="pt-4">
