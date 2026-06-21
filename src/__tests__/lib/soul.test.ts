@@ -302,69 +302,69 @@ describe('Tawbah (Self-Correction Protocol)', () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('Ethical Check (6-Step Verification)', () => {
-  it('passes for clean actions', () => {
-    const result = ethicalCheck('create_user');
+  it('passes for clean actions', async () => {
+    const result = await ethicalCheck('create_user');
     expect(result.verdict).toBe('PROCEED');
     expect(result.step).toBe(0);
   });
 
-  it('aborts for harmful actions', () => {
-    const result = ethicalCheck('delete_everything');
+  it('aborts for harmful actions', async () => {
+    const result = await ethicalCheck('delete_everything');
     expect(result.verdict).toBe('ABORT');
     expect(result.step).toBe(1);
     expect(result.reason).toContain('harmful');
   });
 
-  it('passes legitimate delete actions', () => {
-    const result = ethicalCheck('delete_expired_cache');
+  it('passes legitimate delete actions', async () => {
+    const result = await ethicalCheck('delete_expired_cache');
     expect(result.verdict).toBe('PROCEED');
     expect(result.step).toBe(0);
   });
 
-  it('revise for spam via exploitative check (not abort via harmful)', () => {
-    const result = ethicalCheck('spam_test');
+  it('revise for spam via exploitative check (not abort via harmful)', async () => {
+    const result = await ethicalCheck('spam_test');
     expect(result.verdict).toBe('REVISE');
     expect(result.step).toBe(3);
     expect(result.reason).toContain('exploitative');
   });
 
-  it('revise for deceptive actions', () => {
-    const result = ethicalCheck('fake_user_identity');
+  it('revise for deceptive actions', async () => {
+    const result = await ethicalCheck('fake_user_identity');
     expect(result.verdict).toBe('REVISE');
     expect(result.step).toBe(2);
     expect(result.reason).toContain('deceptive');
   });
 
-  it('revise for exploitative actions', () => {
-    const result = ethicalCheck('coerce_users');
+  it('revise for exploitative actions', async () => {
+    const result = await ethicalCheck('coerce_users');
     expect(result.verdict).toBe('REVISE');
     expect(result.step).toBe(3);
     expect(result.reason).toContain('exploitative');
   });
 
-  it('revise for contradictory actions', () => {
-    const result = ethicalCheck('create_and_disable_user');
+  it('revise for contradictory actions', async () => {
+    const result = await ethicalCheck('create_and_disable_user');
     expect(result.verdict).toBe('REVISE');
     expect(result.step).toBe(5);
     expect(result.reason).toContain('contradictory');
   });
 
-  it('revise for lazy patterns', () => {
-    const result = ethicalCheck('temporary_hack');
+  it('revise for lazy patterns', async () => {
+    const result = await ethicalCheck('temporary_hack');
     expect(result.verdict).toBe('REVISE');
     expect(result.step).toBe(6);
     expect(result.reason).toContain('lazy');
   });
 
-  it('creates audit log with Quranic basis', () => {
-    const result = ethicalCheck('test_action');
+  it('creates audit log with Quranic basis', async () => {
+    const result = await ethicalCheck('test_action');
     const log = createEthicalCheckLog(result);
     expect(log.quranicBasis).toContain('تَرَاهُ');
     expect(log.verdict).toBe('PROCEED');
   });
 
-  it('respects custom config', () => {
-    const result = ethicalCheck('delete_everything', {
+  it('respects custom config', async () => {
+    const result = await ethicalCheck('delete_everything', {
       enabledChecks: [2, 3, 4, 5, 6], // Skip check 1
     });
     expect(result.verdict).toBe('PROCEED');

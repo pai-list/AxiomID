@@ -151,7 +151,7 @@ export class SoulLoop {
 
     // Phase 2: Ethical Check — 6-step verification
     if (this.config.ethicalCheckEnabled) {
-      const ethicalResult = ethicalCheck(action);
+      const ethicalResult = await ethicalCheck(action);
       if (ethicalResult.verdict === 'ABORT') {
         this.state.ethicalViolations++;
         const decision: SoulLoopDecision = {
