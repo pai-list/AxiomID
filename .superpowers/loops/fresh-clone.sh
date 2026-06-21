@@ -14,6 +14,7 @@ echo ""
 
 # Create temp directory
 TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
 echo "📁 Cloning to: $TEMP_DIR"
 
 # Clone the repo
