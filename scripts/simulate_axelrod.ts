@@ -148,10 +148,10 @@ class AlwaysDefectPlayer implements Player {
 
 // --- Tournament Engine ---
 class AxelrodTournament {
-  private players: Player[];
-  private cycles: number = 3;
-  private roundsPerMatch: number = 10;
-  private violations: string[] = [];
+  private readonly players: Player[];
+  private readonly cycles: number = 3;
+  private readonly roundsPerMatch: number = 10;
+  private readonly violations: string[] = [];
 
   constructor(players: Player[]) {
     this.players = players;
