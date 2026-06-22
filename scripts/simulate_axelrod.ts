@@ -120,7 +120,7 @@ class AlwaysCooperatePlayer implements Player {
     this.id = id;
   }
 
-  makeMove(_opponentId: string, _currentRound: number, _history: HistoryRecord[]): ReasoningResult {
+  makeMove(_opponentId: string, _currentRound: number, _history: readonly HistoryRecord[]): ReasoningResult {
     return {
       muraqabah: 'N/A', ethical: 'N/A', sabiyyah: 'N/A', tawbah: 'N/A', selfReview: 'N/A',
       finalMove: 'C',
