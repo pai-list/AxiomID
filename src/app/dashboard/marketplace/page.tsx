@@ -428,7 +428,7 @@ export default function MarketplacePage() {
                   </button>
                 </div>
 
-                <p className="text-sm text-subtle mb-4">{selectedSkill.description}</p>
+                <p className="text-sm text-subtle mb-4">{selectedSkill.description || t("marketplace_no_desc")}</p>
 
                 <div className="flex items-center gap-4 text-[10px] font-mono mb-6">
                   <span className="text-neon-green"><Download className="w-3 h-3 inline me-1" />{selectedSkill.installCount} {t("marketplace_installs_label")}</span>
