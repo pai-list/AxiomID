@@ -97,7 +97,7 @@ describe("Landing page — Stitch hero", () => {
 
   it("renders the Live on Pi Network badge", () => {
     renderHome();
-    expect(screen.getByText("Live on Pi Network Mainnet")).toBeInTheDocument();
+    expect(screen.getByText("Live on Pi Network Testnet")).toBeInTheDocument();
   });
 
   it("renders features section", () => {

@@ -129,22 +129,25 @@ export default function StatusPage() {
         ) : stats ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
-              <div className="bento-card p-6 text-center flex flex-col justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_registered_agents")}</span>
-                <span className="text-3xl font-bold font-mono text-neon-green">
+              <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-neon-green/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_registered_agents")}</span>
+                <span className="text-3xl font-bold font-mono text-neon-green relative z-10">
                   {stats.registeredAgents.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_active_onchain")}</span>
+                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_active_onchain")}</span>
               </div>
-              <div className="bento-card p-6 text-center flex flex-col justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_total_transactions")}</span>
-                <span className="text-3xl font-bold font-mono text-electric-blue">
+              <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-electric-blue/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_total_transactions")}</span>
+                <span className="text-3xl font-bold font-mono text-electric-blue relative z-10">
                   {stats.totalTransactions.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_pi_payments")}</span>
+                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_pi_payments")}</span>
               </div>
-              <div className="bento-card p-6 text-center flex flex-col items-center justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_avg_trust")}</span>
+              <div className="glass-card p-6 text-center flex flex-col items-center justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-axiom-purple/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_avg_trust")}</span>
                 <div className="relative w-20 h-20 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="none" />
@@ -164,22 +167,25 @@ export default function StatusPage() {
                 </div>
                 <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_network_safety")}</span>
               </div>
-              <div className="bento-card p-6 text-center flex flex-col justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_active_agents")}</span>
-                <span className="text-3xl font-bold font-mono text-neon-green">
+              <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-neon-green/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_active_agents")}</span>
+                <span className="text-3xl font-bold font-mono text-neon-green relative z-10">
                   {stats.activeAgents.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_executing_loops")}</span>
+                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_executing_loops")}</span>
               </div>
-              <div className="bento-card p-6 text-center flex flex-col justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_total_xp")}</span>
-                <span className="text-3xl font-bold font-mono text-electric-blue">
+              <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-electric-blue/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_total_xp")}</span>
+                <span className="text-3xl font-bold font-mono text-electric-blue relative z-10">
                   {stats.totalXpEarned.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_accumulated")}</span>
+                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_accumulated")}</span>
               </div>
-              <div className="bento-card p-6 text-center flex flex-col items-center justify-between min-h-[160px]">
-                <span className="text-[10px] font-mono text-faint block mb-2">{t("status_verification_rate")}</span>
+              <div className="glass-card p-6 text-center flex flex-col items-center justify-between min-h-[160px] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-axiom-purple/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
+                <span className="text-[10px] font-mono text-faint block mb-2 relative z-10">{t("status_verification_rate")}</span>
                 <div className="relative w-20 h-20 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="none" />
@@ -203,7 +209,7 @@ export default function StatusPage() {
 
             {/* Protocol Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bento-card p-6 md:col-span-3">
+              <div className="glass-card p-6 md:col-span-3">
                 <h3 className="text-sm font-bold text-surface font-mono mb-4">{t("status_protocol_details")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] font-mono">
                   <div className="flex justify-between p-2 border-b border-white/5">
@@ -224,7 +230,7 @@ export default function StatusPage() {
 
             {/* Service Health */}
             {health && (
-              <div className="bento-card p-6 mt-6">
+              <div className="glass-card p-6 mt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-bold text-surface font-mono">{t("status_service_health")}</h3>
                   <div className="flex items-center gap-2 text-[10px] font-mono">
@@ -254,7 +260,7 @@ export default function StatusPage() {
             )}
 
             {/* API Endpoint */}
-            <div className="bento-card p-6 mt-6">
+            <div className="glass-card p-6 mt-6">
               <h3 className="text-sm font-bold text-surface font-mono mb-4">{t("status_manifest_api")}</h3>
               <p className="text-xs text-subtle mb-4">
                 {t("status_manifest_desc")}
@@ -268,7 +274,7 @@ export default function StatusPage() {
             </div>
           </>
         ) : (
-          <div className="bento-card p-12 text-center">
+          <div className="glass-card p-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">❌</span>
             </div>

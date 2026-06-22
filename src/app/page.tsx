@@ -185,17 +185,33 @@ export default function Home() {
         </div>
       </motion.header>
 
-      {/* Hero Section */}
-      <div className="relative w-full max-w-6xl px-4 sm:px-6 mt-8 md:mt-20 z-10 min-h-[75vh] flex items-center">
+      {/* Hero Section — 2026 Redesign */}
+      <div className="relative w-full max-w-6xl px-4 sm:px-6 mt-8 md:mt-16 z-10 min-h-[80vh] flex items-center hero-mesh-bg">
+        {/* Floating particles background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(25)].map((_, i) => (
+            <div
+              key={i}
+              className="particle"
+              style={{
+                left: `${(i * 37 + 13) % 100}%`,
+                top: `${(i * 53 + 7) % 100}%`,
+                animationDelay: `${(i * 0.7) % 5}s`,
+                animationDuration: `${6 + (i % 4)}s`,
+                width: `${2 + (i % 3)}px`,
+                height: `${2 + (i % 3)}px`,
+                background: i % 3 === 0 ? 'rgba(34, 197, 94, 0.12)' : i % 3 === 1 ? 'rgba(59, 130, 246, 0.12)' : 'rgba(99, 102, 241, 0.12)'
+              }}
+            />
+          ))}
+        </div>
         {/* Dot grid background */}
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: "radial-gradient(#424754 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
-        {/* Ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-emerald-500/[0.03] via-electric-blue/[0.04] to-axiom-purple/[0.03] rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: "radial-gradient(#424754 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
         <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center py-12 relative z-10">
           
           {/* Left Column: Headline, Description, CTAs, Trust indicators */}
-          <div className="md:col-span-7 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+          <div className="md:col-span-7 flex flex-col items-center md:items-start text-center md:text-left space-y-5">
             {/* Live badge */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -211,11 +227,11 @@ export default function Home() {
                   <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3"/>
                   <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
                 </svg>
-                {language === "en" ? "Live on Pi Network Mainnet" : "مباشر على شبكة Pi الرئيسية"}
+                {language === "en" ? "Live on Pi Network Testnet" : "مباشر على شبكة Pi التجريبية"}
               </span>
             </motion.div>
 
-            {/* Headline */}
+            {/* Headline — Max 8 words for instant comprehension */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -223,107 +239,96 @@ export default function Home() {
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] text-white"
             >
               {language === "en" ? (
-                <>Your Identity, <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">Sovereign.</span></>
+                <>The Human<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">Authorization Protocol</span></>
               ) : (
-                <>هويتك، <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">سيادية.</span></>
+                <>بروتوكول<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">تفويض البشر</span></>
               )}
             </motion.h1>
 
-            {/* Sub-headline / Core Vision */}
-            <motion.h2
+            {/* Sub-headline — Clear value prop */}
+            <motion.p
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-electric-blue"
+              className="text-lg sm:text-xl md:text-2xl font-medium tracking-tight text-zinc-300 max-w-xl"
             >
-              {t("hero_heading")}
-            </motion.h2>
+              {language === "en" 
+                ? "Prove human intent behind AI actions. One identity. Infinite agents."
+                : "أثبت نية البشر وراء إجراءات الذكاء الاصطناعي. هوية واحدة. عملاء لا نهائية."}
+            </motion.p>
 
-            {/* Description & Protocol subtitle */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="max-w-xl text-base sm:text-lg md:text-xl leading-relaxed text-zinc-400"
-            >
-              <p>{t("hero_desc")}</p>
-              <p className="text-xs font-mono text-zinc-500 border-l border-white/10 pl-3">
-                {t("hero_subtitle")}
-              </p>
-            </motion.div>
-
-            {/* CTAs */}
+            {/* CTAs — Single primary CTA for maximum conversion */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
               className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2"
             >
               {!user ? (
                 <>
                   {isPiBrowser ? (
                     <motion.button 
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(34, 197, 94, 0.3)" }}
                       whileTap={{ scale: 0.98 }}
                       onClick={connectWallet} 
                       disabled={isConnecting} 
                       aria-busy={isConnecting} 
-                      className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]"
+                      className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
                     >
                       {isConnecting ? (
                         <><span className="animate-spin">⟳</span> {t("connecting")}</>
                       ) : (
                         <>
-                          {t("connect_wallet")}
+                          {language === "en" ? "Launch App" : "ابدأ الآن"}
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </>
                       )}
                     </motion.button>
                   ) : (
-                    <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]">
-                      {t("enter_dashboard")}
+                    <Link href="/dashboard" prefetch={false} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all">
+                      {language === "en" ? "Launch App" : "ابدأ الآن"}
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                     </Link>
                   )}
                 </>
               ) : (
-                <Link href="/dashboard" prefetch={false} className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm px-6 py-3 min-h-[48px]">
-                  {t("enter_dashboard")}
+                <Link href="/dashboard" prefetch={false} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all">
+                  {language === "en" ? "Launch App" : "ابدأ الآن"}
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </Link>
               )}
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link href="/docs" className="btn-ghost flex items-center justify-center text-xs sm:text-sm px-6 py-3 min-h-[48px] w-full">
-                  {language === "en" ? "Documentation" : "الوثائق التقنية"}
+                <Link href="/docs" className="flex items-center justify-center text-sm font-medium px-8 py-4 min-h-[52px] w-full rounded-xl border border-white/10 text-zinc-300 hover:bg-white/5 hover:border-white/20 transition-all">
+                  {language === "en" ? "Read Docs" : "الوثائق التقنية"}
                 </Link>
               </motion.div>
             </motion.div>
 
-            {/* Trust Badges */}
+            {/* Trust Bar — Bottom of hero */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="flex flex-wrap gap-5 items-center justify-center md:justify-start pt-4 text-[11px] font-mono text-zinc-500"
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="flex flex-wrap gap-4 items-center justify-center md:justify-start pt-6 text-[11px] font-mono text-zinc-500"
             >
               <div className="flex items-center gap-1.5">
-                <span className="text-emerald-400 text-xs">◆</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="tracking-wider">Built on Pi Network</span>
+              </div>
+              <div className="w-1 h-1 rounded-full bg-zinc-700" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                <span className="tracking-wider">Stellar</span>
+              </div>
+              <div className="w-1 h-1 rounded-full bg-zinc-700" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-axiom-purple" />
                 <span className="tracking-wider">W3C DID</span>
-              </div>
-              <div className="w-1 h-1 rounded-full bg-zinc-700" />
-              <div className="flex items-center gap-1.5">
-                <span className="text-emerald-400 text-xs">◆</span>
-                <span className="tracking-wider">STELLAR</span>
-              </div>
-              <div className="w-1 h-1 rounded-full bg-zinc-700" />
-              <div className="flex items-center gap-1.5">
-                <span className="text-emerald-400 text-xs">◆</span>
-                <span className="tracking-wider">PI NETWORK</span>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: Interactive Passport Card Showcase */}
+          {/* Right Column: Interactive Passport Card Showcase — Hero element */}
           <div className="md:col-span-5 flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -332,8 +337,8 @@ export default function Home() {
               className="w-full max-w-sm relative"
             >
               {/* Outer halo background decoration */}
-              <div className="absolute -inset-6 bg-gradient-to-tr from-emerald-500/15 via-electric-blue/15 to-axiom-purple/15 rounded-[48px] blur-2xl opacity-60 animate-pulse pointer-events-none" style={{ animationDuration: '6s' }} />
-              <div className="absolute -inset-3 bg-gradient-to-tr from-emerald-500/5 via-electric-blue/5 to-axiom-purple/5 rounded-[32px] blur-lg opacity-40 pointer-events-none" />
+              <div className="absolute -inset-8 bg-gradient-to-tr from-emerald-500/15 via-electric-blue/15 to-axiom-purple/15 rounded-[48px] blur-3xl opacity-50 animate-pulse pointer-events-none" style={{ animationDuration: '6s' }} />
+              <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-500/5 via-electric-blue/5 to-axiom-purple/5 rounded-[32px] blur-xl opacity-40 pointer-events-none" />
               
               <InteractivePassportCard 
                 user={user ? {
@@ -360,35 +365,34 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Live Stats Bar */}
+      {/* Live Stats Bar — Glassmorphism 2026 */}
       <div ref={statsRef} className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 mb-4 z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={statsInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-px p-4 sm:p-5 bg-white/[0.03] rounded-2xl border border-white/[0.05]"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 sm:p-6 glass-card rounded-2xl"
         >
           {[
-            { label: t("stat_users"), value: networkStats.users, icon: <Users className="w-4 h-4" /> },
-            { label: t("stat_agents"), value: networkStats.agents, icon: <Bot className="w-4 h-4" /> },
-            { label: t("total_xp"), value: networkStats.xp, icon: <Ticket className="w-4 h-4" /> },
-            { label: t("stat_tx"), value: networkStats.payments, icon: <Zap className="w-4 h-4" /> },
+            { label: t("stat_users"), value: networkStats.users, icon: <Users className="w-4 h-4" />, color: "blue" as const },
+            { label: t("stat_agents"), value: networkStats.agents, icon: <Bot className="w-4 h-4" />, color: "purple" as const },
+            { label: t("total_xp"), value: networkStats.xp, icon: <Ticket className="w-4 h-4" />, color: "green" as const },
+            { label: t("stat_tx"), value: networkStats.payments, icon: <Zap className="w-4 h-4" />, color: "amber" as const },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 15 }}
               animate={statsInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.1 + i * 0.08, duration: 0.5 }}
-              className="text-center md:text-left md:border-r last:border-0 md:px-5 flex flex-col md:flex-row md:items-center gap-3 py-3 md:py-2 bg-[#0d0e15] rounded-xl md:bg-transparent"
-              style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+              className={`stat-card-glow ${stat.color} text-center md:text-left p-4 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.08] transition-all`}
             >
-              <span className="hidden md:inline text-zinc-500">{stat.icon}</span>
-              <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-zinc-500">{stat.icon}</span>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{stat.label}</p>
-                <h4 className="text-lg md:text-xl font-bold font-mono mt-0.5 text-zinc-100">
-                  <AnimatedCounter target={stat.value} duration={1200} />
-                </h4>
               </div>
+              <h4 className="text-2xl md:text-3xl font-bold font-mono text-zinc-100">
+                <AnimatedCounter target={stat.value} duration={1200} />
+              </h4>
             </motion.div>
           ))}
         </motion.div>
@@ -480,11 +484,11 @@ export default function Home() {
           viewport={{ once: true, margin: "-60px" }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {/* Traditional Identity */}
+          {/* Traditional Identity — Glassmorphism */}
           <motion.div 
             variants={fadeUp} 
             custom={0} 
-            className="p-6 rounded-3xl border border-red-500/10 bg-[#0f0a0d]/40 backdrop-blur-md flex flex-col justify-between min-h-[300px]"
+            className="p-6 rounded-3xl border border-red-500/10 glass-card flex flex-col justify-between min-h-[300px]"
           >
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -510,11 +514,11 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* AxiomID */}
+          {/* AxiomID — Glassmorphism */}
           <motion.div 
             variants={fadeUp} 
             custom={1} 
-            className="p-6 rounded-3xl border border-emerald-500/20 bg-[#07130e]/40 backdrop-blur-md flex flex-col justify-between min-h-[300px] shadow-lg shadow-emerald-500/[0.01]"
+            className="p-6 rounded-3xl border border-emerald-500/20 glass-card flex flex-col justify-between min-h-[300px] shadow-lg shadow-emerald-500/[0.01]"
           >
             <div>
               <div className="flex items-center gap-2 mb-4">
