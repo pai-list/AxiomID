@@ -1,19 +1,8 @@
-// TTL-based revocation store — tokens evict after 24 hours
+// TTL-based revocation store — tokens evict after 24 hours.
+// ponytail: no setInterval — Vercel Functions are stateless. Lazy eviction in
+// isTokenRevoked handles cleanup on access; stale entries are harmless.
 const REVOKED_TOKENS_TTL_MS = 24 * 60 * 60 * 1000;
 const revokedTokens = new Map<string, number>();
-
-// Cleanup expired entries every 5 minutes
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, expiresAt] of revokedTokens) {
-      if (expiresAt < now) {
-        revokedTokens.delete(key);
-      }
-    }
-  }, CLEANUP_INTERVAL_MS);
-}
 
 export function revokeToken(token: string): void {
   revokedTokens.set(token, Date.now() + REVOKED_TOKENS_TTL_MS);

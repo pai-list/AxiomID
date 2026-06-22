@@ -317,3 +317,96 @@ describe('requireAuth', () => {
     expect(result.error).toBeDefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// requireAuth — revocation-store integration (PR change: auth-middleware now
+// imports isTokenRevoked from @/lib/revocation-store instead of @/lib/revocation)
+// ---------------------------------------------------------------------------
+describe('requireAuth — revocation check (PR change: uses revocation-store)', () => {
+  // Import the real revokeToken from revocation-store so we can seed state.
+  // revocation-store is not globally mocked, so the real TTL store is used.
+  let revokeToken: (token: string) => void;
+
+  beforeAll(async () => {
+    const store = await import('@/lib/revocation-store');
+    revokeToken = store.revokeToken;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch.mockReset();
+    clearAuthCache();
+  });
+
+  it('returns UNAUTHORIZED error for a revoked token without calling Pi API', async () => {
+    const revokedToken = 'revocation-store-test-token-unique-abc';
+    revokeToken(revokedToken);
+
+    const req = mockRequestWithHeader({ authorization: `Bearer ${revokedToken}` });
+    const result = await requireAuth(req);
+
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    // Pi API must NOT be called — revocation check is a short-circuit before fetch
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns user for a non-revoked token (revocation store does not block valid tokens)', async () => {
+    const validToken = 'revocation-store-valid-token-unique-xyz';
+    // Intentionally do NOT revoke this token
+    const mockUser = {
+      id: 'user-revocation-test',
+      walletAddress: '0xfeed',
+      piUid: 'pi-revocation-test',
+      piUsername: 'revocationtestuser',
+      xp: 50,
+      tier: 'Citizen',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-revocation-test', username: 'revocationtestuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+
+    const req = mockRequestWithHeader({ authorization: `Bearer ${validToken}` });
+    const result = await requireAuth(req);
+
+    expect(result.error).toBeNull();
+    expect(result.user).toEqual(mockUser);
+  });
+
+  it('revocation check runs before cache lookup (revoked tokens bypass cache)', async () => {
+    const token = 'revocation-before-cache-token-unique';
+    const mockUser = {
+      id: 'user-cache-bypass',
+      walletAddress: '0xcafe',
+      piUid: 'pi-cache-bypass',
+      piUsername: 'cachebypassuser',
+      xp: 0,
+      tier: 'Visitor',
+    };
+
+    // First: authenticate successfully to populate the cache
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-cache-bypass', username: 'cachebypassuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+
+    const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
+    const result1 = await requireAuth(req);
+    expect(result1.user).toEqual(mockUser);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Now revoke the token — even though it's cached, it should be blocked
+    revokeToken(token);
+    mockFetch.mockReset();
+
+    const result2 = await requireAuth(req);
+    expect(result2.user).toBeNull();
+    expect(result2.error).toBeDefined();
+    // Pi API still not called — revocation short-circuits before cache check
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+});

@@ -103,6 +103,71 @@ describe("generatePassportHtml", () => {
   });
 });
 
+describe("tierBadgeColor via generatePassportHtml (PR change: new tier mapping)", () => {
+  // The tierBadgeColor function is private, but its output is embedded as CSS
+  // in the generated HTML. We verify the correct hex values appear in the HTML.
+
+  it("Visitor tier uses #64748b (PR change: was #6b7280)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Visitor" }));
+    expect(html).toContain("#64748b");
+  });
+
+  it("Citizen tier uses #00ff41 (PR change: was #3b82f6)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Citizen" }));
+    expect(html).toContain("#00ff41");
+  });
+
+  it("Validator tier uses #00d4ff (PR change: new tier, replaces Sentinel/Guardian/Architect)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Validator" }));
+    expect(html).toContain("#00d4ff");
+  });
+
+  it("Sovereign tier uses #a855f7 (PR change: was #ef4444)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Sovereign" }));
+    expect(html).toContain("#a855f7");
+  });
+
+  it("unknown tier falls back to #64748b (PR change: fallback was #6b7280)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "UnknownTier" }));
+    expect(html).toContain("#64748b");
+    // Must not contain old fallback
+    expect(html).not.toContain("#6b7280");
+  });
+
+  it("removed Sentinel tier now falls back to default color #64748b (PR change)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Sentinel" }));
+    expect(html).toContain("#64748b");
+    // Old Sentinel color must not appear
+    expect(html).not.toContain("#8b5cf6");
+  });
+
+  it("removed Guardian tier now falls back to default color #64748b (PR change)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Guardian" }));
+    expect(html).toContain("#64748b");
+    // Old Guardian color must not appear
+    expect(html).not.toContain("#f59e0b");
+  });
+
+  it("removed Architect tier now falls back to default color #64748b (PR change)", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Architect" }));
+    expect(html).toContain("#64748b");
+    // Old Architect color must not appear
+    expect(html).not.toContain("#10b981");
+  });
+
+  it("Sovereign tier does not contain the old red color #ef4444", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Sovereign" }));
+    expect(html).not.toContain("#ef4444");
+  });
+
+  it("tier color appears in both avatar background and tier badge styles", () => {
+    const html = generatePassportHtml(makePassportData({ tier: "Citizen" }));
+    // #00ff41 should appear at least twice (once in .avatar, once in .tier inline)
+    const occurrences = (html.match(/#00ff41/g) || []).length;
+    expect(occurrences).toBeGreaterThanOrEqual(2);
+  });
+});
+
 describe("publishPassport", () => {
   beforeEach(() => {
     jest.clearAllMocks();

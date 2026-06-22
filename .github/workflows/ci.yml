@@ -41,3 +41,6 @@ jobs:
 
       - name: Test
         run: npm test -- --ci --runInBand
+
+      - name: Dead code check
+        run: npx knip --no-progress 2>&1 || true

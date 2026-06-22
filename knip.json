@@ -1,0 +1,33 @@
+{
+  "$schema": "https://knip.dev/schema.json",
+  "entry": [
+    "src/app/**/page.tsx",
+    "src/app/**/layout.tsx",
+    "src/app/**/route.ts",
+    "src/app/**/error.tsx",
+    "src/app/**/loading.tsx",
+    "src/app/**/not-found.tsx",
+    "src/app/global-error.tsx",
+    "sentry.client.config.ts",
+    "sentry.server.config.ts",
+    "sentry.edge.config.ts"
+  ],
+  "ignore": [
+    "backend/**",
+    "src/types/**",
+    "src/__tests__/**",
+    "src/**/*.test.*",
+    "src/**/*.stories.*",
+    "scripts/**",
+    "public/**"
+  ],
+  "ignoreDependencies": [
+    "jest-environment-jsdom",
+    "ts-node",
+    "@types/react",
+    "@types/react-dom",
+    "@types/node",
+    "@emulators/core",
+    "vercel"
+  ]
+}

@@ -13,6 +13,7 @@ import { SkillsMarketplace } from "./routes/skills";
 import { AgentDispatcher } from "./routes/agent-dispatch";
 import { handleMcp } from "./mcp/handler";
 import { handleSearch, handleSearchSimilar } from "./routes/search";
+import { handleIqraAsk, handleDailyAyah } from "./routes/iqra-rag";
 import { generateId } from "./lib/utils";
 
 export class Router {
@@ -105,6 +106,15 @@ export class Router {
     const rl = await this.rateLimiter.check(`${clientIp}:${path}`, tier);
     if (!rl.allowed) {
       return errorResponse("Rate limit exceeded", 429, rateLimitHeaders(rl));
+    }
+
+    // --- IQRA Quran RAG (after rate limiting — Workers AI is expensive) ---
+    if (path === "/api/iqra/ask" && method === "GET") {
+      return handleIqraAsk(request, this.env);
+    }
+
+    if (path === "/api/iqra/daily-ayah" && method === "GET") {
+      return handleDailyAyah(request, this.env);
     }
 
     // --- Presence ---

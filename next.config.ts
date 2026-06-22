@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { nosticsStrip } from "@nostics/unplugin/strip-transform";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["jose"],
@@ -36,4 +37,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+});

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "../context/language-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Trophy, Search, Loader2 } from "lucide-react";
+import { Trophy, Search } from "lucide-react";
 import TopThreeCards from "@/components/ui/TopThreeCards";
 import { getTierColor, Tier } from "@/lib/tiers";
 
@@ -75,9 +75,36 @@ export default function LeaderboardPage() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px] mt-10">
-          <Loader2 className="w-8 h-8 text-electric-blue animate-spin" />
-          <p className="text-xs text-zinc-500 font-mono mt-3">Fetching global standings...</p>
+        <div className="max-w-4xl mx-auto px-4 mt-10 space-y-6 animate-pulse">
+          {/* Top three skeleton */}
+          <div className="grid grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bento-card p-6 flex flex-col items-center space-y-3">
+                <div className="w-16 h-16 rounded-full bg-white/5" />
+                <div className="h-3 w-24 bg-white/5 rounded" />
+                <div className="h-2 w-16 bg-white/5 rounded" />
+                <div className="h-4 w-20 bg-white/5 rounded" />
+              </div>
+            ))}
+          </div>
+          {/* Table skeleton */}
+          <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
+            <div className="p-4 border-b border-white/5 bg-white/[0.01]">
+              <div className="h-2 w-40 bg-white/5 rounded" />
+            </div>
+            <div className="divide-y divide-white/5">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="flex items-center py-3 px-4 gap-4">
+                  <div className="w-8 h-2 bg-white/5 rounded" />
+                  <div className="w-8 h-8 rounded-full bg-white/5" />
+                  <div className="h-2 w-32 bg-white/5 rounded" />
+                  <div className="h-2 w-16 bg-white/5 rounded ml-auto" />
+                  <div className="h-2 w-12 bg-white/5 rounded" />
+                  <div className="h-2 w-12 bg-white/5 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : users.length === 0 ? (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">

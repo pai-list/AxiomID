@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface PassportKeyManagerProps {
   did: string;
@@ -29,6 +30,7 @@ export default function PassportKeyManager({ did, onSign }: PassportKeyManagerPr
     try {
       await navigator.clipboard.writeText(did);
       setCopied(true);
+      toast.success("DID copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard unavailable (HTTP context, permissions denied)
@@ -83,6 +85,7 @@ export default function PassportKeyManager({ did, onSign }: PassportKeyManagerPr
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
             placeholder="Payload to sign..."
+            aria-label="Payload to sign"
             className="flex-1 text-[11px] font-mono bg-white/5 border border-white/10 rounded px-2 py-1 text-zinc-300 placeholder:text-zinc-600"
           />
           <button
