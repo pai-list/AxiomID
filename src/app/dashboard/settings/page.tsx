@@ -522,7 +522,6 @@ export default function SettingsPage() {
         </div>
       </dialog>
 
-      {/* Modal 3: Disconnect Confirmation Dialog */}
       <dialog
         ref={disconnectDialogRef}
         onClick={handleDialogBackdropClick}
