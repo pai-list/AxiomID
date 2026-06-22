@@ -113,19 +113,21 @@ export function middleware(request: NextRequest) {
     host !== `www.${ROOT_DOMAIN}` &&
     host !== ROOT_DOMAIN;
 
-  if (isSubdomain && !url.pathname.startsWith("/api/")) {
-    const subdomain = host.replace(`.${ROOT_DOMAIN}`, "");
-    // Sanitize subdomain: alphanumeric + hyphens only (reject leading/trailing hyphens)
-    if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {
-      return withCors(new NextResponse("Invalid subdomain", { status: 400 }));
+  if (isSubdomain) {
+    if (!url.pathname.startsWith("/api/")) {
+      const subdomain = host.replace(`.${ROOT_DOMAIN}`, "");
+      // Sanitize subdomain: alphanumeric + hyphens only (reject leading/trailing hyphens)
+      if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {
+        return withCors(new NextResponse("Invalid subdomain", { status: 400 }));
+      }
+      // Reject reserved subdomains
+      if (RESERVED_SUBDOMAINS.has(subdomain.toLowerCase())) {
+        return withCors(new NextResponse("Subdomain not available", { status: 404 }));
+      }
+      // Rewrite to passport page with the subdomain as slug
+      url.pathname = `/passport/${subdomain}`;
+      return withCors(NextResponse.rewrite(url));
     }
-    // Reject reserved subdomains
-    if (RESERVED_SUBDOMAINS.has(subdomain.toLowerCase())) {
-      return withCors(new NextResponse("Subdomain not available", { status: 404 }));
-    }
-    // Rewrite to passport page with the subdomain as slug
-    url.pathname = `/passport/${subdomain}`;
-    return withCors(NextResponse.rewrite(url));
   }
 
   return withCors(NextResponse.next());

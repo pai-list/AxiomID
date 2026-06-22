@@ -10,9 +10,6 @@
  * - isAllowedHost: removed .vercel.app wildcard support
  * - CORS_ALLOWED_ORIGINS allowlist introduced
  *
- * NOTE: src/middleware.ts as written in this PR contains a syntax error —
- * a missing closing brace `}` for the inner `if (isSubdomain)` block at line 114.
- * These tests document the intended behavior; they will pass once that bug is fixed.
  */
 
 import { NextRequest } from "next/server";
