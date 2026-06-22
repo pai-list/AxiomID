@@ -372,7 +372,7 @@ export default function SettingsPage() {
                     {connected ? (
                       <>
                         <button onClick={() => openDisconnectModal(id)} className="btn-ghost text-[10px] font-mono text-red-400 hover:text-red-300 px-2 py-1">
-                          Disconnect
+                          {t('settings_disconnect_btn')}
                         </button>
                         <button onClick={() => openVcModal(`connect_${id}`)} className="btn-ghost text-[10px] font-mono py-1">
                           {t('inspect_vc')}
@@ -438,7 +438,6 @@ export default function SettingsPage() {
       {/* Modal 1: Connect Modal Dialog */}
       <dialog
         ref={connectDialogRef}
-        closedby="any"
         onClick={handleDialogBackdropClick}
         aria-labelledby="connect-dialog-title"
         className="bento-card max-w-md w-full bg-black/90 border border-white/15 backdrop-blur-xl text-surface rounded-2xl p-0"
@@ -490,7 +489,6 @@ export default function SettingsPage() {
       {/* Modal 2: VC Inspector Modal Dialog */}
       <dialog
         ref={vcDialogRef}
-        closedby="any"
         onClick={handleDialogBackdropClick}
         aria-labelledby="vc-dialog-title"
         className="bento-card max-w-xl w-full bg-black/95 border border-white/15 backdrop-blur-2xl text-surface rounded-2xl p-0"
