@@ -18,7 +18,7 @@ interface ReasoningResult {
 interface Player {
   id: string;
   type: PlayerType;
-  makeMove(opponentId: string, currentRound: number, history: HistoryRecord[]): ReasoningResult;
+  makeMove(opponentId: string, currentRound: number, history: readonly HistoryRecord[]): ReasoningResult;
 }
 
 interface MatchRecord {
