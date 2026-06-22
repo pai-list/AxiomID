@@ -32,7 +32,7 @@ interface StatusDetails {
  * @returns A JSX element representing either a centered wallet connection prompt or the full settings interface.
  */
 export default function SettingsPage() {
-  const { user, connectWallet, claimAction } = useWallet();
+  const { user, connectWallet, claimAction, refreshUser } = useWallet();
   const { t } = useLanguage();
   const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(() => {
@@ -49,6 +49,7 @@ export default function SettingsPage() {
 
   // Disconnect confirmation
   const [disconnectPlatform, setDisconnectPlatform] = useState<"twitter" | "discord" | "google" | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
   const disconnectDialogRef = useRef<HTMLDialogElement>(null);
 
   // Refs for dialogs (W3C standard dialog controls)
@@ -163,12 +164,33 @@ export default function SettingsPage() {
 
   const handleDisconnect = async () => {
     if (!disconnectPlatform) return;
-    const actionType = `disconnect_${disconnectPlatform}`;
-    const success = await claimAction(actionType, {});
-    disconnectDialogRef.current?.close();
-    setDisconnectPlatform(null);
-    if (success) {
-      await fetchStatusDetails();
+    setDisconnecting(true);
+    try {
+      const storedToken = localStorage.getItem("pi_access_token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (storedToken) {
+        headers["Authorization"] = `Bearer ${storedToken}`;
+      }
+      const res = await fetch("/api/social/disconnect", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ platform: disconnectPlatform }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || "Failed to disconnect account");
+        return;
+      }
+
+      // Only close + refresh on confirmed success.
+      disconnectDialogRef.current?.close();
+      setDisconnectPlatform(null);
+      await Promise.all([fetchStatusDetails(), refreshUser()]);
+    } catch {
+      toast.error("Failed to disconnect account");
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -538,15 +560,17 @@ export default function SettingsPage() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => { disconnectDialogRef.current?.close(); setDisconnectPlatform(null); }}
+              disabled={disconnecting}
               className="btn-ghost text-xs px-4 py-2"
             >
               {t('settings_confirm_cancel')}
             </button>
             <button
               onClick={handleDisconnect}
-              className="text-xs px-4 py-2 rounded-lg font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+              disabled={disconnecting}
+              className="text-xs px-4 py-2 rounded-lg font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors disabled:opacity-50"
             >
-              {t('settings_confirm_action')}
+              {disconnecting ? t('settings_signing') : t('settings_confirm_action')}
             </button>
           </div>
         </div>

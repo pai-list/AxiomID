@@ -39,34 +39,36 @@ This was the **only** `Math.random()` in security-relevant code. Other occurrenc
 
 ---
 
-## 3. Payment Gate Status — HIGH RISK
+## 3. Payment Gate Status — FIXED
 
-### `src/app/api/skills/[slug]/purchase/route.ts:37-48`
+### `src/app/api/skills/[slug]/install/route.ts`
 
-**Finding:** The purchase route creates a `PENDING` PiPayment record but **never verifies actual payment** before granting access.
+**Finding (original):** The install route granted access to paid skills without verifying
+any payment. It only checked that the skill was published and that an agent existed, then
+installed unconditionally — it did **not** read `skill.pricePi` or any payment record. The
+legacy `purchase/route.ts` only creates a `PENDING` record with a `TODO` and never verifies
+payment.
 
-```typescript
-// TODO: Integrate with Pi Payment SDK (create payment intent and return ID)
-const payment = await prisma.piPayment.create({
-  data: {
-    status: 'PENDING',  // ← Never transitions to COMPLETED via server
-  },
-});
-```
+**Impact (original):** Any authenticated user could install any paid skill for free by
+calling `POST /api/skills/[slug]/install` directly.
 
-**What's missing:**
-- No server-side call to `POST https://api.minepi.com/v2/payments` to approve the payment
-- No `paymentId` from Pi SDK passed in the request body
-- No verification that the user actually paid before the skill is considered "purchased"
-- The `install/route.ts` checks `skill.pricePi` but doesn't verify payment status before installation
+**Fix applied:** The install route now enforces a payment gate for paid skills
+(`skill.pricePi > 0`). It requires a non-`REFUNDED` `PiPayment` belonging to the
+authenticated user whose `metadata.skillId` matches the skill; otherwise it returns
+`PAYMENT_INVALID` (HTTP 402). Verified payments are produced by
+`src/app/api/marketplace/order/create/route.ts`, which performs real Pi Network
+verification (payer-UID match, amount match, status check, replay protection) and lands
+payments in `ESCROWED` status.
 
-**Impact:** Users can install paid skills without paying by directly calling `/install` after creating a pending payment record.
+**Notes / corrections to the original report:**
+- The `PiPayment` model has **no** `COMPLETED`/`APPROVED` status. The actual
+  `PaymentStatus` enum is `PENDING | ESCROWED | RELEASED | REFUNDED`
+  (`prisma/schema.prisma`).
+- The legacy `purchase/route.ts` is effectively superseded by the marketplace order flow,
+  which is the verified payment path.
 
-**Recommendation:** Add Pi Payment SDK approval flow:
-1. Client calls Pi SDK `Pi.createPayment()` → gets `paymentId`
-2. Client sends `paymentId` to `POST /api/skills/[slug]/purchase`
-3. Server calls `POST https://api.minepi.com/v2/payments/{paymentId}/approve` with `X-Shared-Secret`
-4. Only then mark payment as `APPROVED` and allow installation
+**Follow-up:** Consider removing or redirecting the legacy `purchase/route.ts` to avoid
+confusion, since the verified flow lives in `marketplace/order/create`.
 
 ---
 
