@@ -26,7 +26,7 @@ export default function Privacy() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
-            {t("privacy_title")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-electric-blue">{t("privacy_subtitle").split(" ").slice(-2).join(" ")}</span>
+            {t("privacy_title")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-electric-blue">{t("privacy_title_gradient")}</span>
           </h1>
           <p className="text-subtle text-sm mb-8 font-mono">
             {t("privacy_subtitle")}
