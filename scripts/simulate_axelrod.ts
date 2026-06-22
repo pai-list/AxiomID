@@ -58,7 +58,7 @@ class SoulAgent implements Player {
     this.identity = identity;
   }
 
-  makeMove(_opponentId: string, _currentRound: number, history: HistoryRecord[]): ReasoningResult {
+  makeMove(_opponentId: string, _currentRound: number, history: readonly HistoryRecord[]): ReasoningResult {
     // Playbook Decision 2: Evaluate Intent (The 5-Gate "Soul" Loop)
 
     // Gate 1: Muraqabah (Self-awareness check)
