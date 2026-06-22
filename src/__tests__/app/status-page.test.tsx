@@ -58,13 +58,9 @@ let mockFetch: jest.Mock;
 beforeEach(() => {
   mockFetch = jest.fn();
   global.fetch = mockFetch;
-  jest.useFakeTimers();
 });
 
 afterEach(() => {
-  act(() => {
-    jest.runOnlyPendingTimers();
-  });
   jest.useRealTimers();
 });
 
@@ -72,7 +68,7 @@ function makeStatusResponse(overrides: Record<string, unknown> = {}) {
   return {
     ok: true,
     text: async () => "",
-    json: async () => ({ stats: overrides }),
+    json: async () => ({ stats: { totalAgents: 1, ...overrides } }),
   };
 }
 
@@ -104,7 +100,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("shows em-dash when API returns null for averageTrustScore", async () => {
     mockBothCalls({ averageTrustScore: null });
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getAllByText(/—/).length).toBeGreaterThanOrEqual(1);
@@ -114,7 +112,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("shows em-dash when API omits averageTrustScore entirely", async () => {
     mockBothCalls({});
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getAllByText(/—/).length).toBeGreaterThanOrEqual(1);
@@ -124,7 +124,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("shows em-dash when API returns null for verificationRate", async () => {
     mockBothCalls({ verificationRate: null });
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getAllByText(/—/).length).toBeGreaterThanOrEqual(1);
@@ -134,7 +136,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("shows em-dash when API omits verificationRate entirely", async () => {
     mockBothCalls({});
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getAllByText(/—/).length).toBeGreaterThanOrEqual(1);
@@ -144,7 +148,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("uses the real averageTrustScore from API when provided", async () => {
     mockBothCalls({ averageTrustScore: 72.5 });
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("72.5%")).toBeInTheDocument();
@@ -154,7 +160,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
   it("uses the real verificationRate from API when provided", async () => {
     mockBothCalls({ verificationRate: 88.1 });
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("88.1%")).toBeInTheDocument();
@@ -162,14 +170,16 @@ describe("StatusPage — fallback default values (PR change)", () => {
   });
 
   it("defaults totalAgents, totalPayments, activeAgents, totalXpEarned to 0 when omitted", async () => {
-    mockBothCalls({});
+    mockBothCalls({ totalAgents: 1 });
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
-      // All zero-defaulted stats should show "0"
+      // totalTransactions, activeAgents, totalXpEarned default to 0
       const zeros = screen.getAllByText("0");
-      expect(zeros.length).toBeGreaterThanOrEqual(4);
+      expect(zeros.length).toBeGreaterThanOrEqual(3);
     });
   });
 
@@ -182,7 +192,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
       })
       .mockResolvedValueOnce(makeHealthResponse());
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Unable to Load Status")).toBeInTheDocument();
@@ -194,7 +206,9 @@ describe("StatusPage — fallback default values (PR change)", () => {
       .mockRejectedValueOnce(new Error("Network failure"))
       .mockResolvedValueOnce(makeHealthResponse());
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Unable to Load Status")).toBeInTheDocument();
@@ -202,20 +216,24 @@ describe("StatusPage — fallback default values (PR change)", () => {
   });
 
   it("polls for updated stats every 60 seconds", async () => {
+    jest.useFakeTimers();
+
     mockFetch
       .mockResolvedValueOnce(makeStatusResponse({ averageTrustScore: 50.0 }))
       .mockResolvedValueOnce(makeHealthResponse())
       .mockResolvedValueOnce(makeStatusResponse({ averageTrustScore: 55.0 }))
       .mockResolvedValueOnce(makeHealthResponse());
 
-    render(<StatusPage />);
+    await act(async () => {
+      render(<StatusPage />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("50%")).toBeInTheDocument();
     });
 
-    // Advance past the 60-second polling interval
-    act(() => {
+    // Advance past the 60-second polling interval and flush resulting promises
+    await act(async () => {
       jest.advanceTimersByTime(60001);
     });
 

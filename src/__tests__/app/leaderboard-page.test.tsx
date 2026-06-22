@@ -40,7 +40,14 @@ jest.mock("next/link", () => {
   return Link;
 });
 
-// useLanguage is globally mocked in jest.setup.js (language="en")
+// Mock useLanguage locally (global mock in jest.setup.js may not propagate)
+jest.mock("@/app/context/language-context", () => ({
+  useLanguage: jest.fn(() => ({
+    language: "en",
+    setLanguage: jest.fn(),
+    t: (key: string) => key,
+  })),
+}));
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -79,6 +86,12 @@ function mockLeaderboardResponse(users: ReturnType<typeof makeUser>[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  const { useLanguage } = jest.requireMock("@/app/context/language-context");
+  useLanguage.mockImplementation(() => ({
+    language: "en",
+    setLanguage: jest.fn(),
+    t: (key: string) => key,
+  }));
 });
 
 describe("LeaderboardPage — loading state", () => {

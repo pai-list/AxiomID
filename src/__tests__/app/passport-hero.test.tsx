@@ -91,8 +91,7 @@ describe("Landing page — Stitch hero", () => {
   it("renders the main heading", () => {
     renderHome();
     const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading).toHaveTextContent(/Your Identity/);
-    expect(heading).toHaveTextContent(/Sovereign/);
+    expect(heading).toHaveTextContent(/Authorization Protocol/);
   });
 
   it("renders the Live on Pi Network badge", () => {

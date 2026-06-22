@@ -549,8 +549,9 @@ describe("MarketplacePage — Welcome Banner (PR change)", () => {
       expect(screen.getByText("marketplace_welcome_banner")).toBeInTheDocument();
     });
 
-    // Click PUBLISH to switch to publish form
-    fireEvent.click(screen.getByRole("button", { name: /PUBLISH/i }));
+    // Click PUBLISH toggle to switch to publish form (first match is the toggle button)
+    const publishButtons = screen.getAllByRole("button", { name: /PUBLISH/i });
+    fireEvent.click(publishButtons[0]);
 
     // Welcome banner should disappear when in publish mode
     expect(screen.queryByText("marketplace_welcome_banner")).toBeNull();
@@ -568,8 +569,9 @@ describe("MarketplacePage — Welcome Banner (PR change)", () => {
       expect(screen.getByText("marketplace_welcome_banner")).toBeInTheDocument();
     });
 
-    // Toggle to publish
-    fireEvent.click(screen.getByRole("button", { name: /PUBLISH/i }));
+    // Toggle to publish (first match is the toggle button)
+    const publishButtons = screen.getAllByRole("button", { name: /PUBLISH/i });
+    fireEvent.click(publishButtons[0]);
     expect(screen.queryByText("marketplace_welcome_banner")).toBeNull();
 
     // Toggle back to browse

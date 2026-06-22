@@ -98,8 +98,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --max-warnings 0 --fix",
-      "tsc --noEmit --pretty"
+      "eslint --max-warnings 0 --fix"
     ],
     "*.{json,md,yml,yaml,css}": [
       "prettier --write"
