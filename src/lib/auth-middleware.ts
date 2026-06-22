@@ -116,8 +116,15 @@ export async function requireAuth(request: NextRequest): Promise<
     return { error: apiError('UNAUTHORIZED', 'Empty access token'), user: null };
   }
 
-  // Check if token has been revoked
-  if (await isTokenRevoked(accessToken)) {
+  // Check if token has been revoked. Treat a lookup failure as unauthorized
+  // (fail closed) rather than letting it crash the request.
+  let revoked: boolean;
+  try {
+    revoked = await isTokenRevoked(accessToken);
+  } catch {
+    return { error: apiError('UNAUTHORIZED', 'Unable to verify token revocation status'), user: null };
+  }
+  if (revoked) {
     return { error: apiError('UNAUTHORIZED', 'Token has been revoked'), user: null };
   }
 
