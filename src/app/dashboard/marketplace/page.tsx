@@ -6,6 +6,7 @@ import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins } from "lucide-react";
 import { PublishSkillForm } from "@/components/dashboard/PublishSkillForm";
 import { useLanguage } from "../../context/language-context";
+import { createPiPayment } from "@/lib/pi-sdk";
 
 interface Skill {
   id: string;
@@ -150,14 +151,44 @@ export default function MarketplacePage() {
     previousFocusRef.current?.focus();
   }, []);
 
-  const handleInstall = async (slug: string) => {
+  const handleInstall = async (skill: Pick<Skill, "id" | "slug" | "name" | "pricePi">) => {
     if (!user) {
       connectWallet();
       return;
     }
     setInstalling(true);
     try {
-      const res = await fetch(`/api/skills/${slug}/install`, {
+      // Paid skills must be purchased before installation. Run the Pi payment
+      // flow (SDK createPayment → approve → complete) and verify the order
+      // server-side so an ESCROWED PiPayment with metadata.skillId exists for
+      // this user. The install route's payment gate then allows the install.
+      if (skill.pricePi > 0) {
+        if (!user.agent?.id) {
+          throw new Error("Create an agent before purchasing skills");
+        }
+
+        const txid = await createPiPayment(
+          skill.pricePi,
+          `Purchase of ${skill.name}`,
+          { skillId: skill.id, agentId: user.agent.id, purpose: "skill_purchase" }
+        );
+
+        const storedToken = localStorage.getItem("pi_access_token");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (storedToken) headers["Authorization"] = `Bearer ${storedToken}`;
+
+        const orderRes = await fetch("/api/marketplace/order/create", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ skillId: skill.id, agentId: user.agent.id, paymentId: txid }),
+        });
+        if (!orderRes.ok) {
+          const data = await orderRes.json().catch(() => ({}));
+          throw new Error(data.error || `Purchase verification failed (${orderRes.status})`);
+        }
+      }
+
+      const res = await fetch(`/api/skills/${skill.slug}/install`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -165,7 +196,7 @@ export default function MarketplacePage() {
         throw new Error(data.error || `Install failed (${res.status})`);
       }
       toast.success("Skill installed successfully");
-      openDetail(slug);
+      openDetail(skill.slug);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to install skill");
     } finally {
@@ -478,7 +509,7 @@ export default function MarketplacePage() {
 
                 <div className="flex gap-3 mt-6">
                   <button
-                    onClick={() => handleInstall(selectedSkill.slug)}
+                    onClick={() => handleInstall(selectedSkill)}
                     disabled={installing || isConnecting}
                     aria-busy={installing}
                     aria-label={installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
