@@ -511,20 +511,20 @@ export default function SandboxPage() {
             <div className="space-y-2.5">
               {AUDIT_ITEMS.map((item) => {
                 const state = auditStates[item.id];
-                let stateText = "Pending";
+                let stateText = t("sandbox_pending");
                 let stateClass = "text-faint border-white/5 bg-white/5";
                 let icon = null;
 
                 if (state === "scanning") {
-                  stateText = "Scanning";
+                  stateText = t("sandbox_scanning");
                   stateClass = "text-amber-400 border-amber-400/20 bg-amber-400/5";
                   icon = <Loader2 className="w-3 h-3 animate-spin inline me-1" />;
                 } else if (state === "passed") {
-                  stateText = "PASSED";
+                  stateText = t("sandbox_passed");
                   stateClass = "text-emerald-400 border-emerald-400/20 bg-emerald-400/5";
                   icon = <Check className="w-3 h-3 inline me-1" />;
                 } else if (state === "failed") {
-                  stateText = "FAILED";
+                  stateText = t("sandbox_failed");
                   stateClass = "text-red-400 border-red-400/20 bg-red-400/5";
                   icon = <ShieldAlert className="w-3 h-3 inline me-1" />;
                 }
