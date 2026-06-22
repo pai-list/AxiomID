@@ -69,9 +69,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const sandboxToken = getSandboxDevToken();
-    if (process.env.NODE_ENV === 'test' && sandboxToken) {
-      process.stdout.write(`[DEBUG:ROUTE] sandboxToken='${sandboxToken}' accessToken='${accessToken}' match=${sandboxToken === accessToken}\n`);
-    }
+
     if (isSandboxOrDev && sandboxToken && accessToken === sandboxToken) {
       verifiedStellarAddress = "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2";
     } else {
