@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface PassportKeyManagerProps {
   did: string;
@@ -29,6 +30,7 @@ export default function PassportKeyManager({ did, onSign }: PassportKeyManagerPr
     try {
       await navigator.clipboard.writeText(did);
       setCopied(true);
+      toast.success("DID copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard unavailable (HTTP context, permissions denied)

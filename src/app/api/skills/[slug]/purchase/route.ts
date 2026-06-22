@@ -39,7 +39,7 @@ export async function POST(
     const payment = await prisma.piPayment.create({
       data: {
         userId: user.id,
-        paymentId: `pi_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        paymentId: `pi_${crypto.randomUUID()}`,
         amount: skill.pricePi,
         memo: `Purchase of ${skill.name}`,
         metadata: JSON.stringify({ skillId: skill.id, purpose: 'skill_purchase' }),

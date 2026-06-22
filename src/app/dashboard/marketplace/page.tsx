@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { useWallet } from "../../context/wallet-context";
 import { Dna, Download, Star, Coins } from "lucide-react";
 import { PublishSkillForm } from "@/components/dashboard/PublishSkillForm";
@@ -161,6 +162,7 @@ export default function MarketplacePage() {
         const data = await res.json();
         throw new Error(data.error || `Install failed (${res.status})`);
       }
+      toast.success("Skill installed successfully");
       openDetail(slug);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to install skill");

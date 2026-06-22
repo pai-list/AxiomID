@@ -47,7 +47,8 @@
     "test": "NODE_OPTIONS='--no-deprecation' jest --runInBand --forceExit",
     "test:watch": "jest --watch",
     "type-check": "tsc --noEmit",
-    "memory:build": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' scripts/build-memory.ts"
+    "memory:build": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' scripts/build-memory.ts",
+    "dead-code": "knip"
   },
   "dependencies": {
     "@json-render/core": "^0.19.0",
@@ -65,11 +66,13 @@
     "qrcode.react": "^4.2.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "sonner": "^2.0.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@emulators/adapter-next": "^0.6.1",
     "@emulators/github": "^0.6.1",
+    "@sentry/nextjs": "^10.59.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -82,9 +85,11 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "jest-location-mock": "^4.0.1",
+    "knip": "^6.17.1",
     "prisma": "^6.0.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "undici": "^8.5.0"
   }
 }

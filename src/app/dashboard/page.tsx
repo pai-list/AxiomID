@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useWallet } from "../context/wallet-context";
 import skillsData from "@/data/skills.json";
 import { AgentCard } from "@/components/AgentCard";
@@ -174,6 +175,7 @@ export default function Dashboard() {
   const handleCreateAgent = async (name?: string) => {
     await createAgent(name || agentName || undefined);
     setAgentName("");
+    toast.success("Agent created successfully");
   };
 
   const handleActivateAgent = async () => {

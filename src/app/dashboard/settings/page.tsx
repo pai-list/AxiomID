@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useWallet } from "../../context/wallet-context";
 import { useLanguage } from "../../context/language-context";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
@@ -143,6 +144,7 @@ export default function SettingsPage() {
       navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
     }
     setCopied(true);
+    toast.success("VC payload copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 

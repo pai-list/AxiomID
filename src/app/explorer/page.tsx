@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../context/language-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Bot, Users, Ticket, Zap, Loader2 } from "lucide-react";
+import { Bot, Users, Ticket, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 const NetworkGraph = dynamic(() => import("@/components/ui/NetworkGraph"), { ssr: false });
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -133,9 +133,45 @@ export default function ExplorerPage() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] mt-10">
-            <Loader2 className="w-8 h-8 text-electric-blue animate-spin" />
-            <p className="text-xs text-zinc-500 font-mono mt-3">Loading live protocol states...</p>
+          <div className="space-y-6 mt-6 animate-pulse">
+            {/* Stats row skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bento-card p-5 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white/5" />
+                  <div className="space-y-2">
+                    <div className="h-2 w-16 bg-white/5 rounded" />
+                    <div className="h-5 w-12 bg-white/5 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Main grid skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-7 bento-card h-80" />
+              <div className="lg:col-span-5 space-y-6">
+                <div className="bento-card p-5 space-y-3">
+                  <div className="h-3 w-40 bg-white/5 rounded" />
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-2 w-20 bg-white/5 rounded" />
+                      <div className="flex-1 h-2 bg-white/5 rounded" />
+                      <div className="h-2 w-8 bg-white/5 rounded" />
+                    </div>
+                  ))}
+                </div>
+                <div className="bento-card p-5 space-y-3">
+                  <div className="h-3 w-32 bg-white/5 rounded" />
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-white/5" />
+                      <div className="h-2 flex-1 bg-white/5 rounded" />
+                      <div className="h-2 w-16 bg-white/5 rounded" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         ) : error ? (
           <div className="text-center py-20 mt-10 bento-card">
