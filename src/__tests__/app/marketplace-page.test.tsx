@@ -48,7 +48,7 @@ jest.mock("@/app/context/language-context", () => ({
         marketplace_installing: "Installing...",
         marketplace_connecting: "Connecting...",
         marketplace_connect_install: "Connect Wallet to Install",
-        marketplace_install_skill: "Install Skill → Agent",
+        marketplace_install_skill: "Install Skill",
         marketplace_copy_payload: "COPY PAYLOAD",
       };
       return translations[key] || key;
