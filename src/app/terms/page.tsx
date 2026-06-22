@@ -21,7 +21,6 @@ export default function Terms() {
             </span>
             <span className="text-xs font-mono text-faint">{t("terms_last_updated")}</span>
           </div>
-
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
             {t("terms_title_main")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-electric-blue">{t("terms_title_highlight")}</span>
           </h1>
