@@ -1,4 +1,4 @@
-import { generateCIDv0, publishToMockGateway } from "@/lib/storage/ipfs-sync";
+import { generateCIDv0, publishToMockGateway, publishToIPFS } from "@/lib/storage/ipfs-sync";
 
 describe("IPFS Sync & CID Generation", () => {
   it("generates correct base58 CIDv0 multihash", () => {
@@ -12,5 +12,14 @@ describe("IPFS Sync & CID Generation", () => {
     const res = await publishToMockGateway(payload);
     expect(res.cid).toMatch(/^Qm/);
     expect(res.url).toContain(res.cid);
+    expect(res.mock).toBe(true);
+  });
+
+  it("publishes to IPFS (falls back to mock when no credentials)", async () => {
+    const payload = { did: "did:axiom:test", claims: [] };
+    const res = await publishToIPFS(payload);
+    expect(res.cid).toMatch(/^Qm/);
+    expect(res.url).toContain(res.cid);
   });
 });
+
