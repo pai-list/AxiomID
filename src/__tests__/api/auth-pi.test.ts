@@ -225,15 +225,22 @@ describe('POST /api/auth/pi', () => {
 const SANDBOX_TEST_TOKEN = 'sandbox-dev-token-abc-123';
 
 describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    global.fetch = jest.fn();
-    process.env.SANDBOX_DEV_TOKEN = SANDBOX_TEST_TOKEN;
-  });
+  describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
+    let prevSandboxDevToken: string | undefined;
+    beforeEach(() => {
+      jest.clearAllMocks();
+      global.fetch = jest.fn();
+      prevSandboxDevToken = process.env.SANDBOX_DEV_TOKEN;
+      process.env.SANDBOX_DEV_TOKEN = SANDBOX_TEST_TOKEN;
+    });
 
-  afterEach(() => {
-    delete process.env.SANDBOX_DEV_TOKEN;
-  });
+    afterEach(() => {
+      if (prevSandboxDevToken === undefined) {
+        delete process.env.SANDBOX_DEV_TOKEN;
+      } else {
+        process.env.SANDBOX_DEV_TOKEN = prevSandboxDevToken;
+      }
+    });
 
   // In test environment, NODE_ENV === 'test' which is !== 'production',
   // so isSandboxOrDev is true and the bypass is active.
