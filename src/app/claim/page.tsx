@@ -35,11 +35,13 @@ const stepVariants = {
     x: 0,
     opacity: 1,
     scale: 1,
+    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
   },
   exit: (direction: number) => ({
     x: direction < 0 ? 300 : -300,
     opacity: 0,
     scale: 0.95,
+    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
   }),
 };
 
@@ -153,10 +155,10 @@ export default function ClaimPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl sm:text-5xl font-mono font-bold mb-3 bg-gradient-to-r from-white via-electric-blue to-neon-green bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl font-sans font-bold mb-3 bg-gradient-to-r from-white via-electric-blue to-neon-green bg-clip-text text-transparent">
               {t("Claim Your Identity", "احمل هويتك")}
             </h1>
-            <p className="text-white/50 font-mono text-sm">
+            <p className="text-white/50 font-sans text-sm">
               {t(
                 "Your sovereign digital passport awaits",
                 "جواز سفرك الرقمي السيادي في انتظارك"
@@ -181,7 +183,7 @@ export default function ClaimPage() {
                           ? "rgba(0,120,255,0.6)"
                           : "rgba(255,255,255,0.1)",
                     }}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-colors ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
                       isCompleted
                         ? "bg-neon-green/10"
                         : isActive
@@ -236,10 +238,10 @@ export default function ClaimPage() {
                       <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
                         <Wallet className="w-10 h-10 text-electric-blue" />
                       </div>
-                      <h2 className="text-2xl font-mono font-bold mb-2">
+                      <h2 className="text-2xl font-sans font-bold mb-2">
                         {t("Connect Wallet", "اتصل بالمحفظة")}
                       </h2>
-                      <p className="text-white/40 font-mono text-sm mb-8 max-w-sm mx-auto">
+                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
                         {t(
                           "Link your Pi Network wallet to begin your decentralized identity journey",
                           "اربط محفظة شبكة Pi لبدء رحلة هويتك اللامركزية"
@@ -262,11 +264,11 @@ export default function ClaimPage() {
                         </div>
                       ) : (
                         <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
+                          whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                          whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                           onClick={handleConnect}
                           disabled={isConnecting}
-                          className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-mono font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Wallet className="w-5 h-5" />
                           {isConnecting
@@ -296,10 +298,10 @@ export default function ClaimPage() {
                       <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
                         <Shield className="w-10 h-10 text-electric-blue" />
                       </div>
-                      <h2 className="text-2xl font-mono font-bold mb-2">
+                      <h2 className="text-2xl font-sans font-bold mb-2">
                         {t("Know Your Agent", "اعرف وكيلك")}
                       </h2>
-                      <p className="text-white/40 font-mono text-sm mb-8 max-w-sm mx-auto">
+                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
                         {t(
                           "Build your trust score through decentralized verification",
                           "ابنِ نقاط ثقتك من خلال التحقق اللامركزي"
@@ -381,11 +383,11 @@ export default function ClaimPage() {
                           </div>
 
                           <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                            whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                             onClick={handleVerify}
                             disabled={verificationProgress > 0}
-                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-mono font-semibold py-4 px-8 rounded-xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50"
+                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50"
                           >
                             {verificationProgress > 0 ? (
                               <>
@@ -442,13 +444,13 @@ export default function ClaimPage() {
                       <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
                         <Rocket className="w-10 h-10 text-electric-blue" />
                       </div>
-                      <h2 className="text-2xl font-mono font-bold mb-2">
+                      <h2 className="text-2xl font-sans font-bold mb-2">
                         {t(
                           "Deploy Passport",
                           "نشر جواز السفر"
                         )}
                       </h2>
-                      <p className="text-white/40 font-mono text-sm mb-8 max-w-sm mx-auto">
+                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
                         {t(
                           "Mint your sovereign agent passport on-chain",
                           "اصنع جواز سفر الوكيل السيادي على السلسلة"
@@ -458,7 +460,7 @@ export default function ClaimPage() {
                       {!deployed ? (
                         <div className="space-y-6">
                           {/* Passport Preview */}
-                          <div className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.1] rounded-2xl p-6 text-left relative overflow-hidden">
+                          <div className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.1] rounded-2xl backdrop-blur-xl p-6 text-left relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-electric-blue/10 rounded-full blur-3xl" />
                             <div className="relative">
                               <div className="flex items-center gap-2 mb-4">
@@ -499,10 +501,10 @@ export default function ClaimPage() {
                           </div>
 
                           <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                            whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                             onClick={handleDeploy}
-                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-mono font-bold py-4 px-8 rounded-xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
+                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-neon-green/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
                           >
                             <Rocket className="w-5 h-5" />
                             {t(
@@ -545,8 +547,8 @@ export default function ClaimPage() {
 
                           <Link href="/dashboard">
                             <motion.button
-                              whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
+                              whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                              whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                               className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-mono font-bold py-4 px-8 rounded-xl flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow"
                             >
                               {t(
@@ -575,7 +577,7 @@ export default function ClaimPage() {
               <button
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center gap-2 font-mono text-sm text-white/40 hover:text-white/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 font-sans text-sm text-white/40 hover:text-white/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
                 {t("Back", "رجوع")}
@@ -586,7 +588,7 @@ export default function ClaimPage() {
                 whileTap={canProceed() ? { scale: 0.97 } : {}}
                 onClick={nextStep}
                 disabled={!canProceed()}
-                className="flex items-center gap-2 font-mono text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white/[0.06] border border-white/[0.1] text-white hover:bg-white/[0.1]"
+                className="flex items-center gap-2 font-mono text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white/[0.06] border border-white/[0.1] backdrop-blur-md text-white hover:bg-white/[0.1]"
               >
                 {t("Continue", "متابعة")}
                 <ChevronRight className="w-4 h-4" />
@@ -596,7 +598,7 @@ export default function ClaimPage() {
         </div>
       </main>
 
-      <Footer />
+            <Footer />
     </div>
   );
 }
