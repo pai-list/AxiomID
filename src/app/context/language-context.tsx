@@ -406,6 +406,12 @@ export const translations = {
     marketplace_copy_payload: "Copy Details",
     marketplace_dismiss: "Dismiss",
     marketplace_back_to_skills: "Back to Skills",
+    // Tier labels
+    tier_basic_tool: "Basic Tool",
+    tier_advanced_tool: "Advanced Tool",
+    tier_advanced_infrastructure: "Infra",
+    tier_pro: "Pro",
+    tier_sovereign: "Sovereign",
   },
   ar: {
     // Navigation / Header
@@ -808,6 +814,12 @@ export const translations = {
     marketplace_copy_payload: "نسخ التفاصيل",
     marketplace_dismiss: "إغلاق",
     marketplace_back_to_skills: "العودة إلى المهارات",
+    // Tier labels
+    tier_basic_tool: "أداة أساسية",
+    tier_advanced_tool: "أداة متقدمة",
+    tier_advanced_infrastructure: "بنية تحتية",
+    tier_pro: "محترف",
+    tier_sovereign: "سيادي",
   }
 };
 

@@ -41,12 +41,12 @@ const TIER_COLORS: Record<string, string> = {
   SOVEREIGN: "#22c55e",
 };
 
-const TIER_LABELS: Record<string, string> = {
-  BASIC_TOOL: "Basic Tool",
-  ADVANCED_TOOL: "Advanced Tool",
-  ADVANCED_INFRASTRUCTURE: "Infra",
-  PRO: "Pro",
-  SOVEREIGN: "Sovereign",
+const TIER_LABEL_KEYS: Record<string, string> = {
+  BASIC_TOOL: "tier_basic_tool",
+  ADVANCED_TOOL: "tier_advanced_tool",
+  ADVANCED_INFRASTRUCTURE: "tier_advanced_infrastructure",
+  PRO: "tier_pro",
+  SOVEREIGN: "tier_sovereign",
 };
 
 export default function MarketplacePage() {
@@ -270,7 +270,7 @@ export default function MarketplacePage() {
                         : "bg-white/5 text-faint border-white/10 hover:border-white/20"
                     }`}
                   >
-                    {tier ? TIER_LABELS[tier] || tier : t("marketplace_all")}
+                    {tier ? t(TIER_LABEL_KEYS[tier] || tier) : t("marketplace_all")}
                   </button>
                 ))}
               </div>
@@ -374,7 +374,7 @@ export default function MarketplacePage() {
                             border: `1px solid ${tierColor}40`,
                           }}
                         >
-                          {TIER_LABELS[skill.tier] || skill.tier}
+                          {t(TIER_LABEL_KEYS[skill.tier] || skill.tier)}
                         </span>
                       </div>
 
@@ -448,7 +448,7 @@ export default function MarketplacePage() {
                   <div>
                     <h2 className="text-xl font-bold text-surface font-mono">{selectedSkill.name}</h2>
                     <p className="text-xs font-mono mt-1" style={{ color: TIER_COLORS[selectedSkill.tier] }}>
-                      {selectedSkill.slug} v{selectedSkill.version} — {TIER_LABELS[selectedSkill.tier] || selectedSkill.tier}
+                      {selectedSkill.slug} v{selectedSkill.version} — {t(TIER_LABEL_KEYS[selectedSkill.tier] || selectedSkill.tier)}
                     </p>
                   </div>
                   <button
