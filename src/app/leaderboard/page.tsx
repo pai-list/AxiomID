@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "../context/language-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Trophy, Search, Filter } from "lucide-react";
+import { Trophy, Search } from "lucide-react";
 import TopThreeCards from "@/components/ui/TopThreeCards";
 import { getTierColor, Tier } from "@/lib/tiers";
 

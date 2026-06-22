@@ -50,6 +50,7 @@ export default function StatusPage() {
   const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
   const [timeSince, setTimeSince] = useState<number>(0);
   const network = process.env.NEXT_PUBLIC_NETWORK || "Testnet";
+  const version = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
   const fetchAll = async () => {
     setLoading(true);
@@ -218,7 +219,7 @@ export default function StatusPage() {
                   </div>
                   <div className="flex justify-between p-2 border-b border-white/5">
                     <span className="text-faint">{t("status_version")}</span>
-                    <span className="text-surface">1.0.0</span>
+                    <span className="text-surface">{version}</span>
                   </div>
                   <div className="flex justify-between p-2 border-b border-white/5">
                     <span className="text-faint">{t("status_refreshed")}</span>
