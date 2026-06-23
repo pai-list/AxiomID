@@ -54,3 +54,4 @@ next-env.d.ts
 .cache/
 .swc/
 stitch-*.html
+packages/crypto/node_modules/
