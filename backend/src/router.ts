@@ -95,8 +95,12 @@ export class Router {
       return this.handleSyncStatus();
     }
 
-    // --- Embedding utility (public, for ingest script) ---
+    // --- Embedding utility (shared-secret auth, for ingest script) ---
     if (path === "/api/embed" && method === "POST") {
+      const embedSecret = request.headers.get("X-Shared-Secret");
+      if (!embedSecret || embedSecret !== this.env.SHARED_SECRET_TOKEN_VERCEL_CF) {
+        return errorResponse("Unauthorized", 401);
+      }
       const body = await request.json<{ texts: string[] }>();
       if (!body.texts || !Array.isArray(body.texts)) {
         return errorResponse("Missing texts array", 400);
