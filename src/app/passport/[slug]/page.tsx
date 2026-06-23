@@ -13,7 +13,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   // Here we would ideally fetch the user's tier and color from the DB, but for now we'll use defaults or derive from slug if possible.
   // Assuming default values or passing the slug as DID.
-  const ogUrl = `https://axiomid.app/api/og/passport?title=${encodeURIComponent(title)}&did=${encodeURIComponent(decodedSlug)}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://axiomid.app";
+  const ogUrl = `${baseUrl}/api/og/passport?title=${encodeURIComponent(title)}&did=${encodeURIComponent(decodedSlug)}`;
 
   return {
     title,
