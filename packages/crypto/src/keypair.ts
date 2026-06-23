@@ -64,12 +64,16 @@ export function signPayload(payload: string, privateKeyPem: string): string {
  * @returns true if signature is valid
  */
 export function verifySignature(payload: string, signatureHex: string, publicKeyPem: string): boolean {
-  const publicKeyObj = crypto.createPublicKey({
-    key: publicKeyPem,
-    format: "pem",
-    type: "spki",
-  });
-  return crypto.verify(null, Buffer.from(payload, "utf8"), publicKeyObj, Buffer.from(signatureHex, "hex"));
+  try {
+    const publicKeyObj = crypto.createPublicKey({
+      key: publicKeyPem,
+      format: "pem",
+      type: "spki",
+    });
+    return crypto.verify(null, Buffer.from(payload, "utf8"), publicKeyObj, Buffer.from(signatureHex, "hex"));
+  } catch {
+    return false;
+  }
 }
 
 /**
