@@ -427,6 +427,95 @@ describe('translations — sandbox page keys (PR change)', () => {
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PR change: export_image, mint_sbt, mint_success translation keys
+// (used by InteractivePassportCard action buttons)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('translations — passport action keys (PR change: export/mint/share)', () => {
+  const newPassportActionKeys = ['export_image', 'mint_sbt', 'mint_success'];
+
+  newPassportActionKeys.forEach((key) => {
+    it(`EN has non-empty "${key}"`, () => {
+      expect(en[key]).toBeDefined();
+      expect(typeof en[key]).toBe('string');
+      expect(en[key].length).toBeGreaterThan(0);
+    });
+
+    it(`AR has non-empty "${key}"`, () => {
+      expect(ar[key]).toBeDefined();
+      expect(typeof ar[key]).toBe('string');
+      expect(ar[key].length).toBeGreaterThan(0);
+    });
+
+    it(`EN and AR "${key}" are not identical (actually translated)`, () => {
+      expect(en[key]).not.toBe(ar[key]);
+    });
+  });
+
+  it('export_image EN is "Export as Image"', () => {
+    expect(en['export_image']).toBe('Export as Image');
+  });
+
+  it('export_image AR is non-empty Arabic translation', () => {
+    expect(ar['export_image']).toBe('تصدير كصورة');
+  });
+
+  it('mint_sbt EN is "Mint as SBT"', () => {
+    expect(en['mint_sbt']).toBe('Mint as SBT');
+  });
+
+  it('mint_sbt AR is non-empty Arabic translation', () => {
+    expect(ar['mint_sbt']).toBe('إصدار كـ SBT');
+  });
+
+  it('mint_success EN contains "Stellar"', () => {
+    expect(en['mint_success']).toContain('Stellar');
+  });
+
+  it('mint_success EN contains "Soulbound Token"', () => {
+    expect(en['mint_success']).toContain('Soulbound Token');
+  });
+
+  it('mint_success AR contains "Stellar"', () => {
+    expect(ar['mint_success']).toContain('Stellar');
+  });
+
+  it('mint_success AR is full Arabic string', () => {
+    expect(ar['mint_success']).toBe('تم إصدار Soulbound Token بنجاح على Stellar!');
+  });
+
+  it('mint_success EN has correct full value', () => {
+    expect(en['mint_success']).toBe('Soulbound Token minted successfully on Stellar!');
+  });
+
+  // Regression: pre-existing passport keys must still be intact
+  it('share_passport EN is still present', () => {
+    expect(en['share_passport']).toBe('SHARE PASSPORT');
+  });
+
+  it('link_copied EN is still present', () => {
+    expect(en['link_copied']).toBe('LINK COPIED!');
+  });
+
+  it('create_your_passport EN is still present', () => {
+    expect(en['create_your_passport']).toBe('CREATE YOUR PASSPORT');
+  });
+
+  // Negative: keys must be defined and not fall back to the key name itself
+  it('export_image EN is not equal to its own key name', () => {
+    expect(en['export_image']).not.toBe('export_image');
+  });
+
+  it('mint_sbt EN is not equal to its own key name', () => {
+    expect(en['mint_sbt']).not.toBe('mint_sbt');
+  });
+
+  it('mint_success EN is not equal to its own key name', () => {
+    expect(en['mint_success']).not.toBe('mint_success');
+  });
+});
+
 describe('translations — marketplace page keys (PR change)', () => {
   const marketplaceKeys = [
     'marketplace_title',
