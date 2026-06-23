@@ -200,7 +200,7 @@ export async function handleTruthAsk(
   const cacheKey = hashQuery(normalized);
 
   // Check KV cache
-  const cached = await env.CACHE_KV.get(cacheKey, "json");
+  const cached = await env.CACHE_KV.get(cacheKey, "json").catch(() => null);
   if (cached) {
     return jsonResponse({ ...cached, source: "cache" }, 200, { "X-Cache": "HIT" });
   }
