@@ -108,9 +108,9 @@ describe("Landing page — Stitch hero", () => {
 
   it("renders tier cards", () => {
     renderHome();
-    expect(screen.getByText("Explorer")).toBeInTheDocument();
+    expect(screen.getByText("Visitor")).toBeInTheDocument();
     expect(screen.getByText("Citizen")).toBeInTheDocument();
-    expect(screen.getByText("Guardian")).toBeInTheDocument();
+    expect(screen.getByText("Validator")).toBeInTheDocument();
     expect(screen.getByText("Sovereign")).toBeInTheDocument();
   });
 });
