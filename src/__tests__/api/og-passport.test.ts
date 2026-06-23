@@ -202,10 +202,10 @@ describe('GET /api/og/passport — error handling', () => {
   });
 });
 
-describe('GET /api/og/passport — edge runtime export', () => {
-  it('exports runtime as "edge"', async () => {
+describe('GET /api/og/passport — runtime export', () => {
+  it('exports runtime as "nodejs"', async () => {
     const mod = await import('@/app/api/og/passport/route');
-    expect((mod as Record<string, unknown>).runtime).toBe('edge');
+    expect((mod as Record<string, unknown>).runtime).toBe('nodejs');
   });
 });
 
