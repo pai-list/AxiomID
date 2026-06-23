@@ -80,5 +80,71 @@ describe("@axiomid/crypto", () => {
     it("ROOT_AGENT_ID is axiom-root", () => {
       expect(ROOT_AGENT_ID).toBe("axiom-root");
     });
+
+    it("produces different root keys for different user IDs", () => {
+      const keys1 = deriveUserRootKey("user-aaa", TEST_SALT);
+      const keys2 = deriveUserRootKey("user-bbb", TEST_SALT);
+      expect(keys1.publicKey).not.toBe(keys2.publicKey);
+    });
+
+    it("is deterministic across calls", () => {
+      const keys1 = deriveUserRootKey("user-stable", TEST_SALT);
+      const keys2 = deriveUserRootKey("user-stable", TEST_SALT);
+      expect(keys1.publicKey).toBe(keys2.publicKey);
+      expect(keys1.privateKey).toBe(keys2.privateKey);
+    });
+  });
+
+  describe("signPayload edge cases", () => {
+    it("signs an empty string payload", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      const sig = signPayload("", keys.privateKey);
+      expect(verifySignature("", sig, keys.publicKey)).toBe(true);
+    });
+
+    it("signature is hex-encoded", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      const sig = signPayload("test", keys.privateKey);
+      expect(sig).toMatch(/^[0-9a-f]+$/);
+    });
+
+    it("produces consistent signatures (Ed25519 is deterministic)", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      const sig1 = signPayload("consistent", keys.privateKey);
+      const sig2 = signPayload("consistent", keys.privateKey);
+      expect(sig1).toBe(sig2);
+    });
+  });
+
+  describe("verifySignature edge cases", () => {
+    it("returns false for an empty signature string", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      expect(verifySignature("hello", "", keys.publicKey)).toBe(false);
+    });
+
+    it("returns false for a non-hex signature", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      expect(verifySignature("hello", "not-valid-hex!!", keys.publicKey)).toBe(false);
+    });
+
+    it("returns false for an all-zeros signature", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      expect(verifySignature("hello", "0".repeat(128), keys.publicKey)).toBe(false);
+    });
+  });
+
+  describe("deriveKeypair key format", () => {
+    it("PEM blocks are properly terminated", () => {
+      const keys = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      expect(keys.publicKey).toContain("END PUBLIC KEY");
+      expect(keys.privateKey).toContain("END PRIVATE KEY");
+    });
+
+    it("keys from different inputs cannot cross-verify", () => {
+      const keys1 = deriveKeypair("GABC123", "agent-1", TEST_SALT);
+      const keys2 = deriveKeypair("GDEF456", "agent-2", TEST_SALT);
+      const sig = signPayload("cross-test", keys1.privateKey);
+      expect(verifySignature("cross-test", sig, keys2.publicKey)).toBe(false);
+    });
   });
 });
