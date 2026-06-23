@@ -100,7 +100,10 @@ async function generateEmbeddings(texts: string[]): Promise<number[][]> {
 
     const res = await fetch(`${WORKER_URL}/api/embed`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shared-Secret": process.env.SHARED_SECRET_TOKEN_VERCEL_CF || "",
+      },
       body: JSON.stringify({ texts: batch }),
     });
 
