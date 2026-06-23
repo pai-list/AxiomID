@@ -9,10 +9,20 @@ import {
   verifyAccessToken,
 } from "@/lib/auth-tokens";
 
+let prevAuthTokenSecret: string | undefined;
+
 beforeAll(() => {
+  prevAuthTokenSecret = process.env.AUTH_TOKEN_SECRET;
   process.env.AUTH_TOKEN_SECRET = "test-auth-token-secret-for-jest";
 });
 
+afterAll(() => {
+  if (prevAuthTokenSecret === undefined) {
+    delete process.env.AUTH_TOKEN_SECRET;
+  } else {
+    process.env.AUTH_TOKEN_SECRET = prevAuthTokenSecret;
+  }
+});
 describe("Auth Tokens", () => {
   const TEST_DID = "did:axiom:axiomid.app:pi:test123";
   const TEST_SCOPES = ["api.read", "api.write"] as const;
