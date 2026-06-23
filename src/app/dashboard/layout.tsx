@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ErrorBanner } from "@/components/ErrorBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useLanguage } from "../context/language-context";
 import type { Route } from "next";
 import { Fingerprint, Store, Settings, Cpu } from "lucide-react";
@@ -38,7 +39,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Header pathname={pathname} navItems={NAV_ITEMS} />
 
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </div>
 
       {/* Mobile bottom navigation */}

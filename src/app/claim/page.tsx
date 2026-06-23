@@ -53,8 +53,9 @@ export default function ClaimPage() {
   const [verified, setVerified] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const [xpGain, setXpGain] = useState<number | null>(null);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
-  const { user, connectWallet, isConnecting } = useWallet();
+  const { user, connectWallet, isConnecting, isPiBrowser } = useWallet();
   const { language } = useLanguage();
 
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
@@ -80,11 +81,13 @@ export default function ClaimPage() {
   };
 
   const handleConnect = async () => {
+    setConnectError(null);
     try {
       await connectWallet();
       setWalletConnected(true);
-    } catch {
-      // User declined or error
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("Connection failed", "فشل الاتصال");
+      setConnectError(msg);
     }
   };
 
@@ -167,6 +170,21 @@ export default function ClaimPage() {
           </motion.div>
 
           {/* Stepper Progress */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-mono text-white/40">{t("Step", "خطوة")} {currentStep}/3</span>
+              <span className="text-[10px] font-mono text-white/40">{Math.round((currentStep / 3) * 100)}%</span>
+            </div>
+            <div className="w-full h-1 rounded-full bg-white/5 overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-electric-blue to-neon-green rounded-full"
+                animate={{ width: `${(currentStep / 3) * 100}%` }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </div>
+          </div>
+
+          {/* Circle Stepper */}
           <div className="flex items-center justify-center gap-3 mb-14">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
@@ -278,6 +296,26 @@ export default function ClaimPage() {
                           )}
                           <ChevronRight className="w-4 h-4" />
                         </motion.button>
+                      )}
+
+                      {!isPiBrowser && !walletConnected && !user?.walletAddress && (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+                          <p className="text-yellow-500 font-mono text-xs font-bold mb-1">
+                            {t("Pi Browser Required", "يتطلب Pi Browser")}
+                          </p>
+                          <p className="text-white/40 font-mono text-[10px]">
+                            {t(
+                              "Open this app inside Pi Browser to connect your wallet and claim your identity.",
+                              "افتح هذا التطبيق داخل Pi Browser لربط محفظتك والحصول على هويتك."
+                            )}
+                          </p>
+                        </div>
+                      )}
+
+                      {connectError && (
+                        <div className="mt-4 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/20">
+                          <p className="text-red-400 font-mono text-xs">{connectError}</p>
+                        </div>
                       )}
 
                       <div className="mt-8 flex items-center justify-center gap-2 text-white/30">
@@ -438,7 +476,7 @@ export default function ClaimPage() {
                     </div>
                   )}
 
-                  {/* Step 3: Deploy */}
+                  {/* Step 3: Activate Agent */}
                   {currentStep === 3 && (
                     <div className="text-center">
                       <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
@@ -446,14 +484,14 @@ export default function ClaimPage() {
                       </div>
                       <h2 className="text-2xl font-sans font-bold mb-2">
                         {t(
-                          "Deploy Passport",
-                          "نشر جواز السفر"
+                          "Activate Your Agent",
+                          "تفعيل وكيلك"
                         )}
                       </h2>
                       <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
                         {t(
-                          "Mint your sovereign agent passport on-chain",
-                          "اصنع جواز سفر الوكيل السيادي على السلسلة"
+                          "Deploy your sovereign agent passport on-chain. Your agent will be able to transact, verify, and build trust across the network.",
+                          "نشر جواز سفر الوكيل السيادي على السلسلة. سيكون وكيلك قادراً على المعاملات والتحقق وبناء الثقة عبر الشبكة."
                         )}
                       </p>
 
@@ -508,10 +546,16 @@ export default function ClaimPage() {
                           >
                             <Rocket className="w-5 h-5" />
                             {t(
-                              "DEPLOY ON-CHAIN",
-                              "نشر على السلسلة"
+                              "ACTIVATE AGENT",
+                              "تفعيل الوكيل"
                             )}
                           </motion.button>
+                          <p className="text-white/30 font-mono text-[10px] mt-2">
+                            {t(
+                              "This will create your DID document and mint your passport NFT.",
+                              "سيؤدي هذا إلى إنشاء مستند DID وإصدار جواز NFT الخاص بك."
+                            )}
+                          </p>
                         </div>
                       ) : (
                         <motion.div
@@ -533,8 +577,8 @@ export default function ClaimPage() {
                             </motion.div>
                             <h3 className="font-mono text-lg font-bold text-neon-green mb-2">
                               {t(
-                                "PASSPORT DEPLOYED",
-                                "تم نشر جواز السفر"
+                                "AGENT ACTIVATED",
+                                "تم تفعيل الوكيل"
                               )}
                             </h3>
                             <p className="font-mono text-sm text-white/50">
@@ -558,6 +602,48 @@ export default function ClaimPage() {
                               <ChevronRight className="w-5 h-5" />
                             </motion.button>
                           </Link>
+
+                          {/* What happens next? */}
+                          <div className="mt-6 text-left">
+                            <p className="text-white/40 font-mono text-xs uppercase tracking-wider mb-3">
+                              {t("What happens next?", "ماذا يحدث بعد ذلك؟")}
+                            </p>
+                            <div className="grid grid-cols-1 gap-2">
+                              {[
+                                {
+                                  icon: Sparkles,
+                                  title: t("Earn your first XP", "اكسب أول نقاط XP"),
+                                  desc: t("Complete KYA verification and connect accounts", "أكمل التحقق من KYA واربط الحسابات"),
+                                },
+                                {
+                                  icon: Globe,
+                                  title: t("Explore the network", "استكشف الشبكة"),
+                                  desc: t("See other agents and their trust scores", "شاهد العملاء الآخرين ونقاط ثقتهم"),
+                                },
+                                {
+                                  icon: Rocket,
+                                  title: t("Deploy your first skill", "نشر أول مهارة"),
+                                  desc: t("Give your agent new capabilities from the marketplace", "امنح وكيلك قدرات جديدة من السوق"),
+                                },
+                              ].map((item) => {
+                                const ItemIcon = item.icon;
+                                return (
+                                  <div
+                                    key={item.title}
+                                    className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3"
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center shrink-0">
+                                      <ItemIcon className="w-4 h-4 text-electric-blue" />
+                                    </div>
+                                    <div>
+                                      <p className="text-white/80 font-sans text-xs font-medium">{item.title}</p>
+                                      <p className="text-white/40 font-sans text-[10px]">{item.desc}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </motion.div>
                       )}
                     </div>
@@ -566,6 +652,24 @@ export default function ClaimPage() {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {/* CSS Confetti */}
+          {deployed && (
+            <div className="pointer-events-none" aria-hidden="true">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="confetti-piece"
+                  style={{
+                    left: `${(i * 4.17) % 100}%`,
+                    backgroundColor: ["#22c55e", "#3b82f6", "#6366f1", "#f59e0b", "#ec4899"][i % 5],
+                    animationDuration: `${1.5 + (i % 5) * 0.3}s`,
+                    animationDelay: `${(i % 8) * 0.08}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Navigation Buttons */}
           {currentStep < 3 && (
