@@ -84,8 +84,9 @@ async function fetchTranslations(): Promise<string[]> {
   console.log("Fetching translations...");
   const res = await fetch(`${TRUTH_API}/quran/translations/19?page=1&per_page=7000`);
   if (!res.ok) throw new Error(`Failed to fetch translations: ${res.status}`);
-  const data = (await res.json()) as { translations: { text: string }[] };
-  const texts = data.translations.map((t) => t.text);
+  const data = (await res.json()) as { translations: { text: string; verse_id: number }[] };
+  const sorted = [...data.translations].sort((a, b) => a.verse_id - b.verse_id);
+  const texts = sorted.map((t) => t.text);
   console.log(`  OK ${texts.length} translations fetched`);
   return texts;
 }
