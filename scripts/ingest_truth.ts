@@ -210,8 +210,13 @@ function storeVectors(
 }
 
 async function main() {
+  if (!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_API_TOKEN) {
+    console.error("❌ Error: CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN must be set in the environment.");
+    process.exit(1);
+  }
+
   const remote = process.argv.includes("--env") && process.argv.includes("production");
-  console.log(`\nTRUTH Ingestion Pipeline`);
+  console.log("\nTRUTH Ingestion Pipeline");
   console.log(`   Mode: ${remote ? "PRODUCTION (remote D1)" : "LOCAL (dev D1)"}`);
   console.log(`   Model: ${EMBEDDING_MODEL}`);
   console.log(`   Index: ${VECTORIZE_INDEX}\n`);
