@@ -10,7 +10,11 @@ describe('verifyState', () => {
   });
 
   afterAll(() => {
-    process.env.OAUTH_STATE_SECRET = originalSecret;
+    if (originalSecret === undefined) {
+      delete process.env.OAUTH_STATE_SECRET;
+    } else {
+      process.env.OAUTH_STATE_SECRET = originalSecret;
+    }
   });
 
   beforeEach(() => {
