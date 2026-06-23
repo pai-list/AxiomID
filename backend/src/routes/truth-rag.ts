@@ -283,7 +283,7 @@ export async function handleDailyTruth(
     }
 
     // Pick a random verse for today (seeded by date for consistency)
-    const dateHash = today.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    const dateHash = today.split("").reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0);
     const randomVerse = await env.TRUTH_DB.prepare(
       `SELECT id, chapter_id, verse_number, text_ar, text_en
        FROM truth_verses
