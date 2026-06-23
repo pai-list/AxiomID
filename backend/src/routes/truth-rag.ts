@@ -167,8 +167,8 @@ TRANSLATION: [answer in translation]`;
   const response = (res && typeof res === "object" && "response" in res) ? (res as { response: string }).response : "";
 
   // Parse ARABIC: and ENGLISH: from response
-  const arMatch = response.match(/SOURCE:\s*(.+?)(?=\nTRANSLATION:|$)/s);
-  const enMatch = response.match(/TRANSLATION:\s*(.+?)$/s);
+  const arMatch = response.match(/(?:\*\*|)?SOURCE(?:\*\*|)?:\s*(.+?)(?=\n(?:\*\*|)?TRANSLATION(?:\*\*|)?:|$)/is);
+  const enMatch = response.match(/(?:\*\*|)?TRANSLATION(?:\*\*|)?:\s*(.+?)$/is);
 
   // Confidence based on vector similarity scores
   const avgScore =
