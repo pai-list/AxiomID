@@ -225,19 +225,85 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
               </h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
                 {language === "en"
-                  ? "App developers can query AxiomID directly to guard endpoints, restrict API rates, or authorize transaction delegations for AI agents."
-                  : "يمكن للمطورين الاستعلام عن AxiomID مباشرة لحماية النقاط النهائية وتقييد معدلات API أو تفويض معاملات عملاء الذكاء الاصطناعي."}
+                  ? "AxiomID provides two packages: `@axiomid/sdk` for querying trust/passport data, and `@axiomid/crypto` for Ed25519 key derivation and signing. Both are MIT licensed."
+                  : "توفر AxiomID حزمتين: `@axiomid/sdk` للاستعلام عن بيانات الثقة والجواز، و`@axiomid/crypto` لاشتقاق مفاتيح Ed25519 والتوقيع. كلاهما بترخيص MIT."}
               </p>
 
               <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
-                {language === "en" ? "Installation" : "التثبيت"}
+                {language === "en" ? "Packages" : "الحزم"}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { name: "@axiomid/sdk", desc: language === "en" ? "Query passports, trust scores, stamps, and DID documents" : "الاستعلام عن الجوازات ونقاط الثقة والطوابع ووثائق DID", install: "npm install @axiomid/sdk" },
+                  { name: "@axiomid/crypto", desc: language === "en" ? "Ed25519 key derivation, signing, and verification" : "اشتقاق مفاتيح Ed25519 والتوقيع والتحقق", install: "npm install @axiomid/crypto" },
+                ].map((pkg, i) => (
+                  <div key={i} className="p-3 rounded-xl border border-white/5 bg-white/[0.01]">
+                    <h4 className="text-xs font-bold font-mono text-electric-blue">{pkg.name}</h4>
+                    <p className="text-[11px] text-zinc-500 mt-1">{pkg.desc}</p>
+                    <code className="block mt-2 text-[10px] font-mono text-neon-green bg-black/40 px-2 py-1 rounded">{pkg.install}</code>
+                  </div>
+                ))}
+              </div>
+
+              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
+                {language === "en" ? "@axiomid/sdk — Configuration" : "تكوين @axiomid/sdk"}
               </h3>
               <CodeBlock code={sdkInstallCode} language="bash" />
-              
-              <h3 className="text-sm font-bold font-mono text-white pt-2 border-b border-white/5 pb-2">
-                {language === "en" ? "Usage Example" : "مثال الاستخدام"}
-              </h3>
               <CodeBlock code={sdkExample} language="typescript" />
+
+              <h3 className="text-sm font-bold font-mono text-white pt-4 border-b border-white/5 pb-2">
+                {language === "en" ? "SDK API Reference" : "مرجع API لـ SDK"}
+              </h3>
+              <div className="space-y-2">
+                {[
+                  { method: "verifyPassport(slug)", returns: "Promise<Passport>", desc: language === "en" ? "Fetch public passport with trust score, tier, stamps, and agent status" : "جلب الجواز العام مع نقاط الثقة والمستوى والطوابع وحالة العميل" },
+                  { method: "getStamps(slug)", returns: "Promise<Stamps>", desc: language === "en" ? "Get all verified stamps for a user (KYC, wallet, social, agent)" : "الحصول على جميع الطوابع الموثقة لمستخدم" },
+                  { method: "resolveDID(did)", returns: "Promise<DIDDocument>", desc: language === "en" ? "Resolve a did:axiom identifier to its W3C DID document" : "حل معرف did:axiom إلى وثيقة W3C DID" },
+                  { method: "getTrustScore(did)", returns: "Promise<TrustScore>", desc: language === "en" ? "Get trust score breakdown: XP component + stamp component" : "الحصول على تفاصيل نقاط الثقة: مكون XP + مكون الطوابع" },
+                  { method: "searchAgents(query)", returns: "Promise<Agent[]>", desc: language === "en" ? "Search agents by name, description, or capabilities" : "البحث عن عملاء بالاسم أو الوصف أو القدرات" },
+                ].map((fn, i) => (
+                  <div key={i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/[0.01] transition-colors">
+                    <code className="text-[11px] font-mono text-neon-green whitespace-nowrap">{fn.method}</code>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-mono text-axiom-purple">{fn.returns}</span>
+                      <p className="text-[11px] text-zinc-500 mt-0.5">{fn.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <h3 className="text-sm font-bold font-mono text-white pt-4 border-b border-white/5 pb-2">
+                {language === "en" ? "@axiomid/crypto — Key Derivation" : "اشتقاق المفاتيح — @axiomid/crypto"}
+              </h3>
+              <p className="text-xs text-zinc-500 mb-3">
+                {language === "en"
+                  ? "Deterministic Ed25519 keypair derivation from Stellar address + agent ID. Server-side only (uses Node.js crypto)."
+                  : "اشتقاق مفتاح Ed25519 تحديدي من عنوان Stellar + معرف العميل. على الخادم فقط (يستخدم crypto في Node.js)."}
+              </p>
+              <CodeBlock code={`import { deriveKeypair, signPayload, verifySignature, deriveUserRootKey } from "@axiomid/crypto";
+
+// Derive a sovereign agent keypair
+const keypair = deriveKeypair(stellarAddress, agentId, process.env.SOVEREIGN_KEY_SALT);
+
+// Sign a payload
+const signature = signPayload(JSON.stringify(payload), keypair.privateKey);
+
+// Verify a signature
+const valid = verifySignature(payload, signature, keypair.publicKey);
+
+// Convenience: derive user root key
+const rootKey = deriveUserRootKey(piUid, process.env.SOVEREIGN_KEY_SALT);`} language="typescript" />
+
+              <div className="mt-4 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                <h4 className="text-xs font-bold font-mono text-amber-400 mb-1">
+                  {language === "en" ? "Security Note" : "ملاحظة أمنية"}
+                </h4>
+                <p className="text-[11px] text-zinc-400">
+                  {language === "en"
+                    ? "`deriveKeypair` MUST use `SOVEREIGN_KEY_SALT` from env. Never use public inputs alone as key material. Private keys never leave the server."
+                    : "يجب أن يستخدم `deriveKeypair` مفتاح `SOVEREIGN_KEY_SALT` من متغيرات البيئة. لا تستخدم المدخلات العامة بمفردها كمفتاح. المفاتيح الخاصة لا تغادر الخادم أبداً."}
+                </p>
+              </div>
             </div>
           )}
 
