@@ -4,7 +4,6 @@ import React, { useState, useRef } from "react";
 import { Tier, getTierColor } from "@/lib/tiers";
 import { useLanguage } from "@/app/context/language-context";
 import { Fingerprint, Award, CheckCircle, Lock, Download, Coins, Share2 } from "lucide-react";
-import html2canvas from "html2canvas";
 import PassportKeyManager from "./PassportKeyManager";
 
 interface InteractivePassportCardProps {
