@@ -42,5 +42,9 @@ jobs:
       - name: Test
         run: npm test -- --ci --runInBand
 
+      - name: Test @axiomid/crypto
+        run: npm ci && npm test
+        working-directory: packages/crypto
+
       - name: Dead code check
         run: npx knip --no-progress 2>&1 || true
