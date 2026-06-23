@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * Animated claim flow demo for the hero section.
- * Pure CSS animations — no Framer Motion, no JS timers.
- * Infinite loop with 20s cycle. Pauses on hover.
+ * Displays an animated claim flow demo showing wallet connection and passport generation.
+ * 
+ * Animations pause when hovering over the component.
  */
 export default function HeroDemo() {
   return (

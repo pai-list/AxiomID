@@ -48,7 +48,9 @@ const tiers: TierInfo[] = [
 ];
 
 /**
- * Interactive trust tier cards — click to expand and see perks.
+ * Renders expandable trust tier cards.
+ *
+ * @returns A grid of tier cards that expands to show each tier's perks when selected.
  */
 export default function TrustTiers() {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export default function TrustTiers() {
         <button
           key={tier.name}
           onClick={() => setExpanded(expanded === tier.name ? null : tier.name)}
-          className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
+          className="text-center group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
           style={{
             borderColor: expanded === tier.name ? `${tier.color}30` : undefined,
             boxShadow: expanded === tier.name ? `0 0 20px ${tier.color}08` : undefined,

@@ -14,9 +14,7 @@ import StatsBar from "@/components/StatsBar";
 import TrustTiers from "@/components/TrustTiers";
 
 /**
- * AxiomID landing page — Islands Architecture.
- * Hero + features + tiers = instant render (no skeleton gate).
- * Stats fade in via CSS transition. Demo is pure CSS animation.
+ * Renders the AxiomID landing page with hero section, feature overview, identity tiers, and authentication controls.
  */
 export default function Home() {
   const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
@@ -168,7 +166,7 @@ export default function Home() {
               {!user ? (
                 isPiBrowser ? (
                   <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    {isConnecting ? <><span className="animate-spin">⟳</span> {t("connecting")}</> : <>{t("claim_passport")}<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
+                    {isConnecting ? <><span className="animate-spin">⟳</span> {t("connecting")}</> : <>{language === "en" ? "Claim Your Passport" : "احصل على جوازك"}<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
                   </button>
                 ) : (
                   <Link href="/claim" prefetch={false} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
@@ -347,6 +345,13 @@ export default function Home() {
   );
 }
 
+/**
+ * Renders a centered section heading with a label and title.
+ *
+ * @param label - The small uppercase label text
+ * @param title - The section title text
+ * @param labelColor - The text color class applied to the label
+ */
 function SectionHeader({ label, title, labelColor }: { label: string; title: string; labelColor: string }) {
   return (
     <div className="text-center mb-10 sm:mb-12">

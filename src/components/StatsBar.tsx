@@ -11,8 +11,7 @@ interface Stats {
 }
 
 /**
- * Real protocol stats bar with fade-in transition.
- * Wrapped in Suspense from parent — no skeleton gate needed.
+ * Displays protocol statistics and fades into view after the data loads.
  */
 export default function StatsBar() {
   const [stats, setStats] = useState<Stats | null>(null);
