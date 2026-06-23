@@ -164,7 +164,7 @@ TRANSLATION: [answer in translation]`;
     max_tokens: 512,
   });
 
-  const response = (res as { response?: string }).response || "";
+  const response = (res && typeof res === "object" && "response" in res) ? (res as { response: string }).response : "";
 
   // Parse ARABIC: and ENGLISH: from response
   const arMatch = response.match(/SOURCE:\s*(.+?)(?=\nTRANSLATION:|$)/s);
