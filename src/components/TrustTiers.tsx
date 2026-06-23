@@ -59,7 +59,7 @@ export default function TrustTiers() {
         <button
           key={tier.name}
           onClick={() => setExpanded(expanded === tier.name ? null : tier.name)}
-          className="text-center group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
+          className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
           style={{
             borderColor: expanded === tier.name ? `${tier.color}30` : undefined,
             boxShadow: expanded === tier.name ? `0 0 20px ${tier.color}08` : undefined,
