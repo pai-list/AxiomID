@@ -59,8 +59,8 @@ export default {
   },
 
   async queue(batch: MessageBatch<any>, env: Env): Promise<void> {
-    for (const message of batch.messages) {
-      await processHarvestJob(message, env);
-    }
+    await Promise.all(
+      batch.messages.map((message) => processHarvestJob(message, env))
+    );
   },
 };
