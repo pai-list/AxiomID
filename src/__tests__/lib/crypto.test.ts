@@ -16,12 +16,12 @@ describe('crypto.ts', () => {
   describe('encryptToken', () => {
     it('throws when PI_TOKEN_ENCRYPTION_KEY is not set', () => {
       delete process.env.PI_TOKEN_ENCRYPTION_KEY;
-      expect(() => encryptToken('valid-plaintext')).toThrow('PI_TOKEN_ENCRYPTION_KEY not set');
+      expect(() => encryptToken('valid-plaintext')).toThrow('Token encryption failed: PI_TOKEN_ENCRYPTION_KEY not set');
     });
 
     it('throws when PI_TOKEN_ENCRYPTION_KEY is not 32 bytes (64 hex characters)', () => {
       process.env.PI_TOKEN_ENCRYPTION_KEY = 'invalid-length';
-      expect(() => encryptToken('valid-plaintext')).toThrow('PI_TOKEN_ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
+      expect(() => encryptToken('valid-plaintext')).toThrow('Token encryption failed: PI_TOKEN_ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
     });
 
     it('throws when plaintext is empty', () => {
