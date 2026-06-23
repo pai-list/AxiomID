@@ -7,7 +7,7 @@
  */
 
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import SettingsPage from "@/app/dashboard/settings/page";
 import { useWallet } from "@/app/context/wallet-context";
 import { defaultWalletCtx } from "./wallet-test-helpers";
@@ -117,11 +117,18 @@ function makeStamp(type: string, metadata?: string) {
 // isPlatformConnected — reads from user.stamps (PR change)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Click the "Linked Accounts" sidebar tab to show the social section */
+function clickAccountsTab() {
+  const accountsTab = screen.getByRole("button", { name: /settings_sidebar_accounts/i });
+  fireEvent.click(accountsTab);
+}
+
 describe("isPlatformConnected — reads from user.stamps", () => {
   it("shows CONNECT button for twitter when stamps array is empty", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     const connectButtons = screen.getAllByRole("button", { name: /^connect$/i });
     // All three platforms should be unconnected, so at least one CONNECT button
@@ -134,6 +141,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     const connectedBadges = screen.getAllByText("CONNECTED");
     expect(connectedBadges.length).toBeGreaterThanOrEqual(1);
@@ -145,6 +153,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     expect(screen.getByRole("button", { name: /inspect vc/i })).toBeInTheDocument();
   });
@@ -157,6 +166,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
       });
       mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
       render(<SettingsPage />);
+      clickAccountsTab();
 
       const connectedBadges = screen.getAllByText("CONNECTED");
       expect(connectedBadges.length).toBeGreaterThanOrEqual(1);
@@ -173,6 +183,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     const connectedBadges = screen.getAllByText("CONNECTED");
     expect(connectedBadges).toHaveLength(3);
@@ -187,6 +198,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // Only one platform connected → 1 CONNECTED badge
     const connectedBadges = screen.getAllByText("CONNECTED");
@@ -205,6 +217,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     expect(screen.queryByText("CONNECTED")).toBeNull();
   });
@@ -216,6 +229,7 @@ describe("isPlatformConnected — reads from user.stamps", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // No platform should be connected
     expect(screen.queryByText("CONNECTED")).toBeNull();
@@ -234,6 +248,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /inspect vc/i }).click();
@@ -252,6 +267,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // No INSPECT VC button for twitter should be present since twitter is not connected
     const inspectButtons = screen.queryAllByRole("button", { name: /inspect vc/i });
@@ -275,6 +291,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /inspect vc/i }).click();
@@ -292,6 +309,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /inspect vc/i }).click();
@@ -309,6 +327,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /inspect vc/i }).click();
@@ -327,6 +346,7 @@ describe("openVcModal — reads from stamp.metadata", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // isPlatformConnected also uses stamps, so INSPECT VC button won't appear
     // The connect button should appear instead
@@ -367,6 +387,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     const disconnectButtons = screen.getAllByRole("button", { name: /settings_disconnect_btn/i });
     expect(disconnectButtons).toHaveLength(2);
@@ -376,6 +397,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     expect(screen.queryByRole("button", { name: /settings_disconnect_btn/i })).toBeNull();
   });
@@ -387,6 +409,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /settings_disconnect_btn/i }).click();
@@ -401,6 +424,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /settings_disconnect_btn/i }).click();
@@ -422,6 +446,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ disconnected: true }) });
     
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // Open disconnect dialog
     await act(async () => {
@@ -449,6 +474,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user, claimAction: claimActionMock }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // Open disconnect dialog
     await act(async () => {
@@ -477,6 +503,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ disconnected: true }) });
     
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /settings_disconnect_btn/i }).click();
@@ -499,6 +526,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     const dialog = document.querySelector("dialog[aria-labelledby='disconnect-dialog-title']");
     expect(dialog).not.toBeNull();
@@ -517,6 +545,7 @@ describe("SettingsPage — disconnect confirmation dialog (PR change)", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ disconnected: true }) });
     
     render(<SettingsPage />);
+    clickAccountsTab();
 
     await act(async () => {
       screen.getByRole("button", { name: /settings_disconnect_btn/i }).click();
@@ -559,6 +588,7 @@ describe("SettingsPage — helper text sections (PR change)", () => {
     const user = makeUser();
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     expect(screen.getByText("settings_social_helper")).toBeInTheDocument();
   });
@@ -567,6 +597,9 @@ describe("SettingsPage — helper text sections (PR change)", () => {
     const user = makeUser();
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    // Click ledger tab
+    const ledgerTab = screen.getByRole("button", { name: /settings_sidebar_ledger/i });
+    fireEvent.click(ledgerTab);
 
     expect(screen.getByText("settings_ledger_helper")).toBeInTheDocument();
   });
@@ -575,6 +608,9 @@ describe("SettingsPage — helper text sections (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    // Click ledger tab
+    const ledgerTab = screen.getByRole("button", { name: /settings_sidebar_ledger/i });
+    fireEvent.click(ledgerTab);
 
     // The empty ledger helper text uses t() — global mock returns key string
     expect(
@@ -594,6 +630,7 @@ describe("SettingsPage — PLATFORMS icon rendered as SVG (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     const { container } = render(<SettingsPage />);
+    clickAccountsTab();
 
     // PR change: icons are now Lucide SVG elements (AtSign, MessageCircle, Key)
     const svgElements = container.querySelectorAll("svg");
@@ -609,6 +646,7 @@ describe("SettingsPage — PLATFORMS icon rendered as SVG (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     expect(screen.getByText("Twitter / X")).toBeInTheDocument();
     expect(screen.getByText("Discord")).toBeInTheDocument();
@@ -619,6 +657,7 @@ describe("SettingsPage — PLATFORMS icon rendered as SVG (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     render(<SettingsPage />);
+    clickAccountsTab();
 
     // Three unconnected platforms → three CONNECT buttons
     const connectButtons = screen.getAllByRole("button", { name: /^connect$/i });
@@ -629,6 +668,7 @@ describe("SettingsPage — PLATFORMS icon rendered as SVG (PR change)", () => {
     const user = makeUser({ stamps: [] });
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
     const { container } = render(<SettingsPage />);
+    clickAccountsTab();
 
     // None of the old emoji values should appear as text nodes
     const textContent = container.textContent ?? "";

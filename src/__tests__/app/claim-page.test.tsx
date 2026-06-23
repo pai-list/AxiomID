@@ -208,9 +208,9 @@ describe("ClaimPage — step 3 (deploy — PR change: Pi Testnet)", () => {
     expect(screen.queryByText("Pi Mainnet")).toBeNull();
   });
 
-  it("renders 'Deploy Passport' heading at step 3", async () => {
+  it("renders 'Activate Your Agent' heading at step 3", async () => {
     await navigateToStep3();
-    expect(screen.getByText("Deploy Passport")).toBeInTheDocument();
+    expect(screen.getByText("Activate Your Agent")).toBeInTheDocument();
   });
 
   it("renders 'AXIOM AGENT PASSPORT' label in passport preview", async () => {
@@ -218,9 +218,9 @@ describe("ClaimPage — step 3 (deploy — PR change: Pi Testnet)", () => {
     expect(screen.getByText("AXIOM AGENT PASSPORT")).toBeInTheDocument();
   });
 
-  it("renders 'DEPLOY ON-CHAIN' button at step 3", async () => {
+  it("renders 'ACTIVATE AGENT' button at step 3", async () => {
     await navigateToStep3();
-    expect(screen.getByText("DEPLOY ON-CHAIN")).toBeInTheDocument();
+    expect(screen.getByText("ACTIVATE AGENT")).toBeInTheDocument();
   });
 
   it("renders trust score value '100' in passport preview", async () => {

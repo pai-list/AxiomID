@@ -7,7 +7,7 @@ import { useWallet } from "../../context/wallet-context";
 import { useLanguage } from "../../context/language-context";
 import { getLevelProgress, getNextLevelXP, TIERS, Tier } from "@/lib/tiers";
 import { createUserDid } from "@/lib/did";
-import { Shield, User, Zap, CheckCircle, AtSign, MessageCircle, Key } from "lucide-react";
+import { Shield, User, Zap, CheckCircle, AtSign, MessageCircle, Key, Download, AlertTriangle, ArrowLeft } from "lucide-react";
 
 interface LedgerEntry {
   id: string;
@@ -24,16 +24,19 @@ interface StatusDetails {
   };
 }
 
-/**
- * Render the AxiomID settings page with profile info, progression, social bindings, and action ledger.
- *
- * Displays a wallet connection prompt if no user is authenticated. Once connected, shows the user's sovereign identity (DID, wallet address, KYC status), XP and tier progression, verifiable social account bindings, and a ledger of recent actions. Includes modals for managing social connections and inspecting verifiable credentials.
- *
- * @returns A JSX element representing either a centered wallet connection prompt or the full settings interface.
- */
+type SidebarTab = "profile" | "accounts" | "ledger" | "settings";
+
+const SIDEBAR_TABS: { id: SidebarTab; icon: typeof User; labelKey: string }[] = [
+  { id: "profile", icon: User, labelKey: "settings_sidebar_profile" },
+  { id: "accounts", icon: AtSign, labelKey: "settings_sidebar_accounts" },
+  { id: "ledger", icon: Zap, labelKey: "settings_sidebar_ledger" },
+  { id: "settings", icon: Shield, labelKey: "settings_sidebar_settings" },
+];
+
 export default function SettingsPage() {
   const { user, connectWallet, claimAction, refreshUser } = useWallet();
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<SidebarTab>("profile");
   const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -52,7 +55,7 @@ export default function SettingsPage() {
   const [disconnecting, setDisconnecting] = useState(false);
   const disconnectDialogRef = useRef<HTMLDialogElement>(null);
 
-  // Refs for dialogs (W3C standard dialog controls)
+  // Refs for dialogs
   const connectDialogRef = useRef<HTMLDialogElement>(null);
   const vcDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -84,9 +87,6 @@ export default function SettingsPage() {
   }, [user]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Handle outside click backdrop dismiss for dialogs
-
-  // Handle outside click backdrop dismiss for dialogs (Standard fallback for <dialog closedby>)
   const handleDialogBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
     const dialog = e.currentTarget;
     const rect = dialog.getBoundingClientRect();
@@ -183,7 +183,6 @@ export default function SettingsPage() {
         return;
       }
 
-      // Only close + refresh on confirmed success.
       disconnectDialogRef.current?.close();
       setDisconnectPlatform(null);
       await Promise.all([fetchStatusDetails(), refreshUser()]);
@@ -192,6 +191,36 @@ export default function SettingsPage() {
     } finally {
       setDisconnecting(false);
     }
+  };
+
+  const handleExportData = () => {
+    if (!user) return;
+    const exportPayload = {
+      exportedAt: new Date().toISOString(),
+      protocol: "AxiomID",
+      passport: {
+        piUsername: user.piUsername,
+        walletAddress: user.walletAddress,
+        did: user.did || createUserDid(user.id),
+        tier: user.tier,
+        xp: user.xp,
+        trustScore: user.trustScore,
+        kycStatus: user.kycStatus,
+        agentId: user.agent?.id,
+        createdAt: user.createdAt,
+      },
+      stamps: user.stamps || [],
+      xpLedger: statusDetails?.recentLedger || [],
+      stats: statusDetails?.stats || { totalActions: 0, totalXP: 0 },
+    };
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `axiomid-passport-${user.piUsername || "export"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Passport data exported");
   };
 
   const PLATFORMS: { id: "twitter" | "discord" | "google"; icon: React.ReactNode; label: string; xp: number }[] = [
@@ -208,6 +237,13 @@ export default function SettingsPage() {
     max: getNextLevelXP(tier as Tier) ?? 2500,
   };
   const progressPercent = getLevelProgress(xp, tier as Tier);
+
+  // User initials for avatar
+  const userInitials = user?.piUsername
+    ? user.piUsername.slice(0, 2).toUpperCase()
+    : user?.did
+      ? user.did.slice(-2).toUpperCase()
+      : "??";
 
   if (!user) {
     return (
@@ -227,234 +263,314 @@ export default function SettingsPage() {
 
   return (
     <>
-    <div className="max-w-4xl mx-auto space-y-6">
-        {/* Section 1: Profile Details */}
-        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
-          <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <span className="text-neon-green"><User className="w-5 h-5" /></span> {t('settings_profile_title')}
-          </h2>
-          <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_profile_helper')}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
-            <div className="space-y-1">
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_pi_network_id')}</span>
-              <p className="text-base" style={{ color: 'var(--text-primary)' }}>{user.piUsername || t('authenticated_pioneer')}</p>
-            </div>
-            <div className="space-y-1">
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_stellar_wallet')}</span>
-              <p className="text-xs truncate max-w-full text-ellipsis" style={{ color: 'var(--text-primary)' }} title={user.walletAddress}>
-                {user.walletAddress}
-              </p>
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_sovereign_did')}</span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={user.did || createUserDid(user.id)}
-                  className="rounded px-2 py-1 text-xs text-neon-green flex-1 font-mono outline-none"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}
-                />
-                <button
-                  onClick={() => {
-                    if (navigator.clipboard) {
-                      navigator.clipboard.writeText(user.did || createUserDid(user.id));
-                    }
-                  }}
-                  className="btn-ghost text-xs px-2 py-1"
-                >
-                  {t('settings_copy')}
-                </button>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_identity_status')}</span>
-              <div>
-                {user.kycStatus === "VERIFIED" ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-neon-green/10 text-neon-green border border-neon-green/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-neon-green" /> {t('settings_verified_human')}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> {t('settings_pending_kyc')}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back link */}
+        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-mono text-white/40 hover:text-white/70 transition-colors mb-6">
+          <ArrowLeft className="w-3 h-3" />
+          {t('settings_dashboard_link')}
+        </Link>
 
-        {/* Section 2: XP & Tiers */}
-        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <span className="text-electric-blue"><Zap className="w-5 h-5" /></span> {t('settings_progression_title')}
-            </h2>
-            <span className="text-electric-blue font-mono text-sm">{xp} {t('total_xp')}</span>
-          </div>
-          <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_progression_helper')}</p>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* Circular SVG progress gauge */}
-            <div className="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="rgba(255,255,255,0.03)"
-                  strokeWidth="8"
-                  fill="none"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="url(#progress-grad)"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeDasharray={`${2 * Math.PI * 40}`}
-                  strokeDashoffset={`${2 * Math.PI * 40 * (1 - progressPercent / 100)}`}
-                  strokeLinecap="round"
-                  className="transition-all duration-700 ease-out"
-                />
-                <defs>
-                  <linearGradient id="progress-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#00ff41" />
-                    <stop offset="100%" stopColor="#00d4ff" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-xl font-bold font-mono text-white">{progressPercent.toFixed(0)}%</span>
-                <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">{t('settings_progress_label')}</span>
-              </div>
-            </div>
-
-            <div className="flex-1 space-y-3 w-full">
-              <div className="flex justify-between items-end">
-                <div>
-                  <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">{t('current_tier')}</span>
-                  <p className="text-xl font-black tracking-wider text-white">{tier.toUpperCase()}</p>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <aside className="lg:w-56 shrink-0">
+            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
+              {/* Avatar */}
+              <div className="hidden lg:flex flex-col items-center mb-4 pb-4 border-b border-white/5 w-full">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-electric-blue to-neon-green flex items-center justify-center text-black font-mono font-bold text-lg mb-3">
+                  {userInitials}
                 </div>
-                <div className="text-end text-[10px] font-mono text-zinc-400">
-                  {xp >= 1000 ? t('settings_max_level') : `${(range.max - xp).toLocaleString()} ${t('settings_xp_needed')}`}
-                </div>
+                <p className="font-mono text-xs text-white/60 text-center truncate max-w-full">{user.piUsername || "Pioneer"}</p>
+                <p className="font-mono text-[10px] text-white/30 mt-0.5">{tier.toUpperCase()} TIER</p>
               </div>
-              <div className="flex justify-between text-[10px] font-mono text-zinc-600 border-t border-white/5 pt-2">
-                <span>{range.min.toLocaleString()} XP</span>
-                <span>{range.max.toLocaleString()} XP</span>
-              </div>
+
+              {SIDEBAR_TABS.map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-mono text-xs whitespace-nowrap transition-all ${
+                      isActive
+                        ? "bg-white/[0.08] text-white border border-white/10"
+                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.03] border border-transparent"
+                    }`}
+                  >
+                    <TabIcon className={`w-4 h-4 ${isActive ? "text-neon-green" : ""}`} />
+                    {t(tab.labelKey)}
+                  </button>
+                );
+              })}
             </div>
-          </div>
-        </section>
+          </aside>
 
-        {/* Section 3: Social Binding & Credentials */}
-        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
-          <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <span className="text-axiom-purple">🔗</span> {t('settings_social_title')}
-          </h2>
-          <p className="text-xs mb-6 font-mono" style={{ color: 'var(--text-muted)' }}>
-            {t('settings_social_helper')}
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {PLATFORMS.map(({ id, icon, label, xp }) => {
-              const connected = isPlatformConnected(id);
-              const hoverStyle = 
-                id === "twitter" 
-                  ? "hover:border-sky-500/30 hover:bg-sky-500/[0.01]" 
-                  : id === "discord"
-                    ? "hover:border-indigo-500/30 hover:bg-indigo-500/[0.01]"
-                    : "hover:border-red-500/30 hover:bg-red-500/[0.01]";
-              return (
-                <div 
-                  key={id} 
-                  className={`flex flex-col justify-between p-4 rounded-2xl border border-white/5 bg-[#14161d] transition-all duration-300 ${hoverStyle} min-h-[140px]`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
-                      {icon}
+          {/* Content */}
+          <main className="flex-1 min-w-0">
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+                <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <span className="text-neon-green"><User className="w-5 h-5" /></span> {t('settings_profile_title')}
+                </h2>
+                <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_profile_helper')}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
+                  <div className="space-y-1">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_pi_network_id')}</span>
+                    <p className="text-base" style={{ color: 'var(--text-primary)' }}>{user.piUsername || t('authenticated_pioneer')}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_stellar_wallet')}</span>
+                    <p className="text-xs truncate max-w-full text-ellipsis" style={{ color: 'var(--text-primary)' }} title={user.walletAddress}>
+                      {user.walletAddress}
+                    </p>
+                  </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_sovereign_did')}</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={user.did || createUserDid(user.id)}
+                        className="rounded px-2 py-1 text-xs text-neon-green flex-1 font-mono outline-none"
+                        style={{ background: 'var(--bg-card)', border: '1px solid var(--card-border)' }}
+                      />
+                      <button
+                        onClick={() => {
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(user.did || createUserDid(user.id));
+                          }
+                        }}
+                        className="btn-ghost text-xs px-2 py-1"
+                      >
+                        {t('settings_copy')}
+                      </button>
                     </div>
-                    {connected ? (
-                      <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                        {t('connected')}
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-mono text-zinc-500">+{xp} XP</span>
-                    )}
                   </div>
-
-                  <div className="mt-4">
-                    <h4 className="text-xs font-bold text-white font-mono">{label}</h4>
-                    <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">{t('settings_xp_reward')} +{xp} XP</p>
+                  <div className="space-y-1">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings_identity_status')}</span>
+                    <div>
+                      {user.kycStatus === "VERIFIED" ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-neon-green/10 text-neon-green border border-neon-green/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-neon-green" /> {t('settings_verified_human')}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> {t('settings_pending_kyc')}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                </div>
+              </section>
+            )}
 
-                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
-                    {connected ? (
-                      <>
-                        <button onClick={() => openDisconnectModal(id)} className="btn-ghost text-[10px] font-mono text-red-400 hover:text-red-300 px-2 py-1">
+            {/* XP & Tiers + Progress (always visible under Profile) */}
+            {activeTab === "profile" && (
+              <section className="bento-card p-6 backdrop-blur-md mt-6" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <span className="text-electric-blue"><Zap className="w-5 h-5" /></span> {t('settings_progression_title')}
+                  </h2>
+                  <span className="text-electric-blue font-mono text-sm">{xp} {t('total_xp')}</span>
+                </div>
+                <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_progression_helper')}</p>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.03)" strokeWidth="8" fill="none" />
+                      <circle
+                        cx="50" cy="50" r="40"
+                        stroke="url(#progress-grad-settings)"
+                        strokeWidth="8" fill="none"
+                        strokeDasharray={`${2 * Math.PI * 40}`}
+                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - progressPercent / 100)}`}
+                        strokeLinecap="round"
+                        className="transition-all duration-700 ease-out"
+                      />
+                      <defs>
+                        <linearGradient id="progress-grad-settings" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#00ff41" />
+                          <stop offset="100%" stopColor="#00d4ff" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold font-mono text-white">{progressPercent.toFixed(0)}%</span>
+                      <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">{t('settings_progress_label')}</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-3 w-full">
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">{t('current_tier')}</span>
+                        <p className="text-xl font-black tracking-wider text-white">{tier.toUpperCase()}</p>
+                      </div>
+                      <div className="text-end text-[10px] font-mono text-zinc-400">
+                        {xp >= 1000 ? t('settings_max_level') : `${(range.max - xp).toLocaleString()} ${t('settings_xp_needed')}`}
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono text-zinc-600 border-t border-white/5 pt-2">
+                      <span>{range.min.toLocaleString()} XP</span>
+                      <span>{range.max.toLocaleString()} XP</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Linked Accounts Tab */}
+            {activeTab === "accounts" && (
+              <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+                <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <span className="text-axiom-purple">🔗</span> {t('settings_social_title')}
+                </h2>
+                <p className="text-xs mb-6 font-mono" style={{ color: 'var(--text-muted)' }}>
+                  {t('settings_social_helper')}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {PLATFORMS.map(({ id, icon, label, xp: platformXp }) => {
+                    const connected = isPlatformConnected(id);
+                    const hoverStyle =
+                      id === "twitter"
+                        ? "hover:border-sky-500/30 hover:bg-sky-500/[0.01]"
+                        : id === "discord"
+                          ? "hover:border-indigo-500/30 hover:bg-indigo-500/[0.01]"
+                          : "hover:border-red-500/30 hover:bg-red-500/[0.01]";
+                    return (
+                      <div
+                        key={id}
+                        className={`flex flex-col justify-between p-4 rounded-2xl border border-white/5 bg-[#14161d] transition-all duration-300 ${hoverStyle} min-h-[140px]`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
+                            {icon}
+                          </div>
+                          {connected ? (
+                            <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                              {t('connected')}
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-mono text-zinc-500">+{platformXp} XP</span>
+                          )}
+                        </div>
+                        <div className="mt-4">
+                          <h4 className="text-xs font-bold text-white font-mono">{label}</h4>
+                          <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">{t('settings_xp_reward')} +{platformXp} XP</p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                          {connected ? (
+                            <>
+                              <button onClick={() => openDisconnectModal(id)} className="btn-ghost text-[10px] font-mono text-red-400 hover:text-red-300 px-2 py-1">
+                                {t('settings_disconnect_btn')}
+                              </button>
+                              <button onClick={() => openVcModal(`connect_${id}`)} className="btn-ghost text-[10px] font-mono py-1">
+                                {t('inspect_vc')}
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => openConnectModal(id)} className="btn-primary text-[10px] font-mono w-full text-center py-1">
+                              {t('settings_connect_btn')}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* XP Ledger Tab */}
+            {activeTab === "ledger" && (
+              <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+                <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <span className="text-yellow-500">📜</span> {t('settings_ledger_title')}
+                </h2>
+                <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_ledger_helper')}</p>
+                {detailsLoading ? (
+                  <div className="space-y-2 py-4">
+                    <div className="h-6 rounded animate-pulse" style={{ background: 'var(--bg-card)' }} />
+                    <div className="h-6 rounded animate-pulse w-5/6" style={{ background: 'var(--bg-card)' }} />
+                  </div>
+                ) : !statusDetails || statusDetails.recentLedger.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-sm font-mono mb-2" style={{ color: 'var(--text-muted)' }}>{t('settings_no_tx')}</p>
+                    <p className="text-xs font-mono" style={{ color: 'var(--text-faint)' }}>{t('settings_ledger_empty_helper')}</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-start font-mono text-xs">
+                      <thead>
+                        <tr className="border-b pb-2" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
+                          <th className="py-2">{t('settings_tx_objective')}</th>
+                          <th className="py-2 text-end">{t('settings_balance_shift')}</th>
+                          <th className="py-2 text-end">{t('settings_timestamp')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statusDetails.recentLedger.map((entry) => (
+                          <tr key={entry.id} className="border-b transition-colors" style={{ borderColor: 'var(--card-border)' }}>
+                            <td className="py-3 uppercase font-bold tracking-wider" style={{ color: 'var(--text-primary)' }}>{entry.reason.replaceAll("_", " ")}</td>
+                            <td className={`py-3 text-end ${entry.amount >= 0 ? "text-neon-green" : "text-red-500"}`}>
+                              {entry.amount >= 0 ? `+${entry.amount}` : entry.amount} XP
+                            </td>
+                            <td className="py-3 text-end" style={{ color: 'var(--text-secondary)' }}>
+                              {new Date(entry.createdAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Settings Tab: Export + Danger Zone */}
+            {activeTab === "settings" && (
+              <div className="space-y-6">
+                {/* Export Data */}
+                <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
+                  <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <span className="text-electric-blue"><Download className="w-5 h-5" /></span> {t('settings_export_data')}
+                  </h2>
+                  <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_export_desc')}</p>
+                  <button
+                    onClick={handleExportData}
+                    className="btn-primary text-xs font-mono px-6 py-2.5 flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    {t('settings_export_btn')}
+                  </button>
+                </section>
+
+                {/* Danger Zone */}
+                <section className="bento-card p-6 backdrop-blur-md border-red-500/20" style={{ background: 'var(--bg-card)' }}>
+                  <h2 className="text-lg font-bold mb-1 flex items-center gap-2 text-red-400">
+                    <AlertTriangle className="w-5 h-5" /> {t('settings_danger_zone')}
+                  </h2>
+                  <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_danger_desc')}</p>
+                  <div className="space-y-3">
+                    {PLATFORMS.filter(({ id }) => isPlatformConnected(id)).map(({ id, label }) => (
+                      <div key={id} className="flex items-center justify-between py-3 px-4 rounded-xl border border-white/5 bg-white/[0.02]">
+                        <span className="font-mono text-xs text-white/60">{label}</span>
+                        <button
+                          onClick={() => openDisconnectModal(id)}
+                          className="text-[10px] font-mono text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg border border-red-500/20 hover:bg-red-500/10 transition-colors"
+                        >
                           {t('settings_disconnect_btn')}
                         </button>
-                        <button onClick={() => openVcModal(`connect_${id}`)} className="btn-ghost text-[10px] font-mono py-1">
-                          {t('inspect_vc')}
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => openConnectModal(id)} className="btn-primary text-[10px] font-mono w-full text-center py-1">
-                        {t('settings_connect_btn')}
-                      </button>
+                      </div>
+                    ))}
+                    {PLATFORMS.every(({ id }) => !isPlatformConnected(id)) && (
+                      <p className="text-xs font-mono text-white/30 py-4 text-center">{t('settings_ledger_empty_helper')}</p>
                     )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-
-        <section className="bento-card p-6 backdrop-blur-md" style={{ border: '1px solid var(--card-border)', background: 'var(--bg-card)' }}>
-          <h2 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <span className="text-yellow-500">📜</span> {t('settings_ledger_title')}
-          </h2>
-          <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_ledger_helper')}</p>
-          {detailsLoading ? (
-            <div className="space-y-2 py-4">
-              <div className="h-6 rounded animate-pulse" style={{ background: 'var(--bg-card)' }} />
-              <div className="h-6 rounded animate-pulse w-5/6" style={{ background: 'var(--bg-card)' }} />
-            </div>
-          ) : !statusDetails || statusDetails.recentLedger.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-sm font-mono mb-2" style={{ color: 'var(--text-muted)' }}>{t('settings_no_tx')}</p>
-              <p className="text-xs font-mono" style={{ color: 'var(--text-faint)' }}>{t('settings_ledger_empty_helper')}</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-start font-mono text-xs">
-                <thead>
-                  <tr className="border-b pb-2" style={{ borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}>
-                    <th className="py-2">{t('settings_tx_objective')}</th>
-                    <th className="py-2 text-end">{t('settings_balance_shift')}</th>
-                    <th className="py-2 text-end">{t('settings_timestamp')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {statusDetails.recentLedger.map((entry) => (
-                    <tr key={entry.id} className="border-b transition-colors" style={{ borderColor: 'var(--card-border)' }}>
-                      <td className="py-3 uppercase font-bold tracking-wider" style={{ color: 'var(--text-primary)' }}>{entry.reason.replaceAll("_", " ")}</td>
-                      <td className={`py-3 text-end ${entry.amount >= 0 ? "text-neon-green" : "text-red-500"}`}>
-                        {entry.amount >= 0 ? `+${entry.amount}` : entry.amount} XP
-                      </td>
-                      <td className="py-3 text-end" style={{ color: 'var(--text-secondary)' }}>
-                        {new Date(entry.createdAt).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+                </section>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
 
       {/* Modal 1: Connect Modal Dialog */}
@@ -471,7 +587,6 @@ export default function SettingsPage() {
           <p className="text-xs text-subtle font-mono mb-4">
             {t('settings_link_desc')}
           </p>
-
           <form onSubmit={handleConnectSubmit} className="space-y-4">
             <div className="space-y-1">
               <label htmlFor="handle-input" className="text-xs text-subtle font-mono">
@@ -487,20 +602,11 @@ export default function SettingsPage() {
                 className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-surface focus:border-neon-green outline-none font-mono"
               />
             </div>
-
             <div className="flex gap-2 justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => connectDialogRef.current?.close()}
-                className="btn-ghost text-xs px-4 py-2"
-              >
+              <button type="button" onClick={() => connectDialogRef.current?.close()} className="btn-ghost text-xs px-4 py-2">
                 {t('cancel')}
               </button>
-              <button
-                type="submit"
-                disabled={submittingClaim || !handleInput.trim()}
-                className="btn-primary text-xs px-4 py-2"
-              >
+              <button type="submit" disabled={submittingClaim || !handleInput.trim()} className="btn-primary text-xs px-4 py-2">
                 {submittingClaim ? t('settings_signing') : t('settings_confirm_claim')}
               </button>
             </div>
@@ -522,28 +628,21 @@ export default function SettingsPage() {
           <p className="text-xs text-subtle font-mono mb-4">
             {t('settings_vc_desc')}
           </p>
-
           <pre className="font-mono text-[10px] leading-relaxed bg-white/5 p-4 rounded-xl border border-white/10 overflow-auto max-h-80 text-neon-green whitespace-pre-wrap select-all">
             {JSON.stringify(activeVc, null, 2)}
           </pre>
-
           <div className="flex gap-2 justify-end pt-4 border-t border-white/10 mt-4">
-            <button
-              onClick={copyVcPayload}
-              className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
-            >
+            <button onClick={copyVcPayload} className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5">
               {copied ? <span className="flex items-center gap-1.5">{t('copied')} <CheckCircle className="w-4 h-4 text-emerald-400" /></span> : t('copy_payload')}
             </button>
-            <button
-              onClick={() => vcDialogRef.current?.close()}
-              className="btn-ghost text-xs px-4 py-2"
-            >
+            <button onClick={() => vcDialogRef.current?.close()} className="btn-ghost text-xs px-4 py-2">
               {t('close')}
             </button>
           </div>
         </div>
       </dialog>
 
+      {/* Modal 3: Disconnect Confirmation Dialog */}
       <dialog
         ref={disconnectDialogRef}
         onClick={handleDialogBackdropClick}

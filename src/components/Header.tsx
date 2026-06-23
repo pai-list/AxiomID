@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useWallet } from "@/app/context/wallet-context";
@@ -21,6 +22,18 @@ interface HeaderProps {
 export default function Header({ showBack = false, showWallet = false }: HeaderProps) {
   const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
   const { t, language } = useLanguage();
+  const [connectError, setConnectError] = React.useState<string | null>(null);
+
+  const handleConnect = async () => {
+    setConnectError(null);
+    try {
+      await connectWallet();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Connection failed";
+      setConnectError(msg);
+      setTimeout(() => setConnectError(null), 6000);
+    }
+  };
 
   return (
     <motion.header
@@ -90,7 +103,7 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
                   <Link href="/dashboard" prefetch={false} className="btn-primary text-xs px-3 sm:px-4 py-2">
                     {t("nav_dashboard")}
                   </Link>
-                  <button onClick={() => logout()} className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex items-center gap-1.5">
+                  <button onClick={() => logout()} aria-label={t("logout")} className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
@@ -102,9 +115,19 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
                   <Link href="/dashboard" prefetch={false} className="btn-ghost text-xs px-3 sm:px-4 py-2">
                     {t("nav_dashboard")}
                   </Link>
-                  <button onClick={connectWallet} disabled={isConnecting} className="btn-primary text-xs px-3 sm:px-4 py-2">
+                  {!isPiBrowser && (
+                    <span className="hidden sm:inline text-[10px] font-mono px-2 py-1 rounded border border-yellow-500/20 bg-yellow-500/5 text-yellow-500">
+                      {language === "ar" ? "يتطلب Pi Browser" : "Pi Browser required"}
+                    </span>
+                  )}
+                  <button onClick={handleConnect} disabled={isConnecting} className="btn-primary text-xs px-3 sm:px-4 py-2">
                     {isConnecting ? t("connecting") : t("connect")}
                   </button>
+                </div>
+              )}
+              {connectError && (
+                <div className="absolute top-full right-0 mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-mono max-w-[250px] z-50">
+                  {connectError}
                 </div>
               )}
             </>

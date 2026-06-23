@@ -1,4 +1,4 @@
-const CACHE = "axiomid-v1";
+const CACHE = "axiomid-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -32,6 +32,39 @@ self.addEventListener("fetch", (event) => {
   ) {
     return;
   }
+
+  const url = new URL(event.request.url);
+
+  // Network-first for API calls
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Stale-while-revalidate for static assets (JS, CSS, images, fonts)
+  if (
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/) ||
+    url.pathname.startsWith("/_next/static/")
+  ) {
+    event.respondWith(
+      caches.open(CACHE).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          const fetched = fetch(event.request).then((response) => {
+            if (response.status === 200) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          });
+          return cached || fetched;
+        })
+      )
+    );
+    return;
+  }
+
+  // Cache-first for navigation and other same-origin requests
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
