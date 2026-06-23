@@ -83,13 +83,14 @@ export const metadata: Metadata = {
         width: 640,
         height: 640,
         alt: 'AxiomID - Human Authorization Protocol',
+        type: 'image/jpeg',
       },
     ],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: "AxiomID - The Human Authorization Protocol",
     description: "Prove human intent behind AI actions with decentralized identity verification",
     images: ['/axiomid-banner.png'],
@@ -109,7 +110,6 @@ export const metadata: Metadata = {
   verification: process.env.GOOGLE_SITE_VERIFICATION
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }
     : undefined,
-  manifest: '/manifest.json',
   other: {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',

@@ -48,7 +48,8 @@
     "test:watch": "jest --watch",
     "type-check": "tsc --noEmit",
     "memory:build": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' scripts/build-memory.ts",
-    "dead-code": "knip"
+    "dead-code": "knip",
+    "prepare": "husky"
   },
   "dependencies": {
     "@json-render/core": "^0.19.0",
@@ -60,7 +61,8 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.40.0",
-    "lucide-react": "^1.18.0",
+    "jose": "^5.9.6",
+    "lucide-react": "^1.21.0",
     "next": "16.2.9",
     "nostics": "^1.1.4",
     "qrcode.react": "^4.2.0",
@@ -70,8 +72,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@emulators/adapter-next": "^0.6.1",
-    "@emulators/github": "^0.6.1",
+    "@emulators/adapter-next": "^0.7.0",
+    "@emulators/github": "^0.7.0",
     "@sentry/nextjs": "^10.59.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
@@ -82,14 +84,25 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "husky": "^9.1.7",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "jest-location-mock": "^4.0.1",
-    "knip": "^6.17.1",
+    "knip": "^6.17.2",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.8.4",
     "prisma": "^6.0.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
     "undici": "^8.5.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings 0 --fix"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
   }
 }
