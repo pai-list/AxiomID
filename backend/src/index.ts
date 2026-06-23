@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { Router } from "./router";
 import { processHarvestJob } from "./workers/harvest-processor";
 import { handleMcp } from "./mcp/handler";
+import { requireAuth } from "./lib/auth";
 import type { Env } from "./lib/types";
 
 // --- Durable Object: Agent Presence ---
@@ -57,8 +58,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    // MCP endpoint — direct SDK wiring (bypasses router auth/rate-limiting)
+    // MCP endpoint — direct SDK wiring (still enforces shared-secret auth)
     if (url.pathname === "/mcp") {
+      const unauthorized = requireAuth(request, env);
+      if (unauthorized) return unauthorized;
       return handleMcp(request, env);
     }
 

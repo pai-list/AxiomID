@@ -154,7 +154,8 @@ function insertD1(chapters: Chapter[], verses: VerseEntry[], translations: Map<n
   console.log("Inserting chapters into D1...");
   for (const c of chapters) {
     const sql = `INSERT OR IGNORE INTO truth_chapters (id, name_ar, name_en, verse_count, revelation_type) VALUES (${c.id}, '${c.name_arabic.replace(/'/g, "''")}', '${c.name_english.replace(/'/g, "''")}', ${c.number_of_ayahs}, '${c.revelation_type}')`;
-    execSync(`wrangler d1 execute ${db} ${flag} --command "${sql}"`, { stdio: "pipe" });
+    const d1Args = ["d1", "execute", db, ...(remote ? ["--remote"] : []), "--command", sql];
+    execFileSync("wrangler", d1Args, { stdio: "pipe" });
   }
   console.log(`  OK ${chapters.length} chapters inserted`);
 
