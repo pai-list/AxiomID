@@ -95,7 +95,7 @@ Use nostics for stable error codes with actionable fixes.
 - `PiUser` type must remain wide (`string` fields, no strict enums) — Pi Network SDK response shape evolves without semver notice.
 - Pi Browser compliance requires HTTPS (`portless` for local dev) — plain HTTP triggers payment SDK failures silently.
 - `window.Pi` typing is unified in `src/types/global.d.ts` — never redeclare it locally in components.
-- **Dynamic Sandbox Detection (never hardcode):** Use `determineSandboxMode()` from `src/lib/pi-sdk.ts` which cascades through: env var override → hostname check (localhost/LAN/vercel.app) → iframe referrer (`sandbox.minepi.com`) → query param (`?sandbox=true`). Never hardcode `sandbox: true/false` in `Pi.init()`.
+- **Dynamic Sandbox Detection (never hardcode):** Use `determineSandboxMode()` from `src/lib/pi-sdk.ts` which cascades through: env var override → hostname check (localhost/LAN/staging) → iframe referrer (`sandbox.minepi.com`) → query param (`?sandbox=true`). Production on custom domain (axiomid.app) is never sandbox. Never hardcode `sandbox: true/false` in `Pi.init()`.
 - **Authentication timeout:** Pi Browser popup interactions on mobile are slow — use `≥45s` timeout for `authenticateWithTimeout()`, not the default 15s.
 - **Server-Side Cryptography Isolation:** Cryptographic key derivations (`deriveSovereignAgentKeypair`) and payload signing rely on Node's native `crypto` module. This execution must reside strictly in Next.js API routes or Server Components, never in Client Components due to browser environment incompatibility.
 - **SOVEREIGN_KEY_SALT Required:** `deriveSovereignAgentKeypair` MUST incorporate `process.env.SOVEREIGN_KEY_SALT` as HMAC key material. Never use public inputs alone.
