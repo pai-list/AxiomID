@@ -164,7 +164,11 @@ export class Router {
       if (!did) return errorResponse("Missing DID");
       const result = await this.trust.compute(did);
       const embedder = new TrustEmbedder(this.env);
-      await embedder.upsertVector(did, result.score, result.breakdown.delegation);
+      try {
+        await embedder.upsertVector(did, result.score, result.breakdown.delegation);
+      } catch (err) {
+        console.warn("[Trust] Vector upsert failed:", err instanceof Error ? err.message : err);
+      }
       return jsonResponse({ success: true, data: result, timestamp: Date.now() });
     }
 
