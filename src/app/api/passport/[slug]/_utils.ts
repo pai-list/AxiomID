@@ -6,12 +6,16 @@
 export type VerificationStatus = "verified" | "pending" | "denied";
 
 /**
- * Determines the Know Your Account (KYA) status from available verification stamps.
- * Returns "verified" if an identity verification or Pi stamp is present, "pending" otherwise.
+ * Determines the Know Your Agent (KYA) status from the user's KYC status and
+ * available verification stamps. KYA requires the user to have completed KYC
+ * (proving they are a verified human). Additionally, at least one identity
+ * verification stamp or a Pi provider stamp must be present.
  */
 export function getKyaStatus(
-  stamps: { type: string; provider: string }[] | undefined
+  stamps: { type: string; provider: string }[] | undefined,
+  kycStatus?: string | null
 ): VerificationStatus {
+  if (kycStatus !== "VERIFIED") return "pending";
   if (!stamps || stamps.length === 0) return "pending";
   const hasIdentityStamp = stamps.some(
     (s) => s.type === "verify_identity" || s.provider === "pi"

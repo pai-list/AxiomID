@@ -89,7 +89,7 @@ export async function POST(
       xp: user.xp,
       tier: user.tier,
       trustScore,
-      kyaStatus: getKyaStatus(stamps),
+      kyaStatus: getKyaStatus(stamps, user.kycStatus),
       kycStatus: getKycStatus(user.kycStatus),
     };
 

@@ -132,6 +132,7 @@ Use nostics for stable error codes with actionable fixes.
 - **Git History Cleanliness & Squashing:** Bloating git history with repetitive, low-value commits (e.g. "fix: remove unused public asset" repeated 10+ times) is prohibited. Use selective staging (`git add -p`), commit amending (`git commit --amend`), or interactive rebasing (`git rebase -i`) to squash minor adjustments into cohesive, atomic commits before pushing.
 - **Regression & Test Stability:** The test suite status must remain stable. The number of passing tests must never decrease across PRs. Disabling or skipping active tests to bypass coverage requirements is strictly forbidden.
 - **Shell Quoting for Dynamic Routes:** Always wrap or escape path arguments containing brackets (e.g. `[slug]`) in double quotes (like `git add "src/app/api/passport/[slug]/publish/route.ts"`) when running git or terminal operations in zsh to avoid pattern matching expansion failures.
+- **Verify Against `main`, Not Your Working Tree:** Before writing a verdict that a claim is WRONG or CONFIRMED, open the file on `main` (not the working tree, not a PR diff) and confirm the exact line. Your session may be on a feature branch — what you see is not necessarily what was merged. Use `git show main:<path>` to check. A confident agent with a structured verdict table can still be wrong on the one line that matters.
 
 ### 📁 Architecture Map
 

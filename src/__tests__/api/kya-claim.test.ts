@@ -25,6 +25,9 @@ jest.mock('@/lib/prisma', () => ({
       create: jest.fn(),
       update: jest.fn(),
     },
+    piPayment: {
+      findFirst: jest.fn(),
+    },
   },
 }));
 
@@ -56,12 +59,13 @@ describe('POST /api/pi/kya/claim', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 });
+    (mockPrisma.piPayment.findFirst as jest.Mock).mockResolvedValue(null);
   });
 
   it('returns 404 for a user that has not authenticated', async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
 
-    const req = mockPostRequest({ username: 'testuser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
     const data = await res.json();
 
@@ -86,7 +90,7 @@ describe('POST /api/pi/kya/claim', () => {
       piUid: 'mock-pi-uid',
     } as any);
 
-    const req = mockPostRequest({ username: 'existinguser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
     const data = await res.json();
 
@@ -102,39 +106,17 @@ describe('POST /api/pi/kya/claim', () => {
   it('returns 404 when user has not authenticated via Pi auth', async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
 
-    const req = mockPostRequest({ username: 'pi_user_abc' });
+    const req = mockPostRequest({});
     const res = await POST(req);
 
     expect(res.status).toBe(404);
     expect(mockPrisma.user.create).not.toHaveBeenCalled();
   });
 
-  it('returns 400 when username is missing', async () => {
-    const req = mockPostRequest({});
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(400);
-    expect(data.code).toBe('VALIDATION_ERROR');
-  });
-
-  it('returns 400 on invalid JSON body', async () => {
-    const req = new Request('http://localhost/api/pi/kya/claim', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: 'bad-json',
-    }) as any;
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(400);
-    expect(data.code).toBe('VALIDATION_ERROR');
-  });
-
   it('returns 429 when rate limit is exceeded', async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
 
-    const req = mockPostRequest({ username: 'ratelimiteduser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
     const data = await res.json();
 
@@ -149,7 +131,7 @@ describe('POST /api/pi/kya/claim', () => {
     } as any);
     mockPrisma.user.update.mockRejectedValue(new Error('DB error'));
 
-    const req = mockPostRequest({ username: 'dbfailuser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
     const data = await res.json();
 
@@ -172,7 +154,7 @@ describe('POST /api/pi/kya/claim', () => {
       did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
     } as any);
 
-    const req = mockPostRequest({ username: 'nameduser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
 
     expect(res.status).toBe(200);
@@ -198,7 +180,7 @@ describe('POST /api/pi/kya/claim', () => {
       did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
     } as any);
 
-    const req = mockPostRequest({ username: 'existinguser' });
+    const req = mockPostRequest({});
     const res = await POST(req);
 
     expect(res.status).toBe(200);
@@ -206,7 +188,7 @@ describe('POST /api/pi/kya/claim', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
-          piUsername: 'existinguser',
+          piUsername: 'mockuser', // From auth, not body
         }),
       })
     );

@@ -158,34 +158,20 @@ export default function MarketplacePage() {
     }
     setInstalling(true);
     try {
-      // Paid skills must be purchased before installation. Run the Pi payment
-      // flow (SDK createPayment → approve → complete) and verify the order
-      // server-side so an ESCROWED PiPayment with metadata.skillId exists for
-      // this user. The install route's payment gate then allows the install.
+      // Paid skills: Pi SDK callbacks (approve → complete) handle verification,
+      // escrow creation, and RELEASED transition server-side. After the Promise
+      // resolves, a RELEASED PiPayment with metadata.skillId exists for this user.
+      // The install route's payment gate then allows the install.
       if (skill.pricePi > 0) {
         if (!user.agent?.id) {
           throw new Error(t("marketplace_need_agent"));
         }
 
-        const txid = await createPiPayment(
+        await createPiPayment(
           skill.pricePi,
           `Purchase of ${skill.name}`,
           { skillId: skill.id, agentId: user.agent.id, purpose: "skill_purchase" }
         );
-
-        const storedToken = localStorage.getItem("pi_access_token");
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (storedToken) headers["Authorization"] = `Bearer ${storedToken}`;
-
-        const orderRes = await fetch("/api/marketplace/order/create", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ skillId: skill.id, agentId: user.agent.id, paymentId: txid }),
-        });
-        if (!orderRes.ok) {
-          const data = await orderRes.json().catch(() => ({}));
-          throw new Error(data?.message || data?.error || 'Purchase verification failed (' + orderRes.status + ')');
-        }
       }
 
       const res = await fetch(`/api/skills/${skill.slug}/install`, {

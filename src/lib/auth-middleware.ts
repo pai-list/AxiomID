@@ -134,6 +134,10 @@ export async function requireAuth(request: NextRequest): Promise<
     return { error: null, user: cachedUser };
   }
 
+  // Sandbox bypass for local dev. Two-layer defense prevents accidental prod use:
+  // 1. isSandboxOrDev is true on localhost or when NEXT_PUBLIC_PI_SANDBOX is set
+  // 2. getSandboxDevToken() returns undefined in production (NODE_ENV check)
+  // Both must pass for the bypass to activate — defense in depth.
   const host = request.headers.get("host") || "";
   const isSandboxOrDev =
     process.env.NODE_ENV !== "production" ||
