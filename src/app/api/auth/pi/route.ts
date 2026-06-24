@@ -61,18 +61,18 @@ export async function POST(request: NextRequest) {
   let verifiedStellarAddress: string | null = null;
 
   const host = request.headers.get("host") || "";
-  const isSandboxOrDev =
+  const isLocalDev =
     process.env.NODE_ENV !== "production" ||
-    process.env.NEXT_PUBLIC_PI_SANDBOX === "true" ||
     host.includes("localhost") ||
     host.includes("127.0.0.1");
 
   try {
+    // Sandbox dev token only allowed in local development — never in production
     const sandboxToken = getSandboxDevToken();
-
-    if (isSandboxOrDev && sandboxToken && accessToken === sandboxToken) {
+    if (isLocalDev && sandboxToken && accessToken === sandboxToken) {
       verifiedStellarAddress = "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2";
     } else {
+      // Production: always verify against Pi API
       const piResponse = await fetch('https://api.minepi.com/v2/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
         signal: AbortSignal.timeout(5000),
