@@ -60,7 +60,7 @@ function buildPassportResponse(user: PassportUser) {
     tier: user.tier,
     xp: user.xp,
     trustScore,
-    kyaStatus: getKyaStatus(stamps),
+    kyaStatus: getKyaStatus(stamps, user.kycStatus),
     kycStatus: getKycStatus(user.kycStatus),
     stamps: stamps.map((s) => ({ type: s.type, provider: s.provider })),
     issuedDate: user.createdAt.toISOString(),

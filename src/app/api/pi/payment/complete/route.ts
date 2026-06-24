@@ -128,12 +128,17 @@ export async function POST(request: NextRequest) {
             },
           });
 
+          // Successful Pi payment proves the user has completed Pi KYC (Pi only
+          // allows payments from KYC-verified accounts). Upgrade kycStatus so the
+          // KYC chain completes regardless of when the user claimed KYA.
           updatedUser = await tx.user.update({
             where: { id: payment.userId },
             data: {
               xp: newBalance,
               tier: newTier,
               lastActive: new Date(),
+              kycStatus: 'VERIFIED',
+              kycProvider: 'pi_network',
             },
           });
         }

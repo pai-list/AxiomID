@@ -222,9 +222,12 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkA
         logger.info("[Pi Auth] Incomplete payment found:", payment);
         pushLog?.("Incomplete payment detected — completing payment...");
         try {
+          const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
           const response = await fetch("/api/pi/payment/complete", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction?.txid || "" }),
           });
           if (response.ok) {
@@ -360,7 +363,8 @@ export async function runWalletTest(pushLog?: (msg: string) => void): Promise<vo
 
 export async function createPiPayment(amount: number, memo: string, metadata?: Record<string, unknown>): Promise<string> {
   assertPiSdkLoaded();
-  
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+
   return new Promise((resolve, reject) => {
     window.Pi!.createPayment({
       amount,
@@ -369,9 +373,11 @@ export async function createPiPayment(amount: number, memo: string, metadata?: R
     }, {
       onReadyForServerApproval: async (paymentId: string) => {
         try {
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
           const response = await fetch("/api/pi/payment/approve", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify({ paymentId }),
           });
           if (!response.ok) {
@@ -384,9 +390,11 @@ export async function createPiPayment(amount: number, memo: string, metadata?: R
       },
       onReadyForServerCompletion: async (paymentId: string, txid: string) => {
         try {
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
           const response = await fetch("/api/pi/payment/complete", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify({ paymentId, txid }),
           });
           if (!response.ok) {

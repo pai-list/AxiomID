@@ -5,18 +5,15 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
-import { KyaClaimSchema } from '@/lib/validators';
 import { createPiDid } from '@/lib/did';
 
 /**
  * Process a KYA claim request for an authenticated Pi Network user.
  *
- * Validates rate limits and authentication, parses and validates the request body,
- * updates the user's KYA-related fields in the database, and returns the updated
- * user metadata on success or an API error payload on failure.
- *
- * @param request - The incoming Next.js HTTP request for the POST route
- * @returns A Response containing either an object with `userId`, `walletAddress`, `kycStatus`, `did`, `tier`, and `xp` on success, or an error payload with an API error code and message
+ * The user's piUsername (from Pi auth) is used for identity — no client-supplied
+ * data is accepted for this field. If the user has completed a Pi payment (which
+ * requires Pi KYC), kycStatus is set to VERIFIED. Otherwise it stays PENDING
+ * until a payment completes (see complete/route.ts which upgrades to VERIFIED).
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
@@ -29,20 +26,6 @@ export async function POST(request: NextRequest) {
   if (auth.error) return auth.error;
   const { user } = auth;
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
-  }
-
-  const validation = KyaClaimSchema.safeParse(body);
-  if (!validation.success) {
-    return apiError('VALIDATION_ERROR', validation.error.issues[0].message);
-  }
-
-  const { username } = validation.data;
-
   try {
     const existing = await prisma.user.findUnique({ where: { piUid: user.piUid } });
 
@@ -50,13 +33,21 @@ export async function POST(request: NextRequest) {
       return apiError('NOT_FOUND', 'User must authenticate first via POST /api/auth/pi before claiming KYA');
     }
 
+    // A completed Pi payment proves the user is KYC'd on Pi Network (Pi only
+    // allows payments from KYC-verified accounts). Upgrade kycStatus accordingly.
+    const completedPayment = await prisma.piPayment.findFirst({
+      where: { userId: existing.id, status: 'RELEASED' },
+      select: { id: true },
+    });
+
     const updated = await prisma.user.update({
       where: { id: existing.id },
       data: {
-        kycStatus: 'PENDING',
+        // Only use the server-verified piUsername from auth, never from client
+        piUsername: existing.piUsername || user.piUsername,
+        kycStatus: (existing.kycStatus === 'VERIFIED' || completedPayment) ? 'VERIFIED' : 'PENDING',
         kycProvider: 'pi_network',
-        did: existing.did || createPiDid(existing.piUid || user.piUid),
-        piUsername: existing.piUsername || username,
+        did: existing.did || createPiDid(user.piUsername || existing.piUsername || user.piUid),
       },
     });
 

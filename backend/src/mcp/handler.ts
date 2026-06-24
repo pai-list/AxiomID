@@ -127,7 +127,7 @@ async function handleToolCall(
 
     case "did_create": {
       const piUsername = args.piUsername as string;
-      const did = `did:pi:${piUsername}:${Date.now().toString(36)}`;
+      const did = `did:axiom:axiomid.app:pi:${encodeURIComponent(piUsername)}`;
       return { did, piUsername, trustScore: (args.trustLevel as number) || 0.1, created: new Date().toISOString() };
     }
 

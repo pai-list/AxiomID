@@ -33,13 +33,13 @@ export async function POST(
       return apiError('FORBIDDEN', 'Skill is not available for installation');
     }
 
-    // Payment gate: for paid skills, require a verified (non-refunded) payment
-    // for this skill belonging to the authenticated user. Verified payments are
-    // created by /api/marketplace/order/create after Pi Network verification and
-    // land in ESCROWED/RELEASED status; REFUNDED payments do not grant access.
+    // Payment gate: for paid skills, require a RELEASED payment for this skill
+    // belonging to the authenticated user. Payments flow through Pi SDK callbacks
+    // (approve → complete) which verify with Pi Network, create an ESCROWED record,
+    // then transition to RELEASED with XP awards. Only RELEASED payments grant access.
     if (skill.pricePi > 0) {
       const payments = await prisma.piPayment.findMany({
-        where: { userId: user.id, status: { not: 'REFUNDED' } },
+        where: { userId: user.id, status: 'RELEASED' },
         select: { metadata: true },
       });
       const hasPaid = payments.some((p) => {
