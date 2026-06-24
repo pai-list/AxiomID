@@ -95,7 +95,7 @@ export function determineSandboxMode(): boolean {
   ) {
     return true;
   }
-  if (hostname.includes("vercel.app") || hostname.includes("staging")) {
+  if (hostname.includes("staging")) {
     return true;
   }
   try {
