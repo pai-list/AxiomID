@@ -56,7 +56,15 @@ export class AxiomSDK {
       );
     }
 
-    return res.json() as Promise<T>;
+    try {
+      return await res.json() as T;
+    } catch (err) {
+      throw new AxiomIDError(
+        "Failed to parse JSON response",
+        "PARSE_ERROR",
+        res.status
+      );
+    }
   }
 
   async verifyPassport(slug: string): Promise<Passport> {
