@@ -285,3 +285,247 @@ describe('GET /api/og/passport — parameter boundary cases', () => {
     expect(res.headers.get('content-type')).toContain('image/png');
   });
 });
+
+describe('GET /api/og/passport — normalizeTier: all-caps and mixed-case inputs', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('accepts UPPERCASE "CITIZEN" and renders CITIZEN label', async () => {
+    const req = makeRequest({ tier: 'CITIZEN' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+
+  it('accepts UPPERCASE "SOVEREIGN" and renders SOVEREIGN label', async () => {
+    const req = makeRequest({ tier: 'SOVEREIGN' });
+    await GET(req);
+    expect(renderedText()).toContain('SOVEREIGN');
+  });
+
+  it('accepts UPPERCASE "VISITOR" and renders VISITOR label', async () => {
+    const req = makeRequest({ tier: 'VISITOR' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('accepts UPPERCASE "VALIDATOR" and renders VALIDATOR label', async () => {
+    const req = makeRequest({ tier: 'VALIDATOR' });
+    await GET(req);
+    expect(renderedText()).toContain('VALIDATOR');
+  });
+
+  it('accepts mixed-case "CitiZeN" and normalizes to CITIZEN', async () => {
+    const req = makeRequest({ tier: 'CitiZeN' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+
+  it('accepts mixed-case "sOVEREIGN" and normalizes to SOVEREIGN', async () => {
+    const req = makeRequest({ tier: 'sOVEREIGN' });
+    await GET(req);
+    expect(renderedText()).toContain('SOVEREIGN');
+  });
+
+  it('treats an empty string tier as unrecognized and derives from xp', async () => {
+    // Empty string tier → normalizeTier returns null → calculateTier(0) = Visitor
+    const req = makeRequest({ tier: '' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+});
+
+describe('GET /api/og/passport — explicit Visitor and Citizen tier params', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders VISITOR label for explicit tier=Visitor', async () => {
+    const req = makeRequest({ tier: 'Visitor' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('renders CITIZEN label for explicit tier=Citizen', async () => {
+    const req = makeRequest({ tier: 'Citizen' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+});
+
+describe('GET /api/og/passport — calculateTier XP boundary thresholds', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('xp=99 (below Citizen threshold 100) → VISITOR', async () => {
+    const req = makeRequest({ xp: '99' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('xp=100 (Citizen threshold) → CITIZEN', async () => {
+    const req = makeRequest({ xp: '100' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+
+  it('xp=499 (below Validator threshold 500) → CITIZEN', async () => {
+    const req = makeRequest({ xp: '499' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+
+  it('xp=500 (Validator threshold) → VALIDATOR', async () => {
+    const req = makeRequest({ xp: '500' });
+    await GET(req);
+    expect(renderedText()).toContain('VALIDATOR');
+  });
+
+  it('xp=999 (below Sovereign threshold 1000) → VALIDATOR', async () => {
+    const req = makeRequest({ xp: '999' });
+    await GET(req);
+    expect(renderedText()).toContain('VALIDATOR');
+  });
+
+  it('xp=1000 (Sovereign threshold) → SOVEREIGN', async () => {
+    const req = makeRequest({ xp: '1000' });
+    await GET(req);
+    expect(renderedText()).toContain('SOVEREIGN');
+  });
+
+  it('xp=0 (default) → VISITOR', async () => {
+    const req = makeRequest({ xp: '0' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('negative xp is clamped to 0 → VISITOR', async () => {
+    const req = makeRequest({ xp: '-100' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('float xp "99.9" is parsed as 99 by parseInt → VISITOR', async () => {
+    // parseInt('99.9', 10) === 99, which is below the Citizen threshold of 100
+    const req = makeRequest({ xp: '99.9' });
+    await GET(req);
+    expect(renderedText()).toContain('VISITOR');
+  });
+
+  it('float xp "100.7" is parsed as 100 by parseInt → CITIZEN', async () => {
+    // parseInt('100.7', 10) === 100, which meets the Citizen threshold
+    const req = makeRequest({ xp: '100.7' });
+    await GET(req);
+    expect(renderedText()).toContain('CITIZEN');
+  });
+});
+
+describe('GET /api/og/passport — trust score boundary values', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('xp=0 stamps=0 → trust score 0', async () => {
+    const req = makeRequest({ xp: '0', stamps: '0' });
+    await GET(req);
+    // Trust score of 0 should appear in the rendered output
+    // xpScore=0, stampScore=0 → round(0*0.7 + 0*0.3) = 0
+    const text = renderedText();
+    expect(text).toContain('0');
+  });
+
+  it('xp=1000 stamps=6 → trust score 100', async () => {
+    // xpScore = min(100, floor(1000/10)) = 100
+    // stampScore = round((6/6)*100) = 100
+    // round(100*0.7 + 100*0.3) = round(70 + 30) = 100
+    const req = makeRequest({ xp: '1000', stamps: '6' });
+    await GET(req);
+    expect(renderedText()).toContain('100');
+  });
+
+  it('stamps > TOTAL_STAMPS (6) are clamped to 6 in trust score', async () => {
+    // Use xp=0 so xpScore=0; stamps=10 → clamped to 6 → stampScore=100
+    // trust = round(0*0.7 + 100*0.3) = round(30) = 30
+    const req = makeRequest({ xp: '0', stamps: '10' });
+    await GET(req);
+    const text = renderedText();
+    // Trust score should be 30 (clamped stamps=6), not higher
+    expect(text).toContain('30');
+  });
+
+  it('xp=10 stamps=0 → trust score 1', async () => {
+    // xpScore = floor(10/10) = 1; stampScore = 0
+    // round(1*0.7 + 0*0.3) = round(0.7) = 1
+    const req = makeRequest({ xp: '10', stamps: '0' });
+    await GET(req);
+    expect(renderedText()).toContain('1');
+  });
+});
+
+describe('GET /api/og/passport — DID shortName extraction', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders first 2 chars of last DID segment uppercased in avatar', async () => {
+    // did:axiom:alice → last segment "alice" → "AL"
+    const req = makeRequest({ did: 'did:axiom:alice' });
+    await GET(req);
+    expect(renderedText()).toContain('AL');
+  });
+
+  it('renders single-char last DID segment as single uppercase char', async () => {
+    // did:axiom:x → last segment "x" → slice(0,2) = "x" → "X"
+    const req = makeRequest({ did: 'did:axiom:x' });
+    await GET(req);
+    expect(renderedText()).toContain('X');
+  });
+
+  it('renders shortName from a DID with multiple colons', async () => {
+    // did:key:z6Mk... → last segment "z6Mk..." → "Z6"
+    const req = makeRequest({ did: 'did:key:z6MkfooBARbaz' });
+    await GET(req);
+    expect(renderedText()).toContain('Z6');
+  });
+
+  it('truncates DID longer than 28 chars in the rendered card', async () => {
+    // 29-char DID should be truncated to "did:axiom:abcde..." style
+    const longDid = 'did:axiom:averylongidentifier'; // 29 chars
+    const req = makeRequest({ did: longDid });
+    await GET(req);
+    const text = renderedText();
+    expect(text).toContain('...');
+  });
+
+  it('shows DID as-is when exactly 28 chars (no truncation)', async () => {
+    // Exactly 28 chars → no truncation (threshold is > 28)
+    const exactDid = 'did:axiom:exact28charsabcdef'; // exactly 28 chars
+    expect(exactDid.length).toBe(28);
+    const req = makeRequest({ did: exactDid });
+    await GET(req);
+    const text = renderedText();
+    // The full DID should appear without ellipsis from the truncation logic
+    expect(text).toContain(exactDid);
+  });
+
+  it('truncates DID at exactly 29 chars (boundary: > 28)', async () => {
+    const boundaryDid = 'did:axiom:exact29charsabcdefg'; // exactly 29 chars
+    expect(boundaryDid.length).toBe(29);
+    const req = makeRequest({ did: boundaryDid });
+    await GET(req);
+    const text = renderedText();
+    expect(text).toContain('...');
+    // Verify the first 14 chars appear
+    expect(text).toContain(boundaryDid.slice(0, 14));
+    // Verify the last 10 chars appear
+    expect(text).toContain(boundaryDid.slice(-10));
+  });
+});
+
+describe('GET /api/og/passport — maxDuration and runtime exports', () => {
+  it('exports maxDuration as 10', async () => {
+    const mod = await import('@/app/api/og/passport/route');
+    expect((mod as Record<string, unknown>).maxDuration).toBe(10);
+  });
+});
