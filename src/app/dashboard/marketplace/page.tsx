@@ -184,7 +184,7 @@ export default function MarketplacePage() {
         });
         if (!orderRes.ok) {
           const data = await orderRes.json().catch(() => ({}));
-          throw new Error(data.message || data.error || `Purchase verification failed (${orderRes.status})`);
+          throw new Error(data?.message || data?.error || 'Purchase verification failed (' + orderRes.status + ')');
         }
       }
 
