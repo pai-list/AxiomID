@@ -6,10 +6,10 @@ export const runtime = 'nodejs';
 export const maxDuration = 10;
 
 const TIER_COLORS: Record<string, string> = {
-  visitor: '#71717a',
-  citizen: '#3b82f6',
-  validator: '#f59e0b',
-  sovereign: '#22c55e',
+  visitor: '#64748b',
+  citizen: '#00ff41',
+  validator: '#00d4ff',
+  sovereign: '#a855f7',
 };
 
 const TIER_LABELS: Record<string, string> = {
