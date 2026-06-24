@@ -4,17 +4,21 @@ if ('serviceWorker' in navigator) {
       // Check for updates every 60 minutes
       setInterval(() => reg.update(), 60 * 60 * 1000);
 
+      // Capture whether there was already a controller (i.e. a previous SW)
+      const hadPreviousController = !!navigator.serviceWorker.controller;
+
       // When a new SW is installed, listen for it to take over
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         if (!newWorker) return;
 
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+          if (newWorker.state === 'activated' && hadPreviousController) {
             // New SW activated — reload to get fresh content
             window.location.reload();
           }
         });
+      });
       });
     }).catch(err => {
       console.error('Service worker registration failed:', err);
