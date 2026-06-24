@@ -137,15 +137,21 @@ describe('GET /api/og/passport — tier, xp, and stamps params', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the explicit tier label, xp, and stamps in the card', async () => {
-    const req = makeRequest({ tier: 'Sovereign', xp: '1200', stamps: '5' });
+  it('renders the explicit tier label, xp, stamps, and computed trust score', async () => {
+    const req = makeRequest({ tier: 'Sovereign', xp: '1230', stamps: '4' });
     const res = await GET(req);
     expect(res.status).toBe(200);
 
     const text = renderedText();
     expect(text).toContain('SOVEREIGN');
-    expect(text).toContain('1200');
-    expect(text).toContain('5');
+    // Raw XP is shown in the stats row.
+    expect(text).toContain('1230');
+    // Stamps count is shown in the stats row.
+    expect(text).toContain('4');
+    // Trust score is the 0-100 value from calculateTrustScore(1230, 4):
+    // xpScore = min(100, floor(1230/10)) = 100; stampScore = round((4/6)*100) = 67;
+    // round(100*0.7 + 67*0.3) = round(70 + 20.1) = 90.
+    expect(text).toContain('90');
   });
 
   it('normalizes a lowercase tier param to the canonical label', async () => {

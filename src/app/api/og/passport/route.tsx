@@ -2,6 +2,7 @@ import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 import { calculateTier, getTierColor, type Tier } from '@/lib/tiers';
+import { calculateTrustScore } from '@/lib/trust';
 
 export const runtime = 'nodejs';
 export const maxDuration = 10;
@@ -37,6 +38,10 @@ export async function GET(req: NextRequest) {
     const tier: Tier = normalizeTier(searchParams.get('tier')) ?? calculateTier(xp);
     const tierColor = getTierColor(tier);
     const tierLabel = tier.toUpperCase();
+
+    // Trust score is a 0-100 metric derived from XP + stamps (see @/lib/trust),
+    // distinct from raw XP. Compute it so the "TRUST SCORE" label is accurate.
+    const trustScore = calculateTrustScore(xp, stamps);
 
     // Extract short name from DID for avatar
     const didParts = did.split(':');
@@ -250,18 +255,19 @@ export async function GET(req: NextRequest) {
                   flex: 1,
                 }}
               >
-                {/* Trust Score */}
+                {/* Trust Score (0-100, computed from XP + stamps) */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span style={{ fontSize: 12, color: '#52525b', letterSpacing: 2 }}>TRUST SCORE</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                    <span style={{ fontSize: 56, fontWeight: 'bold', color: '#e4e4e7' }}>{xp}</span>
-                    <span style={{ fontSize: 18, color: '#52525b' }}>XP</span>
+                    <span style={{ fontSize: 56, fontWeight: 'bold', color: '#e4e4e7' }}>{trustScore}</span>
+                    <span style={{ fontSize: 18, color: '#52525b' }}>/ 100</span>
                   </div>
                 </div>
 
-                {/* Stamps row */}
+                {/* Stats row */}
                 <div style={{ display: 'flex', gap: 16 }}>
                   {[
+                    { label: 'XP', value: xp },
                     { label: 'STAMPS', value: stamps },
                     { label: 'TIER', value: tierLabel },
                   ].map((stat) => (
