@@ -20,7 +20,7 @@ import { writeFileSync, unlinkSync, mkdirSync } from "fs";
 const TRUTH_API = "https://api.quran.com/api/v4";
 const WORKER_URL = "https://axiomid-backend.amrikyy.workers.dev";
 const SHARED_SECRET = process.env.SHARED_SECRET_TOKEN_VERCEL_CF || "";
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 32;
 const VECTORIZE_INDEX = "axiomid-truth";
 const WORK_DIR = "/tmp/truth-ingest";
 
