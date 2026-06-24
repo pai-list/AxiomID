@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       data: {
         // Only use the server-verified piUsername from auth, never from client
         piUsername: existing.piUsername || user.piUsername,
-        kycStatus: completedPayment ? 'VERIFIED' : 'PENDING',
+        kycStatus: (existing.kycStatus === 'VERIFIED' || completedPayment) ? 'VERIFIED' : 'PENDING',
         kycProvider: 'pi_network',
-        did: existing.did || createPiDid(existing.piUid || user.piUid),
+        did: existing.did || createPiDid(user.piUsername || existing.piUsername || user.piUid),
       },
     });
 

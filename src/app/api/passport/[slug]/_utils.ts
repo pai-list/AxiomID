@@ -13,7 +13,7 @@ export type VerificationStatus = "verified" | "pending" | "denied";
  */
 export function getKyaStatus(
   stamps: { type: string; provider: string }[] | undefined,
-  kycStatus?: string | null
+  kycStatus: string | null | undefined
 ): VerificationStatus {
   if (kycStatus !== "VERIFIED") return "pending";
   if (!stamps || stamps.length === 0) return "pending";

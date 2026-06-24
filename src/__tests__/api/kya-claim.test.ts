@@ -177,7 +177,7 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'existing-user-no-did',
       walletAddress: 'pi:existinguser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+      did: 'did:axiom:axiomid.app:pi:mockuser',
     } as any);
 
     const req = mockPostRequest({});
@@ -187,7 +187,7 @@ describe('POST /api/pi/kya/claim', () => {
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+          did: 'did:axiom:axiomid.app:pi:mockuser',
           piUsername: 'mockuser', // From auth, not body
         }),
       })
