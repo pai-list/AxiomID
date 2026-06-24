@@ -1,0 +1,28 @@
+{
+  "name": "@axiomid/sdk",
+  "version": "1.0.0",
+  "description": "AxiomID SDK — Verify passports, resolve DIDs, query trust scores",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --runInBand --forceExit",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT"
+}
