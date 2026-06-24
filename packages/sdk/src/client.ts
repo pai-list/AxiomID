@@ -78,8 +78,9 @@ export class AxiomSDK {
       walletAge: { verified: false },
     };
 
-    for (const stamp of passport.stamps) {
-      const key = stamp.type.toLowerCase();
+    const stamps = passport.stamps ?? [];
+    for (const stamp of stamps) {
+      const key = stamp.type?.toLowerCase();
       if (key === "kyc_bound") {
         stampsMap.kycBound = { verified: true, details: { provider: stamp.provider } };
       } else if (key === "wallet_age") {
