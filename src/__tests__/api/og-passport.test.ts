@@ -113,6 +113,23 @@ function renderedAvatarInitials(): string | undefined {
   return textAtFontSize(44);
 }
 
+/**
+ * Returns the value rendered in the stats-row cell with the given label.
+ *
+ * Each stat cell renders two leaf text nodes in order: the label (11px) then
+ * the value (24px). Since XP, STAMPS, and TIER all share fontSize 24, we locate
+ * the cell by its unique label and return the text node immediately following
+ * it. This lets tests assert on the exact STAMPS value rather than a flattened
+ * `toContain`, which collides with the XP value (e.g. "0" inside "300").
+ */
+function statCellValue(label: string): string | undefined {
+  const calls = MockedImageResponse.mock.calls;
+  const element = calls[calls.length - 1][0];
+  const nodes = collectStyledText(element);
+  const labelIndex = nodes.findIndex((n) => n.text === label);
+  return labelIndex >= 0 ? nodes[labelIndex + 1]?.text : undefined;
+}
+
 describe('GET /api/og/passport — default parameters', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -190,16 +207,14 @@ describe('GET /api/og/passport — tier, xp, and stamps params', () => {
     const res = await GET(req);
     expect(res.status).toBe(200);
 
-    const text = renderedText();
-    expect(text).toContain('SOVEREIGN');
-    // Raw XP is shown in the stats row.
-    expect(text).toContain('1230');
-    // Stamps count is shown in the stats row.
-    expect(text).toContain('4');
+    expect(renderedText()).toContain('SOVEREIGN');
+    // Raw XP and stamps are shown in their dedicated stats cells.
+    expect(statCellValue('XP')).toBe('1230');
+    expect(statCellValue('STAMPS')).toBe('4');
     // Trust score is the 0-100 value from calculateTrustScore(1230, 4):
     // xpScore = min(100, floor(1230/10)) = 100; stampScore = round((4/6)*100) = 67;
     // round(100*0.7 + 67*0.3) = round(70 + 20.1) = 90.
-    expect(text).toContain('90');
+    expect(renderedTrustScore()).toBe('90');
   });
 
   it('normalizes a lowercase tier param to the canonical label', async () => {
@@ -231,16 +246,17 @@ describe('GET /api/og/passport — tier, xp, and stamps params', () => {
   });
 
   it('clamps a negative stamps value to 0', async () => {
-    // Use a distinct, collision-free xp so the rendered "0" can only be the
-    // clamped stamps value (xp 300 → trust score 21, neither of which is "0").
     const req = makeRequest({ stamps: '-5', xp: '300' });
     const res = await GET(req);
     expect(res.status).toBe(200);
 
-    const text = renderedText();
-    expect(text).toContain('300'); // raw xp in stats row
-    expect(text).toContain('21'); // calculateTrustScore(300, 0) = round(30 * 0.7) = 21
-    expect(text).toContain('0'); // clamped stamps value
+    // Assert on the dedicated STAMPS stat cell so the match cannot be satisfied
+    // by another "0" in the card (e.g. the "0" inside the XP value "300").
+    expect(statCellValue('STAMPS')).toBe('0');
+    // Sanity-check the sibling cells render the expected raw values.
+    expect(statCellValue('XP')).toBe('300');
+    // calculateTrustScore(300, 0) = round(floor(300/10) * 0.7) = round(21) = 21.
+    expect(renderedTrustScore()).toBe('21');
   });
 });
 
