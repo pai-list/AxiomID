@@ -396,3 +396,112 @@ describe("useWalletAgent — pauseAgent", () => {
     expect(res).toBe(false);
   });
 });
+
+describe("useWalletAgent — authHeaders helper", () => {
+  let mockFetch: jest.Mock;
+  let mockRefreshUser: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+    mockRefreshUser = jest.fn().mockResolvedValue(undefined);
+  });
+
+  it("includes Authorization header when piAccessToken is provided for pauseAgent", async () => {
+    const userRef = { current: makeUser() };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    const { result } = renderHook(() =>
+      useWalletAgent({
+        piAccessToken: "pause-auth-token",
+        userRef,
+        refreshUser: mockRefreshUser,
+      })
+    );
+
+    await act(async () => {
+      await result.current.pauseAgent();
+    });
+
+    const headers = mockFetch.mock.calls[0][1].headers;
+    expect(headers["Authorization"]).toBe("Bearer pause-auth-token");
+  });
+
+  it("does not include Authorization header when piAccessToken is null for activateAgent", async () => {
+    const userRef = { current: makeUser() };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    const { result } = renderHook(() =>
+      useWalletAgent({
+        piAccessToken: null,
+        userRef,
+        refreshUser: mockRefreshUser,
+      })
+    );
+
+    await act(async () => {
+      await result.current.activateAgent();
+    });
+
+    const headers = mockFetch.mock.calls[0][1].headers;
+    expect(headers["Authorization"]).toBeUndefined();
+  });
+
+  it("calls refreshUser after successful pauseAgent", async () => {
+    const userRef = { current: makeUser() };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    const { result } = renderHook(() =>
+      useWalletAgent({
+        piAccessToken: null,
+        userRef,
+        refreshUser: mockRefreshUser,
+      })
+    );
+
+    await act(async () => {
+      await result.current.pauseAgent();
+    });
+
+    expect(mockRefreshUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls refreshUser after successful createAgent", async () => {
+    const userRef = { current: makeUser() };
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    const { result } = renderHook(() =>
+      useWalletAgent({
+        piAccessToken: null,
+        userRef,
+        refreshUser: mockRefreshUser,
+      })
+    );
+
+    await act(async () => {
+      await result.current.createAgent("TestAgent");
+    });
+
+    expect(mockRefreshUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT call refreshUser when createAgent fails", async () => {
+    const userRef = { current: makeUser() };
+    mockFetch.mockRejectedValueOnce(new Error("Fetch failed"));
+
+    const { result } = renderHook(() =>
+      useWalletAgent({
+        piAccessToken: null,
+        userRef,
+        refreshUser: mockRefreshUser,
+      })
+    );
+
+    await act(async () => {
+      await result.current.createAgent("FailAgent");
+    });
+
+    expect(mockRefreshUser).not.toHaveBeenCalled();
+  });
+});

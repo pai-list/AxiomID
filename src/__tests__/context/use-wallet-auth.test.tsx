@@ -514,3 +514,215 @@ describe("useWalletAuth — connectDemo", () => {
     );
   });
 });
+
+describe("useWalletAuth — connectWallet returns boolean", () => {
+  let mockFetch: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+    mockCheckPiBrowser.mockReturnValue(false);
+    mockDetermineSandboxMode.mockReturnValue(false);
+  });
+
+  it("returns true when authentication succeeds", async () => {
+    const params = makeAuthParams();
+    mockConnectPi.mockResolvedValueOnce({
+      token: "ok-token",
+      user: { uid: "uid-ok", username: "user-ok", name: "User OK", stellarAddress: null },
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "uid-ok",
+        walletAddress: "pi:uid-ok",
+        xp: 0,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+      }),
+    });
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    let res: boolean | undefined;
+    await act(async () => {
+      res = await result.current.connectWallet();
+    });
+
+    expect(res).toBe(true);
+  });
+
+  it("returns false when /api/auth/pi returns non-ok", async () => {
+    jest.useFakeTimers();
+    const params = makeAuthParams();
+    mockConnectPi.mockResolvedValueOnce({
+      token: "fail-token",
+      user: { uid: "uid-fail", username: "user-fail", name: "Fail", stellarAddress: null },
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Auth rejected", code: "AUTH_FAIL" }),
+    });
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    let res: boolean | undefined;
+    await act(async () => {
+      res = await result.current.connectWallet();
+    });
+
+    expect(res).toBe(false);
+    jest.useRealTimers();
+  });
+
+  it("returns false when connectPi throws", async () => {
+    jest.useFakeTimers();
+    const params = makeAuthParams();
+    mockConnectPi.mockRejectedValueOnce(new Error("Connection refused"));
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    let res: boolean | undefined;
+    await act(async () => {
+      res = await result.current.connectWallet();
+    });
+
+    expect(res).toBe(false);
+    jest.useRealTimers();
+  });
+
+  it("throws Pi Browser required for SDK_NOT_AVAILABLE error", async () => {
+    jest.useFakeTimers();
+    const params = makeAuthParams();
+    const sdkError = new PiSdkError("SDK not available", PiSdkErrorCode.SDK_NOT_AVAILABLE);
+    mockConnectPi.mockRejectedValueOnce(sdkError);
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    await act(async () => {
+      await result.current.connectWallet();
+    });
+
+    expect(params.setError).toHaveBeenCalledWith(
+      expect.stringContaining("Pi Browser required")
+    );
+    jest.useRealTimers();
+  });
+
+  it("throws Pi Browser required for SDK_SCRIPT_LOAD_FAILED error", async () => {
+    jest.useFakeTimers();
+    const params = makeAuthParams();
+    const sdkError = new PiSdkError("Script load failed", PiSdkErrorCode.SDK_SCRIPT_LOAD_FAILED);
+    mockConnectPi.mockRejectedValueOnce(sdkError);
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    await act(async () => {
+      await result.current.connectWallet();
+    });
+
+    expect(params.setError).toHaveBeenCalledWith(
+      expect.stringContaining("Pi Browser required")
+    );
+    jest.useRealTimers();
+  });
+
+  it("pushes 'Wallet authenticated successfully!' log on success", async () => {
+    const params = makeAuthParams();
+    mockConnectPi.mockResolvedValueOnce({
+      token: "success-token",
+      user: { uid: "uid-success", username: "success-user", name: "Success", stellarAddress: null },
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "uid-success",
+        walletAddress: "pi:uid-success",
+        xp: 100,
+        tier: "Visitor",
+        trustScore: 20,
+        createdAt: new Date().toISOString(),
+      }),
+    });
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    await act(async () => {
+      await result.current.connectWallet();
+    });
+
+    expect(params.pushLog).toHaveBeenCalledWith("Wallet authenticated successfully!");
+  });
+
+  it("sends correct JSON body to /api/auth/pi", async () => {
+    const params = makeAuthParams();
+    mockConnectPi.mockResolvedValueOnce({
+      token: "body-test-token",
+      user: { uid: "uid-body", username: "bodyuser", name: "Body User", stellarAddress: null },
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "uid-body",
+        walletAddress: "pi:uid-body",
+        xp: 0,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+      }),
+    });
+
+    const { result } = renderHook(() => useWalletAuth(params));
+    await act(async () => {
+      await result.current.connectWallet();
+    });
+
+    const authCall = mockFetch.mock.calls.find((c) => c[0] === "/api/auth/pi");
+    expect(authCall).toBeDefined();
+    const body = JSON.parse(authCall![1].body);
+    expect(body.accessToken).toBe("body-test-token");
+    expect(body.uid).toBe("uid-body");
+    expect(body.username).toBe("bodyuser");
+  });
+});
+
+describe("useWalletAuth — connectDemo idempotency", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    mockGetClientSandboxDevToken.mockReturnValue("demo-token-123");
+  });
+
+  it("sets setPiAccessToken to the sandbox dev token", () => {
+    const params = makeAuthParams();
+    const { result } = renderHook(() => useWalletAuth(params));
+
+    act(() => {
+      result.current.connectDemo();
+    });
+
+    expect(params.setPiAccessToken).toHaveBeenCalledWith("demo-token-123");
+  });
+
+  it("demo user has Stellar address set", () => {
+    const params = makeAuthParams();
+    const { result } = renderHook(() => useWalletAuth(params));
+
+    act(() => {
+      result.current.connectDemo();
+    });
+
+    const demoUser = params.setUser.mock.calls[0][0];
+    expect(demoUser.stellarAddress).toBeTruthy();
+    expect(demoUser.stellarAddress).toMatch(/^G/);
+  });
+
+  it("demo user has trustScore=85", () => {
+    const params = makeAuthParams();
+    const { result } = renderHook(() => useWalletAuth(params));
+
+    act(() => {
+      result.current.connectDemo();
+    });
+
+    const demoUser = params.setUser.mock.calls[0][0];
+    expect(demoUser.trustScore).toBe(85);
+  });
+});

@@ -169,3 +169,61 @@ describe("LegalPage — empty sections", () => {
     expect(sections.length).toBe(0);
   });
 });
+
+describe("LegalPage — section structure", () => {
+  it("each section renders an h2 heading element", () => {
+    render(<LegalPage {...defaultProps} />);
+    const headings = document.querySelectorAll("h2");
+    expect(headings.length).toBe(privacySections.length);
+  });
+
+  it("each section indicator dot is a span with rounded-full class", () => {
+    const { container } = render(<LegalPage {...defaultProps} />);
+    const dots = container.querySelectorAll("h2 > span.rounded-full");
+    expect(dots.length).toBe(privacySections.length);
+  });
+
+  it("indicator dot for color='green' has w-1.5 h-1.5 dimensions", () => {
+    const { container } = render(
+      <LegalPage
+        {...defaultProps}
+        sections={[{ titleKey: "test_title", descKey: "test_desc", color: "green" }]}
+      />
+    );
+    const dot = container.querySelector("h2 > span.rounded-full");
+    expect(dot).toHaveClass("w-1.5");
+    expect(dot).toHaveClass("h-1.5");
+  });
+
+  it("renders title highlight in a gradient span", () => {
+    const { container } = render(<LegalPage {...defaultProps} />);
+    const gradientSpan = container.querySelector("span.text-transparent.bg-clip-text");
+    expect(gradientSpan).toBeInTheDocument();
+    expect(gradientSpan?.textContent).toBe("privacy_title_gradient");
+  });
+
+  it("badge has border border-neon-green/20 styling class", () => {
+    const { container } = render(<LegalPage {...defaultProps} />);
+    const badge = container.querySelector("span.border-neon-green\\/20");
+    expect(badge).toBeInTheDocument();
+  });
+
+  it("renders a single h1 heading with the title text", () => {
+    render(<LegalPage {...defaultProps} />);
+    const h1 = document.querySelector("h1");
+    expect(h1).toBeInTheDocument();
+    expect(h1?.textContent).toContain("privacy_title");
+    expect(h1?.textContent).toContain("privacy_title_gradient");
+  });
+
+  it("single section renders exactly one section element", () => {
+    render(
+      <LegalPage
+        {...defaultProps}
+        sections={[{ titleKey: "single_title", descKey: "single_desc", color: "blue" }]}
+      />
+    );
+    const sections = document.querySelectorAll("section");
+    expect(sections.length).toBe(1);
+  });
+});

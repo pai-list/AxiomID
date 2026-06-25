@@ -239,4 +239,83 @@ describe("mapApiUser", () => {
     // trustScore computed: xp=200, stampsLength=1 → 200 + 1*10 = 210
     expect(result.trustScore).toBe(210);
   });
+
+  it("maps passportUrl from API response", () => {
+    const result = mapApiUser({ ...baseApiResponse, passportUrl: "https://example.com/passport/123" });
+    expect(result.passportUrl).toBe("https://example.com/passport/123");
+  });
+
+  it("sets passportUrl to null when API omits it", () => {
+    const result = mapApiUser(baseApiResponse);
+    expect(result.passportUrl).toBeNull();
+  });
+
+  it("maps kycStatus from API response", () => {
+    const result = mapApiUser({ ...baseApiResponse, kycStatus: "verified" });
+    expect(result.kycStatus).toBe("verified");
+  });
+
+  it("sets kycStatus to null when API provides null", () => {
+    const result = mapApiUser({ ...baseApiResponse, kycStatus: null });
+    expect(result.kycStatus).toBeNull();
+  });
+
+  it("maps did from API response", () => {
+    const result = mapApiUser({ ...baseApiResponse, did: "did:axiom:abcdef1234567890" });
+    expect(result.did).toBe("did:axiom:abcdef1234567890");
+  });
+
+  it("sets did to null when API omits it", () => {
+    const result = mapApiUser(baseApiResponse);
+    expect(result.did).toBeNull();
+  });
+
+  it("API createdAt takes precedence over fallback createdAt", () => {
+    const apiDate = "2026-06-01T00:00:00.000Z";
+    const fallbackDate = "2025-01-01T00:00:00.000Z";
+    const result = mapApiUser(
+      { ...baseApiResponse, createdAt: apiDate },
+      { createdAt: fallbackDate }
+    );
+    expect(result.createdAt).toBe(apiDate);
+  });
+
+  it("trustScore of 0 from API is used without computing fallback", () => {
+    // trustScore: 0 is explicitly set (not omitted), ?? 0 triggers computation
+    // Since 0 is falsy with ?? operator... Actually ?? only triggers on null/undefined
+    // trustScore: 0 → ?? does NOT trigger, so result.trustScore = 0
+    const result = mapApiUser({ ...baseApiResponse, trustScore: 0 });
+    expect(result.trustScore).toBe(0);
+  });
+});
+
+describe("isDemoWalletAddress — case sensitivity", () => {
+  it("returns false for 'DEMO:alice' (case-sensitive prefix check)", () => {
+    // startsWith is case-sensitive, 'DEMO:' does not start with 'demo:'
+    expect(isDemoWalletAddress("DEMO:alice")).toBe(false);
+  });
+
+  it("returns false for 'Demo:alice' (mixed-case)", () => {
+    expect(isDemoWalletAddress("Demo:alice")).toBe(false);
+  });
+});
+
+describe("getStoredWallet — demo wallet cleanup", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("removes 'demo:' prefix wallet and returns null for 'demo:test123'", () => {
+    localStorage.setItem("axiomid_wallet", "demo:test123");
+    const result = getStoredWallet();
+    expect(result).toBeNull();
+    expect(localStorage.getItem("axiomid_wallet")).toBeNull();
+  });
+
+  it("preserves non-demo wallet addresses that contain 'demo' substring", () => {
+    // 'pi:demouser' does NOT start with 'demo:' so it is preserved
+    localStorage.setItem("axiomid_wallet", "pi:demouser");
+    const result = getStoredWallet();
+    expect(result).toBe("pi:demouser");
+  });
 });

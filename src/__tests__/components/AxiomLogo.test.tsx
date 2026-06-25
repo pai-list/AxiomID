@@ -90,3 +90,81 @@ describe("AxiomLogo — size variations", () => {
     expect(svg).toHaveClass(h);
   });
 });
+
+describe("AxiomLogo — SVG structure and attributes", () => {
+  it("SVG has viewBox '0 0 100 100'", () => {
+    const { container } = render(<AxiomLogo />);
+    const svg = container.querySelector("svg");
+    expect(svg?.getAttribute("viewBox")).toBe("0 0 100 100");
+  });
+
+  it("circle element has the animate-spin class", () => {
+    const { container } = render(<AxiomLogo />);
+    const circle = container.querySelector("circle");
+    expect(circle).toHaveClass("animate-spin");
+  });
+
+  it("linearGradient has three stop elements", () => {
+    const { container } = render(<AxiomLogo />);
+    const stops = container.querySelectorAll("defs > linearGradient > stop");
+    expect(stops).toHaveLength(3);
+  });
+
+  it("linearGradient first stop is neon-green (#39FF14)", () => {
+    const { container } = render(<AxiomLogo />);
+    const stops = container.querySelectorAll("defs > linearGradient > stop");
+    expect(stops[0].getAttribute("stopColor")).toBe("#39FF14");
+  });
+
+  it("linearGradient second stop is electric-blue (#00d4ff)", () => {
+    const { container } = render(<AxiomLogo />);
+    const stops = container.querySelectorAll("defs > linearGradient > stop");
+    expect(stops[1].getAttribute("stopColor")).toBe("#00d4ff");
+  });
+
+  it("linearGradient third stop is axiom-purple (#a855f7)", () => {
+    const { container } = render(<AxiomLogo />);
+    const stops = container.querySelectorAll("defs > linearGradient > stop");
+    expect(stops[2].getAttribute("stopColor")).toBe("#a855f7");
+  });
+
+  it("outer wrapper has 'flex' and 'items-center' classes", () => {
+    const { container } = render(<AxiomLogo />);
+    expect(container.firstChild).toHaveClass("flex");
+    expect(container.firstChild).toHaveClass("items-center");
+  });
+
+  it("outer wrapper has 'group' class", () => {
+    const { container } = render(<AxiomLogo />);
+    expect(container.firstChild).toHaveClass("group");
+  });
+
+  it("SVG circle has strokeDasharray attribute set", () => {
+    const { container } = render(<AxiomLogo />);
+    const circle = container.querySelector("circle");
+    expect(circle?.getAttribute("strokeDasharray")).toBeTruthy();
+  });
+
+  it("circle has strokeWidth of '3'", () => {
+    const { container } = render(<AxiomLogo />);
+    const circle = container.querySelector("circle");
+    expect(circle?.getAttribute("strokeWidth")).toBe("3");
+  });
+});
+
+describe("AxiomLogo — wordmark content", () => {
+  it("AXIOM text is in a span with font-mono class", () => {
+    const { container } = render(<AxiomLogo />);
+    const spans = container.querySelectorAll("span");
+    const wordmarkSpan = Array.from(spans).find((s) => s.textContent?.includes("AXIOM"));
+    expect(wordmarkSpan).toHaveClass("font-mono");
+  });
+
+  it("'ID' text has text-electric-blue class", () => {
+    const { container } = render(<AxiomLogo />);
+    const idSpan = Array.from(container.querySelectorAll("span")).find(
+      (s) => s.textContent === "ID"
+    );
+    expect(idSpan).toHaveClass("text-electric-blue");
+  });
+});

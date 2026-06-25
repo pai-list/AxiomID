@@ -667,4 +667,142 @@ describe("useWalletActions — runTest", () => {
     const errorLog = allLogs.find((l: string) => l?.includes("❌"));
     expect(errorLog).toContain("SDK exploded");
   });
+
+  it("pushes initial '🚀 Starting...' log before calling runWalletTest", async () => {
+    const setWalletLogs = jest.fn();
+    mockRunWalletTest.mockResolvedValueOnce(undefined);
+
+    const { result } = renderHook(() =>
+      useWalletActions({
+        piAccessToken: null,
+        userRef: { current: null },
+        setUser: jest.fn(),
+        setError: jest.fn(),
+        setWalletLogs,
+      })
+    );
+
+    await act(async () => {
+      await result.current.runTest();
+    });
+
+    // Find the pushLog call that contains the starting message
+    const logCalls = setWalletLogs.mock.calls.map((c) => {
+      const arg = c[0];
+      return typeof arg === "function" ? arg([]) : arg;
+    });
+    const allLogs = logCalls.flat();
+    const startLog = allLogs.find((l: string) => l?.includes("🚀"));
+    expect(startLog).toContain("Starting");
+  });
+});
+
+describe("useWalletActions — refreshUser with explicit walletAddress", () => {
+  let mockFetch: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+  });
+
+  it("uses explicit walletAddress when userRef.current is null", async () => {
+    localStorage.setItem("axiomid_wallet", "pi:explicit-addr");
+    const setUser = jest.fn();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        userId: "explicit-user",
+        walletAddress: "pi:explicit-addr",
+        xp: 50,
+        tier: "Visitor",
+        trustScore: 0,
+        createdAt: new Date().toISOString(),
+      }),
+    });
+
+    const { result } = renderHook(() =>
+      useWalletActions({
+        piAccessToken: null,
+        userRef: { current: null },
+        setUser,
+        setError: jest.fn(),
+        setWalletLogs: jest.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.refreshUser("pi:explicit-addr");
+    });
+
+    // fetch should be called because addr is provided
+    expect(mockFetch).toHaveBeenCalled();
+  });
+});
+
+describe("useWalletActions — claimAction with metadata", () => {
+  let mockFetch: jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+  });
+
+  it("sends metadata in the request body when provided", async () => {
+    const userRef = { current: makeUser() };
+    const metadata = { platform: "twitter", handle: "@alice" };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ newBalance: 200, tier: "Citizen", xpEarned: 100, metadata: null }),
+    });
+
+    const { result } = renderHook(() =>
+      useWalletActions({
+        piAccessToken: null,
+        userRef,
+        setUser: jest.fn(),
+        setError: jest.fn(),
+        setWalletLogs: jest.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.claimAction("connect_twitter", metadata);
+    });
+
+    const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(callBody.metadata).toEqual(metadata);
+  });
+
+  it("uses 'Failed to claim' fallback when API returns error without message", async () => {
+    jest.useFakeTimers();
+    const setError = jest.fn();
+    const userRef = { current: makeUser() };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}), // no error field
+    });
+
+    const { result } = renderHook(() =>
+      useWalletActions({
+        piAccessToken: null,
+        userRef,
+        setUser: jest.fn(),
+        setError,
+        setWalletLogs: jest.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.claimAction("verify_kya");
+    });
+
+    expect(setError).toHaveBeenCalledWith("Failed to claim");
+    jest.useRealTimers();
+  });
 });

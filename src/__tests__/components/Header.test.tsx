@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import Header from "@/components/Header";
 import { useWallet } from "@/app/context/wallet-context";
 import { defaultWalletCtx } from "@/__tests__/app/wallet-test-helpers";
@@ -183,5 +183,88 @@ describe("Header — Pi Browser indicator", () => {
     mockUseWallet.mockReturnValue(makeCtx({ user: null, isPiBrowser: true }));
     render(<Header showWallet />);
     expect(screen.queryByText(/Pi Browser required/)).not.toBeInTheDocument();
+  });
+});
+
+// ─── PR change: handleConnect uses boolean return value (no try/catch) ────────
+describe("Header — handleConnect (PR change: boolean return check)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("shows 'Connection failed' error when connectWallet returns false", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(false);
+    mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    render(<Header showWallet />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT"));
+    });
+
+    expect(screen.getByText("Connection failed")).toBeInTheDocument();
+  });
+
+  it("does NOT show error when connectWallet returns true", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(true);
+    mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    render(<Header showWallet />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT"));
+    });
+
+    expect(screen.queryByText("Connection failed")).not.toBeInTheDocument();
+    expect(screen.queryByText(/فشل الاتصال/)).not.toBeInTheDocument();
+  });
+
+  it("shows error when connectWallet returns undefined (falsy)", async () => {
+    // connectWallet returning undefined is falsy, so error should appear
+    const connectWallet = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    render(<Header showWallet />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT"));
+    });
+
+    // undefined is falsy → shows error
+    expect(screen.getByText("Connection failed")).toBeInTheDocument();
+  });
+
+  it("error message disappears after 6 seconds", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(false);
+    mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    render(<Header showWallet />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT"));
+    });
+
+    expect(screen.getByText("Connection failed")).toBeInTheDocument();
+
+    act(() => {
+      jest.advanceTimersByTime(6000);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Connection failed")).not.toBeInTheDocument();
+    });
+  });
+
+  it("calls connectWallet exactly once per click", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(true);
+    mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    render(<Header showWallet />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT"));
+    });
+
+    expect(connectWallet).toHaveBeenCalledTimes(1);
   });
 });
