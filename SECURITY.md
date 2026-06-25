@@ -105,7 +105,7 @@ We use the [CVSS v3.1](https://www.first.org/cvss/) scoring system:
 If you are contributing to AxiomID, please follow these rules (enforced by CodeRabbit and our CI):
 
 - No `any` types in TypeScript
-- All API routes must use `requireAuth` middleware
+- All protected API routes must use requireAuth middleware
 - All inputs must be validated with Zod schemas
 - No secrets in code — use Vercel or Wrangler environment variables
 - No `console.log` with sensitive data — use `logger.error()` in catch blocks
