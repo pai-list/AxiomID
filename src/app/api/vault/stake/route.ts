@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth-middleware";
 import { z } from "zod";
 
 const StakeRequestSchema = z.object({
-  action: z.enum(["stake", "unstake"]),
+  action: z.enum(["stake", "unstake", "unstakeAll"]),
   amount: z.number().positive().optional(),
   stakeId: z.string().uuid().optional(),
 });
