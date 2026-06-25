@@ -212,6 +212,7 @@ export function useWalletAuth({
       }
     }
 
+
     const demoUser: User = {
       id: "demo-user-id",
       walletAddress: "pi:demo_alice",
