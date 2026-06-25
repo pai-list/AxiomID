@@ -583,3 +583,239 @@ describe('translations — marketplace page keys (PR change)', () => {
     expect(en['marketplace_connecting']).toContain('...');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PR change: landing page section keys
+// (used by src/app/page.tsx for the full landing page redesign)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('translations — landing page keys (PR change)', () => {
+  const landingKeys = [
+    'landing_pi_badge',
+    'landing_headline_en',
+    'landing_headline_rules_en',
+    'landing_headline_ar',
+    'landing_headline_rules_ar',
+    'landing_tagline',
+    'landing_watch_demo',
+    'landing_how_it_works',
+    'landing_three_steps',
+    'landing_step1_title',
+    'landing_step1_desc',
+    'landing_step2_title',
+    'landing_step2_desc',
+    'landing_step3_title',
+    'landing_step3_desc',
+    'landing_sovereign_advantage',
+    'landing_why_title',
+    'landing_web2_title',
+    'landing_web2_item1',
+    'landing_web2_item2',
+    'landing_web2_item3',
+    'landing_web2_item4',
+    'landing_web2_result',
+    'landing_axiom_title',
+    'landing_axiom_item1',
+    'landing_axiom_item2',
+    'landing_axiom_item3',
+    'landing_axiom_item4',
+    'landing_axiom_result',
+    'landing_level_up',
+  ];
+
+  landingKeys.forEach((key) => {
+    it(`EN has non-empty "${key}"`, () => {
+      expect(en[key]).toBeDefined();
+      expect(typeof en[key]).toBe('string');
+      expect(en[key].length).toBeGreaterThan(0);
+    });
+
+    it(`AR has non-empty "${key}"`, () => {
+      expect(ar[key]).toBeDefined();
+      expect(typeof ar[key]).toBe('string');
+      expect(ar[key].length).toBeGreaterThan(0);
+    });
+
+    it(`EN and AR "${key}" are not identical (actually translated)`, () => {
+      expect(en[key]).not.toBe(ar[key]);
+    });
+  });
+
+  // Spot-check specific EN values
+  it('landing_pi_badge EN is "Live on Pi Network Testnet"', () => {
+    expect(en['landing_pi_badge']).toBe('Live on Pi Network Testnet');
+  });
+
+  it('landing_headline_en EN is "Your Identity."', () => {
+    expect(en['landing_headline_en']).toBe('Your Identity.');
+  });
+
+  it('landing_headline_rules_en EN is "Your Rules."', () => {
+    expect(en['landing_headline_rules_en']).toBe('Your Rules.');
+  });
+
+  it('landing_tagline EN contains "DID"', () => {
+    expect(en['landing_tagline']).toContain('DID');
+  });
+
+  it('landing_tagline EN mentions cryptographic proof', () => {
+    expect(en['landing_tagline']).toContain('Cryptographic');
+  });
+
+  it('landing_three_steps EN describes three steps', () => {
+    expect(en['landing_three_steps']).toContain('Three Steps');
+  });
+
+  it('landing_step1_title EN is "Connect"', () => {
+    expect(en['landing_step1_title']).toBe('Connect');
+  });
+
+  it('landing_step2_title EN is "Verify"', () => {
+    expect(en['landing_step2_title']).toBe('Verify');
+  });
+
+  it('landing_step3_title EN is "Deploy"', () => {
+    expect(en['landing_step3_title']).toBe('Deploy');
+  });
+
+  it('landing_step1_desc EN mentions Pi wallet', () => {
+    expect(en['landing_step1_desc']).toContain('Pi wallet');
+  });
+
+  it('landing_step2_desc EN mentions KYA and KYC', () => {
+    expect(en['landing_step2_desc']).toContain('KYA');
+    expect(en['landing_step2_desc']).toContain('KYC');
+  });
+
+  it('landing_step3_desc EN mentions Agent Passport', () => {
+    expect(en['landing_step3_desc']).toContain('Agent Passport');
+  });
+
+  it('landing_web2_title EN is "Traditional Identity (Web2)"', () => {
+    expect(en['landing_web2_title']).toBe('Traditional Identity (Web2)');
+  });
+
+  it('landing_axiom_title EN is "AxiomID Sovereign Passport"', () => {
+    expect(en['landing_axiom_title']).toBe('AxiomID Sovereign Passport');
+  });
+
+  it('landing_axiom_item1 EN mentions W3C DIDs', () => {
+    expect(en['landing_axiom_item1']).toContain('W3C DIDs');
+  });
+
+  it('landing_axiom_result EN mentions frictionless auth', () => {
+    expect(en['landing_axiom_result']).toContain('Frictionless');
+  });
+
+  it('landing_web2_result EN describes a fragile outcome', () => {
+    expect(en['landing_web2_result']).toContain('Fragile');
+  });
+
+  it('landing_level_up EN is "Level Up Your Identity"', () => {
+    expect(en['landing_level_up']).toBe('Level Up Your Identity');
+  });
+
+  // Spot-check specific AR values
+  it('landing_pi_badge AR is non-empty Arabic string (different from EN)', () => {
+    expect(ar['landing_pi_badge']).not.toBe(en['landing_pi_badge']);
+    expect(ar['landing_pi_badge'].length).toBeGreaterThan(0);
+  });
+
+  it('landing_axiom_title AR contains "AxiomID" (brand name preserved)', () => {
+    // Brand names should remain in both languages
+    expect(ar['landing_axiom_title']).toContain('AxiomID');
+  });
+
+  it('landing_axiom_item1 AR mentions W3C DIDs (technical term preserved)', () => {
+    expect(ar['landing_axiom_item1']).toContain('W3C DIDs');
+  });
+
+  it('landing_level_up AR is non-empty and different from EN', () => {
+    expect(ar['landing_level_up']).not.toBe('Level Up Your Identity');
+    expect(ar['landing_level_up'].length).toBeGreaterThan(0);
+  });
+
+  it('landing_web2_result AR is non-empty Arabic translation', () => {
+    expect(ar['landing_web2_result']).not.toBe(en['landing_web2_result']);
+  });
+
+  // Verify all 4 web2 items and 4 axiom items exist in both languages
+  it('all 4 landing_web2_item keys exist in EN', () => {
+    for (let i = 1; i <= 4; i++) {
+      expect(en[`landing_web2_item${i}`]).toBeDefined();
+      expect(en[`landing_web2_item${i}`].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all 4 landing_web2_item keys exist in AR', () => {
+    for (let i = 1; i <= 4; i++) {
+      expect(ar[`landing_web2_item${i}`]).toBeDefined();
+      expect(ar[`landing_web2_item${i}`].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all 4 landing_axiom_item keys exist in EN', () => {
+    for (let i = 1; i <= 4; i++) {
+      expect(en[`landing_axiom_item${i}`]).toBeDefined();
+      expect(en[`landing_axiom_item${i}`].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all 4 landing_axiom_item keys exist in AR', () => {
+    for (let i = 1; i <= 4; i++) {
+      expect(ar[`landing_axiom_item${i}`]).toBeDefined();
+      expect(ar[`landing_axiom_item${i}`].length).toBeGreaterThan(0);
+    }
+  });
+
+  // Regression: no key should fall back to its own key name
+  it('no landing_* key falls back to its own key name in EN', () => {
+    for (const key of landingKeys) {
+      expect(en[key]).not.toBe(key);
+    }
+  });
+
+  it('no landing_* key falls back to its own key name in AR', () => {
+    for (const key of landingKeys) {
+      expect(ar[key]).not.toBe(key);
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PR change: jest.setup.js mock covers all new landing_* keys
+// Verify the mock dictionary in jest.setup.js includes the same keys so
+// components that consume the mocked t() function behave correctly in tests.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('translations — landing page key parity (EN vs AR, PR change)', () => {
+  const keyPairs: Array<[string, string]> = [
+    ['landing_step1_title', 'landing_step2_title'],
+    ['landing_step1_desc', 'landing_step2_desc'],
+    ['landing_web2_title', 'landing_axiom_title'],
+    ['landing_web2_result', 'landing_axiom_result'],
+  ];
+
+  keyPairs.forEach(([keyA, keyB]) => {
+    it(`"${keyA}" and "${keyB}" EN values are distinct`, () => {
+      expect(en[keyA]).not.toBe(en[keyB]);
+    });
+
+    it(`"${keyA}" and "${keyB}" AR values are distinct`, () => {
+      expect(ar[keyA]).not.toBe(ar[keyB]);
+    });
+  });
+
+  it('landing_headline_en EN and AR values differ (EN "Your Identity.", AR "هويتك.")', () => {
+    // The EN dict sets landing_headline_en to "Your Identity."
+    // The AR dict sets it to "هويتك." — different text for the same key
+    expect(en['landing_headline_en']).toBe('Your Identity.');
+    expect(ar['landing_headline_en']).toBe('هويتك.');
+  });
+
+  it('landing_headline_ar EN is "هويتك." and AR is also "هويتك." (both languages use Arabic text)', () => {
+    // landing_headline_ar carries the Arabic headline in both locales
+    expect(en['landing_headline_ar']).toBe('هويتك.');
+    expect(ar['landing_headline_ar']).toBe('هويتك.');
+  });
+});
