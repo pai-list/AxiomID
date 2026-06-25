@@ -48,8 +48,26 @@ describe("AxiomLogo — rendering", () => {
 
   it("renders a linearGradient for the logo SVG circle stroke", () => {
     const { container } = render(<AxiomLogo />);
-    const gradient = container.querySelector("linearGradient#logoGrad");
+    const gradient = container.querySelector("defs > linearGradient");
     expect(gradient).toBeInTheDocument();
+  });
+
+  it("uses a unique gradient id per instance to avoid collisions", () => {
+    const { container } = render(
+      <>
+        <AxiomLogo />
+        <AxiomLogo />
+      </>
+    );
+    const gradients = container.querySelectorAll("defs > linearGradient");
+    expect(gradients).toHaveLength(2);
+    const ids = Array.from(gradients).map((g) => g.getAttribute("id"));
+    expect(ids[0]).not.toEqual(ids[1]);
+    // The circle stroke must reference its own gradient id
+    const circles = container.querySelectorAll("circle");
+    circles.forEach((circle, i) => {
+      expect(circle.getAttribute("stroke")).toBe(`url(#${ids[i]})`);
+    });
   });
 
   it("renders the 'A' letter path in the SVG", () => {

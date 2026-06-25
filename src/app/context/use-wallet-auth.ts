@@ -238,10 +238,11 @@ export function useWalletAuth({
 
     setLocalStorageItem("axiomid_wallet", "pi:demo_alice");
     setLocalStorageItem("pi_access_token", demoToken);
+    setPiAccessToken(demoToken);
     setUser(demoUser);
     setIsConnecting(false);
     pushLog("Demo Mode initialized successfully!");
-  }, [pushLog, setUser, setIsConnecting, setError]);
+  }, [pushLog, setUser, setPiAccessToken, setIsConnecting, setError]);
 
   return { connectWallet, logout, disconnectWallet, connectDemo };
 }
