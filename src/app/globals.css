@@ -1262,7 +1262,7 @@ a:focus-visible {
 }
 
 /* ── Onboarding step transitions ──────────────────────── */
-@keyframes fadeInUp {
+@keyframes onboardingFadeInUp {
   from {
     opacity: 0;
     transform: translateY(10px);
