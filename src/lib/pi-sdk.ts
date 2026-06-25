@@ -61,6 +61,8 @@ export function loadPiSdk(): Promise<unknown> {
 
     const script = document.createElement("script");
     script.src = "https://sdk.minepi.com/pi-sdk.js";
+    script.integrity = "sha384-MB+dVW+BFRnwyiBYxALhuOr8KOKBtIJdOS3MmO7M87C5+khNeoYuj09OTzIx0GDD";
+    script.crossOrigin = "anonymous";
     script.async = true;
     script.onload = () => {
       if (win.Pi) {
