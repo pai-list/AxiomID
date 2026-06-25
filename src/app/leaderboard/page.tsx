@@ -41,7 +41,7 @@ export default function LeaderboardPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
-    const active = true;
+    let active = true;
     const fetchLeaderboard = async () => {
       try {
         const res = await fetch("/api/leaderboard");
@@ -58,6 +58,9 @@ export default function LeaderboardPage() {
       }
     };
     fetchLeaderboard();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const filteredUsers = users.filter((u) => {
