@@ -142,6 +142,12 @@ export function boltzmannTrustProbability(
   temperature: number = 1.0,
   boltzmannConstant: number = 1.0,
 ): number {
+  // Temperature and the Boltzmann constant must be positive for the
+  // distribution to be well-defined; otherwise the exponent is invalid.
+  if (temperature <= 0 || boltzmannConstant <= 0) {
+    throw new Error("temperature and boltzmannConstant must be positive");
+  }
+
   // Energy is inverse of trust (0 trust = max energy)
   const energy = 1 - trustScore;
 
@@ -950,18 +956,22 @@ export function randomWalkTrust(
 ): { visitCounts: Map<string, number>; stationaryDistribution: Map<string, number> } {
   const visitCounts = new Map<string, number>();
   let current = startNode;
+  let totalVisits = 0;
 
   for (let i = 0; i < steps; i++) {
     visitCounts.set(current, (visitCounts.get(current) || 0) + 1);
+    totalVisits++;
     const neighbors = graph.get(current) || [];
     if (neighbors.length === 0) break;
     current = neighbors[Math.floor(Math.random() * neighbors.length)];
   }
 
-  // Stationary distribution = visit frequency
+  // Stationary distribution = visit frequency. Normalize by the number of
+  // visits actually taken so the distribution always sums to 1, even when
+  // the walk hits a dead-end before completing all steps.
   const stationaryDistribution = new Map<string, number>();
   for (const [node, count] of visitCounts) {
-    stationaryDistribution.set(node, count / steps);
+    stationaryDistribution.set(node, totalVisits > 0 ? count / totalVisits : 0);
   }
 
   return { visitCounts, stationaryDistribution };
@@ -1143,6 +1153,10 @@ export interface HuffmanNode {
  * @returns The root node of the Huffman tree
  */
 export function buildHuffmanTree(symbols: Map<string, number>): HuffmanNode {
+  if (symbols.size === 0) {
+    throw new Error("Cannot build a Huffman tree from an empty symbol set");
+  }
+
   const nodes: HuffmanNode[] = Array.from(symbols.entries()).map(([symbol, frequency]) => ({
     symbol,
     frequency,
@@ -1150,6 +1164,19 @@ export function buildHuffmanTree(symbols: Map<string, number>): HuffmanNode {
     right: null,
     code: "",
   }));
+
+  // A single-symbol alphabet needs a parent so the symbol gets a 1-bit code
+  // ("0") instead of an empty (lossy) code.
+  if (nodes.length === 1) {
+    const only = nodes[0];
+    return {
+      symbol: null,
+      frequency: only.frequency,
+      left: only,
+      right: null,
+      code: "",
+    };
+  }
 
   while (nodes.length > 1) {
     nodes.sort((a, b) => a.frequency - b.frequency);
@@ -1442,11 +1469,18 @@ export function powerIteration(
 }
 
 /**
- * Splits the graph's nodes into two communities using a spectral partition.
+ * Splits the graph's nodes into two communities using the dominant Laplacian
+ * eigenvector as a partition heuristic.
+ *
+ * NOTE: This uses `powerIteration`, which yields the dominant (largest)
+ * eigenvector of the Laplacian — NOT the true Fiedler vector (the eigenvector
+ * of the second-smallest eigenvalue). It is a coarse spectral heuristic, not a
+ * spectral bisection. Renamed from `fiedlerPartition` to avoid implying the
+ * latter.
  *
  * @returns An object containing the nodes assigned to `communityA` and `communityB`.
  */
-export function fiedlerPartition(
+export function spectralPartition(
   nodes: string[],
   edges: TopologyEdge[],
 ): { communityA: string[]; communityB: string[] } {
@@ -1730,8 +1764,17 @@ export function fokkerPlanckTrustEvolution(
   const n = trustGrid.length;
   if (n < 3) return probabilities;
 
-  const newProbabilities = new Array(n).fill(0);
+  // Guard against mismatched inputs and degenerate grids that would otherwise
+  // produce NaN/Infinity values.
+  if (probabilities.length !== n) {
+    throw new Error("probabilities and trustGrid must have the same length");
+  }
   const dx = trustGrid[1] - trustGrid[0];
+  if (dx === 0) {
+    throw new Error("trustGrid must have a non-zero spacing");
+  }
+
+  const newProbabilities = new Array(n).fill(0);
 
   // Discretized Fokker-Planck
   for (let i = 0; i < n; i++) {
@@ -1907,9 +1950,28 @@ export function kuramotoTrustSync(
   totalTime: number = 10,       // total simulation time
 ): { phases: number[][]; orderParameter: number[]; finalSync: number } {
   const n = naturalFrequencies.length;
+  if (initialPhases.length !== n) {
+    throw new Error("naturalFrequencies and initialPhases must have the same length");
+  }
+  if (timeStep <= 0) {
+    throw new Error("timeStep must be positive");
+  }
+
   let phases = [...initialPhases];
   const history: number[][] = [phases];
   const orderParams: number[] = [];
+
+  // Seed an initial order parameter so finalSync is well-defined even when
+  // totalTime <= 0 results in zero iterations.
+  {
+    let realSum = 0;
+    let imagSum = 0;
+    for (const phase of phases) {
+      realSum += Math.cos(phase);
+      imagSum += Math.sin(phase);
+    }
+    orderParams.push(n > 0 ? Math.sqrt(realSum * realSum + imagSum * imagSum) / n : 0);
+  }
 
   for (let t = 0; t < totalTime; t += timeStep) {
     const newPhases = new Array(n).fill(0);
