@@ -1793,11 +1793,7 @@ export function fokkerPlanckTrustEvolution(
     const diffusionTerm = (diffusionRight - 2 * diffusionCenter + diffusionLeft) / (dx * dx);
 
     newProbabilities[i] = probabilities[i] + timeStep * (driftTerm + 0.5 * diffusionTerm);
-
-    // Boundary conditions: trust stays in [0, 1]
-    if (i === 0 || i === n - 1) {
-      newProbabilities[i] = Math.max(0, newProbabilities[i]);
-    }
+    newProbabilities[i] = Math.max(0, newProbabilities[i]);
   }
 
   // Normalize
