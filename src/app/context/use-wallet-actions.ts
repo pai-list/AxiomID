@@ -23,6 +23,7 @@ interface UseWalletActionsReturn {
   claimKya: (username: string) => Promise<boolean>;
   runTest: () => Promise<void>;
   clearWalletLogs: () => void;
+  pushLog: (msg: string) => void;
 }
 
 export function useWalletActions({
