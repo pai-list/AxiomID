@@ -89,6 +89,14 @@ Trust is earned through actions, not purchases. The algorithm weighs contributio
 | **Storage** | Cloudflare KV (cache) · Vercel Blob (uploads) |
 | **CI/CD** | GitHub Actions → Vercel (auto-deploy on push) · 99 test suites, 1260 tests |
 
+## SDK Installation
+
+To use AxiomID in your own TypeScript/JavaScript projects, install the official SDK:
+
+```bash
+npm install @axiomid/sdk
+```
+
 ---
 
 ## Quick Start
