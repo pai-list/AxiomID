@@ -260,8 +260,9 @@ describe("ClaimPage — 'Pi Mainnet' never appears (global regression guard)", (
 
 // ─── PR change: handleConnect no longer wraps connectWallet in try/catch ────
 describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
-  it("sets walletConnected when connectWallet resolves successfully", async () => {
-    const connectWallet = jest.fn().mockResolvedValue(undefined);
+  it("shows Connected badge when connectWallet resolves successfully", async () => {
+    // User without walletAddress so the CONNECT PI WALLET button is rendered
+    const connectWallet = jest.fn().mockResolvedValue(true);
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null, connectWallet }));
     render(<ClaimPage />);
 
@@ -270,16 +271,16 @@ describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
     });
 
     expect(connectWallet).toHaveBeenCalledTimes(1);
-    // After successful connection, walletConnected is true so the "Connected" badge shows
-    // (The test user still comes from useWallet.user, but internal walletConnected state was set)
-    // We can verify the button text changes or the connected badge appears
-    // Since walletConnected=true but user is still null from mock, Connected badge won't show
-    // What matters: connectWallet was called and no unhandled error occurred
+    // After successful connection, at least one "Connected" badge should be visible
+    expect(screen.getAllByText("Connected").length).toBeGreaterThan(0);
+    // No error should be shown
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("does not show a connect error when connectWallet resolves (no error state)", async () => {
-    const connectWallet = jest.fn().mockResolvedValue(undefined);
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any, connectWallet }));
+    // User without walletAddress so the CONNECT PI WALLET button is rendered
+    const connectWallet = jest.fn().mockResolvedValue(true);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null, connectWallet }));
     render(<ClaimPage />);
 
     await act(async () => {
@@ -291,7 +292,7 @@ describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
   });
 
   it("shows 'Connected' badge after handleConnect when user already has a wallet", async () => {
-    const connectWallet = jest.fn().mockResolvedValue(undefined);
+    const connectWallet = jest.fn().mockResolvedValue(true);
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any, connectWallet }));
     render(<ClaimPage />);
 

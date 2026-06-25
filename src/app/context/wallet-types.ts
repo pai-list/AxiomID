@@ -103,7 +103,7 @@ export function mapApiUser(
     tier: data.tier,
     trustScore: data.trustScore ?? calculateTrustScore(data.xp || 0, stamps.length),
     createdAt: data.createdAt || fallback?.createdAt || new Date().toISOString(),
-    piUsername: data.piUsername,
+    piUsername: data.piUsername || null,
     kycStatus: data.kycStatus || null,
     did: data.did || null,
     passportUrl: data.passportUrl || null,

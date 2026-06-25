@@ -493,8 +493,12 @@ describe("LeaderboardPage — error state (PR change)", () => {
     mockLeaderboardResponse([]);
     render(<LeaderboardPage />);
 
+    // Wait for successful load to complete by checking for success marker
     await waitFor(() => {
-      expect(screen.queryByText("Failed to load leaderboard")).not.toBeInTheDocument();
+      expect(screen.getByText("Be the First Sovereign")).toBeInTheDocument();
     });
+
+    // Then verify no error is shown
+    expect(screen.queryByText("Failed to load leaderboard")).not.toBeInTheDocument();
   });
 });

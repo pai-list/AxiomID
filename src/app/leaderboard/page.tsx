@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
           <div className="glass-card p-12 text-center">
             <p className="text-sm text-red-400 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="text-xs font-mono text-electric-blue hover:underline">
+            <button onClick={() => window.location.reload()} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>
           </div>

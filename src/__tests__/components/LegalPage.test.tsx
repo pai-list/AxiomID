@@ -90,12 +90,6 @@ describe("LegalPage — rendering", () => {
 
 describe("LegalPage — color mapping", () => {
   it("applies bg-neon-green class for color='green'", () => {
-    render(
-      <LegalPage
-        {...defaultProps}
-        sections={[{ titleKey: "section_title", descKey: "section_desc", color: "green" }]}
-      />
-    );
     const { container } = render(
       <LegalPage
         {...defaultProps}
