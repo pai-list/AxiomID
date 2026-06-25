@@ -142,11 +142,13 @@ export async function requireAuth(request: NextRequest): Promise<
   if (isProduction) {
     // Skip sandbox entirely in production. No env var can override this.
   } else {
-    const host = request.headers.get("host") || "";
+    const hostname = request.nextUrl.hostname;
+    const isLoopbackHost =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1";
     const isSandboxOrDev =
-      process.env.NEXT_PUBLIC_PI_SANDBOX === "true" ||
-      host.includes("localhost") ||
-      host.includes("127.0.0.1");
+      process.env.SANDBOX_AUTH_BYPASS === "true" && isLoopbackHost;
 
     const sandboxToken = getSandboxDevToken();
     if (isSandboxOrDev && sandboxToken && accessToken === sandboxToken) {
