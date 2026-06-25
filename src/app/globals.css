@@ -1241,3 +1241,22 @@ a:focus-visible {
 .confetti-piece:nth-child(even) {
   border-radius: 50%;
 }
+
+/* ── RTL Support ──────────────────────────────────────── */
+/* Flip direction-specific gradients for RTL languages */
+[dir="rtl"] .bg-gradient-to-r {
+  background-image: linear-gradient(to left, var(--tw-gradient-stops));
+}
+[dir="rtl"] .bg-gradient-to-l {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+[dir="rtl"] .from-transparent.via-white\/10.to-transparent {
+  background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+}
+/* Flip table row borders for RTL */
+[dir="rtl"] table {
+  direction: rtl;
+}
+[dir="rtl"] th, [dir="rtl"] td {
+  text-align: start;
+}

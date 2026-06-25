@@ -117,13 +117,13 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder={t("docs_search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-[11px] text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-electric-blue/30 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 ps-9 pe-3 text-[11px] text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-electric-blue/30 transition-colors"
             />
           </div>
 
@@ -188,7 +188,7 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
                       <h4 className={`text-xs font-bold font-mono ${stamp.color}`}>{stamp.name}</h4>
                       <p className="text-[11px] text-zinc-500 mt-1 leading-relaxed">{stamp.desc}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded font-bold ml-3 flex-shrink-0">
+                    <span className="text-[10px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded font-bold ms-3 flex-shrink-0">
                       {stamp.xp}
                     </span>
                   </div>
@@ -307,24 +307,24 @@ const rootKey = deriveUserRootKey(piUid, process.env.SOVEREIGN_KEY_SALT);`} lang
                 <table className="w-full text-left font-mono text-xs">
                   <thead>
                     <tr className="border-b border-white/10 text-[10px] text-zinc-500">
-                      <th className="py-2 pr-3 w-16">METHOD</th>
-                      <th className="py-2 pr-3">ENDPOINT</th>
-                      <th className="py-2 pr-3">DESCRIPTION</th>
+                      <th className="py-2 pe-3 w-16">METHOD</th>
+                      <th className="py-2 pe-3">ENDPOINT</th>
+                      <th className="py-2 pe-3">DESCRIPTION</th>
                       <th className="py-2 w-16">AUTH</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {API_ROUTES.map((route, i) => (
                       <tr key={i} className="hover:bg-white/[0.01] transition-colors">
-                        <td className="py-2.5 pr-3">
+                        <td className="py-2.5 pe-3">
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
                             route.method === "GET" ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-green/20 text-neon-green"
                           }`}>
                             {route.method}
                           </span>
                         </td>
-                        <td className="py-2.5 pr-3 text-white font-semibold">{route.path}</td>
-                        <td className="py-2.5 pr-3 text-zinc-500">{route.desc}</td>
+                        <td className="py-2.5 pe-3 text-white font-semibold">{route.path}</td>
+                        <td className="py-2.5 pe-3 text-zinc-500">{route.desc}</td>
                         <td className="py-2.5">
                           <span className={`text-[9px] font-bold ${route.auth === "Yes" ? "text-amber-400" : "text-zinc-600"}`}>
                             {route.auth}

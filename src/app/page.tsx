@@ -147,7 +147,7 @@ export default function Home() {
                 {t("landing_pi_badge")}
               </span>
               <span className="px-3 py-1 rounded-full text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest">
-                <svg viewBox="0 0 100 100" className="w-3 h-3 inline mr-1 -mt-0.5 align-middle" fill="currentColor">
+                <svg viewBox="0 0 100 100" className="w-3 h-3 inline me-1 -mt-0.5 align-middle" fill="currentColor">
                   <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
                   <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
                 </svg>
@@ -230,12 +230,12 @@ export default function Home() {
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-br from-white/[0.02] to-transparent group cursor-pointer">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/20 group-hover:scale-110 transition-all duration-300">
-              <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-white ms-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
           </div>
-          <div className="absolute bottom-4 left-4 right-4 text-center">
+          <div className="absolute bottom-4 start-4 end-4 text-center">
             <p className="text-sm text-zinc-400 font-mono">{t("watch_demo_desc")}</p>
           </div>
           {/* Subtle gradient overlay */}
@@ -251,7 +251,7 @@ export default function Home() {
           labelColor="text-electric-blue"
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-          <div className="hidden md:block absolute top-24 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0" />
+          <div className="hidden md:block absolute top-24 start-[15%] end-[15%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0" />
           {[
             {
               step: "01",
@@ -276,7 +276,7 @@ export default function Home() {
             },
           ].map((item) => (
             <div key={item.step} className="stitch-feature-card flex flex-col gap-4 cursor-default group relative z-10">
-              <div className="absolute top-4 right-4 text-3xl font-mono font-bold text-white/5 group-hover:text-electric-blue/5 transition-colors">{item.step}</div>
+              <div className="absolute top-4 end-4 text-3xl font-mono font-bold text-white/5 group-hover:text-electric-blue/5 transition-colors">{item.step}</div>
               <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-electric-blue/20 transition-all duration-300">
                 {item.icon}
               </div>
