@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback } from "react";
+import { User } from "./wallet-types";
 
 interface UseWalletAgentParams {
   piAccessToken: string | null;
-  userRef: React.MutableRefObject<{ walletAddress: string } | null>;
+  userRef: React.MutableRefObject<User | null>;
   refreshUser: () => Promise<void>;
 }
 
