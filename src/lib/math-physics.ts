@@ -1631,6 +1631,9 @@ export function minCutTrustBottleneck(
       v = u;
     }
 
+    // No finite augmenting path found — stop to avoid adding Infinity to maxFlow.
+    if (!Number.isFinite(pathFlow) || pathFlow <= 0) break;
+
     // Update residual graph
     v = sink;
     while (v !== source) {
