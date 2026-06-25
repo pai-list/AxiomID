@@ -302,7 +302,8 @@ async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
           metadata: item.metadata,
         },
       }),
-      "agent presence"
+      "agent presence",
+      "agent_id"
     );
 
     const presenceRecords = await prisma.agentPresence.findMany({
