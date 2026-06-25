@@ -1,6 +1,6 @@
 {
   "name": "axiomid",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "AxiomID - The Human Authorization Protocol. Decentralized identity verification for human-AI collaboration.",
   "aix": {
@@ -51,8 +51,8 @@
     "dead-code": "knip"
   },
   "dependencies": {
-    "@axiomid/crypto": "file:packages/crypto",
-    "@axiomid/sdk": "file:packages/sdk",
+    "@axiomid/crypto": "^0.1.0",
+    "@axiomid/sdk": "^0.1.0",
     "@json-render/core": "^0.19.0",
     "@json-render/react": "^0.19.0",
     "@nostics/unplugin": "^1.1.0",
