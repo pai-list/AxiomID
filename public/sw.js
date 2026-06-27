@@ -1,4 +1,5 @@
 const CACHE = "axiomid-v3";
+const STATIC_ASSET_PATTERN = /\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|otf|eot|map)$/;
 const STATIC_ASSETS = [
   "/manifest.webmanifest",
   "/icon-192x192.png",
@@ -32,7 +33,6 @@ self.addEventListener("activate", (event) => {
 });
 
 // Static immutable assets that are safe to serve Stale-While-Revalidate.
-const STATIC_ASSET_PATTERN = /\.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i;
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
