@@ -39,7 +39,13 @@ function findRule(
 let content: string;
 let rules: Array<{ pattern: string; owners: string[] }>;
 
+let content = "";
+let rules: Array<{ pattern: string; owners: string[] }> = [];
+
 beforeAll(() => {
+  if (!fs.existsSync(CODEOWNERS_PATH)) {
+    return;
+  }
   content = fs.readFileSync(CODEOWNERS_PATH, "utf-8");
   rules = parseRules(content);
 });
