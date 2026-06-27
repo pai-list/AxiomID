@@ -120,10 +120,13 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
 
       - name: Apply Labels
-        if: hashFiles('/tmp/ai-triage-result.json') != ''
+        if: always()
         run: |
           python3 << 'PYEOF'
-          import json, os
+          import json, os, sys
+          if not os.path.exists("/tmp/ai-triage-result.json"):
+              print("⚠️  No triage result, skipping label step")
+              sys.exit(0)
           with open("/tmp/ai-triage-result.json") as f:
               result = json.load(f)
           labels = result.get("labels", [])
