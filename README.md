@@ -19,14 +19,15 @@
 ---
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-v0.1.0-blue" alt="Status" />
-  <img src="https://img.shields.io/badge/tests-2855%20passing-brightgreen" alt="Tests" />
-  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage" />
-  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
-  <img src="https://img.shields.io/badge/Prisma-6-2D3748" alt="Prisma" />
-  <img src="https://img.shields.io/badge/Cloudflare-Workers-orange" alt="Workers" />
-  <img src="https://img.shields.io/badge/license-proprietary-red" alt="License" />
+  <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI Status" /></a>
+  <a href="https://github.com/Moeabdelaziz007/AxiomID/releases"><img src="https://img.shields.io/github/v/release/Moeabdelaziz007/AxiomID?style=flat-square&color=blue" alt="Version" /></a>
+  <img src="https://img.shields.io/badge/tests-2855%20passing-brightgreen?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-blue?style=flat-square" alt="React" />
+  <img src="https://img.shields.io/badge/Prisma-6-2D3748?style=flat-square" alt="Prisma" />
+  <img src="https://img.shields.io/badge/Cloudflare-Workers-orange?style=flat-square" alt="Workers" />
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-proprietary-red?style=flat-square" alt="License" /></a>
+  <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
 </p>
 
 ---
@@ -233,13 +234,27 @@ graph TD
 ## Architecture
 
 ```mermaid
-graph LR
-    User[User / Client] --> Frontend(Next.js 16 App Router)
-    Frontend --> Edge[Cloudflare Workers / Edge]
-    Frontend --> Auth[Pi Network Auth]
-    Edge --> DB[(PostgreSQL + Prisma 6)]
-    Edge --> D1[(Cloudflare D1)]
-    Edge --> AI[Workers AI / Vectorize]
+graph TB
+    User[/"🧑 User / Client"/] -->|"HTTPS"| Frontend["⚡ Next.js 16 App Router<br/>React 19 · Tailwind 4 · Framer Motion"]
+
+    Frontend -->|"API calls"| Vercel["☁️ Vercel Serverless<br/>24+ Route Handlers"]
+    Frontend -->|"Pi SDK"| Pi["🥧 Pi Network Auth<br/>Ed25519 · W3C DID"]
+
+    Vercel -->|"Prisma 6"| DB[("🐘 PostgreSQL<br/>Users · Stamps · Skills")]
+    Vercel -->|"Edge sync"| D1[("🗄️ Cloudflare D1<br/>Edge Cache")]
+    Vercel -->|"AI inference"| AI["🧠 Workers AI<br/>Llama 3.1 · BGE embeddings"]
+    Vercel -->|"Vector search"| Vec[("🔍 Vectorize<br/>6236 Quran verses")]
+
+    D1 <-->|"bidirectional sync"| DB
+
+    style User fill:#10131a,stroke:#22c55e,stroke-width:2px,color:#fff
+    style Frontend fill:#10131a,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style Vercel fill:#10131a,stroke:#6366f1,stroke-width:2px,color:#fff
+    style Pi fill:#10131a,stroke:#f59e0b,stroke-width:2px,color:#fff
+    style DB fill:#10131a,stroke:#22c55e,stroke-width:2px,color:#fff
+    style D1 fill:#10131a,stroke:#f97316,stroke-width:2px,color:#fff
+    style AI fill:#10131a,stroke:#6366f1,stroke-width:2px,color:#fff
+    style Vec fill:#10131a,stroke:#8b5cf6,stroke-width:2px,color:#fff
 ```
 
 
@@ -264,6 +279,8 @@ src/
 ---
 
 ## Contributing
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for full setup and guidelines.
 
 PRs require passing CI (type-check, lint, tests) and at least one review.
 
