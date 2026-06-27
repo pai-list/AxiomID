@@ -33,7 +33,7 @@ jobs:
           echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
           echo "additions=$ADDITIONS" >> "$GITHUB_OUTPUT"
           echo "deletions=$DELETIONS" >> "$GITHUB_OUTPUT"
-          echo "diff_lines=$(wc -l < /tmp/pr.diff)" >> "$GITHUB_OUTPUT"
+          echo "diff_lines=$(wc -l < /tmp/pr.diff | awk '{print $1}')" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
