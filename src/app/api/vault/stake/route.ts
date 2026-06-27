@@ -7,11 +7,21 @@ import { getClientIp } from "@/lib/ip";
 import { requireAuth } from "@/lib/auth-middleware";
 import { z } from "zod";
 
+// "unstake" with a `stakeId` unstakes that single record; "unstake" without a
+// `stakeId` unstakes all of the user's active stakes. There is intentionally no
+// separate "unstakeAll" action — the handler does not distinguish it.
 const StakeRequestSchema = z.object({
   action: z.enum(["stake", "unstake"]),
   amount: z.number().positive().optional(),
   stakeId: z.string().uuid().optional(),
 });
+
+// `amount` is a Prisma Decimal column. Convert it to a plain number for JSON
+// responses so clients receive a numeric value instead of a Decimal object/string.
+type StakeRecord = { amount: { toNumber(): number } };
+function serializeStake<T extends StakeRecord>(stake: T): Omit<T, "amount"> & { amount: number } {
+  return { ...stake, amount: stake.amount.toNumber() };
+}
 
 /**
  * Fetches the authenticated user's staking records.
@@ -33,7 +43,7 @@ export async function GET(request: NextRequest) {
       where: { userId: auth.user.id },
       orderBy: { createdAt: "desc" },
     });
-    return apiSuccess({ stakes });
+    return apiSuccess({ stakes: stakes.map(serializeStake) });
   } catch (error) {
     logger.error("[VAULT-STAKE] GET Database error:", error);
     return apiError("INTERNAL_ERROR", "Failed to fetch stakes");
@@ -78,7 +88,7 @@ export async function POST(request: NextRequest) {
       });
 
       logger.info("[VAULT-STAKE] User staked tokens", { userId: auth.user.id, amount });
-      return apiSuccess({ stake });
+      return apiSuccess({ stake: serializeStake(stake) });
     } else {
       // action === "unstake"
       if (stakeId) {
@@ -100,7 +110,7 @@ export async function POST(request: NextRequest) {
         });
 
         logger.info("[VAULT-STAKE] User unstaked record", { userId: auth.user.id, stakeId });
-        return apiSuccess({ stake: updatedStake });
+        return apiSuccess({ stake: serializeStake(updatedStake) });
       } else {
         // unstake all active stakes
         const result = await prisma.stake.updateMany({

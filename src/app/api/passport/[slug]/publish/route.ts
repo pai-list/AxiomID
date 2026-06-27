@@ -8,7 +8,7 @@ import { createUserDid } from "@/lib/did";
 import { calculateTrustScore } from "@/lib/trust";
 import { signPassportCredential } from "@/lib/vc";
 import { publishToIPFS } from "@/lib/storage/ipfs-sync";
-import { PassportSlugParamSchema } from "@/lib/validators";
+import { SlugParamSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
 import { getKyaStatus, getKycStatus } from "../_utils";
 
@@ -26,7 +26,7 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const parsedParams = PassportSlugParamSchema.safeParse({ slug });
+  const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {
     return apiError("VALIDATION_ERROR", parsedParams.error.issues[0].message, parsedParams.error.issues);
   }

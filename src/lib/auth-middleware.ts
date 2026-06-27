@@ -142,7 +142,6 @@ export async function requireAuth(request: NextRequest): Promise<
   if (isProduction) {
     // Skip sandbox entirely in production. No env var can override this.
   } else {
-    const hostname = request.nextUrl.hostname;
     const isLoopbackHost =
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
