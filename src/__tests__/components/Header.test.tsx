@@ -2,10 +2,15 @@ import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import Header from "@/components/Header";
 import { useWallet } from "@/app/context/wallet-context";
+import { useLanguage } from "@/app/context/language-context";
 import { defaultWalletCtx } from "@/__tests__/app/wallet-test-helpers";
 
 jest.mock("@/app/context/wallet-context", () => ({
   useWallet: jest.fn(),
+}));
+
+jest.mock("@/app/context/language-context", () => ({
+  useLanguage: jest.fn(),
 }));
 
 jest.mock("next/link", () => ({
@@ -15,15 +20,35 @@ jest.mock("next/link", () => ({
 }));
 
 const mockUseWallet = useWallet as jest.MockedFunction<typeof useWallet>;
+const mockUseLanguage = useLanguage as jest.MockedFunction<typeof useLanguage>;
 
 function makeCtx(overrides = {}) {
   return defaultWalletCtx(overrides) as ReturnType<typeof useWallet>;
+}
+
+function mockLanguage(tKey: string) {
+  const dict: Record<string, string> = {
+    header_back: "BACK",
+    connect: "CONNECT",
+    connecting: "CONNECTING...",
+    dashboard: "AxiomID Dashboard",
+    nav_dashboard: "AxiomID Dashboard",
+    logout: "LOGOUT",
+    pi_browser: "Pi Browser",
+    pi_browser_required: "Pi Browser required. Open this app inside Pi Browser.",
+  };
+  mockUseLanguage.mockReturnValue({
+    language: "en",
+    setLanguage: jest.fn(),
+    t: (key: string) => dict[key] || key,
+  } as ReturnType<typeof useLanguage>);
 }
 
 describe("Header — rendering", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWallet.mockReturnValue(makeCtx());
+    mockLanguage("en");
   });
 
   it("renders without crashing", () => {
@@ -47,6 +72,7 @@ describe("Header — showBack prop", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWallet.mockReturnValue(makeCtx());
+    mockLanguage("en");
   });
 
   it("does not render the back button by default", () => {
@@ -72,6 +98,7 @@ describe("Header — showWallet=false (default)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWallet.mockReturnValue(makeCtx());
+    mockLanguage("en");
   });
 
   it("does not show a connect button when showWallet is not set", () => {
@@ -87,6 +114,7 @@ describe("Header — showWallet with no user", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWallet.mockReturnValue(makeCtx({ user: null, connectWallet, isConnecting: false }));
+    mockLanguage("en");
   });
 
   it("renders the connect button when no user is connected", () => {
@@ -134,6 +162,7 @@ describe("Header — showWallet with authenticated user", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseWallet.mockReturnValue(makeCtx({ user: mockUser }));
+    mockLanguage("en");
   });
 
   it("renders the dashboard link when user is authenticated", () => {
@@ -171,6 +200,7 @@ describe("Header — showWallet with authenticated user", () => {
 describe("Header — Pi Browser indicator", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLanguage("en");
   });
 
   it("shows 'Pi Browser' badge when in Pi Browser and no user connected", () => {

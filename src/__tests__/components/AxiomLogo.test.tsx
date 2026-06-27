@@ -113,19 +113,19 @@ describe("AxiomLogo — SVG structure and attributes", () => {
   it("linearGradient first stop is neon-green (#39FF14)", () => {
     const { container } = render(<AxiomLogo />);
     const stops = container.querySelectorAll("defs > linearGradient > stop");
-    expect(stops[0].getAttribute("stopColor")).toBe("#39FF14");
+    expect(stops[0].getAttribute("stop-color")).toBe("#39FF14");
   });
 
   it("linearGradient second stop is electric-blue (#00d4ff)", () => {
     const { container } = render(<AxiomLogo />);
     const stops = container.querySelectorAll("defs > linearGradient > stop");
-    expect(stops[1].getAttribute("stopColor")).toBe("#00d4ff");
+    expect(stops[1].getAttribute("stop-color")).toBe("#00d4ff");
   });
 
   it("linearGradient third stop is axiom-purple (#a855f7)", () => {
     const { container } = render(<AxiomLogo />);
     const stops = container.querySelectorAll("defs > linearGradient > stop");
-    expect(stops[2].getAttribute("stopColor")).toBe("#a855f7");
+    expect(stops[2].getAttribute("stop-color")).toBe("#a855f7");
   });
 
   it("outer wrapper has 'flex' and 'items-center' classes", () => {
@@ -142,13 +142,13 @@ describe("AxiomLogo — SVG structure and attributes", () => {
   it("SVG circle has strokeDasharray attribute set", () => {
     const { container } = render(<AxiomLogo />);
     const circle = container.querySelector("circle");
-    expect(circle?.getAttribute("strokeDasharray")).toBeTruthy();
+    expect(circle?.getAttribute("stroke-dasharray")).toBeTruthy();
   });
 
   it("circle has strokeWidth of '3'", () => {
     const { container } = render(<AxiomLogo />);
     const circle = container.querySelector("circle");
-    expect(circle?.getAttribute("strokeWidth")).toBe("3");
+    expect(circle?.getAttribute("stroke-width")).toBe("3");
   });
 });
 

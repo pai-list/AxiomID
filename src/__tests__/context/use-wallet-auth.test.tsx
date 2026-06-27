@@ -2,7 +2,6 @@ import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useWalletAuth } from "@/app/context/use-wallet-auth";
 import { connectPi, checkPiBrowser, PiSdkError, PiSdkErrorCode, determineSandboxMode } from "@/lib/pi-sdk";
-import { getClientSandboxDevToken } from "@/lib/sandbox-token";
 
 jest.mock("@/lib/pi-sdk", () => {
   const actual = jest.requireActual("@/lib/pi-sdk");
@@ -14,14 +13,9 @@ jest.mock("@/lib/pi-sdk", () => {
   };
 });
 
-jest.mock("@/lib/sandbox-token", () => ({
-  getClientSandboxDevToken: jest.fn(() => "sandbox-dev-token"),
-}));
-
 const mockConnectPi = connectPi as jest.MockedFunction<typeof connectPi>;
 const mockCheckPiBrowser = checkPiBrowser as jest.MockedFunction<typeof checkPiBrowser>;
 const mockDetermineSandboxMode = determineSandboxMode as jest.MockedFunction<typeof determineSandboxMode>;
-const mockGetClientSandboxDevToken = getClientSandboxDevToken as jest.MockedFunction<typeof getClientSandboxDevToken>;
 
 function makeAuthParams(overrides: Partial<Parameters<typeof useWalletAuth>[0]> = {}) {
   return {
@@ -293,7 +287,7 @@ describe("useWalletAuth — connectWallet (Pi Browser / test env)", () => {
   it("throws a user-friendly error when Pi SDK is unavailable (NOT_IN_PI_BROWSER)", async () => {
     jest.useFakeTimers();
     const params = makeAuthParams();
-    const sdkError = new PiSdkError("Pi SDK unavailable", PiSdkErrorCode.NOT_IN_PI_BROWSER);
+    const sdkError = new PiSdkError(PiSdkErrorCode.NOT_IN_PI_BROWSER, "Pi SDK unavailable");
     mockConnectPi.mockRejectedValueOnce(sdkError);
 
     const { result } = renderHook(() => useWalletAuth(params));
@@ -416,54 +410,68 @@ describe("useWalletAuth — disconnectWallet", () => {
 });
 
 describe("useWalletAuth — connectDemo", () => {
+  let mockFetch: jest.Mock;
+  const originalNodeEnv = process.env.NODE_ENV;
+
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    mockGetClientSandboxDevToken.mockReturnValue("demo-sandbox-token");
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { token: "demo-sandbox-token" } }),
+    });
+    // connectDemo fetches server token only in development mode
+    process.env.NODE_ENV = "development";
   });
 
-  it("sets a demo user with correct wallet address", () => {
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("sets a demo user with correct wallet address", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const setUserCall = params.setUser.mock.calls[0][0];
     expect(setUserCall.walletAddress).toBe("pi:demo_alice");
   });
 
-  it("stores axiomid_wallet and pi_access_token in localStorage", () => {
+  it("stores axiomid_wallet and pi_access_token in localStorage", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     expect(localStorage.getItem("axiomid_wallet")).toBe("pi:demo_alice");
     expect(localStorage.getItem("pi_access_token")).toBe("demo-sandbox-token");
   });
 
-  it("removes axiomid_logged_out from localStorage", () => {
+  it("removes axiomid_logged_out from localStorage", async () => {
     localStorage.setItem("axiomid_logged_out", "true");
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     expect(localStorage.getItem("axiomid_logged_out")).toBeNull();
   });
 
-  it("sets isConnecting(false) at end", () => {
+  it("sets isConnecting(false) at end", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const connectingCalls = params.setIsConnecting.mock.calls;
@@ -471,12 +479,12 @@ describe("useWalletAuth — connectDemo", () => {
     expect(lastCall[0]).toBe(false);
   });
 
-  it("sets demo user with expected fields", () => {
+  it("sets demo user with expected fields", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const demoUser = params.setUser.mock.calls[0][0];
@@ -488,12 +496,12 @@ describe("useWalletAuth — connectDemo", () => {
     expect(demoUser.agent?.name).toBe("Axiom Sentinel");
   });
 
-  it("demo user has 2 actions and 2 stamps", () => {
+  it("demo user has 2 actions and 2 stamps", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const demoUser = params.setUser.mock.calls[0][0];
@@ -501,12 +509,12 @@ describe("useWalletAuth — connectDemo", () => {
     expect(demoUser.stamps).toHaveLength(2);
   });
 
-  it("pushes a success log message", () => {
+  it("pushes a success log message", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     expect(params.pushLog).toHaveBeenCalledWith(
@@ -515,7 +523,7 @@ describe("useWalletAuth — connectDemo", () => {
   });
 });
 
-describe("useWalletAuth — connectWallet returns boolean", () => {
+describe("useWalletAuth — connectWallet returns void", () => {
   let mockFetch: jest.Mock;
 
   beforeEach(() => {
@@ -527,7 +535,7 @@ describe("useWalletAuth — connectWallet returns boolean", () => {
     mockDetermineSandboxMode.mockReturnValue(false);
   });
 
-  it("returns true when authentication succeeds", async () => {
+  it("returns undefined when authentication succeeds", async () => {
     const params = makeAuthParams();
     mockConnectPi.mockResolvedValueOnce({
       token: "ok-token",
@@ -546,15 +554,15 @@ describe("useWalletAuth — connectWallet returns boolean", () => {
     });
 
     const { result } = renderHook(() => useWalletAuth(params));
-    let res: boolean | undefined;
+    let res: void | undefined;
     await act(async () => {
       res = await result.current.connectWallet();
     });
 
-    expect(res).toBe(true);
+    expect(res).toBeUndefined();
   });
 
-  it("returns false when /api/auth/pi returns non-ok", async () => {
+  it("sets error when /api/auth/pi returns non-ok", async () => {
     jest.useFakeTimers();
     const params = makeAuthParams();
     mockConnectPi.mockResolvedValueOnce({
@@ -567,34 +575,36 @@ describe("useWalletAuth — connectWallet returns boolean", () => {
     });
 
     const { result } = renderHook(() => useWalletAuth(params));
-    let res: boolean | undefined;
     await act(async () => {
-      res = await result.current.connectWallet();
+      await result.current.connectWallet();
     });
 
-    expect(res).toBe(false);
+    expect(params.setError).toHaveBeenCalledWith(
+      expect.stringContaining("Auth rejected")
+    );
     jest.useRealTimers();
   });
 
-  it("returns false when connectPi throws", async () => {
+  it("sets error when connectPi throws", async () => {
     jest.useFakeTimers();
     const params = makeAuthParams();
     mockConnectPi.mockRejectedValueOnce(new Error("Connection refused"));
 
     const { result } = renderHook(() => useWalletAuth(params));
-    let res: boolean | undefined;
     await act(async () => {
-      res = await result.current.connectWallet();
+      await result.current.connectWallet();
     });
 
-    expect(res).toBe(false);
+    expect(params.setError).toHaveBeenCalledWith(
+      expect.stringContaining("Connection refused")
+    );
     jest.useRealTimers();
   });
 
   it("throws Pi Browser required for SDK_NOT_AVAILABLE error", async () => {
     jest.useFakeTimers();
     const params = makeAuthParams();
-    const sdkError = new PiSdkError("SDK not available", PiSdkErrorCode.SDK_NOT_AVAILABLE);
+    const sdkError = new PiSdkError(PiSdkErrorCode.SDK_NOT_AVAILABLE, "SDK not available");
     mockConnectPi.mockRejectedValueOnce(sdkError);
 
     const { result } = renderHook(() => useWalletAuth(params));
@@ -611,7 +621,7 @@ describe("useWalletAuth — connectWallet returns boolean", () => {
   it("throws Pi Browser required for SDK_SCRIPT_LOAD_FAILED error", async () => {
     jest.useFakeTimers();
     const params = makeAuthParams();
-    const sdkError = new PiSdkError("Script load failed", PiSdkErrorCode.SDK_SCRIPT_LOAD_FAILED);
+    const sdkError = new PiSdkError(PiSdkErrorCode.SDK_SCRIPT_LOAD_FAILED, "Script load failed");
     mockConnectPi.mockRejectedValueOnce(sdkError);
 
     const { result } = renderHook(() => useWalletAuth(params));
@@ -684,29 +694,43 @@ describe("useWalletAuth — connectWallet returns boolean", () => {
 });
 
 describe("useWalletAuth — connectDemo idempotency", () => {
+  let mockFetch: jest.Mock;
+  const originalNodeEnv = process.env.NODE_ENV;
+
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    mockGetClientSandboxDevToken.mockReturnValue("demo-token-123");
+    mockFetch = jest.fn();
+    global.fetch = mockFetch;
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { token: "demo-token-123" } }),
+    });
+    // connectDemo fetches server token only in development mode
+    process.env.NODE_ENV = "development";
   });
 
-  it("sets setPiAccessToken to the sandbox dev token", () => {
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv;
+  });
+
+  it("sets setPiAccessToken to the sandbox dev token", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     expect(params.setPiAccessToken).toHaveBeenCalledWith("demo-token-123");
   });
 
-  it("demo user has Stellar address set", () => {
+  it("demo user has Stellar address set", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const demoUser = params.setUser.mock.calls[0][0];
@@ -714,12 +738,12 @@ describe("useWalletAuth — connectDemo idempotency", () => {
     expect(demoUser.stellarAddress).toMatch(/^G/);
   });
 
-  it("demo user has trustScore=85", () => {
+  it("demo user has trustScore=85", async () => {
     const params = makeAuthParams();
     const { result } = renderHook(() => useWalletAuth(params));
 
-    act(() => {
-      result.current.connectDemo();
+    await act(async () => {
+      await result.current.connectDemo();
     });
 
     const demoUser = params.setUser.mock.calls[0][0];

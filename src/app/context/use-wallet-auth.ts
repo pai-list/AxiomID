@@ -21,10 +21,10 @@ interface UseWalletAuthParams {
 }
 
 interface UseWalletAuthReturn {
-  connectWallet: () => Promise<boolean>;
+  connectWallet: () => Promise<void>;
   logout: () => void;
   disconnectWallet: () => Promise<void>;
-  connectDemo: () => void;
+  connectDemo: () => Promise<void>;
 }
 
 export function useWalletAuth({
@@ -50,8 +50,8 @@ export function useWalletAuth({
     pushLog("Logged out: cleared saved wallet credentials.");
   }, [pushLog, setUser, setPiAccessToken, setError, setIsLoading, setIsConnecting]);
 
-  const connectWallet = useCallback(async (): Promise<boolean> => {
-    if (connectingRef.current) return false;
+  const connectWallet = useCallback(async (): Promise<void> => {
+    if (connectingRef.current) return;
     connectingRef.current = true;
     setIsConnecting(true);
     setError(null);
@@ -157,7 +157,7 @@ export function useWalletAuth({
           stellarAddress: stellarAddress,
         }));
         pushLog("Wallet authenticated successfully!");
-        return true;
+        return;
       }
 
       throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
@@ -167,7 +167,7 @@ export function useWalletAuth({
       pushLog(`❌ Error: ${message}`);
       setError(message);
       setTimeout(() => setError(null), 8000);
-      return false;
+      return;
     } finally {
       setIsConnecting(false);
       connectingRef.current = false;
