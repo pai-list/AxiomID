@@ -36,7 +36,11 @@ describe('GET /api/sandbox/dev-token', () => {
   });
 
   afterEach(() => {
-    process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+    if (originalBypass === undefined) {
+      delete process.env.SANDBOX_AUTH_BYPASS;
+    } else {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+    }
   });
 
   it('returns token for localhost when bypass is enabled', async () => {
