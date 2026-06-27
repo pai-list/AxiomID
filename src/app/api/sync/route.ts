@@ -277,7 +277,7 @@ async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
     };
 
     if (!dryRun) {
-      const CHUNK_SIZE = 50;
+      const CHUNK_SIZE = 100;
       for (let i = 0; i < items.length; i += CHUNK_SIZE) {
         const chunk = items.slice(i, i + CHUNK_SIZE);
         const results = await Promise.allSettled(
@@ -303,11 +303,11 @@ async function syncHarvestResults(dryRun: boolean): Promise<SyncResult> {
           )
         );
 
-        results.forEach((res, index) => {
-          if (res.status === "fulfilled") {
+        results.forEach((result, index) => {
+          if (result.status === "fulfilled") {
             synced++;
           } else {
-            logger.error(`Failed to upsert harvest result ${chunk[index].id}:`, res.reason);
+            logger.error(`Failed to upsert harvest result ${chunk[index].id}:`, result.reason);
             errors++;
           }
         });
@@ -380,7 +380,7 @@ async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
     const items = body.data.agentPresence;
 
     if (!dryRun) {
-      const CHUNK_SIZE = 50;
+      const CHUNK_SIZE = 100;
       for (let i = 0; i < items.length; i += CHUNK_SIZE) {
         const chunk = items.slice(i, i + CHUNK_SIZE);
         const results = await Promise.allSettled(
@@ -402,11 +402,11 @@ async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
           )
         );
 
-        results.forEach((res, index) => {
-          if (res.status === "fulfilled") {
+        results.forEach((result, index) => {
+          if (result.status === "fulfilled") {
             synced++;
           } else {
-            logger.error(`Failed to upsert agent presence ${chunk[index].agent_id}:`, res.reason);
+            logger.error(`Failed to upsert agent presence ${chunk[index].agent_id}:`, result.reason);
             errors++;
           }
         });
