@@ -60,6 +60,9 @@ export async function isTokenRevoked(token: string): Promise<boolean> {
   if (localExpiry) {
     if (Date.now() > localExpiry) {
       localStore.delete(key);
+      return false;
+    }
+    return true;
   }
   if (redis) {
     try {
