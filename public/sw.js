@@ -1,6 +1,6 @@
 const CACHE = "axiomid-v3";
 const STATIC_ASSETS = [
-  "/icon-192x192.png",
+  "/manifest.webmanifest",
   "/icon-192x192.png",
   "/icon-512x512.png",
   "/axiomid-logo.png",
@@ -32,7 +32,7 @@ self.addEventListener("activate", (event) => {
 });
 
 // Static immutable assets that are safe to serve Stale-While-Revalidate.
-const STATIC_ASSET_PATTERN = /\.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i;
+const STATIC_ASSET_PATTERN = /\.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|webmanifest)$/i;
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
