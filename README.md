@@ -19,7 +19,7 @@
 ---
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-beta_v1.0-blue" alt="Status" />
+  <img src="https://img.shields.io/badge/status-v0.1.0-blue" alt="Status" />
   <img src="https://img.shields.io/badge/tests-2501%20passing-brightgreen" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage" />
   <img src="https://img.shields.io/badge/Next.js-15-black" alt="Next.js" />

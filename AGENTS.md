@@ -226,7 +226,7 @@ These are not "nice to have." They are the operating system of every agent that 
 
 - **Ring Buffer for logs:** Terminal-style components must cap their log arrays (e.g., 200 entries max). Slice from the tail to maintain O(1) memory overhead: `setLogs(prev => [...prev, newLog].slice(-MAX_LOGS))`.
 - **Throttle render updates:** When streaming NDJSON or WebSocket data, throttle UI updates to 16ms–30ms intervals to keep the main thread responsive. Never `setState` on every incoming chunk.
-- **Telemetry is simulated:** Dashboard CPU/memory gauges are visual-only (no real `/proc` access in browsers). Use `setInterval` with bounded random walks, not real metrics.
+- **Telemetry must be real:** Dashboard CPU/memory gauges must pull from a real `/api/monitor` endpoint. No fake data or random walks. If browser `/proc` is unavailable, fetch from server-side endpoint.
 
 ### 🎨 Design System & Aesthetic Mandate
 
