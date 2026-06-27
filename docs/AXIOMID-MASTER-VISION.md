@@ -250,7 +250,7 @@ Loops are **fluid, non-static primitives** that utilize the Loop Index to traver
 
 Core aesthetic guiding all UI/UX:
 
-- **Neon green** (#00FF00) accents on dark backgrounds
+- **Neon Emerald** (#22c55e) accents on dark backgrounds
 - **Hexagonal grids** for modular layouts
 - **Glassmorphism** with subtle grid patterns
 - **Pulsing animations** for active states
