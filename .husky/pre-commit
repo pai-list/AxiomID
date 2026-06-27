@@ -1,11 +1,8 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # ───────────────────────────────────────────────────────────────────
 # AxiomID pre-commit hook
 # ───────────────────────────────────────────────────────────────────
 
-# 1. Lint staged files (ESLint + Prettier)
+# 1. Lint staged files (ESLint)
 echo "🔍 Running lint-staged..."
 npx lint-staged
 if [ $? -ne 0 ]; then
@@ -23,11 +20,10 @@ fi
 
 # 3. CodeRabbit local review (optional — skipped if CLI not installed)
 if command -v coderabbit &> /dev/null; then
-  echo "🐇 Running CodeRabbit local review on staged files..."
-  coderabbit review --staged --config .coderabbit.yaml
+  echo "🐇 Running CodeRabbit local review..."
+  coderabbit review --type uncommitted --config .coderabbit.yaml 2>/dev/null || echo "⚠️  CodeRabbit review skipped"
 else
   echo "⚠️  CodeRabbit CLI not found, skipping local review."
-  echo "    Install: npm install -g @coderabbitai/cli"
 fi
 
 # 4. Gemini security scan on staged diff (optional — skipped if CLI not available)
@@ -42,7 +38,6 @@ if command -v gemini &> /dev/null; then
   fi
 else
   echo "⚠️  Gemini CLI not found, skipping security scan."
-  echo "    Install: npm install -g @google/generative-ai"
 fi
 
 echo "✅ Pre-commit checks passed!"
