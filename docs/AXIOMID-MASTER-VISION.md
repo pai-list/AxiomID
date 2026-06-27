@@ -148,9 +148,16 @@ Vercel Response
 
 ### Trust Score Formula
 
-```
-Trust Score = (XP * 0.7) + (Stamps * 0.3)
-```
+The base Trust Score is calculated using normalized components (scaled 0–100):
+
+Trust Score = (XP_Score * 0.7) + (Stamp_Score * 0.3)
+
+Where:
+- XP_Score = Math.min(100, Math.floor(XP / 10))
+- Stamp_Score = (Stamps_Claimed / 6) * 100
+
+When account tenure and semantic trust are factored in, the formula dynamically adjusts to:
+Trust Score = (XP_Score * 0.5) + (Stamp_Score * 0.2) + (Tenure_Score * 0.1) + (Semantic_Trust * 0.2)
 
 - **Range:** 0–100 (clamped)
 - **Default:** **0** (never hardcode any other value)
