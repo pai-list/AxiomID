@@ -4,8 +4,8 @@ import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
-    return NextResponse.json(
-      apiSuccess({
+    return apiSuccess(
+      {
         name: "AxiomID API",
         version: "1.0.0",
         description: "W3C DID-based identity layer for AI agents",
@@ -26,11 +26,10 @@ export async function GET() {
           auth_md: "/auth.md",
         },
         rateLimit: "See /docs for limits",
-      }),
+      },
+      200,
       {
-        headers: {
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-        },
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       }
     );
   } catch (error) {
