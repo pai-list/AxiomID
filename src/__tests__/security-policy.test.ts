@@ -15,8 +15,6 @@ import path from "path";
 
 const SECURITY_MD_PATH = path.join(__dirname, "../../SECURITY.md");
 
-let content: string;
-
 let content = "";
 
 beforeAll(() => {

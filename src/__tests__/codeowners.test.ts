@@ -36,9 +36,6 @@ function findRule(
   return rules.find((r) => r.pattern === pattern);
 }
 
-let content: string;
-let rules: Array<{ pattern: string; owners: string[] }>;
-
 let content = "";
 let rules: Array<{ pattern: string; owners: string[] }> = [];
 
