@@ -380,7 +380,7 @@ async function syncAgentPresence(dryRun: boolean): Promise<SyncResult> {
     const items = body.data.agentPresence;
 
     if (!dryRun) {
-      const CHUNK_SIZE = 100;
+      const CHUNK_SIZE = 15;
       for (let i = 0; i < items.length; i += CHUNK_SIZE) {
         const chunk = items.slice(i, i + CHUNK_SIZE);
         const results = await Promise.allSettled(
