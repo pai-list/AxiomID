@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 import { logger } from "@/lib/logger";
->>>>>>> 80a83c52 (fix: restore LeakyBucketConfig type, use @/ import alias in telegram route ۞)
 import { Telegraf } from "telegraf";
 import { NextResponse } from "next/server";
 
@@ -70,6 +67,7 @@ export async function POST(req: Request) {
     await bot.handleUpdate(body);
     return NextResponse.json({ ok: true });
   } catch (error) {
+    logger.error(error);
     console.error("Error handling Telegram webhook:", error);
     return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
   }
