@@ -63,11 +63,11 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     if (!cardRef.current || isExporting) return;
 
     setIsExporting(true);
+    // Temporarily remove tilt for clean capture
+    const originalTransform = cardRef.current.style.transform;
+    cardRef.current.style.transform = 'none';
     try {
       const html2canvas = (await import("html2canvas")).default;
-      // Temporarily remove tilt for clean capture
-      const originalTransform = cardRef.current.style.transform;
-      cardRef.current.style.transform = 'none';
 
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
@@ -75,8 +75,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
         logging: false,
         useCORS: true
       });
-
-      cardRef.current.style.transform = originalTransform;
 
       const image = canvas.toDataURL("image/png");
       const link = document.createElement("a");
@@ -87,6 +85,9 @@ export default function InteractivePassportCard({ user, readonly = false, locked
       console.error("Export failed:", err);
       toast.error(t("passport_export_failed"));
     } finally {
+      if (cardRef.current) {
+        cardRef.current.style.transform = originalTransform;
+      }
       setIsExporting(false);
     }
   };

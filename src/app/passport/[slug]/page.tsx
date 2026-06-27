@@ -15,12 +15,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   try {
     const user = await prisma.user.findFirst({
-      where: { piUsername: decodedSlug },
+      where: {
+        OR: [
+          { walletAddress: decodedSlug },
+          { did: decodedSlug },
+          { piUsername: decodedSlug },
+        ],
+      },
       select: { tier: true, xp: true },
     });
     if (user) {
-      ogTier = user.tier;
-      ogXp = user.xp;
+      ogTier = user.tier || "Visitor";
+      ogXp = user.xp ?? 0;
     }
   } catch {
     // fall back to defaults if DB is unreachable
