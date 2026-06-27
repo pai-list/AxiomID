@@ -20,9 +20,9 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-v0.1.0-blue" alt="Status" />
-  <img src="https://img.shields.io/badge/tests-2501%20passing-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/tests-2855%20passing-brightgreen" alt="Tests" />
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage" />
-  <img src="https://img.shields.io/badge/Next.js-15-black" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19-blue" alt="React" />
   <img src="https://img.shields.io/badge/Prisma-6-2D3748" alt="Prisma" />
   <img src="https://img.shields.io/badge/Cloudflare-Workers-orange" alt="Workers" />
@@ -54,6 +54,7 @@ AxiomID is a **decentralized identity layer** for AI agents on Pi Network. It an
 | [`/`](https://axiomid.app) | Landing — live network stats, trust tiers, hero |
 | [`/passport/[slug]`](https://axiomid.app/passport/demo) | Public passport viewer with OG metadata |
 | [`/claim`](https://axiomid.app/claim) | 3-step onboarding wizard (Connect → Verify → Deploy) |
+| Telegram Mini App | `/api/telegram` webhook endpoint |
 | [`/dashboard`](https://axiomid.app/dashboard) | Authenticated dashboard with marketplace, settings |
 | [`/explorer`](https://axiomid.app/explorer) | Browse all registered agents |
 | [`/leaderboard`](https://axiomid.app/leaderboard) | Top 50 users ranked by XP |
@@ -87,14 +88,23 @@ Trust is earned through actions, not purchases. The algorithm weighs contributio
 | **AI** | Workers AI — Llama 3.1 8B (intent analysis, RAG generation) · BGE-small-en-v1.5 (embeddings) |
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID documents |
 | **Storage** | Cloudflare KV (cache) · Vercel Blob (uploads) |
-| **CI/CD** | GitHub Actions → Vercel (auto-deploy on push) · 99 test suites, 1260 tests |
+| **CI/CD** | GitHub Actions → Vercel (auto-deploy on push) · 122 test suites, 2855 tests |
 
-## SDK Installation
+## SDK Packages
 
-To use AxiomID in your own TypeScript/JavaScript projects, install the official SDK:
+AxiomID provides two MIT-licensed packages for TypeScript/JavaScript projects:
+
+| Package | Description | Install |
+|:---|:---|---:|
+| **`@axiomid/sdk`** | Query trust scores, passport data, and agent status | `npm install @axiomid/sdk` |
+| **`@axiomid/crypto`** | Ed25519 key derivation, signing, and verification | `npm install @axiomid/crypto` |
 
 ```bash
+# Install the main SDK
 npm install @axiomid/sdk
+
+# Or the crypto package (standalone, zero dependencies beyond Node.js crypto)
+npm install @axiomid/crypto
 ```
 
 ---
@@ -154,7 +164,7 @@ See [`docs/SUBDOMAIN-SETUP.md`](./docs/SUBDOMAIN-SETUP.md) for DNS configuration
 ## Testing
 
 ```bash
-npm test           # 2501 tests, 111 suites
+npm test           # 2855 tests, 122 suites
 npm run lint       # 0 errors, 0 warnings
 npx tsc --noEmit   # type check
 ```
@@ -171,29 +181,26 @@ CI runs on every PR: **type-check → lint → tests**. Zero tolerance for red C
 |:---|:---|:---|
 | `/api/auth/connect` | POST | Wallet authentication |
 | `/api/auth/pi` | POST | Pi Network auth |
+| `/api/auth/logout` | POST | Session logout |
 | `/api/did-document` | GET | DID document |
 | `/api/passport/[slug]` | GET | Public passport |
+| `/api/passport/[slug]/publish` | POST | Sign passport VC + publish to IPFS |
+| `/api/passport/[slug]/verify` | GET | Verify passport identity |
 | `/api/skills/[slug]` | GET/POST | Skill details + reviews |
-| `/api/agent` | POST | Agent CRUD |
+| `/api/agent/*` | POST | Agent lifecycle (activate, pause, manifest, sign, identity) |
 | `/api/stamp/claim` | POST | Claim a stamp |
 | `/api/status` | GET | Network status |
 | `/api/health` | GET | Service health checks |
 | `/api/explorer` | GET | Agent explorer data |
 | `/api/leaderboard` | GET | Top 50 by XP |
 | `/api/daily-review` | POST | Soul loop daily review |
+| `/api/telegram` | POST | Telegram Mini App webhook |
+| `/api/sync` | POST/GET | Edge data sync (D1 → PostgreSQL) |
+| `/api/vault/stake` | POST | Staking operations |
+| `/api/pi/payment/*` | POST | Pi Payment lifecycle |
+| `/api/sandbox/execute` | POST | Isolated sandbox execution |
 
-### Cloudflare (`axiomid-backend.workers.dev`)
-
-| Route | Method | Description |
-|:---|:---|:---|
-| `/status` | GET | Network status |
-| `/mcp` | POST | MCP Server — 11 tools |
-| `/api/trust/:did` | GET | Trust chain resolution |
-| `/api/search` | GET | Semantic search (Vectorize) |
-| `/api/iqra/ask` | GET | Quran RAG — ask a question |
-| `/api/iqra/daily-ayah` | GET | Quran RAG — daily verse |
-
-Full docs: [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) · [`STRATEGY.md`](./STRATEGY.md)
+Full API reference: [`axiomid.app/docs`](https://axiomid.app/docs) · [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) · [`STRATEGY.md`](./STRATEGY.md)
 
 ---
 
@@ -227,7 +234,7 @@ graph TD
 
 ```mermaid
 graph LR
-    User[User / Client] --> Frontend(Next.js 15 App Router)
+    User[User / Client] --> Frontend(Next.js 16 App Router)
     Frontend --> Edge[Cloudflare Workers / Edge]
     Frontend --> Auth[Pi Network Auth]
     Edge --> DB[(PostgreSQL + Prisma 6)]
@@ -275,4 +282,5 @@ All commits follow the **IQRA Chronicle** format: `type(scope): description ۞` 
 
 ## License
 
-Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [`LICENSE`](./LICENSE).
+- **Application code** (this repo): Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [`LICENSE`](./LICENSE).
+- **`@axiomid/sdk`** and **`@axiomid/crypto`**: MIT licensed. Open for community use and contribution.
