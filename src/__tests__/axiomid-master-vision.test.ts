@@ -492,16 +492,16 @@ describe("AXIOMID-MASTER-VISION.md — Creative UI/UX Concepts", () => {
     expect(content).toContain("Sophisticated Engineering Cyberpunk");
   });
 
-  it("specifies neon green (#00FF00) as the primary accent color", () => {
-    expect(content).toContain("#00FF00");
+  it("specifies Neon Emerald (#22c55e) as the primary accent color", () => {
+    expect(content).toContain("#22c55e");
   });
 
-  it("mentions Fira Code as one of the monospace fonts", () => {
-    expect(content).toContain("Fira Code");
+  it("mentions Geist Sans as the body typeface", () => {
+    expect(content).toContain("Geist Sans");
   });
 
-  it("mentions JetBrains Mono as one of the monospace fonts", () => {
-    expect(content).toContain("JetBrains Mono");
+  it("mentions Geist Mono as the data/code typeface", () => {
+    expect(content).toContain("Geist Mono");
   });
 
   it("describes 'The Digital Orb' as a holographic neon-green sphere", () => {
@@ -623,8 +623,8 @@ describe("AXIOMID-MASTER-VISION.md — MCP Integration & Agent Workflows", () =>
 // ---------------------------------------------------------------------------
 
 describe("AXIOMID-MASTER-VISION.md — Roadmap & Evolution", () => {
-  it("contains the v1.5.0 current release milestone", () => {
-    expect(content).toContain("v1.5.0");
+  it("contains the v0.1.1 current release milestone", () => {
+    expect(content).toContain("v0.1.1");
   });
 
   it("contains the v0.1.2 in-progress milestone", () => {
@@ -635,15 +635,15 @@ describe("AXIOMID-MASTER-VISION.md — Roadmap & Evolution", () => {
     expect(content).toContain("v2.0");
   });
 
-  it("marks the @axiomid/sdk npm package as complete in v1.5.0", () => {
+  it("marks the @axiomid/sdk npm package as complete in v0.1.1", () => {
     expect(content).toMatch(/✅.*@axiomid\/sdk/s);
   });
 
-  it("marks the @axiomid/crypto package as complete in v1.5.0", () => {
+  it("marks the @axiomid/crypto package as complete in v0.1.1", () => {
     expect(content).toMatch(/✅.*@axiomid\/crypto/s);
   });
 
-  it("marks the Truth RAG Pipeline as complete in v1.5.0", () => {
+  it("marks the Truth RAG Pipeline as complete in v0.1.1", () => {
     expect(content).toMatch(/✅.*Truth RAG Pipeline/s);
   });
 
