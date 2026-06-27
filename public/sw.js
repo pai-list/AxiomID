@@ -55,14 +55,19 @@ self.addEventListener("fetch", (event) => {
     url.pathname === "/" ||
     !url.pathname.includes(".")
   ) {
+    let cacheWritePromise;
     const fetchPromise = fetch(event.request).then((response) => {
       if (response.status === 200) {
         const clone = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+        cacheWritePromise = caches
+          .open(CACHE)
+          .then((cache) => cache.put(event.request, clone));
       }
       return response;
     });
-    event.waitUntil(fetchPromise.catch(() => {}));
+    event.waitUntil(
+      fetchPromise.then(() => cacheWritePromise).catch(() => {})
+    );
     event.respondWith(
       fetchPromise.catch(() => caches.match(event.request))
     );
@@ -80,16 +85,25 @@ self.addEventListener("fetch", (event) => {
 
   // Stale-While-Revalidate: serve cached, update in background.
   // event.waitUntil() is called BEFORE event.respondWith() to keep the SW alive.
-  const swrFetch = fetch(event.request).then((response) => {
+  // A single network request is shared between the cache update and the
+  // response fallback so uncached assets are never fetched twice.
+  let cacheWritePromise;
+  const fetchPromise = fetch(event.request).then((response) => {
     if (response.status === 200) {
       const clone = response.clone();
-      caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+      cacheWritePromise = caches
+        .open(CACHE)
+        .then((cache) => cache.put(event.request, clone));
     }
     return response;
-  }).catch(() => {});
+  });
 
-  event.waitUntil(swrFetch);
+  event.waitUntil(
+    fetchPromise.then(() => cacheWritePromise).catch(() => {})
+  );
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    caches
+      .match(event.request)
+      .then((cached) => cached || fetchPromise)
   );
 });
