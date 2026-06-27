@@ -118,7 +118,7 @@ AxiomID runs on **$0/month** by exploiting the free tier strengths of three plat
 
 ### Workload Distribution
 
-- **Vercel:** Next.js 14 App Router, SSR/SSG, static assets, privacy-friendly Web Analytics
+- **Vercel:** Next.js 16 App Router, SSR/SSG, static assets, privacy-friendly Web Analytics
 - **Cloudflare:** Heavy backend compute (Hono Workers), D1/KV/R2 storage, AI integration (Vectorize, Workers AI), CDN + WAF
 - **Ghost.build:** Primary relational database (PostgreSQL), ACID transactions, time-series data, native MCP support for AI agents
 
