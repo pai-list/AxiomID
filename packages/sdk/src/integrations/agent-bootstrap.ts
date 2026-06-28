@@ -81,6 +81,11 @@ export class AxiomAgentBootstrap {
       this.sdk.resolveDID(did),
       passportPromise,
     ]);
+    if (passport && passport.did !== did) {
+      throw new Error(
+        `Passport DID ${passport.did} does not match requested DID ${did}`
+      );
+    }
     const trustScore = passport
       ? {
           did: passport.did,

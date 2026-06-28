@@ -40,7 +40,9 @@ function createMockSdk(score = 82): AxiomSDK {
   return {
     resolveDID: jest.fn().mockResolvedValue(didDocument),
     getTrustScore: jest.fn().mockResolvedValue({ ...trustScore, score }),
-    verifyPassport: jest.fn().mockResolvedValue(passport),
+    verifyPassport: jest
+      .fn()
+      .mockResolvedValue({ ...passport, trustScore: score }),
     getStamps: jest.fn(),
     searchSkills: jest.fn(),
   } as unknown as AxiomSDK;
@@ -145,6 +147,73 @@ describe("createAxiomIDCrewAITools", () => {
       allowed: true,
       minimumTrustScore: 55,
     });
+  });
+
+  it("defaults Soul Gate to a zero threshold when none is configured", async () => {
+    const sdk = createMockSdk(0);
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDCrewAITools({ sdk, createTool });
+    const soulGate = tools.enforceSoulGate as CapturedTool<
+      { did: string; minimumTrustScore?: number },
+      unknown
+    >;
+
+    const result = await soulGate.run({ did: "did:axiom:operator" });
+
+    expect(result).toMatchObject({
+      allowed: true,
+      minimumTrustScore: 0,
+    });
+  });
+
+  it("uses passport-derived trust context for Soul Gate when passportSlug is provided", async () => {
+    const sdk = createMockSdk(64);
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDCrewAITools({
+      sdk,
+      createTool,
+      minimumTrustScore: 70,
+    });
+    const soulGate = tools.enforceSoulGate as CapturedTool<
+      { did: string; passportSlug?: string },
+      unknown
+    >;
+
+    const result = await soulGate.run({
+      did: "did:axiom:operator",
+      passportSlug: "operator",
+    });
+
+    expect(result).toMatchObject({
+      allowed: false,
+      minimumTrustScore: 70,
+      reason: "Trust score 64 is below required minimum 70",
+    });
+    expect(sdk.getTrustScore).not.toHaveBeenCalled();
+    expect(sdk.verifyPassport).toHaveBeenCalledWith("operator");
+  });
+
+  it("rejects passport DID mismatches before returning agent context", async () => {
+    const sdk = createMockSdk();
+    jest.mocked(sdk.verifyPassport).mockResolvedValueOnce({
+      ...passport,
+      did: "did:axiom:different-operator",
+    });
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDCrewAITools({ sdk, createTool });
+    const verifyIdentity = tools.verifyIdentity as CapturedTool<
+      { did: string; passportSlug?: string },
+      unknown
+    >;
+
+    await expect(
+      verifyIdentity.run({
+        did: "did:axiom:operator",
+        passportSlug: "operator",
+      })
+    ).rejects.toThrow(
+      "Passport DID did:axiom:different-operator does not match requested DID did:axiom:operator"
+    );
   });
 
   it("creates unsigned attestation drafts from CrewAI task output", () => {

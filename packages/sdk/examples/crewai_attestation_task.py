@@ -18,7 +18,10 @@ attestation_task = Task(
         "Create an attestation draft with issuer DID did:axiom:crewai-reviewer, "
         "subject DID did:axiom:contributor, and claim 'CrewAI task completed'."
     ),
-    expected_output="An unsigned AxiomIDAttestationDraft JSON object.",
+    expected_output=(
+        "A serialized JSON string containing an unsigned "
+        "AxiomIDAttestationDraft object."
+    ),
     agent=attestation_writer,
 )
 

@@ -132,6 +132,12 @@ export function createAxiomIDCrewAIToolDefinitions(
 
 function readVerifyIdentityInput(input: unknown): CrewAIVerifyIdentityInput {
   const record = requireRecord(input, "verifyIdentity input");
+  return readVerifyIdentityRecord(record);
+}
+
+function readVerifyIdentityRecord(
+  record: Record<string, unknown>
+): CrewAIVerifyIdentityInput {
   return {
     did: requireString(record.did, "did"),
     passportSlug: optionalString(record.passportSlug, "passportSlug"),
@@ -142,7 +148,7 @@ function readVerifyIdentityInput(input: unknown): CrewAIVerifyIdentityInput {
 function readSoulGateInput(input: unknown): CrewAISoulGateInput {
   const record = requireRecord(input, "soulGate input");
   return {
-    ...readVerifyIdentityInput(input),
+    ...readVerifyIdentityRecord(record),
     minimumTrustScore: optionalNumber(
       record.minimumTrustScore,
       "minimumTrustScore"
