@@ -337,6 +337,27 @@ describe("createAxiomIDAutoGenAdapter", () => {
     });
     expect(draft.issuerDid).toBe("did:axiom:agent:issuer");
 
+    const gatedContext = await tools.enforceSoulGate.run({
+      did: "did:axiom:agent:alice",
+      minimumTrustScore: 75,
+      passportSlug: "alice",
+      purpose: "Tool-call passport-aware gate",
+    });
+    expect(gatedContext.passport).toEqual(passport);
+    expect(gatedContext.soulGate).toMatchObject({
+      allowed: true,
+      score: 82,
+      minimumTrustScore: 75,
+    });
+    expect(gatedContext.toolContext).toMatchObject({
+      passport: {
+        username: "alice",
+        tier: "Sovereign",
+      },
+    });
+    expect(sdk.getTrustScore).not.toHaveBeenCalled();
+    expect(sdk.verifyPassport).toHaveBeenCalledWith("alice");
+
     await expect(
       tools.enforceSoulGate.run({
         did: "did:axiom:agent:alice",
@@ -412,12 +433,16 @@ describe("createAxiomIDAutoGenAdapter", () => {
     expect(toolContextMetadata.metadata).not.toBe(metadata);
     expect(context.metadata).toEqual(metadata);
     expect(context.metadata).not.toBe(metadata);
+    expect(toolContextMetadata.metadata).not.toBe(context.metadata);
     metadata.taskId = "mutated";
+    expect(context.metadata).toMatchObject({ taskId: "task-123" });
     expect(toolContextMetadata.metadata).toMatchObject({ taskId: "task-123" });
     (metadata.nested as { stage: string }).stage = "escalated";
+    const contextNested = context.metadata?.nested as { stage: string } | undefined;
     const toolContextNested = toolContextMetadata.metadata?.nested as
       | { stage: string }
       | undefined;
+    expect(contextNested).toMatchObject({ stage: "review" });
     expect(toolContextNested).toMatchObject({ stage: "review" });
   });
 
