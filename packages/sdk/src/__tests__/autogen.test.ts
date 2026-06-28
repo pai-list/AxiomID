@@ -224,10 +224,17 @@ describe("createAxiomIDAutoGenAdapter", () => {
     const draft = adapter.createAttestationDraft({
       subjectDid: "did:axiom:agent:alice",
       claim: "AutoGen task completed",
-      expiresAt: "2026-06-29T12:30:00+02:00",
+      expiresAt: "2026-06-29T12:30:00+0200",
     });
 
     expect(draft.expiresAt).toBe("2026-06-29T10:30:00.000Z");
+    expect(() =>
+      adapter.createAttestationDraft({
+        subjectDid: "did:axiom:agent:alice",
+        claim: "AutoGen task completed",
+        expiresAt: "2026-06-27T23:59:59Z",
+      })
+    ).toThrow("expiresAt must be later than issuedAt");
     expect(() =>
       adapter.createAttestationDraft({
         subjectDid: "did:axiom:agent:alice",

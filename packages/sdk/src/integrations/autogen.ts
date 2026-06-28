@@ -8,7 +8,7 @@ type AxiomIdentitySDK = Pick<
 
 const DEFAULT_MINIMUM_TRUST_SCORE = 60;
 const ISO_DATE_TIME_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$/;
 
 export interface AxiomIDAutoGenAdapterOptions {
   sdk: AxiomIdentitySDK;
@@ -156,7 +156,10 @@ function assertIdentitySdk(options: AxiomIDAutoGenAdapterOptions): AxiomIdentity
   return options.sdk;
 }
 
-function normalizeOptionalDateTime(value: string | undefined): string | undefined {
+function normalizeOptionalDateTime(
+  value: string | undefined,
+  issuedAt?: Date
+): string | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -167,6 +170,9 @@ function normalizeOptionalDateTime(value: string | undefined): string | undefine
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) {
     throw new Error("expiresAt must be a valid ISO-8601 date-time timestamp");
+  }
+  if (issuedAt && parsed.getTime() <= issuedAt.getTime()) {
+    throw new Error("expiresAt must be later than issuedAt");
   }
   return parsed.toISOString();
 }
@@ -368,14 +374,15 @@ export function createAxiomIDAutoGenAdapter(
     const issuerDid = requireNonEmpty(input.issuerDid ?? options.agentDid, "issuerDid");
     const subjectDid = requireNonEmpty(input.subjectDid, "subjectDid");
     const claim = requireNonEmpty(input.claim, "claim");
-    const expiresAt = normalizeOptionalDateTime(input.expiresAt);
+    const issuedAt = now();
+    const expiresAt = normalizeOptionalDateTime(input.expiresAt, issuedAt);
     return {
       type: "AxiomIDAttestationDraft",
       issuerDid,
       subjectDid,
       claim,
       evidence: input.evidence ?? {},
-      issuedAt: now().toISOString(),
+      issuedAt: issuedAt.toISOString(),
       expiresAt,
       unsigned: true,
       framework: "autogen",
