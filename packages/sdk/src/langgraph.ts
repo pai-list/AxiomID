@@ -177,7 +177,7 @@ function readOptionalStringField(
 ): string | undefined {
   const value = state[field];
 
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return undefined;
   }
 
@@ -209,7 +209,7 @@ function readDelegationChainFromState(
 ): AxiomLangGraphDelegationStep[] | undefined {
   const value = state.delegationChain;
 
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return undefined;
   }
 
@@ -229,7 +229,7 @@ function readMetadataFromState(
 ): Record<string, unknown> | undefined {
   const value = state.metadata;
 
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return undefined;
   }
 

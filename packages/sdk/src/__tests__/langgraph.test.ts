@@ -246,6 +246,30 @@ describe("LangGraph integration helpers", () => {
     });
   });
 
+  it("treats null optional graph state fields as absent", async () => {
+    const nodes = createAxiomLangGraphNodes({
+      sdk: createMockSdk(88),
+      includeAttestationDraft: true,
+      now: () => new Date("2026-06-28T02:00:00.000Z"),
+    });
+
+    const state = await nodes.bootstrapAgentContext({
+      did: "did:axiom:agent-a",
+      attestationSubjectDid: null,
+      delegationChain: null,
+      metadata: null,
+    });
+
+    expect(state.axiom.attestationDraft).toMatchObject({
+      issuerDid: "did:axiom:agent-a",
+      subjectDid: "did:axiom:agent-a",
+    });
+    expect(
+      state.axiom.attestationDraft?.evidence.delegationChain
+    ).toBeUndefined();
+    expect(state.axiom.attestationDraft?.metadata).toBeUndefined();
+  });
+
   it("enforceSoulGate returns state unchanged when context is allowed", async () => {
     const nodes = createAxiomLangGraphNodes({ sdk: createMockSdk(90) });
     const state = await nodes.bootstrapAgentContext({
@@ -360,7 +384,11 @@ describe("LangGraph integration helpers", () => {
   it("propagates SDK resolution failures to the graph runner", async () => {
     const sdk = {
       resolveDID: jest.fn().mockRejectedValue(new Error("resolver down")),
-      getTrustScore: jest.fn(),
+      getTrustScore: jest.fn().mockResolvedValue({
+        did: "did:axiom:pioneer.username",
+        score: 91,
+        tier: "Sovereign",
+      }),
     };
 
     await expect(
