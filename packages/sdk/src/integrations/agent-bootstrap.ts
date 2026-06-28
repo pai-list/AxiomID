@@ -73,6 +73,10 @@ export class AxiomAgentBootstrap {
   }
 
   async buildContext(input: AxiomAgentContextInput): Promise<AxiomAgentContext> {
+    if (!input || !input.did) {
+      throw new Error("Invalid input: 'did' is required to build agent context");
+    }
+
     const [didDocument, trustScore, passport] = await Promise.all([
       this.sdk.resolveDID(input.did),
       this.sdk.getTrustScore(input.did),
@@ -100,6 +104,10 @@ export class AxiomAgentBootstrap {
     minimumTrustScore?: number;
     purpose?: string;
   }): Promise<SoulGateDecision> {
+    if (!input || !input.did) {
+      throw new Error("Invalid input: 'did' is required to enforce Soul Gate");
+    }
+
     const trustScore = await this.sdk.getTrustScore(input.did);
     return this.evaluateSoulGate(
       input.did,
@@ -112,6 +120,16 @@ export class AxiomAgentBootstrap {
   createAttestationDraft(
     input: AgentAttestationDraftInput
   ): AgentAttestationDraft {
+    if (!input) {
+      throw new Error("Invalid input: input is required to create attestation draft");
+    }
+    if (!input.subjectDid) {
+      throw new Error("Invalid input: 'subjectDid' is required");
+    }
+    if (!input.claim) {
+      throw new Error("Invalid input: 'claim' is required");
+    }
+
     const issuer = input.issuerDid ?? this.agentDid;
     if (!issuer) {
       throw new Error("issuerDid is required when no agentDid is configured");
@@ -141,22 +159,24 @@ export class AxiomAgentBootstrap {
 
   private evaluateSoulGate(
     did: string,
-    trustScore: TrustScore,
+    trustScore: TrustScore | undefined,
     minimumTrustScore: number | undefined,
     purpose: string | undefined
   ): SoulGateDecision {
     const threshold = minimumTrustScore ?? this.minimumTrustScore;
-    const allowed = trustScore.score >= threshold;
+    const score = trustScore?.score ?? 0;
+    const tier = trustScore?.tier ?? "Unknown";
+    const allowed = score >= threshold;
     return {
       did,
       allowed,
-      score: trustScore.score,
-      tier: trustScore.tier,
+      score,
+      tier,
       minimumTrustScore: threshold,
       purpose,
       reason: allowed
-        ? `Trust score ${trustScore.score} meets threshold ${threshold}.`
-        : `Trust score ${trustScore.score} is below threshold ${threshold}.`,
+        ? `Trust score ${score} meets threshold ${threshold}.`
+        : `Trust score ${score} is below threshold ${threshold}.`,
     };
   }
 }

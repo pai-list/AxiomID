@@ -177,4 +177,42 @@ describe("createAxiomIDMastraTools", () => {
       proofPurpose: "agent-attestation-draft",
     });
   });
+
+  it("fails fast when Mastra provides missing DID input at runtime", async () => {
+    const sdk = createMockSdk();
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({ sdk, createTool, schemas });
+    const verifyDid = tools.verifyDid as CapturedTool<unknown, unknown>;
+    const soulGate = tools.enforceSoulGate as CapturedTool<unknown, unknown>;
+
+    await expect(verifyDid.execute({})).rejects.toThrow(
+      "Invalid input: 'did' is required"
+    );
+    await expect(soulGate.execute({})).rejects.toThrow(
+      "Invalid input: 'did' is required"
+    );
+    expect(sdk.resolveDID).not.toHaveBeenCalled();
+  });
+
+  it("fails fast when attestation draft input is incomplete", () => {
+    const sdk = createMockSdk();
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({
+      sdk,
+      createTool,
+      schemas,
+      agentDid: "did:axiom:agent",
+    });
+    const attest = tools.createAttestationDraft as CapturedTool<
+      { subjectDid?: string; claim?: string },
+      unknown
+    >;
+
+    expect(() => attest.execute({ claim: "missing subject" })).toThrow(
+      "Invalid input: 'subjectDid' is required"
+    );
+    expect(() => attest.execute({ subjectDid: "did:axiom:alice" })).toThrow(
+      "Invalid input: 'claim' is required"
+    );
+  });
 });
