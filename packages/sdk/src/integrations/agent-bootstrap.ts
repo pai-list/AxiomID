@@ -63,6 +63,7 @@ export class AxiomAgentBootstrap {
   private readonly agentDid?: string;
   private readonly minimumTrustScore: number;
   private readonly now: () => Date;
+  private draftSequence = 0;
 
   constructor(config: AxiomAgentBootstrapConfig) {
     this.sdk = config.sdk;
@@ -84,6 +85,12 @@ export class AxiomAgentBootstrap {
         ? this.sdk.verifyPassport(input.passportSlug)
         : Promise.resolve(undefined),
     ]);
+
+    if (passport && passport.did !== input.did) {
+      throw new Error(
+        `Passport DID mismatch: expected ${input.did} but received ${passport.did}`
+      );
+    }
 
     return {
       did: input.did,
@@ -136,25 +143,51 @@ export class AxiomAgentBootstrap {
     }
 
     const issuedAt = this.now().toISOString();
+    const expirationDate = this.parseExpirationDate(input.expiresAt, issuedAt);
+    this.draftSequence += 1;
+
     const draft: AgentAttestationDraft = {
-      id: `urn:axiomid:attestation:${issuedAt}`,
+      id: `urn:axiomid:attestation:${issuedAt}:${this.draftSequence}`,
       type: ["VerifiableCredential", "AxiomAgentAttestation"],
       issuer,
       issuanceDate: issuedAt,
       credentialSubject: {
         id: input.subjectDid,
         claim: input.claim,
-        evidence: input.evidence,
       },
       status: "unsigned",
       proofPurpose: "agent-attestation-draft",
     };
 
-    if (input.expiresAt) {
-      draft.expirationDate = input.expiresAt;
+    if (input.evidence) {
+      draft.credentialSubject.evidence = input.evidence;
+    }
+
+    if (expirationDate) {
+      draft.expirationDate = expirationDate;
     }
 
     return draft;
+  }
+
+  private parseExpirationDate(
+    expiresAt: string | undefined,
+    issuedAt: string
+  ): string | undefined {
+    if (!expiresAt) {
+      return undefined;
+    }
+
+    const expirationTime = Date.parse(expiresAt);
+    if (Number.isNaN(expirationTime)) {
+      throw new Error("Invalid input: 'expiresAt' must be a valid date string");
+    }
+
+    if (expirationTime <= Date.parse(issuedAt)) {
+      throw new Error("Invalid input: 'expiresAt' must be in the future");
+    }
+
+    return new Date(expirationTime).toISOString();
   }
 
   private evaluateSoulGate(

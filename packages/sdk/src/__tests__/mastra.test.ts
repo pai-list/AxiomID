@@ -108,6 +108,29 @@ describe("createAxiomIDMastraTools", () => {
     });
   });
 
+  it("rejects passport slugs that resolve to a different DID", async () => {
+    const sdk = createMockSdk();
+    jest.spyOn(sdk, "verifyPassport").mockResolvedValue({
+      ...passport,
+      did: "did:axiom:bob",
+    });
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({ sdk, createTool, schemas });
+    const verifyDid = tools.verifyDid as CapturedTool<
+      { did: string; passportSlug: string },
+      unknown
+    >;
+
+    await expect(
+      verifyDid.execute({
+        did: "did:axiom:alice",
+        passportSlug: "bob",
+      })
+    ).rejects.toThrow(
+      "Passport DID mismatch: expected did:axiom:alice but received did:axiom:bob"
+    );
+  });
+
   it("blocks Soul Gate decisions when trust score is below threshold", async () => {
     const sdk = createMockSdk();
     jest.spyOn(sdk, "getTrustScore").mockResolvedValue({
@@ -132,13 +155,14 @@ describe("createAxiomIDMastraTools", () => {
       purpose: "release payment",
     });
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       did: "did:axiom:bob",
       allowed: false,
       score: 35,
       tier: "Citizen",
       minimumTrustScore: 70,
       purpose: "release payment",
+      reason: "Trust score 35 is below threshold 70.",
     });
   });
 
@@ -164,7 +188,7 @@ describe("createAxiomIDMastraTools", () => {
     });
 
     expect(result).toEqual({
-      id: "urn:axiomid:attestation:2026-06-28T00:00:00.000Z",
+      id: "urn:axiomid:attestation:2026-06-28T00:00:00.000Z:1",
       type: ["VerifiableCredential", "AxiomAgentAttestation"],
       issuer: "did:axiom:agent",
       issuanceDate: "2026-06-28T00:00:00.000Z",
@@ -175,6 +199,79 @@ describe("createAxiomIDMastraTools", () => {
       },
       status: "unsigned",
       proofPurpose: "agent-attestation-draft",
+    });
+  });
+
+  it("creates unique draft ids when multiple drafts share a timestamp", () => {
+    const sdk = createMockSdk();
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({
+      sdk,
+      createTool,
+      schemas,
+      agentDid: "did:axiom:agent",
+      now: () => new Date("2026-06-28T00:00:00.000Z"),
+    });
+    const attest = tools.createAttestationDraft as CapturedTool<
+      { subjectDid: string; claim: string },
+      unknown
+    >;
+
+    const first = attest.execute({
+      subjectDid: "did:axiom:alice",
+      claim: "First claim",
+    }) as { id: string; credentialSubject: { evidence?: unknown } };
+    const second = attest.execute({
+      subjectDid: "did:axiom:alice",
+      claim: "Second claim",
+    }) as { id: string; credentialSubject: { evidence?: unknown } };
+
+    expect(first.id).toBe("urn:axiomid:attestation:2026-06-28T00:00:00.000Z:1");
+    expect(second.id).toBe(
+      "urn:axiomid:attestation:2026-06-28T00:00:00.000Z:2"
+    );
+    expect(first.credentialSubject).not.toHaveProperty("evidence");
+  });
+
+  it("validates attestation draft expiration timestamps", () => {
+    const sdk = createMockSdk();
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({
+      sdk,
+      createTool,
+      schemas,
+      agentDid: "did:axiom:agent",
+      now: () => new Date("2026-06-28T00:00:00.000Z"),
+    });
+    const attest = tools.createAttestationDraft as CapturedTool<
+      { subjectDid: string; claim: string; expiresAt: string },
+      unknown
+    >;
+
+    expect(() =>
+      attest.execute({
+        subjectDid: "did:axiom:alice",
+        claim: "Malformed expiry",
+        expiresAt: "not-a-date",
+      })
+    ).toThrow("Invalid input: 'expiresAt' must be a valid date string");
+
+    expect(() =>
+      attest.execute({
+        subjectDid: "did:axiom:alice",
+        claim: "Expired claim",
+        expiresAt: "2026-06-27T23:59:59.000Z",
+      })
+    ).toThrow("Invalid input: 'expiresAt' must be in the future");
+
+    expect(
+      attest.execute({
+        subjectDid: "did:axiom:alice",
+        claim: "Future claim",
+        expiresAt: "2026-06-29T00:00:00Z",
+      })
+    ).toMatchObject({
+      expirationDate: "2026-06-29T00:00:00.000Z",
     });
   });
 
