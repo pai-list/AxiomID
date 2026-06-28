@@ -70,7 +70,7 @@ describe("createAxiomIDAutoGenAdapter", () => {
     });
 
     expect(sdk.resolveDID).toHaveBeenCalledWith("did:axiom:agent:alice");
-    expect(sdk.getTrustScore).toHaveBeenCalledWith("did:axiom:agent:alice");
+    expect(sdk.getTrustScore).not.toHaveBeenCalled();
     expect(sdk.verifyPassport).toHaveBeenCalledWith("alice");
     expect(context).toMatchObject({
       framework: "autogen",
@@ -389,6 +389,11 @@ describe("createAxiomIDAutoGenAdapter", () => {
     expect(toolContextMetadata.metadata).not.toBe(metadata);
     metadata.taskId = "mutated";
     expect(toolContextMetadata.metadata).toMatchObject({ taskId: "task-123" });
+    (metadata.nested as { stage: string }).stage = "escalated";
+    const toolContextNested = toolContextMetadata.metadata?.nested as
+      | { stage: string }
+      | undefined;
+    expect(toolContextNested).toMatchObject({ stage: "review" });
   });
 
   it("propagates SDK failures from DID resolution", async () => {

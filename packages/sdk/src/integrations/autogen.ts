@@ -187,6 +187,12 @@ function cloneToolParameters<T extends Record<string, unknown>>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+function cloneToolMetadata(
+  metadata: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+  return metadata ? cloneToolParameters(metadata) : undefined;
+}
+
 function evaluateSoulGate(
   trustScore: TrustScore,
   requiredScore: number,
@@ -226,7 +232,7 @@ function createToolContext(context: AxiomIDAutoGenContextSeed) {
         }
       : undefined,
     didDocumentId: context.didDocument.id,
-    metadata: context.metadata ? { ...context.metadata } : undefined,
+    metadata: cloneToolMetadata(context.metadata),
   };
 }
 
@@ -241,7 +247,7 @@ function buildSystemMessage(context: AxiomIDAutoGenContextSeed): string {
   ].join("\n");
 }
 
-const bootstrapParameters = {
+const bootstrapParameters: Record<string, unknown> = Object.freeze({
   type: "object",
   required: ["did"],
   properties: {
@@ -263,9 +269,9 @@ const bootstrapParameters = {
       description: "Host application metadata to carry into the tool context",
     },
   },
-};
+});
 
-const gateParameters = {
+const gateParameters: Record<string, unknown> = Object.freeze({
   type: "object",
   required: ["did"],
   properties: {
@@ -283,9 +289,9 @@ const gateParameters = {
       description: "Host application metadata to carry into the context",
     },
   },
-};
+});
 
-const attestationParameters = {
+const attestationParameters: Record<string, unknown> = Object.freeze({
   type: "object",
   required: ["subjectDid", "claim"],
   properties: {
@@ -307,7 +313,7 @@ const attestationParameters = {
     },
     purpose: { type: "string", description: "Why this draft was created" },
   },
-};
+});
 
 export function createAxiomIDAutoGenAdapter(
   options: AxiomIDAutoGenAdapterOptions
@@ -328,17 +334,29 @@ export function createAxiomIDAutoGenAdapter(
       options.minimumTrustScore
     );
 
-    const [didDocument, trustScore] = await Promise.all([
-      sdk.resolveDID(did),
-      sdk.getTrustScore(did),
-    ]);
     const passportSlug = input.passportSlug?.trim();
-    const passport = passportSlug
-      ? await sdk.verifyPassport(passportSlug)
-      : undefined;
-    if (passport && passport.did !== did) {
-      throw new Error("passportSlug does not belong to the requested did");
-    }
+    const passportPromise = passportSlug
+      ? sdk.verifyPassport(passportSlug)
+      : Promise.resolve<Passport | undefined>(undefined);
+    const trustScorePromise = passportSlug
+      ? passportPromise.then((verifiedPassport) => {
+          if (!verifiedPassport || verifiedPassport.did !== did) {
+            throw new Error("passportSlug does not belong to the requested did");
+          }
+
+          return {
+            did: verifiedPassport.did,
+            score: verifiedPassport.trustScore,
+            tier: verifiedPassport.tier,
+          } as TrustScore;
+        })
+      : sdk.getTrustScore(did);
+
+    const [didDocument, trustScore, passport] = await Promise.all([
+      sdk.resolveDID(did),
+      trustScorePromise,
+      passportPromise,
+    ]);
     const soulGate = evaluateSoulGate(trustScore, requiredScore, purpose);
     const baseContext = {
       framework: "autogen" as const,
@@ -347,7 +365,7 @@ export function createAxiomIDAutoGenAdapter(
       trustScore,
       passport,
       soulGate,
-      metadata: input.metadata,
+      metadata: cloneToolMetadata(input.metadata),
     };
     const contextWithoutToolContext = {
       ...baseContext,
