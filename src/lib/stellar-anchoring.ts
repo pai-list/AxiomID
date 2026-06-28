@@ -95,18 +95,17 @@ export async function anchorVcHash(
   signedVc: Record<string, unknown>,
   userSecretKey: string,
 ): Promise<AnchorResult> {
+  const keypair = StellarSdk.Keypair.fromSecret(userSecretKey);
   const vcHash = computeVcHash(signedVc);
-  const stellarAddress = StellarSdk.Keypair.fromSecret(userSecretKey).publicKey();
 
-  const transaction = await buildAnchorTransaction(stellarAddress, vcHash);
-  transaction.sign(StellarSdk.Keypair.fromSecret(userSecretKey));
+  const transaction = await buildAnchorTransaction(keypair.publicKey(), vcHash);
+  transaction.sign(keypair);
 
-  const server = getStellarServer();
-  const result = await server.submitTransaction(transaction);
+  const { stellarTxId } = await submitAnchorTransaction(transaction);
 
   return {
     txHash: vcHash,
-    stellarTxId: result.hash,
+    stellarTxId,
     memo: vcHash.slice(0, 28),
     timestamp: new Date().toISOString(),
   };

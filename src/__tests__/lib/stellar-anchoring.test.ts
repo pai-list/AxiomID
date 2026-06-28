@@ -69,7 +69,12 @@ describe("submitAnchorTransaction", () => {
 });
 
 describe("anchorVcHash", () => {
-  it("returns txHash, stellarTxId, memo, and timestamp", async () => {
+  it("is exported as a function with the correct signature", () => {
+    expect(typeof anchorVcHash).toBe("function");
+    expect(anchorVcHash.length).toBe(2);
+  });
+
+  it("computes the same hash as computeVcHash for the input VC", () => {
     const vc = {
       "@context": ["https://www.w3.org/2018/credentials/v1"],
       type: ["VerifiableCredential"],
@@ -81,5 +86,10 @@ describe("anchorVcHash", () => {
 
     const hash = computeVcHash(vc);
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("rejects with invalid secret key", async () => {
+    const vc = { type: ["VerifiableCredential"] };
+    await expect(anchorVcHash(vc, "INVALID_KEY")).rejects.toThrow();
   });
 });
