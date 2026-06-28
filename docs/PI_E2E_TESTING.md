@@ -67,14 +67,13 @@ Use this guide when testing on real devices in Pi Browser.
 **Expected:**
 
 - Pi payment popup shows correct amount and memo
-- After approval, `order/create` endpoint is called
-- Payment status is "completed" (accepted by our API)
+- After approval, Pi SDK callbacks (approve → complete) finalize payment server-side
+- Client calls `POST /api/skills/[slug]/install` after payment resolves
+- Install route verifies a RELEASED PiPayment exists for this skill
 - Skill appears in user's installed skills
 - `installCount` increments on the skill
 
 **Pass Criteria:** Payment completes, skill is installed, no errors
-
-**Known Issue (FIXED):** Previously, `order/create` rejected "completed" status. Now accepts "approved", "created", and "completed".
 
 ---
 
@@ -152,7 +151,7 @@ Use this guide when testing on real devices in Pi Browser.
 
 - Check `PI_API_KEY` is set correctly
 - Verify Pi API endpoint: `https://api.minepi.com/v2/payments/:id`
-- Check server logs for `[ORDER-CREATE]` errors
+- Check server logs for `[SKILL-INSTALL]` or `[PI-PAYMENT]` errors
 
 ### Auth timeout
 
