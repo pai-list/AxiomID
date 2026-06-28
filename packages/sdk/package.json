@@ -6,6 +6,8 @@
   "types": "src/index.ts",
   "files": [
     "dist",
+    "src",
+    "examples",
     "README.md",
     "LICENSE"
   ],
