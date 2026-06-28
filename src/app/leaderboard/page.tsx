@@ -201,7 +201,7 @@ export default function LeaderboardPage() {
           {allDemoUsers && (
             <div className="px-4 py-3 rounded-xl border border-amber-500/20 bg-amber-500/10 backdrop-blur-sm text-center">
               <p className="text-xs font-mono text-amber-300">
-                🚀 AxiomID is in beta — be the first pioneer to claim your passport.
+                {language === "en" ? "🚀 AxiomID is in beta — be the first pioneer to claim your passport." : "🚀 AxiomID في مرحلة البيتا — كن أول رائد يحصل على جواز سفره."}
               </p>
             </div>
           )}
