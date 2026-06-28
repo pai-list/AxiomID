@@ -114,6 +114,13 @@ function getOptionalNumberArg(args: unknown, key: string) {
 export async function bootstrapOpenAIAgentContext(
   options: AxiomOpenAIAgentBootstrapOptions
 ): Promise<AxiomOpenAIAgentContext> {
+  if (!options) {
+    throw new AxiomIDError("options is required", "INVALID_OPTIONS", 400);
+  }
+  if (typeof options.did !== "string" || options.did.trim() === "") {
+    throw new AxiomIDError("did must be a non-empty string", "INVALID_DID", 400);
+  }
+
   const sdk = getSdk(options.sdk, options.sdkConfig);
   const minimumTrustScore = getMinimumTrustScore(options.minimumTrustScore);
   const [didDocument, trustScore] = await Promise.all([
@@ -158,6 +165,14 @@ export async function bootstrapOpenAIAgentContext(
 export function assertOpenAIAgentSoulGate(
   context: AxiomOpenAIAgentContext
 ): AxiomOpenAIAgentContext {
+  if (!context || !context.gate) {
+    throw new AxiomIDError(
+      "Invalid agent context or missing gate evaluation",
+      "INVALID_CONTEXT",
+      400
+    );
+  }
+
   if (!context.gate.allowed) {
     throw new AxiomIDError(
       context.gate.reason ?? "Soul Gate denied this agent context",
@@ -176,6 +191,7 @@ export function createAxiomOpenAIAgentTools(
   AxiomOpenAIToolDefinition<TrustScore>,
   AxiomOpenAIToolDefinition<AxiomOpenAIAgentContext>
 ] {
+  const sdk = getSdk(options.sdk, options.sdkConfig);
   const didProperty = {
     type: "string",
     description: "AxiomID DID, for example did:axiom:pioneer.username",
@@ -192,7 +208,6 @@ export function createAxiomOpenAIAgentTools(
         additionalProperties: false,
       },
       execute: async (args) => {
-        const sdk = getSdk(options.sdk, options.sdkConfig);
         return sdk.resolveDID(getStringArg(args, "did"));
       },
     },
@@ -206,7 +221,6 @@ export function createAxiomOpenAIAgentTools(
         additionalProperties: false,
       },
       execute: async (args) => {
-        const sdk = getSdk(options.sdk, options.sdkConfig);
         return sdk.getTrustScore(getStringArg(args, "did"));
       },
     },
@@ -229,8 +243,7 @@ export function createAxiomOpenAIAgentTools(
       execute: async (args) =>
         bootstrapOpenAIAgentContext({
           did: getStringArg(args, "did"),
-          sdk: options.sdk,
-          sdkConfig: options.sdkConfig,
+          sdk,
           minimumTrustScore:
             getOptionalNumberArg(args, "minimumTrustScore") ?? options.minimumTrustScore,
         }),

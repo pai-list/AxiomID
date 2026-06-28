@@ -65,6 +65,39 @@ describe("OpenAI Agents SDK integration helpers", () => {
     expect(() => assertOpenAIAgentSoulGate(context)).toThrow(AxiomIDError);
   });
 
+  it("rejects invalid bootstrap options from untyped callers", async () => {
+    await expect(
+      bootstrapOpenAIAgentContext(undefined as unknown as Parameters<
+        typeof bootstrapOpenAIAgentContext
+      >[0])
+    ).rejects.toMatchObject({
+      code: "INVALID_OPTIONS",
+      status: 400,
+    });
+
+    await expect(
+      bootstrapOpenAIAgentContext({
+        did: "   ",
+        sdk: createMockSdk(),
+      })
+    ).rejects.toMatchObject({
+      code: "INVALID_DID",
+      status: 400,
+    });
+  });
+
+  it("rejects invalid Soul Gate contexts from untyped callers", () => {
+    expect(() =>
+      assertOpenAIAgentSoulGate(undefined as unknown as Parameters<
+        typeof assertOpenAIAgentSoulGate
+      >[0])
+    ).toThrow(AxiomIDError);
+
+    expect(() =>
+      assertOpenAIAgentSoulGate({} as Parameters<typeof assertOpenAIAgentSoulGate>[0])
+    ).toThrow(AxiomIDError);
+  });
+
   it("creates dependency-light tool definitions for OpenAI Agents SDK tool factories", async () => {
     const sdk = createMockSdk(76);
     const tools = createAxiomOpenAIAgentTools({ sdk, minimumTrustScore: 70 });
@@ -80,6 +113,18 @@ describe("OpenAI Agents SDK integration helpers", () => {
     ).resolves.toMatchObject({
       gate: { allowed: true, minimumTrustScore: 70 },
     });
+  });
+
+  it("reuses the supplied SDK across tool executions", async () => {
+    const sdk = createMockSdk(82);
+    const tools = createAxiomOpenAIAgentTools({ sdk });
+
+    await tools[0].execute({ did: "did:axiom:pioneer.username" });
+    await tools[1].execute({ did: "did:axiom:pioneer.username" });
+    await tools[2].execute({ did: "did:axiom:pioneer.username" });
+
+    expect(sdk.resolveDID).toHaveBeenCalledTimes(2);
+    expect(sdk.getTrustScore).toHaveBeenCalledTimes(2);
   });
 
   it("adapts definitions through a caller supplied OpenAI tool factory", () => {
