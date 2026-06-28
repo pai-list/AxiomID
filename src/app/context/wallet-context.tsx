@@ -406,15 +406,21 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             const msg = err instanceof Error ? err.message : String(err);
             pushLog(`Pi SDK auth failed: ${msg}`);
 
-            const isPiSdkUnavailable = err instanceof PiSdkError && (
-              err.code === PiSdkErrorCode.NOT_IN_PI_BROWSER ||
+            // Distinguish "not in Pi Browser" from "SDK failed to load". The
+            // latter can happen even inside Pi Browser (blocked/slow script,
+            // SRI mismatch), so telling the user to "open in Pi Browser" would
+            // be misleading.
+            const isSdkLoadFailure = err instanceof PiSdkError && (
               err.code === PiSdkErrorCode.SDK_NOT_AVAILABLE ||
               err.code === PiSdkErrorCode.SDK_SCRIPT_LOAD_FAILED ||
               err.code === PiSdkErrorCode.SDK_SCRIPT_TIMEOUT
             );
 
-            if (isPiSdkUnavailable) {
+            if (err instanceof PiSdkError && err.code === PiSdkErrorCode.NOT_IN_PI_BROWSER) {
               throw new Error("Pi Browser required. Open this app inside Pi Browser to authenticate.");
+            }
+            if (isSdkLoadFailure) {
+              throw new Error("Pi SDK failed to load. Check your connection and try again.");
             }
             throw err;
           }

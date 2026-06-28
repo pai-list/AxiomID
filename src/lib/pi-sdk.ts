@@ -192,6 +192,9 @@ export function checkPiBrowser(): boolean {
     if (typeof window.location !== "undefined") {
       const host = window.location.hostname.toLowerCase();
       if (host === "minepi.com" || host.endsWith(".minepi.com")) return true;
+      // Pi-hosted app domains (e.g. axiomid8992.pinet.com) are served inside
+      // the Pi Browser via the Pi Developer Portal.
+      if (host === "pinet.com" || host.endsWith(".pinet.com")) return true;
     }
   } catch {}
   return false;
