@@ -337,6 +337,10 @@ describe("createAxiomIDAutoGenAdapter", () => {
     });
     expect(draft.issuerDid).toBe("did:axiom:agent:issuer");
 
+    const getTrustScore = sdk.getTrustScore as jest.MockedFunction<
+      AxiomSDK["getTrustScore"]
+    >;
+    const getTrustScoreCallsBeforePassportGate = getTrustScore.mock.calls.length;
     const gatedContext = await tools.enforceSoulGate.run({
       did: "did:axiom:agent:alice",
       minimumTrustScore: 75,
@@ -355,7 +359,9 @@ describe("createAxiomIDAutoGenAdapter", () => {
         tier: "Sovereign",
       },
     });
-    expect(sdk.getTrustScore).not.toHaveBeenCalled();
+    expect(getTrustScore).toHaveBeenCalledTimes(
+      getTrustScoreCallsBeforePassportGate
+    );
     expect(sdk.verifyPassport).toHaveBeenCalledWith("alice");
 
     await expect(
