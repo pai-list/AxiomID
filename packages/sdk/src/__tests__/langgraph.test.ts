@@ -205,11 +205,34 @@ describe("LangGraph integration helpers", () => {
     });
   });
 
+  it("throws a typed error when graph state is not an object", async () => {
+    const nodes = createAxiomLangGraphNodes({ sdk: createMockSdk(90) });
+
+    await expect(nodes.bootstrapAgentContext(null as never)).rejects.toMatchObject({
+      code: "LANGGRAPH_STATE_INVALID",
+      status: 400,
+    });
+  });
+
   it("throws a typed error when enforcement runs before bootstrap", () => {
     const nodes = createAxiomLangGraphNodes();
 
     expect(() => nodes.enforceSoulGate({ did: "did:axiom:pioneer.username" }))
       .toThrow(AxiomIDError);
+  });
+
+  it("throws a typed error when enforcement receives invalid state", () => {
+    const nodes = createAxiomLangGraphNodes();
+
+    try {
+      nodes.enforceSoulGate([] as never);
+      throw new Error("Expected invalid LangGraph state to throw");
+    } catch (err) {
+      expect(err).toMatchObject({
+        code: "LANGGRAPH_STATE_INVALID",
+        status: 400,
+      });
+    }
   });
 
   it("streams async bootstrap progress events in graph-friendly order", async () => {
@@ -246,6 +269,6 @@ describe("LangGraph integration helpers", () => {
         { sdk }
       )
     ).rejects.toThrow("resolver down");
-    expect(sdk.getTrustScore).not.toHaveBeenCalled();
+    expect(sdk.getTrustScore).toHaveBeenCalledWith("did:axiom:pioneer.username");
   });
 });

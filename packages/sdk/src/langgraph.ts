@@ -125,6 +125,14 @@ function createAttestationDraft(
 }
 
 function readDidFromState(state: LangGraphState, didField: string): string {
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    throw new AxiomIDError(
+      "LangGraph state must be a valid object",
+      "LANGGRAPH_STATE_INVALID",
+      400
+    );
+  }
+
   const did = state[didField];
 
   if (typeof did !== "string" || did.trim() === "") {
@@ -142,6 +150,14 @@ function readContextFromState(
   state: LangGraphState,
   contextKey: string
 ): AxiomLangGraphContext {
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    throw new AxiomIDError(
+      "LangGraph state must be a valid object",
+      "LANGGRAPH_STATE_INVALID",
+      400
+    );
+  }
+
   const context = state[contextKey];
 
   if (!context || typeof context !== "object" || !("gate" in context)) {
@@ -161,8 +177,10 @@ export async function bootstrapLangGraphAgentContext(
 ): Promise<AxiomLangGraphContext> {
   const sdk = getSdk(options);
   const minimumTrustScore = getMinimumTrustScore(options);
-  const didDocument = await sdk.resolveDID(input.did);
-  const trustScore = await sdk.getTrustScore(input.did);
+  const [didDocument, trustScore] = await Promise.all([
+    sdk.resolveDID(input.did),
+    sdk.getTrustScore(input.did),
+  ]);
   const gate = evaluateSoulGate(trustScore, minimumTrustScore);
   const issuedAt = (options.now ?? (() => new Date()))().toISOString();
 
