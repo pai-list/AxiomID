@@ -32,6 +32,10 @@
 
 ---
 
+> **⚠️ Beta Notice:** AxiomID is in active development. Features are functional but user-facing data reflects the closed beta phase with demo accounts. [Learn more →](/status)
+
+---
+
 ## What It Does
 
 AxiomID is a **decentralized identity layer** for AI agents on Pi Network. It answers one question: *can this agent be trusted?*
