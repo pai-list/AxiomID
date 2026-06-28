@@ -92,7 +92,7 @@ describe("createAxiomIDMastraTools", () => {
     });
 
     expect(sdk.resolveDID).toHaveBeenCalledWith("did:axiom:alice");
-    expect(sdk.getTrustScore).toHaveBeenCalledWith("did:axiom:alice");
+    expect(sdk.getTrustScore).toHaveBeenCalledWith("alice");
     expect(sdk.verifyPassport).toHaveBeenCalledWith("alice");
     expect(result).toMatchObject({
       did: "did:axiom:alice",
@@ -100,10 +100,13 @@ describe("createAxiomIDMastraTools", () => {
       trustScore,
       passport,
       soulGate: {
+        did: "did:axiom:alice",
         allowed: true,
         score: 88,
         tier: "Sovereign",
         minimumTrustScore: 50,
+        purpose: "delegate research task",
+        reason: "Trust score 88 meets threshold 50.",
       },
     });
   });
@@ -166,7 +169,25 @@ describe("createAxiomIDMastraTools", () => {
     });
   });
 
-  it("creates deterministic unsigned attestation drafts for host signing", () => {
+  it("uses passport slug for Soul Gate trust score lookup when provided", async () => {
+    const sdk = createMockSdk();
+    const createTool = jest.fn((definition) => definition);
+    const tools = createAxiomIDMastraTools({ sdk, createTool, schemas });
+    const soulGate = tools.enforceSoulGate as CapturedTool<
+      { did: string; passportSlug?: string; purpose?: string },
+      unknown
+    >;
+
+    await soulGate.execute({
+      did: "did:axiom:alice",
+      passportSlug: "alice",
+      purpose: "delegate research task",
+    });
+
+    expect(sdk.getTrustScore).toHaveBeenCalledWith("alice");
+  });
+
+  it("creates unsigned attestation drafts for host signing", () => {
     const sdk = createMockSdk();
     const createTool = jest.fn((definition) => definition);
     const tools = createAxiomIDMastraTools({
@@ -188,7 +209,9 @@ describe("createAxiomIDMastraTools", () => {
     });
 
     expect(result).toEqual({
-      id: "urn:axiomid:attestation:2026-06-28T00:00:00.000Z:1",
+      id: expect.stringMatching(
+        /^urn:axiomid:attestation:2026-06-28T00:00:00\.000Z:1:[0-9a-f-]{36}$/
+      ),
       type: ["VerifiableCredential", "AxiomAgentAttestation"],
       issuer: "did:axiom:agent",
       issuanceDate: "2026-06-28T00:00:00.000Z",
@@ -226,10 +249,17 @@ describe("createAxiomIDMastraTools", () => {
       claim: "Second claim",
     }) as { id: string; credentialSubject: { evidence?: unknown } };
 
-    expect(first.id).toBe("urn:axiomid:attestation:2026-06-28T00:00:00.000Z:1");
-    expect(second.id).toBe(
-      "urn:axiomid:attestation:2026-06-28T00:00:00.000Z:2"
+    expect(first.id).toEqual(
+      expect.stringMatching(
+        /^urn:axiomid:attestation:2026-06-28T00:00:00\.000Z:1:[0-9a-f-]{36}$/
+      )
     );
+    expect(second.id).toEqual(
+      expect.stringMatching(
+        /^urn:axiomid:attestation:2026-06-28T00:00:00\.000Z:2:[0-9a-f-]{36}$/
+      )
+    );
+    expect(first.id).not.toBe(second.id);
     expect(first.credentialSubject).not.toHaveProperty("evidence");
   });
 

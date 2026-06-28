@@ -68,7 +68,12 @@ export function createAxiomIDMastraTools<TTool>(
       outputSchema: config.schemas.objectOutput,
       execute: async (input) =>
         bootstrap.requireSoulGate(
-          input as { did: string; minimumTrustScore?: number; purpose?: string }
+          input as {
+            did: string;
+            passportSlug?: string;
+            minimumTrustScore?: number;
+            purpose?: string;
+          }
         ),
     }),
 

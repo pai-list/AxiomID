@@ -20,6 +20,7 @@ const axiomTools = createAxiomIDMastraTools({
     }),
     soulGateInput: z.object({
       did: z.string(),
+      passportSlug: z.string().optional(),
       minimumTrustScore: z.number().optional(),
       purpose: z.string().optional(),
     }),

@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import type { AxiomSDK } from "../client";
 import type { DIDDocument, Passport, TrustScore } from "../types";
 
@@ -6,6 +7,7 @@ export interface AxiomAgentBootstrapConfig {
   agentDid?: string;
   minimumTrustScore?: number;
   now?: () => Date;
+  idFactory?: () => string;
 }
 
 export interface AxiomAgentContextInput {
@@ -63,6 +65,7 @@ export class AxiomAgentBootstrap {
   private readonly agentDid?: string;
   private readonly minimumTrustScore: number;
   private readonly now: () => Date;
+  private readonly idFactory: () => string;
   private draftSequence = 0;
 
   constructor(config: AxiomAgentBootstrapConfig) {
@@ -71,6 +74,7 @@ export class AxiomAgentBootstrap {
     this.minimumTrustScore =
       config.minimumTrustScore ?? DEFAULT_MINIMUM_TRUST_SCORE;
     this.now = config.now ?? (() => new Date());
+    this.idFactory = config.idFactory ?? randomUUID;
   }
 
   async buildContext(input: AxiomAgentContextInput): Promise<AxiomAgentContext> {
@@ -80,7 +84,7 @@ export class AxiomAgentBootstrap {
 
     const [didDocument, trustScore, passport] = await Promise.all([
       this.sdk.resolveDID(input.did),
-      this.sdk.getTrustScore(input.did),
+      this.sdk.getTrustScore(input.passportSlug ?? input.did),
       input.passportSlug
         ? this.sdk.verifyPassport(input.passportSlug)
         : Promise.resolve(undefined),
@@ -108,6 +112,7 @@ export class AxiomAgentBootstrap {
 
   async requireSoulGate(input: {
     did: string;
+    passportSlug?: string;
     minimumTrustScore?: number;
     purpose?: string;
   }): Promise<SoulGateDecision> {
@@ -115,7 +120,9 @@ export class AxiomAgentBootstrap {
       throw new Error("Invalid input: 'did' is required to enforce Soul Gate");
     }
 
-    const trustScore = await this.sdk.getTrustScore(input.did);
+    const trustScore = await this.sdk.getTrustScore(
+      input.passportSlug ?? input.did
+    );
     return this.evaluateSoulGate(
       input.did,
       trustScore,
@@ -145,9 +152,15 @@ export class AxiomAgentBootstrap {
     const issuedAt = this.now().toISOString();
     const expirationDate = this.parseExpirationDate(input.expiresAt, issuedAt);
     this.draftSequence += 1;
+    const draftId = [
+      "urn:axiomid:attestation",
+      issuedAt,
+      this.draftSequence,
+      this.idFactory(),
+    ].join(":");
 
     const draft: AgentAttestationDraft = {
-      id: `urn:axiomid:attestation:${issuedAt}:${this.draftSequence}`,
+      id: draftId,
       type: ["VerifiableCredential", "AxiomAgentAttestation"],
       issuer,
       issuanceDate: issuedAt,
