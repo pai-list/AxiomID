@@ -7,6 +7,8 @@ type AxiomIdentitySDK = Pick<
 >;
 
 const DEFAULT_MINIMUM_TRUST_SCORE = 60;
+const ISO_DATE_TIME_PATTERN =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/;
 
 export interface AxiomIDAutoGenAdapterOptions {
   sdk: AxiomIdentitySDK;
@@ -138,6 +140,37 @@ function purposeFor(inputPurpose: string | undefined, defaultPurpose: string | u
   return inputPurpose?.trim() || defaultPurpose || "Authorize AutoGen agent work";
 }
 
+function assertIdentitySdk(options: AxiomIDAutoGenAdapterOptions): AxiomIdentitySDK {
+  if (!options?.sdk) {
+    throw new Error("options.sdk is required");
+  }
+  if (
+    typeof options.sdk.resolveDID !== "function" ||
+    typeof options.sdk.getTrustScore !== "function" ||
+    typeof options.sdk.verifyPassport !== "function"
+  ) {
+    throw new Error(
+      "options.sdk must implement resolveDID, getTrustScore, and verifyPassport"
+    );
+  }
+  return options.sdk;
+}
+
+function normalizeOptionalDateTime(value: string | undefined): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed || !ISO_DATE_TIME_PATTERN.test(trimmed)) {
+    throw new Error("expiresAt must be a valid ISO-8601 date-time timestamp");
+  }
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("expiresAt must be a valid ISO-8601 date-time timestamp");
+  }
+  return parsed.toISOString();
+}
+
 function evaluateSoulGate(
   trustScore: TrustScore,
   requiredScore: number,
@@ -258,6 +291,7 @@ const attestationParameters = {
     },
     expiresAt: {
       type: "string",
+      format: "date-time",
       description: "Optional ISO-8601 expiration timestamp",
     },
     purpose: { type: "string", description: "Why this draft was created" },
@@ -267,11 +301,15 @@ const attestationParameters = {
 export function createAxiomIDAutoGenAdapter(
   options: AxiomIDAutoGenAdapterOptions
 ): AxiomIDAutoGenAdapter {
+  const sdk = assertIdentitySdk(options);
   const now = options.now ?? (() => new Date());
 
   async function bootstrapAgent(
     input: AxiomIDAutoGenBootstrapInput
   ): Promise<AxiomIDAutoGenContext> {
+    if (!input) {
+      throw new Error("input is required");
+    }
     const did = requireNonEmpty(input.did, "did");
     const purpose = purposeFor(input.purpose, options.defaultPurpose);
     const requiredScore = minimumTrustScore(
@@ -280,12 +318,16 @@ export function createAxiomIDAutoGenAdapter(
     );
 
     const [didDocument, trustScore] = await Promise.all([
-      options.sdk.resolveDID(did),
-      options.sdk.getTrustScore(did),
+      sdk.resolveDID(did),
+      sdk.getTrustScore(did),
     ]);
-    const passport = input.passportSlug
-      ? await options.sdk.verifyPassport(input.passportSlug)
+    const passportSlug = input.passportSlug?.trim();
+    const passport = passportSlug
+      ? await sdk.verifyPassport(passportSlug)
       : undefined;
+    if (passport && passport.did !== did) {
+      throw new Error("passportSlug does not belong to the requested did");
+    }
     const soulGate = evaluateSoulGate(trustScore, requiredScore, purpose);
     const baseContext = {
       framework: "autogen" as const,
@@ -320,9 +362,13 @@ export function createAxiomIDAutoGenAdapter(
   function createAttestationDraft(
     input: AxiomIDAutoGenAttestationDraftInput
   ): AxiomIDAutoGenAttestationDraft {
+    if (!input) {
+      throw new Error("input is required");
+    }
     const issuerDid = requireNonEmpty(input.issuerDid ?? options.agentDid, "issuerDid");
     const subjectDid = requireNonEmpty(input.subjectDid, "subjectDid");
     const claim = requireNonEmpty(input.claim, "claim");
+    const expiresAt = normalizeOptionalDateTime(input.expiresAt);
     return {
       type: "AxiomIDAttestationDraft",
       issuerDid,
@@ -330,7 +376,7 @@ export function createAxiomIDAutoGenAdapter(
       claim,
       evidence: input.evidence ?? {},
       issuedAt: now().toISOString(),
-      expiresAt: input.expiresAt,
+      expiresAt,
       unsigned: true,
       framework: "autogen",
       purpose: purposeFor(input.purpose, options.defaultPurpose),

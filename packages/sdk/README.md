@@ -58,4 +58,4 @@ const systemMessage = [
 - `examples/autogen-basic-bootstrap.ts` resolves identity context and prints the system message that can be injected into an AutoGen agent.
 - `examples/autogen-gated-task.ts` uses the exported tool definitions to enforce Soul Gate and draft task-completion evidence.
 
-Build the SDK before running TypeScript examples so their `../dist` imports are available.
+When running these examples from a source checkout of this repository, build the SDK first so their `../dist` imports are available.

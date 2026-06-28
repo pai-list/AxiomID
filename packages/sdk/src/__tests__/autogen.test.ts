@@ -50,6 +50,10 @@ function createMockSdk(score = trustScore): AxiomSDK {
 }
 
 describe("createAxiomIDAutoGenAdapter", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("bootstraps DID, trust, passport, system message, and tool context", async () => {
     const sdk = createMockSdk();
     const adapter = createAxiomIDAutoGenAdapter({
@@ -97,6 +101,23 @@ describe("createAxiomIDAutoGenAdapter", () => {
     });
   });
 
+  it("validates adapter options before creating tools", () => {
+    expect(() =>
+      createAxiomIDAutoGenAdapter(
+        undefined as unknown as Parameters<typeof createAxiomIDAutoGenAdapter>[0]
+      )
+    ).toThrow("options.sdk is required");
+
+    expect(() =>
+      createAxiomIDAutoGenAdapter({
+        sdk: {
+          resolveDID: jest.fn(),
+          getTrustScore: jest.fn(),
+        },
+      } as unknown as Parameters<typeof createAxiomIDAutoGenAdapter>[0])
+    ).toThrow("options.sdk must implement resolveDID, getTrustScore, and verifyPassport");
+  });
+
   it("throws a gate error when requireSoulGate sees a low trust score", async () => {
     const sdk = createMockSdk(lowTrustScore);
     const adapter = createAxiomIDAutoGenAdapter({
@@ -128,12 +149,39 @@ describe("createAxiomIDAutoGenAdapter", () => {
       minimumTrustScore: 50,
     });
 
+    expect(sdk.verifyPassport).not.toHaveBeenCalled();
     expect(context.soulGate).toMatchObject({
       allowed: false,
       score: 35,
       minimumTrustScore: 50,
     });
     expect(context.systemMessage).toContain("Soul Gate: denied");
+  });
+
+  it("rejects missing bootstrap input and mismatched passports", async () => {
+    const sdk = createMockSdk();
+    const adapter = createAxiomIDAutoGenAdapter({ sdk });
+
+    await expect(
+      adapter.bootstrapAgent(
+        undefined as unknown as Parameters<typeof adapter.bootstrapAgent>[0]
+      )
+    ).rejects.toThrow("input is required");
+
+    const mismatchSdk = createMockSdk({ ...trustScore, score: 95 });
+    (mismatchSdk.verifyPassport as jest.Mock).mockResolvedValue({
+      ...passport,
+      did: "did:axiom:agent:bob",
+    });
+    const mismatchAdapter = createAxiomIDAutoGenAdapter({ sdk: mismatchSdk });
+
+    await expect(
+      mismatchAdapter.bootstrapAgent({
+        did: "did:axiom:agent:alice",
+        passportSlug: " alice ",
+      })
+    ).rejects.toThrow("passportSlug does not belong to the requested did");
+    expect(mismatchSdk.verifyPassport).toHaveBeenCalledWith("alice");
   });
 
   it("creates unsigned AutoGen attestation drafts with stable issuer defaults", () => {
@@ -163,6 +211,30 @@ describe("createAxiomIDAutoGenAdapter", () => {
       framework: "autogen",
       purpose: "AutoGen task completion",
     });
+  });
+
+  it("normalizes valid attestation expirations and rejects malformed ones", () => {
+    const sdk = createMockSdk();
+    const adapter = createAxiomIDAutoGenAdapter({
+      sdk,
+      agentDid: "did:axiom:agent:issuer",
+      now: () => new Date("2026-06-28T00:00:00.000Z"),
+    });
+
+    const draft = adapter.createAttestationDraft({
+      subjectDid: "did:axiom:agent:alice",
+      claim: "AutoGen task completed",
+      expiresAt: "2026-06-29T12:30:00+02:00",
+    });
+
+    expect(draft.expiresAt).toBe("2026-06-29T10:30:00.000Z");
+    expect(() =>
+      adapter.createAttestationDraft({
+        subjectDid: "did:axiom:agent:alice",
+        claim: "AutoGen task completed",
+        expiresAt: "2026-06-29",
+      })
+    ).toThrow("expiresAt must be a valid ISO-8601 date-time timestamp");
   });
 
   it("exposes AutoGen function tool definitions that delegate to the adapter", async () => {
@@ -197,11 +269,31 @@ describe("createAxiomIDAutoGenAdapter", () => {
       claim: "AutoGen task completed",
     });
     expect(draft.issuerDid).toBe("did:axiom:agent:issuer");
+
+    await expect(
+      tools.enforceSoulGate.run({
+        did: "did:axiom:agent:alice",
+        minimumTrustScore: 90,
+      })
+    ).rejects.toMatchObject({
+      name: "AxiomIDAutoGenGateError",
+      decision: {
+        allowed: false,
+        score: 82,
+        minimumTrustScore: 90,
+      },
+    });
   });
 
   it("validates required fields before creating attestation drafts", () => {
     const sdk = createMockSdk();
     const adapter = createAxiomIDAutoGenAdapter({ sdk });
+
+    expect(() =>
+      adapter.createAttestationDraft(
+        undefined as unknown as Parameters<typeof adapter.createAttestationDraft>[0]
+      )
+    ).toThrow("input is required");
 
     expect(() =>
       adapter.createAttestationDraft({
