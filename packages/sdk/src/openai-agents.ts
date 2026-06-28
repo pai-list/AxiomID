@@ -124,10 +124,14 @@ function getOptionalNumberArg(args: unknown, key: string) {
 
 function getEffectiveMinimumTrustScore(args: unknown, configuredMinimumTrustScore?: number) {
   const requestedMinimumTrustScore = getOptionalNumberArg(args, "minimumTrustScore");
-  const configuredFloor = getMinimumTrustScore(configuredMinimumTrustScore);
-  const requestedFloor = requestedMinimumTrustScore ?? configuredFloor;
+  if (requestedMinimumTrustScore === undefined) {
+    return configuredMinimumTrustScore ?? DEFAULT_MINIMUM_TRUST_SCORE;
+  }
 
-  return Math.max(requestedFloor, configuredFloor);
+  return Math.max(
+    getMinimumTrustScore(requestedMinimumTrustScore),
+    configuredMinimumTrustScore ?? DEFAULT_MINIMUM_TRUST_SCORE
+  );
 }
 
 export async function bootstrapOpenAIAgentContext(
