@@ -103,7 +103,7 @@ function getStringArg(args: unknown, key: string) {
     throw new AxiomIDError(`${key} must be a non-empty string`, "INVALID_TOOL_ARGUMENTS", 400);
   }
 
-  return value;
+  return value.trim();
 }
 
 function getOptionalNumberArg(args: unknown, key: string) {
@@ -144,11 +144,12 @@ export async function bootstrapOpenAIAgentContext(
     throw new AxiomIDError("did must be a non-empty string", "INVALID_DID", 400);
   }
 
+  const did = options.did.trim();
   const sdk = getSdk(options.sdk, options.sdkConfig);
   const minimumTrustScore = getMinimumTrustScore(options.minimumTrustScore);
   const [didDocument, trustScore] = await Promise.all([
-    sdk.resolveDID(options.did),
-    sdk.getTrustScore(options.did),
+    sdk.resolveDID(did),
+    sdk.getTrustScore(did),
   ]);
   const allowed = trustScore.score >= minimumTrustScore;
   const gate: AxiomOpenAIAgentGate = {
@@ -170,8 +171,8 @@ export async function bootstrapOpenAIAgentContext(
 
   if (options.includeAttestationDraft) {
     context.attestationDraft = {
-      issuerDid: options.did,
-      subjectDid: options.attestationSubjectDid ?? options.did,
+      issuerDid: did,
+      subjectDid: options.attestationSubjectDid ?? did,
       type: "AxiomIDAgentContext",
       issuedAt: (options.now ?? (() => new Date()))().toISOString(),
       evidence: {

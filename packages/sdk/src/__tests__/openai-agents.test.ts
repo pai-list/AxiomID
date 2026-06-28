@@ -86,6 +86,21 @@ describe("OpenAI Agents SDK integration helpers", () => {
     });
   });
 
+  it("normalizes surrounding DID whitespace before SDK calls", async () => {
+    const sdk = createMockSdk(91);
+
+    const context = await bootstrapOpenAIAgentContext({
+      did: "  did:axiom:pioneer.username  ",
+      sdk,
+      includeAttestationDraft: true,
+    });
+
+    expect(sdk.resolveDID).toHaveBeenCalledWith("did:axiom:pioneer.username");
+    expect(sdk.getTrustScore).toHaveBeenCalledWith("did:axiom:pioneer.username");
+    expect(context.attestationDraft?.issuerDid).toBe("did:axiom:pioneer.username");
+    expect(context.attestationDraft?.subjectDid).toBe("did:axiom:pioneer.username");
+  });
+
   it("rejects invalid Soul Gate contexts from untyped callers", () => {
     expect(() =>
       assertOpenAIAgentSoulGate(undefined as unknown as Parameters<
@@ -113,6 +128,17 @@ describe("OpenAI Agents SDK integration helpers", () => {
     ).resolves.toMatchObject({
       gate: { allowed: true, minimumTrustScore: 70 },
     });
+  });
+
+  it("normalizes tool DID arguments before SDK calls", async () => {
+    const sdk = createMockSdk(76);
+    const tools = createAxiomOpenAIAgentTools({ sdk });
+
+    await tools[0].execute({ did: "  did:axiom:pioneer.username  " });
+    await tools[1].execute({ did: "  did:axiom:pioneer.username  " });
+
+    expect(sdk.resolveDID).toHaveBeenCalledWith("did:axiom:pioneer.username");
+    expect(sdk.getTrustScore).toHaveBeenCalledWith("did:axiom:pioneer.username");
   });
 
   it("reuses the supplied SDK across tool executions", async () => {
