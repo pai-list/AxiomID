@@ -113,6 +113,17 @@ describe("OpenAI Agents SDK integration helpers", () => {
     expect(context.attestationDraft?.subjectDid).toBe("did:axiom:delegate");
   });
 
+  it("falls back to the caller DID for blank attestation subject DID", async () => {
+    const context = await bootstrapOpenAIAgentContext({
+      did: "did:axiom:pioneer.username",
+      sdk: createMockSdk(91),
+      includeAttestationDraft: true,
+      attestationSubjectDid: "   ",
+    });
+
+    expect(context.attestationDraft?.subjectDid).toBe("did:axiom:pioneer.username");
+  });
+
   it("rejects invalid Soul Gate contexts from untyped callers", () => {
     expect(() =>
       assertOpenAIAgentSoulGate(undefined as unknown as Parameters<

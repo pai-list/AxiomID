@@ -170,9 +170,11 @@ export async function bootstrapOpenAIAgentContext(
   };
 
   if (options.includeAttestationDraft) {
+    const subjectDid = options.attestationSubjectDid?.trim() || did;
+
     context.attestationDraft = {
       issuerDid: did,
-      subjectDid: options.attestationSubjectDid?.trim() ?? did,
+      subjectDid,
       type: "AxiomIDAgentContext",
       issuedAt: (options.now ?? (() => new Date()))().toISOString(),
       evidence: {
