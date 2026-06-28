@@ -56,7 +56,7 @@ export default function ClaimPage() {
   const [xpGain, setXpGain] = useState<number | null>(null);
   const [connectError, setConnectError] = useState<string | null>(null);
 
-  const { user, connectWallet, isConnecting, isPiBrowser } = useWallet();
+  const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, claimKya } = useWallet();
   const { language } = useLanguage();
 
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
@@ -120,7 +120,14 @@ export default function ClaimPage() {
         if (!allAccepted) return;
       }
 
-      // If no native dialog (not in Pi Browser), proceed silently
+      // Call backend KYA claim to record verification on-chain
+      const claimed = await claimKya(user?.piUsername || "");
+      if (!claimed) {
+        setVerificationProgress(0);
+        return;
+      }
+
+      // Animate progress after successful backend claim
       setVerificationProgress(0);
       const interval = setInterval(() => {
         setVerificationProgress((prev) => {
@@ -138,10 +145,13 @@ export default function ClaimPage() {
     }
   };
 
-  const handleDeploy = () => {
-    setTimeout(() => {
+  const handleDeploy = async () => {
+    const created = await createAgent();
+    if (!created) return;
+    const activated = await activateAgent();
+    if (activated) {
       setDeployed(true);
-    }, 1500);
+    }
   };
 
   const canProceed = () => {
@@ -502,7 +512,7 @@ export default function ClaimPage() {
                             )}
                           </p>
                           <p className="font-mono text-xs text-white/40 mt-1">
-                            {t("Trust Score: 100", "نقاط الثقة: 100")}
+                            {t("Trust Score: ", "نقاط الثقة: ")}{user?.trustScore ?? 0}
                           </p>
                         </motion.div>
                       )}
@@ -556,7 +566,7 @@ export default function ClaimPage() {
                                     {t("Trust", "الثقة")}
                                   </span>
                                   <span className="font-mono text-xs text-electric-blue">
-                                    100
+                                    {user?.trustScore ?? 0}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
