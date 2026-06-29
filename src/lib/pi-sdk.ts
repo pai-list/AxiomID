@@ -84,7 +84,7 @@ export function loadPiSdk(): Promise<unknown> {
 }
 
 export function determineSandboxMode(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" || !window.location) return false;
   if (process.env.NEXT_PUBLIC_PI_SANDBOX !== undefined) {
     return process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
   }
