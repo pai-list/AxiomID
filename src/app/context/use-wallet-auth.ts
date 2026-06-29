@@ -143,8 +143,6 @@ export function useWalletAuth({
         const accessToken = result.token;
         const piUser = result.user;
 
-        setPiAccessToken(accessToken ?? null);
-        setLocalStorageItem("pi_access_token", accessToken ?? "");
         const walletAddress = `pi:${piUser.uid}`;
         const stellarAddress = piUser.stellarAddress || null;
         pushLog(`Wallet: ${walletAddress}`);
@@ -176,6 +174,10 @@ export function useWalletAuth({
         }
 
         const data = await res.json();
+
+        // Only persist token AFTER server-side auth succeeds — prevents half-auth state
+        setPiAccessToken(accessToken ?? null);
+        setLocalStorageItem("pi_access_token", accessToken ?? "");
         setLocalStorageItem("axiomid_wallet", walletAddress);
         setUser(mapApiUser(data, {
           stellarAddress: stellarAddress,

@@ -66,102 +66,103 @@ export async function POST(request: NextRequest) {
       timestamp: s.createdAt,
     }));
 
-    if (kycResult.kycVerified) {
-      try {
-        await prisma.$transaction(async (tx) => {
-          // Persist KYC status inside the transaction so it is atomic with the
-          // stamp/XP/ledger/action writes — a failure must not leave the user
-          // marked VERIFIED without the corresponding records. Done before the
-          // idempotency early-return so status is repaired even if the stamp
-          // already exists.
-          await tx.user.update({
-            where: { id: user.id },
-            data: {
-              kycStatus,
-              kycProvider: 'pi_network',
-              kycVerifiedAt: new Date(),
-            },
-          });
+    let stampCreated = false;
 
+    // Atomic: persist KYC status + stamp + XP + tier + audit record + ledger together
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Persist KYC status inside the transaction so it rolls back on failure
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            kycStatus,
+            kycProvider: 'pi_network',
+            kycVerifiedAt: kycResult.kycVerified ? new Date() : null,
+          },
+        });
+
+        if (kycResult.kycVerified) {
           const existingStamp = await tx.stamp.findUnique({
             where: { user_stamp_unique: { userId: user.id, type: 'complete_kyc' } },
           });
-          if (existingStamp) return;
 
-          await tx.stamp.create({
-            data: {
-              userId: user.id,
-              type: 'complete_kyc',
-              provider: 'pi_network',
-              xpAwarded: 200,
-            },
-          });
-          const { xp: totalXp } = await tx.user.update({
-            where: { id: user.id },
-            data: { xp: { increment: 200 } },
-            select: { xp: true },
-          });
-          // Record the XP grant in the ledger so the audit chain stays complete,
-          // matching every other XP-awarding route (e.g. stamp/claim).
-          await tx.xpLedger.create({
-            data: {
-              userId: user.id,
-              amount: 200,
-              reason: 'action_claim',
-              reference: JSON.stringify({ type: 'complete_kyc' }),
-              balance: totalXp,
-            },
-          });
-          const nextTier = calculateTier(totalXp);
-          if (nextTier !== user.tier) {
-            await tx.user.update({
-              where: { id: user.id },
-              data: { tier: nextTier },
+          if (!existingStamp) {
+            await tx.stamp.create({
+              data: {
+                userId: user.id,
+                type: 'complete_kyc',
+                provider: 'pi_network',
+                xpAwarded: 200,
+              },
             });
-          }
-          const lastAction = await tx.action.findFirst({
-            orderBy: { timestamp: 'desc' },
-            select: { hash: true },
-          });
-          const parentHash = lastAction?.hash || GENESIS_HASH;
-          const actionTimestamp = new Date();
-          const actionHash = calculateActionHash(parentHash, {
-            type: 'complete_kyc',
-            xp: 200,
-            metadata: '{}',
-            userId: user.id,
-            timestamp: actionTimestamp,
-          });
-          await tx.action.create({
-            data: {
-              userId: user.id,
+
+            const { xp: totalXp } = await tx.user.update({
+              where: { id: user.id },
+              data: { xp: { increment: 200 } },
+              select: { xp: true },
+            });
+
+            // Record the XP grant in the ledger so the audit chain stays complete
+            await tx.xpLedger.create({
+              data: {
+                userId: user.id,
+                amount: 200,
+                reason: 'action_claim',
+                reference: JSON.stringify({ type: 'complete_kyc' }),
+                balance: totalXp,
+              },
+            });
+
+            const nextTier = calculateTier(totalXp);
+            if (nextTier !== user.tier) {
+              await tx.user.update({
+                where: { id: user.id },
+                data: { tier: nextTier },
+              });
+            }
+
+            const lastAction = await tx.action.findFirst({
+              where: { userId: user.id },
+              orderBy: { timestamp: 'desc' },
+              select: { hash: true },
+            });
+            const parentHash = lastAction?.hash || GENESIS_HASH;
+            const actionTimestamp = new Date();
+            const actionHash = calculateActionHash(parentHash, {
               type: 'complete_kyc',
               xp: 200,
               metadata: '{}',
+              userId: user.id,
               timestamp: actionTimestamp,
-              hash: actionHash,
-              parentHash,
-            },
-          });
-          stampsToScore.push({ type: 'complete_kyc', xp: 200, timestamp: actionTimestamp });
-        });
-      } catch (txErr) {
-        // Unique constraint violation means a concurrent request already
-        // created the complete_kyc stamp — treat as already processed.
-        const code = (txErr as { code?: string })?.code;
-        if (code !== 'P2002') throw txErr;
-      }
-    } else {
-      // Not verified: persist the PENDING status outside a transaction since
-      // there are no accompanying stamp/XP writes on this path.
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          kycStatus,
-          kycProvider: 'pi_network',
-          kycVerifiedAt: null,
-        },
+            });
+
+            await tx.action.create({
+              data: { 
+                userId: user.id,
+                type: 'complete_kyc',
+                xp: 200,
+                metadata: '{}',
+                hash: actionHash,
+                parentHash,
+                timestamp: actionTimestamp,
+              },
+            });
+
+            stampCreated = true;
+          }
+        }
       });
+    } catch (txErr) {
+      const msg = txErr instanceof Error ? txErr.message : String(txErr);
+      if (msg.includes('P2002')) {
+        stampCreated = false;
+      } else {
+        throw txErr;
+      }
+    }
+
+    if (stampCreated) {
+      stampsToScore.push({ type: 'complete_kyc', xp: 200, timestamp: new Date() });
     }
 
     const computedTrustScore = computeTrustScore(stampsToScore, false, user.lastActive);

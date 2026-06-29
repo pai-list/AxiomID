@@ -93,10 +93,11 @@ function makeTx(overrides: {
           timestamp: new Date(),
         }
       ),
-      // The route recomputes the trust score inside the transaction via
-      // tx.stamp.findMany (src/app/api/stamp/claim/route.ts) — mock it so the
-      // handler does not throw and return 500.
-      findMany: jest.fn().mockResolvedValue([]),
+      findMany: jest.fn().mockResolvedValue(
+        overrides.stamp?.findMany ?? [
+          { type: "connect_wallet", xpAwarded: 100, createdAt: new Date() },
+        ]
+      ),
     },
     xpLedger: {
       create: jest.fn().mockResolvedValue(overrides.ledger ?? { id: "ledger-1" }),

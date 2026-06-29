@@ -11,10 +11,7 @@ describe('computeTrustScore', () => {
     expect(computeTrustScore([], false, null)).toBe(0);
   });
 
-  it('returns 100 for all actions completed', () => {
-    // MAX_TRUST_SCORE includes headroom for up to 5 mining_streak entries
-    // (sum of weights + 4 × mining_streak weight). To reach a raw score equal
-    // to MAX_TRUST_SCORE (and thus 100), include all 5 mining streaks.
+  it('returns 100 for all actions completed (5 mining streaks for max score)', () => {
     const allActions = [
       { type: 'connect_wallet', xp: 100, timestamp: now },
       { type: 'complete_kyc', xp: 200, timestamp: now },

@@ -73,11 +73,10 @@ export function parsePiSignInCallback(): PiSignInCallbackResult {
   const expectedState = sessionStorage.getItem("pi_oauth_state");
   const returnedState = params.get("state");
 
-  if (!expectedState || !returnedState || returnedState !== expectedState) {
-    return { error: "Invalid sign-in state. Please try again." };
+  if (!returnedState || !expectedState || returnedState !== expectedState) {
+    return { error: "State mismatch — possible CSRF" };
   }
 
-  // Only remove after successful validation so Strict Mode re-runs don't break
   sessionStorage.removeItem("pi_oauth_state");
 
   const error = params.get("error");
