@@ -44,11 +44,9 @@ function mockRequestWithHeader(headers: Record<string, string> = {}) {
     headers: {
       get: (name: string) => allHeaders[name.toLowerCase()] ?? null,
     },
-    nextUrl: {
+    nextUrl: Object.assign(new URL("http://localhost/"), {
       hostname: "localhost",
-    },
-    nextUrl: new URL("https://example.com/"),
-  } as any;
+    }),
 }
 
 describe('hashToken (PR change: exported)', () => {
