@@ -61,11 +61,17 @@ export default function Home() {
       <ErrorBanner />
 
       {/* Header */}
-      <header className="sticky top-0 w-full z-50 bg-[#0c0d14]/95 backdrop-blur-lg border-b border-white/[0.04] shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset]">
+      <header
+        className="sticky top-0 w-full z-50 backdrop-blur-lg border-b shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset]"
+        style={{
+          background: "color-mix(in srgb, var(--bg-deep) 90%, transparent)",
+          borderColor: "var(--card-border)",
+        }}
+      >
         <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3 px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <AxiomLogo size="sm" />
-            <div className="w-px h-6 bg-white/10 hidden sm:block" />
+            <div className="w-px h-6 hidden sm:block" style={{ background: "var(--card-border)" }} />
             <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
               <svg viewBox="0 0 100 100" className="w-4 h-4" fill="currentColor">
                 <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />

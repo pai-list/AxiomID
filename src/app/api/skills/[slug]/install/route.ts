@@ -37,15 +37,19 @@ export async function POST(
       return apiError('FORBIDDEN', 'Skill is not available for installation');
     }
 
+    // For paid skills, find an unconsumed RELEASED payment for this skill that
+    // covers its price. The matched payment is marked consumed inside the
+    // install transaction below so it cannot be reused to reinstall for free.
+    let consumablePaymentId: string | null = null;
     if (skill.pricePi > 0) {
       const payments = await prisma.piPayment.findMany({
         where: {
           userId: user.id,
           status: 'RELEASED',
+          consumedByInstallationId: null,
         },
       });
 
-      let hasPaid = false;
       for (const p of payments) {
         let skillIdFromMeta: string | undefined;
         try {
@@ -57,12 +61,12 @@ export async function POST(
 
         // Authorize only when the payment is for this skill AND covers its price.
         if (skillIdFromMeta === skill.id && p.amount >= skill.pricePi) {
-          hasPaid = true;
+          consumablePaymentId = p.id;
           break;
         }
       }
 
-      if (!hasPaid) {
+      if (!consumablePaymentId) {
         return apiError('PAYMENT_INVALID', 'Purchase required before installing this skill');
       }
     }
@@ -83,30 +87,42 @@ export async function POST(
       if (existingInstallation.status === 'active') {
         return apiError('CONFLICT', 'Skill is already installed');
       }
-      await prisma.$transaction([
-        prisma.skillInstallation.update({
+      await prisma.$transaction(async (tx) => {
+        await tx.skillInstallation.update({
           where: { id: existingInstallation.id },
           data: { status: 'active', installedAt: new Date() },
-        }),
-        prisma.skill.update({
+        });
+        await tx.skill.update({
           where: { slug },
           data: { installCount: { increment: 1 } },
-        }),
-      ]);
+        });
+        if (consumablePaymentId) {
+          await tx.piPayment.update({
+            where: { id: consumablePaymentId },
+            data: { consumedByInstallationId: existingInstallation.id },
+          });
+        }
+      });
     } else {
-      await prisma.$transaction([
-        prisma.skillInstallation.create({
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.skillInstallation.create({
           data: {
             skillId: skill.id,
             agentId: agent.id,
             status: 'active',
           },
-        }),
-        prisma.skill.update({
+        });
+        await tx.skill.update({
           where: { slug },
           data: { installCount: { increment: 1 } },
-        }),
-      ]);
+        });
+        if (consumablePaymentId) {
+          await tx.piPayment.update({
+            where: { id: consumablePaymentId },
+            data: { consumedByInstallationId: created.id },
+          });
+        }
+      });
     }
 
     return apiSuccess({
