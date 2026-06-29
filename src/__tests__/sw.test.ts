@@ -122,7 +122,7 @@ function makeRequest(
 // ===========================================================================
 
 describe("sw.js — source constants", () => {
-  it("declares the correct cache version 'axiomid-v3'", () => {
+  it("declares the correct cache version 'axiomid-v4'", () => {
     expect(swSource).toContain(`"${EXPECTED_CACHE}"`);
   });
 
