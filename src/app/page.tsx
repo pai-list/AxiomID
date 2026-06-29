@@ -109,7 +109,7 @@ export default function Home() {
                 <Link href="/dashboard" prefetch={false} className="btn-ghost text-xs px-3 sm:px-4 py-1.5">
                   {t("nav_dashboard")}
                 </Link>
-                <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("connect")} className="btn-primary text-xs px-3 sm:px-4 py-1.5">
+                <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("connect")} className="btn-primary text-xs px-3 sm:px-4 py-1.5">
                   {isConnecting ? t("connecting") : t("connect")}
                 </button>
               </div>
@@ -165,7 +165,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2 animate-[fade-in-up_0.5s_ease-out_0.4s_both]">
               {!user ? (
                 isPiBrowser ? (
-                  <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                  <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("claim_passport")} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
                     {isConnecting ? <><span className="animate-spin">⟳</span> {t("connecting")}</> : <>{t("claim_passport")}<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
                   </button>
                 ) : (
