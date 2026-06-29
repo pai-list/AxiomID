@@ -48,6 +48,7 @@ export default function PiSignInCallbackPage() {
             uid: user.uid,
             username: user.username,
           }),
+          signal: AbortSignal.timeout(10000),
         });
 
         if (!authRes.ok) {
