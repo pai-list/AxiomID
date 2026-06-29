@@ -751,11 +751,15 @@ export default function ClaimPage() {
                       {typeof window !== "undefined" ? window.location.href : "https://www.axiomid.app/claim"}
                     </span>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const url = typeof window !== "undefined" ? window.location.href : "https://www.axiomid.app/claim";
-                        navigator.clipboard.writeText(url);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
+                        try {
+                          await navigator.clipboard.writeText(url);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        } catch (err) {
+                          console.error("Failed to copy link: ", err);
+                        }
                       }}
                       className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"
                       title={t("Copy link", "نسخ الرابط")}

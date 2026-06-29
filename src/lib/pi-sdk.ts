@@ -338,7 +338,7 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkA
           "Authentication failed - no user data received"
         );
       }
-      pushLog?.(`[DEBUG] User data received: ${JSON.stringify(result.user)}`);
+      pushLog?.(`[DEBUG] User data received (uid: ${result.user.uid.substring(0, 8)}..., username: ${result.user.username || 'unspecified'})`);
       
       if (!result.accessToken) {
         pushLog?.("[DEBUG] Authentication failed - no token received");
