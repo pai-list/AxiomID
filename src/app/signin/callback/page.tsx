@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { parsePiSignInCallback, fetchPiUser } from "@/lib/pi-signin";
+import { useLanguage } from "@/app/context/language-context";
 
 export default function PiSignInCallbackPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [status, setStatus] = useState<"processing" | "error">("processing");
   const [error, setError] = useState<string>("");
 
@@ -84,15 +86,15 @@ export default function PiSignInCallbackPage() {
 
   if (status === "error") {
     return (
-      <main className="flex min-h-screen items-center justify-center p-4">
+      <main className="flex min-h-screen items-center justify-center p-4 bg-[#10131a]">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">Sign-in failed</h1>
-          <p className="text-red-500 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold mb-4 text-white">{t("signin_failed")}</h1>
+          <p className="text-red-400 mb-6">{error}</p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-block px-6 py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors"
           >
-            Try again
+            {t("try_again")}
           </Link>
         </div>
       </main>
@@ -100,10 +102,10 @@ export default function PiSignInCallbackPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
+    <main className="flex min-h-screen items-center justify-center bg-[#10131a]">
       <div className="text-center">
-        <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-lg">Completing sign-in...</p>
+        <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-lg text-white">{t("completing_sign_in")}</p>
       </div>
     </main>
   );

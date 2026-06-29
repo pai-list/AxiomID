@@ -38,6 +38,39 @@ jest.mock("@/lib/rate-limiter", () => ({
   RATE_LIMITS: { authenticated: { windowMs: 60000, maxRequests: 100 } },
 }));
 
+jest.mock("@/lib/actions", () => ({
+  ACTIONS: {
+    CONNECT_WALLET: { id: 'connect_wallet', xp: 100, weight: 15, tier: 'medium' },
+    COMPLETE_KYC: { id: 'complete_kyc', xp: 200, weight: 30, tier: 'critical' },
+    SECURITY_CIRCLE: { id: 'security_circle', xp: 150, weight: 10, tier: 'medium' },
+  },
+}));
+
+jest.mock("@/lib/tiers", () => ({
+  calculateTier: jest.fn().mockReturnValue('Visitor'),
+}));
+
+jest.mock("@/lib/sanitize", () => ({
+  safeJsonStringify: jest.fn().mockReturnValue('{}'),
+}));
+
+jest.mock("@/lib/vc", () => ({
+  signSocialCredential: jest.fn().mockReturnValue({ proof: { jws: 'mock-sig' } }),
+}));
+
+jest.mock("@/lib/did", () => ({
+  createUserDid: jest.fn().mockReturnValue('did:axiom:user-test'),
+}));
+
+jest.mock("@/lib/trust-chain", () => ({
+  calculateActionHash: jest.fn().mockReturnValue('hash-123'),
+  GENESIS_HASH: 'genesis-hash',
+}));
+
+jest.mock("@/lib/trust-score", () => ({
+  computeTrustScore: jest.fn().mockReturnValue(10),
+}));
+
 jest.mock("@/lib/auth-middleware", () => ({
   requireAuth: jest.fn().mockResolvedValue({
     error: null,

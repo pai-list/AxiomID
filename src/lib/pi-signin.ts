@@ -48,9 +48,14 @@ export interface PiSignInCallbackResult {
 
 export function parsePiSignInCallback(): PiSignInCallbackResult {
   const params = new URLSearchParams(window.location.hash.slice(1));
-  const expectedState = sessionStorage.getItem("pi_oauth_state");
-  sessionStorage.removeItem("pi_oauth_state");
   const returnedState = params.get("state");
+
+  // Read-and-remove in one step to survive React Strict Mode double-mount:
+  // First mount consumes the state; second mount finds nothing (expected — already processed).
+  const expectedState = sessionStorage.getItem("pi_oauth_state");
+  if (expectedState) {
+    sessionStorage.removeItem("pi_oauth_state");
+  }
 
   if (returnedState && expectedState && returnedState !== expectedState) {
     return { error: "State mismatch — possible CSRF" };
