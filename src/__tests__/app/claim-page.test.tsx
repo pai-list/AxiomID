@@ -50,10 +50,10 @@ function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {})
     connectWallet: jest.fn(),
     claimAction: jest.fn(),
     refreshUser: jest.fn(),
-    createAgent: jest.fn(),
-    activateAgent: jest.fn(),
+    createAgent: jest.fn().mockResolvedValue(true),
+    activateAgent: jest.fn().mockResolvedValue(true),
     pauseAgent: jest.fn(),
-    claimKya: jest.fn(),
+    claimKya: jest.fn().mockResolvedValue(true),
     levelProgress: 0,
     nextXP: null,
     walletLogs: [],
@@ -231,10 +231,10 @@ describe("ClaimPage — step 3 (deploy — PR change: Pi Testnet)", () => {
     expect(screen.getByText("ACTIVATE AGENT")).toBeInTheDocument();
   });
 
-  it("renders trust score value '100' in passport preview", async () => {
+  it("renders trust score value from user in passport preview", async () => {
     await navigateToStep3();
-    // "100" appears as trust score in step 3 passport preview
-    expect(screen.getByText("100")).toBeInTheDocument();
+    // Trust score comes from user.trustScore (mock = 80)
+    expect(screen.getByText("80")).toBeInTheDocument();
   });
 
   it("does NOT render 'Continue' navigation at step 3 (no more steps)", async () => {

@@ -38,7 +38,7 @@ interface User {
 interface StampBoardProps {
   user: User | null;
   claimAction: (actionType: string, metadata?: Record<string, unknown>) => Promise<boolean>;
-  connectWallet: () => void;
+  connectWallet: () => Promise<boolean>;
 }
 
 const STAMP_DEFS = [
@@ -75,8 +75,7 @@ export function StampBoard({ user, claimAction, connectWallet }: StampBoardProps
 
   const handleConnect = async (type: string, handle: string) => {
     if (!user) {
-      connectWallet();
-      return false;
+      return await connectWallet();
     }
     return await claimAction(type, { handle });
   };
