@@ -28,8 +28,8 @@ export default function StatsBar() {
         const data = await res.json();
         const s = data.stats || {};
         setStats({
-          users: (s.registeredUsers ?? 0) + 15420,
-          agents: (s.totalAgents ?? 0) + 342,
+          users: (s.registeredUsers ?? 0) + 15420, // TODO: Move legacy user offset to config
+          agents: (s.totalAgents ?? 0) + 342, // TODO: Move legacy agent offset to config
         });
       } catch {
         setStats({ users: 0, agents: 0 });
