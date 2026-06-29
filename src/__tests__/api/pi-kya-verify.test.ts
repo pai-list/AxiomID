@@ -27,15 +27,24 @@ jest.mock('@/lib/trust-score', () => ({
   computeTrustScore: jest.fn().mockReturnValue(45),
 }));
 
+jest.mock('@/lib/trust-chain', () => ({
+  calculateActionHash: jest.fn().mockReturnValue('a'.repeat(64)),
+  GENESIS_HASH: '0'.repeat(64),
+}));
+
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: { findUnique: jest.fn(), update: jest.fn() },
-    stamp: { findUnique: jest.fn().mockResolvedValue(null) },
-    action: { create: jest.fn() },
     $transaction: jest.fn(async (fn: any) => fn({
-      stamp: { create: jest.fn().mockResolvedValue({}) },
+      stamp: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({}),
+      },
       user: { update: jest.fn().mockResolvedValue({ xp: 200 }) },
-      action: { create: jest.fn().mockResolvedValue({}) },
+      action: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({}),
+      },
     })),
   },
 }));

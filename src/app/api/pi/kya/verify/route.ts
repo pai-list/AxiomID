@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth-middleware';
 import { verifyKycServerSide } from '@/lib/pi-kyc';
 import { computeTrustScore } from '@/lib/trust-score';
 import { calculateTier } from '@/lib/tiers';
+import { calculateActionHash, GENESIS_HASH } from '@/lib/trust-chain';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { z } from 'zod';
@@ -74,14 +75,14 @@ export async function POST(request: NextRequest) {
       timestamp: s.createdAt,
     }));
 
-    const computedTrustScore = computeTrustScore(stampsToScore, false, user.lastActive);
-
     if (kycResult.kycVerified) {
-      const existingStamp = await prisma.stamp.findUnique({
-        where: { user_stamp_unique: { userId: user.id, type: 'complete_kyc' } },
-      });
-      if (!existingStamp) {
+      try {
         await prisma.$transaction(async (tx) => {
+          const existingStamp = await tx.stamp.findUnique({
+            where: { user_stamp_unique: { userId: user.id, type: 'complete_kyc' } },
+          });
+          if (existingStamp) return;
+
           await tx.stamp.create({
             data: {
               userId: user.id,
@@ -102,18 +103,41 @@ export async function POST(request: NextRequest) {
               data: { tier: nextTier },
             });
           }
+          const lastAction = await tx.action.findFirst({
+            orderBy: { timestamp: 'desc' },
+            select: { hash: true },
+          });
+          const parentHash = lastAction?.hash || GENESIS_HASH;
+          const actionTimestamp = new Date();
+          const actionHash = calculateActionHash(parentHash, {
+            type: 'complete_kyc',
+            xp: 200,
+            metadata: '{}',
+            userId: user.id,
+            timestamp: actionTimestamp,
+          });
           await tx.action.create({
             data: {
               userId: user.id,
               type: 'complete_kyc',
               xp: 200,
               metadata: '{}',
+              timestamp: actionTimestamp,
+              hash: actionHash,
+              parentHash,
             },
           });
+          stampsToScore.push({ type: 'complete_kyc', xp: 200, timestamp: actionTimestamp });
         });
-        stampsToScore.push({ type: 'complete_kyc', xp: 200, timestamp: new Date() });
+      } catch (txErr) {
+        // Unique constraint violation means a concurrent request already
+        // created the complete_kyc stamp — treat as already processed.
+        const code = (txErr as { code?: string })?.code;
+        if (code !== 'P2002') throw txErr;
       }
     }
+
+    const computedTrustScore = computeTrustScore(stampsToScore, false, user.lastActive);
 
     return apiSuccess({
       kycStatus,
