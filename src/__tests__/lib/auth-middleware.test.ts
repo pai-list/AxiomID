@@ -33,11 +33,18 @@ import { prisma } from '@/lib/prisma';
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
 function mockRequestWithHeader(headers: Record<string, string> = {}) {
+  const allHeaders: Record<string, string> = {};
+  Object.keys(headers).forEach(k => {
+    allHeaders[k.toLowerCase()] = headers[k];
+  });
+  if (!allHeaders["user-agent"]) {
+    allHeaders["user-agent"] = "Pi Browser / AxiomID Testing";
+  }
   return {
     headers: {
-      get: (name: string) => headers[name.toLowerCase()] ?? null,
+      get: (name: string) => allHeaders[name.toLowerCase()] ?? null,
     },
-    nextUrl: new URL("https://example.com/"),
+    nextUrl: new URL("http://localhost/"),
   } as any;
 }
 

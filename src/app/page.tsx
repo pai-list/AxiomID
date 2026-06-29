@@ -12,6 +12,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import HeroDemo from "@/components/HeroDemo";
 import DemoVideo from "@/components/DemoVideo";
 import StatsBar from "@/components/StatsBar";
+import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
 import TrustTiers from "@/components/TrustTiers";
 import { AxiomLogo } from "@/components/AxiomLogo";
 
@@ -136,7 +137,7 @@ export default function Home() {
                 </svg>
                 {t("landing_pi_badge")}
               </span>
-              <span className="px-3 py-1 rounded-full text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest">
                 <svg viewBox="0 0 100 100" className="w-3 h-3 inline me-1 -mt-0.5 align-middle" fill="currentColor">
                   <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
                   <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
@@ -209,14 +210,9 @@ export default function Home() {
         <StatsBar />
       </div>
 
-      {/* Video Demo */}
+      {/* Interactive Showcase Section */}
       <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-        <SectionHeader
-          label={t("landing_watch_demo")}
-          title={t("watch_demo_title")}
-          labelColor="text-electric-blue"
-        />
-        <DemoVideo />
+        <InteractiveShowcase />
       </div>
 
       {/* Features Section */}

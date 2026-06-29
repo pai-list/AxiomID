@@ -1,3 +1,18 @@
+# ⚡ Quick Reference: Top 10 Engineering Rules | أهم 10 قواعد هندسية ۞
+
+1. **المراقبة والصدق (Muraqabah & Honesty):** المراقبة الذاتية والصدق المطلق في كتابة وتجريب الأكواد. لا تكذب أبداً، و"لا أعلم" إجابة شريفة ومطلوبة عند الشك.
+2. **الالتزام بـ TypeScript الصارم (Strict TS):** تفعيل خيار `"strict": true` إلزامي بشكل كامل، ويُمنع منعاً باتاً استخدام تحويلات النوع الالتفافية مثل `as any`.
+3. **قيود بيئة Pi SDK:** حظر استيراد أو تشغيل مكتبة Pi SDK خارج نطاق المتصفح (Browser-only). احمِ جميع استدعاءاتها خلف شرط `typeof window !== 'undefined'`.
+4. **كشف الـ Sandbox الديناميكي:** يُمنع تماماً كتابة قيم ثابتة لـ `sandbox: true/false` في تهيئة Pi SDK؛ يجب دائماً استخدام آلية الكشف الموحدة `determineSandboxMode()`.
+5. **محاكاة متصفح Pi في الاختبارات:** عند إنشاء طلبات مصادقة وهمية (Mock Auth Requests) في الاختبارات، يجب تزويد ترويسة `User-Agent` لمتصفح Pi لتجنب الرفض الفوري.
+6. **مساعد الترجمة ثنائي اللغة (Bilingual translation):** دالة الترجمة `t` تأخذ مفتاحاً واحداً فقط. في الواجهات التي تتطلب نصوصاً ثنائية جنباً إلى جنب، استخدم مساعداً محلياً: `const t = (en, ar) => (language === "en" ? en : ar)`.
+7. **منع الصفر السالب (Clamp Negative Zero):** الدوال الرياضية البحتة يجب أن تضمن عدم إرجاع الصفر السالب `-0` (مثال: `const flux = -diff * grad; return flux === 0 ? 0 : flux`).
+8. **استخدام مطابقات Jest القياسية:** لا تستخدم مطابقات غير قياسية مثل `.toBeFinite()`. استخدم دائماً المطابق القياسي: `expect(Number.isFinite(val)).toBe(true)`.
+9. **وظائف Vercel بلا حالة (Stateless Functions):** تعامل مع الوظائف ككيانات مؤقتة لا تحفظ الحالة. استخدم `waitUntil` لتنفيذ المهام اللاحقة للاستجابة وتجنب الخلفيات البرمجية الدائمة.
+10. **سجلات الالتزام التاريخية القصصية (Chronicle Commit):** يجب صياغة كل التزام برمجي بنسق الـ IQRA Chronicle القصصي وتفصيل مسار التحول الهيكلي للكود.
+
+---
+
 <!-- VERCEL BEST PRACTICES START -->
 
 ## Best practices for developing on Vercel
@@ -185,6 +200,8 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Strict API Error Codes:** Only use pre-registered error categories defined in the `ErrorCode` union inside `src/lib/errors.ts`. Never pass ad-hoc strings (like `BAD_REQUEST`) to `apiError()`, as they trigger a fallback HTTP status code of `500`. For input validation errors, always use `VALIDATION_ERROR` (which maps to HTTP `400`).
 - **Zod UUID Validation in Tests:** When writing unit or integration tests that validate UUID fields under Zod schemas (which use `.uuid()`), always use a syntactically valid v4 UUID format (e.g. `"4ef60647-f509-4ed8-a873-c1519c7246ea"`). Using custom non-conforming mock strings (e.g., `"stake-123"`) will cause validation schemas to reject the input.
 - **Dynamic PWA Manifest (`manifest.ts`):** When generating metadata routes using Next.js `MetadataRoute.Manifest`, the `purpose` property inside icon objects strictly accepts `'any' | 'maskable' | 'monochrome'` individual literals. Do not use standard PWA space-separated `"any maskable"` values as they will trigger compile-time TypeScript errors.
+- **Standard Jest Matchers Only:** Do not use non-standard Jest matchers like `.toBeFinite()`. Standard Jest does not include `.toBeFinite()` out-of-the-box. Instead, use `expect(Number.isFinite(value)).toBe(true)` in all unit/integration tests.
+- **Floating Point Negative Zero Control:** Pure mathematical utility functions (such as trust evolution, heat propagation, or Fick flux) that can result in negative zero (`-0`) due to subtraction operations should explicitly clamp zero outputs to prevent test assertion failures: `const result = -diffusivity * gradient; return result === 0 ? 0 : result;`.
 
 ### 🩺 Nostics Diagnostic Catalog Rules (`src/diagnostics/catalog.ts`)
 
@@ -208,6 +225,7 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Server-Side Cryptography Isolation:** Cryptographic key derivations (`deriveSovereignAgentKeypair`) and payload signing rely on Node's native `crypto` module. This execution must reside strictly in Next.js API routes or Server Components, never in Client Components due to browser environment incompatibility.
 - **SOVEREIGN_KEY_SALT Required:** `deriveSovereignAgentKeypair` MUST incorporate `process.env.SOVEREIGN_KEY_SALT` as HMAC key material. Never use public inputs alone.
 - **Pi Ads Integration & Verification:** Always verify rewarded ads server-side. Use `window.Pi.Ads` client-side API (`isAdReady`, `requestAd`, `showAd`) which resolves to `{ result, adId }`. Always verify `adId` server-side via `GET https://api.minepi.com/v2/ads_network/status/:adId` with the `Authorization: Key <PI_API_KEY>` header. Verify ledger records (e.g. `xpLedger` matching `adId` reference) to prevent double-claiming.
+- **Mock Authentication Requests:** When creating mock requests for `requireAuth` in tests, specify a Pi Browser `User-Agent` header (e.g., `Pi Browser / AxiomID Testing`) and `nextUrl.hostname` (e.g., `localhost`) by default, as the fail-fast authorization check rejects non-Pi-Browser requests when sandbox mode is disabled.
 
 ### 🏗️ Next.js 16 / App Router Patterns
 
@@ -215,6 +233,7 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Server Components are the default** — add `"use client"` only when you need browser APIs or React hooks.
 - **Vercel Functions are stateless** — no in-memory state, no `setInterval`, no background daemons. Use `waitUntil` for post-response async work.
 - `outputFileTracingRoot` warning from Next.js about multiple `package-lock.json` is benign — ignore it.
+- **Bilingual Language Translation Helper:** The `t` function destructured from the global `useLanguage()` hook strictly takes a single key. When rendering custom components that require dynamic bilingual English/Arabic values side-by-side (such as interactive widgets), define a local translation helper: `const t = (en: string, ar: string) => (language === "en" ? en : ar)` to prevent compiler type conflicts.
 
 ### 🌐 PWA & Service Worker Caching Constraints (non-negotiable)
 
