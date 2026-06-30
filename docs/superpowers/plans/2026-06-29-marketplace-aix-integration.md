@@ -397,7 +397,7 @@ How this skill upholds the Sovereign Constitution.
   - 100% failed executions trigger Tawbah (confess → repair → learn)
   - Tasbih Triplet: 100% retries follow 3-cycle pattern (not 2 or infinite)
   - Sab'iyyah: Pattern synthesis every 7 executions
-  - Barakah: Milestone documentation at 700 cumulative successes
+  - Self-Review: Autonomous critique and quality metrics logging
 
 ## Rollout Plan
 
