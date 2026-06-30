@@ -263,7 +263,7 @@ interface GoEngineClient {
   - Track resource usage
   - Add performance dashboard
   - **SOUL**: Implement Sab'iyyah Wisdom (synthesize patterns every 7 executions)
-  - **SOUL**: Implement Barakah Protocol (track cumulative successes, milestone at 700)
+  - **SOUL**: Implement Self-Review Protocol (autonomous critique and quality metrics logging)
 
 ### Phase 4: UI Enhancement (Week 4)
 
