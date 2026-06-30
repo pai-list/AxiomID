@@ -101,7 +101,13 @@ function parseManifestSections(md: string): ManifestSection[] {
 
 function isStubBody(body: string): boolean {
   if (!body) return true;
-  const stripped = body.replace(/<!--[\s\S]*?-->/g, '').trim();
+  let stripped = body;
+  let previous: string;
+  do {
+    previous = stripped;
+    stripped = stripped.replace(/<!--[\s\S]*?-->/g, '');
+  } while (stripped !== previous);
+  stripped = stripped.trim();
   if (!stripped) return true;
   const lines = stripped.split('\n').filter(l => l.trim());
   if (lines.length === 0) return true;
