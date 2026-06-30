@@ -8,7 +8,11 @@ import { describeManifestIssues, ManifestSchema, SlugParamSchema, SkillUpdateSch
 import { requireAuth } from '@/lib/auth-middleware';
 
 /**
- * GET /api/skills/[slug] — Get full skill detail including manifest, agent script, and tests.
+ * Retrieves a skill record by slug with its manifest, agent script, tests, and aggregate counts.
+ *
+ * @param request - The incoming request
+ * @param params - The route parameters containing the skill slug
+ * @returns A full skill detail response when the skill exists
  */
 export async function GET(
   request: NextRequest,
@@ -107,9 +111,9 @@ export async function GET(
 }
 
 /**
- * Updates a skill's metadata and, when provided, validates and stores its manifest, script, and test suite.
+ * Updates a skill's metadata and validates a provided manifest before saving content changes.
  *
- * Returns the updated skill summary on success or an API error response if the request is invalid, unauthorized, rate-limited, or the skill cannot be found.
+ * Returns the updated skill summary on success or an API error response if the request is invalid, unauthorized, rate-limited, incomplete, or the skill cannot be found.
  */
 export async function PATCH(
   request: NextRequest,

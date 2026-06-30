@@ -9,8 +9,10 @@ import { SkillTier } from '@prisma/client';
 import { describeManifestIssues, ManifestSchema, SkillsListQuerySchema, SkillPublishSchema } from '@/lib/validators';
 
 /**
- * GET /api/skills — List published skills from the Agentic Marketplace.
- * Returns skills filtered by tier, sorted by install count and rating.
+ * Lists published skills with optional filters, sorting, and pagination.
+ *
+ * @param request - The incoming list request.
+ * @returns A success response with the matching skills, total count, pagination values, and `hasMore` flag, or an error response when the request is rejected or invalid.
  */
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);

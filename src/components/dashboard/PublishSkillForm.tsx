@@ -23,17 +23,17 @@ const MANIFEST_FIELDS = [
 ] as const;
 
 /**
- * Builds the Markdown manifest from the required section content.
+ * Combines the required manifest sections into Markdown.
  *
  * @param sections - Section content keyed by manifest field name
- * @returns The combined manifest Markdown
+ * @returns The manifest Markdown built from each required section in order
  */
 function buildManifest(sections: Record<string, string>): string {
   return MANIFEST_FIELDS.map(f => `${f.header}\n${sections[f.key] || ''}`).join('\n\n');
 }
 
 /**
- * Renders the skill publishing form with required manifest sections and submission handling.
+ * Renders the skill publishing form.
  *
  * @param onPublished - Called after the skill is published successfully.
  */

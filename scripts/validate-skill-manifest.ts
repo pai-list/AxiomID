@@ -20,7 +20,7 @@ const mode = args.includes('--strict') ? 'strict' :
              'changed';
 
 /**
- * Validates the selected skill manifests and reports the results.
+ * Validates the selected skill manifests and prints a summary of the results.
  */
 async function main() {
   const skills: { name: string; slug: string; manifestMd: string }[] = [];

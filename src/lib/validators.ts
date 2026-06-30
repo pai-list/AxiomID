@@ -122,10 +122,10 @@ function isStubBody(body: string): boolean {
 }
 
 /**
- * Validates a manifest against the required section structure.
+ * Validates a manifest's required sections and content.
  *
  * @param md - The markdown manifest content to validate
- * @returns The validation result, including whether it is valid, any missing sections, any sections with placeholder content, and the parsed sections
+ * @returns A validation result with the parsed sections, missing required sections, sections that contain placeholder content, and the overall validity flag
  */
 export function validateManifest(md: string): ManifestValidation {
   const sections = parseManifestSections(md);
