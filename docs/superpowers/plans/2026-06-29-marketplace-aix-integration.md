@@ -31,7 +31,7 @@ AxiomID marketplace was built as a minimal MVP without leveraging the existing A
 
 ## Solution
 
-Strategically integrate AIX-Format/aix-agent-skills patterns into AxiomID while maintaining AxiomID's unique identity (Pi-based payments, bilingual support, TrustChain integration) and adhering to the **SOUL Protocol** (Muraqabah, Tawbah, TrustChain, Tasbih, Sab'iyyah, Barakah).
+Strategically integrate AIX-Format/aix-agent-skills patterns into AxiomID while maintaining AxiomID's unique identity (Pi-based payments, bilingual support, TrustChain integration) and adhering to the **SOUL Protocol** (Muraqabah, Tawbah, TrustChain, Tasbih, Sab'iyyah, Self-Review).
 
 ### SOUL Protocol Integration
 
