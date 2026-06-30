@@ -133,8 +133,11 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/skills — Publish a new skill to the Agentic Marketplace.
- * Requires authentication. Creates the skill with manifest, agent script, and test suite.
+ * Publishes a new skill.
+ *
+ * Validates the request body and manifest, enforces authentication and rate limits, checks for an existing slug, and creates the skill with a moderation record.
+ *
+ * @returns A response containing the created skill details, or an error response if publishing fails.
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);

@@ -77,6 +77,12 @@ export interface ManifestValidation {
   sections: ManifestSection[];
 }
 
+/**
+ * Extracts top-level Markdown sections headed by `##`.
+ *
+ * @param md - The Markdown text to parse
+ * @returns The sections in document order, each with its header and trimmed body
+ */
 function parseManifestSections(md: string): ManifestSection[] {
   const sections: ManifestSection[] = [];
   const headerRegex = /^##\s+(.+)$/gm;
@@ -99,15 +105,14 @@ function parseManifestSections(md: string): ManifestSection[] {
   return sections;
 }
 
+/**
+ * Determines whether a manifest section body contains only placeholder content.
+ *
+ * @returns `true` if the body is empty, consists only of HTML comments, or matches a stub pattern; `false` otherwise.
+ */
 function isStubBody(body: string): boolean {
   if (!body) return true;
-  let stripped = body;
-  let previous: string;
-  do {
-    previous = stripped;
-    stripped = stripped.replace(/<!--[\s\S]*?-->/g, '');
-  } while (stripped !== previous);
-  stripped = stripped.trim();
+  const stripped = body.replace(/<!--[\s\S]*?-->/g, '').trim();
   if (!stripped) return true;
   const lines = stripped.split('\n').filter(l => l.trim());
   if (lines.length === 0) return true;
@@ -116,6 +121,12 @@ function isStubBody(body: string): boolean {
   return false;
 }
 
+/**
+ * Validates a manifest against the required section structure.
+ *
+ * @param md - The markdown manifest content to validate
+ * @returns The validation result, including whether it is valid, any missing sections, any sections with placeholder content, and the parsed sections
+ */
 export function validateManifest(md: string): ManifestValidation {
   const sections = parseManifestSections(md);
   const missing: string[] = [];
@@ -142,6 +153,12 @@ export function validateManifest(md: string): ManifestValidation {
   };
 }
 
+/**
+ * Describes validation issues found in a manifest document.
+ *
+ * @param md - The markdown content to analyze.
+ * @returns A semicolon-separated list of missing sections and placeholder-content issues, or an empty string if none are found.
+ */
 export function describeManifestIssues(md: string): string {
   const result = validateManifest(md);
   const issues: string[] = [];

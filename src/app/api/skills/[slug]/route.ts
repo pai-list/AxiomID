@@ -107,7 +107,9 @@ export async function GET(
 }
 
 /**
- * PATCH /api/skills/[slug] — Update skill metadata, manifest, or script.
+ * Updates a skill's metadata and, when provided, validates and stores its manifest, script, and test suite.
+ *
+ * Returns the updated skill summary on success or an API error response if the request is invalid, unauthorized, rate-limited, or the skill cannot be found.
  */
 export async function PATCH(
   request: NextRequest,

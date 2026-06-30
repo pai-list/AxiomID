@@ -19,6 +19,9 @@ const mode = args.includes('--strict') ? 'strict' :
              args.includes('--db') ? 'db' :
              'changed';
 
+/**
+ * Validates the selected skill manifests and reports the results.
+ */
 async function main() {
   const skills: { name: string; slug: string; manifestMd: string }[] = [];
 

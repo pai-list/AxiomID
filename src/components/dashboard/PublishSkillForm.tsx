@@ -22,12 +22,20 @@ const MANIFEST_FIELDS = [
   { key: "failureModes", label: "FAILURE MODES", arLabel: "أنماط الفشل", header: "## أنماط الفشل — Failure Modes", placeholder: "| Mode | Detection | Recovery |" },
 ] as const;
 
+/**
+ * Builds the Markdown manifest from the required section content.
+ *
+ * @param sections - Section content keyed by manifest field name
+ * @returns The combined manifest Markdown
+ */
 function buildManifest(sections: Record<string, string>): string {
   return MANIFEST_FIELDS.map(f => `${f.header}\n${sections[f.key] || ''}`).join('\n\n');
 }
 
 /**
- * Form for publishing skills to the marketplace with a sectioned manifest editor.
+ * Renders the skill publishing form with required manifest sections and submission handling.
+ *
+ * @param onPublished - Called after the skill is published successfully.
  */
 export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
   const [form, setForm] = useState({
