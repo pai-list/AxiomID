@@ -54,7 +54,21 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
 
   const manifestMd = useMemo(() => buildManifest(form.manifestSections), [form.manifestSections]);
 
-  const sectionEmpty = (key: string) => !form.manifestSections[key]?.trim();
+  const sectionEmpty = (key: string) => {
+    const body = form.manifestSections[key];
+    if (!body) return true;
+    let withoutComments = body;
+    let previous: string;
+    do {
+      previous = withoutComments;
+      withoutComments = withoutComments.replace(/<!--[\s\S]*?-->/g, '');
+    } while (withoutComments !== previous);
+    const stripped = withoutComments.trim();
+    if (!stripped) return true;
+    if (body.includes('<!--') && body.lastIndexOf('<!--') > body.lastIndexOf('-->')) return true;
+    if (/TODO:|TBD|<fill in>/.test(stripped) || /^\s*\.\.\.\s*$/.test(stripped)) return true;
+    return false;
+  };
 
   const handlePublish = async () => {
     if (!form.slug || !form.name) {

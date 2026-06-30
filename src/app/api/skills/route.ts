@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
           avgRating: true,
           ratingCount: true,
           authorId: true,
+          soulPrinciple: true,
           createdAt: true,
           tags: {
             select: {
@@ -170,19 +171,21 @@ export async function POST(request: NextRequest) {
     return apiError('INCOMPLETE_MANIFEST', details);
   }
 
-  const {
-    slug,
-    name,
-    description,
-    manifestMd,
-    agentScript,
-    testSuite,
-    tier,
-    pricePi,
-    version,
-  } = parsed.data;
-
   try {
+    const {
+      slug,
+      name,
+      description,
+      manifestMd,
+      agentScript,
+      testSuite,
+      tier,
+      pricePi,
+      version,
+      soulPrinciple,
+      chainable,
+    } = parsed.data;
+
     // Check slug uniqueness
     const existing = await prisma.skill.findUnique({ where: { slug } });
     if (existing) {
@@ -205,6 +208,8 @@ export async function POST(request: NextRequest) {
           status: 'PUBLISHED',
           isPublished: true,
           authorId: user.id,
+          soulPrinciple: (soulPrinciple as 'MURAQABAH' | 'TAWBAH' | 'TRUSTCHAIN' | 'TASBIH' | 'SABIYYAH' | 'BARAKAH') || null,
+          chainable: chainable ?? false,
         },
       });
 

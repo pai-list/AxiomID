@@ -1,9 +1,8 @@
-# Marketplace AIX Adoption — Phases 1-4 ۞
+# Marketplace AIX Adoption — Phases 1-6 ۞
 
-**Status:** Draft  
-**Author:** Jules (AI Agent)  
+**Status:** Phases 1-2 complete (PR #184), Phases 3-6 in progress  
 **Branch:** `feat/marketplace-aix-adoption`  
-**Target:** Phase 1 (Skill Template) + Phase 2 (Quality Gate)
+**PR:** #184 (Phases 1-2), follow-up PRs for 3-6
 
 ---
 
@@ -15,20 +14,20 @@ Adopt architecture patterns from AIX-Format/aix-agent-skills into AxiomID's Agen
 
 Before this change, `manifestMd` (the skill's Genomic Payload) is a free-form `<textarea>` with no structure validation. A skill can be published with `manifestMd: "TODO: fill this in"` and the marketplace accepts it. This poisons discovery, wastes buyer trust, and makes the catalog unreliable.
 
-### Scope (Phases 1-4)
+### Scope (Phases 1-6)
 
-| Phase | What | Effort |
-|-------|------|--------|
-| 1 | Skill template standard — canonical bilingual template, Zod validation | Small |
-| 2 | CI quality gate — GitHub Action validates manifest completeness on PR | Small |
-| 3 | SOUL Protocol alignment — every skill declares which principle it serves | Small |
-| 4 | Performance tracking — `SkillExecution` model, success rate analytics | Medium |
-
-This document covers phases 1+2 implementation. Phases 3+4 are scoped for follow-up PRs.
+| Phase | What | Effort | Status |
+|-------|------|--------|--------|
+| 1 | Skill template standard — canonical bilingual template, Zod validation | Small | ✅ Complete |
+| 2 | CI quality gate — GitHub Action validates manifest completeness on PR | Small | ✅ Complete |
+| 3 | SOUL Protocol alignment — every skill declares which principle it serves | Small | ✅ Complete |
+| 4 | Performance tracking — `SkillExecution` model, success rate analytics | Medium | ✅ Complete |
+| 5 | Chain flag — pipeline execution support | Medium | ✅ Complete |
+| 6 | x402-inspired payment flow | Medium | ✅ Complete |
 
 ---
 
-## Phase 1: Skill Template Standard
+## Phase 1: Skill Template Standard ✅
 
 ### Template Structure
 
@@ -96,7 +95,7 @@ tag1, tag2, tag3
 
 ---
 
-## Phase 2: Skill Quality Gate
+## Phase 2: Skill Quality Gate ✅
 
 ### CI Workflow
 
@@ -138,28 +137,226 @@ The script:
 
 ---
 
-## Phase 3: SOUL Protocol Alignment (Scoped)
+## Phase 3: SOUL Protocol Alignment 🔄
 
-Planned for follow-up PR:
+### Goal
 
-| Addition | Detail |
-|----------|--------|
-| `soulPrinciple` field on Prisma `Skill` model | Optional enum: MURAQABAH, TAWBAH, TRUSTCHAIN, TASBIH, SAB'IYYAH, BARAKAH |
-| `SoulBadge` component | Color-coded badge on skill cards |
-| Template section | Every manifest declares SOUL alignment |
+Every skill declares which SOUL principle it serves. This is AxiomID's differentiator — no other marketplace has this.
+
+### SOUL Principles Definition
+
+```typescript
+export const SOUL_PRINCIPLES = {
+  MURAQABAH:  { en: "Muraqabah",  ar: "المراقبة",   icon: "eye",     color: "#22c55e" },
+  TAWBAH:     { en: "Tawbah",     ar: "التوبة",      icon: "refresh", color: "#3b82f6" },
+  TRUSTCHAIN: { en: "TrustChain", ar: "الحارس",      icon: "link",    color: "#6366f1" },
+  TASBIH:     { en: "Tasbih",     ar: "التثليث",     icon: "repeat",  color: "#f59e0b" },
+  SABIYYAH:   { en: "Sab'iyyah",  ar: "حكمة السبع",  icon: "layers",  color: "#ec4899" },
+  BARAKAH:    { en: "Barakah",    ar: "البركة",       icon: "sparkle", color: "#14b8a6" },
+};
+```
+
+### Schema Changes
+
+```prisma
+enum SoulPrinciple {
+  MURAQABAH
+  TAWBAH
+  TRUSTCHAIN
+  TASBIH
+  SABIYYAH
+  BARAKAH
+}
+
+model Skill {
+  // ...existing fields
+  soulPrinciple SoulPrinciple?  // optional — skills can serve multiple
+}
+```
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `prisma/schema.prisma` | **MODIFY** — add `SoulPrinciple` enum + `soulPrinciple` field on Skill |
+| `prisma/migrations/` | **NEW** — migration for enum + field |
+| `src/lib/soul-principles.ts` | **NEW** — enum + metadata (icons, colors, names) |
+| `src/components/marketplace/SoulBadge.tsx` | **NEW** — color-coded badge component |
+| `src/lib/validators.ts` | **MODIFY** — add `SoulPrinciple` to Zod schemas |
+| `src/app/api/skills/route.ts` | **MODIFY** — accept + validate `soulPrinciple` on POST |
+| `src/app/api/skills/[slug]/route.ts` | **MODIFY** — accept + validate `soulPrinciple` on PATCH |
+| `src/app/api/skills/route.ts` | **MODIFY** — add SOUL filter to GET /api/skills |
+| `src/components/dashboard/PublishSkillForm.tsx` | **MODIFY** — add SOUL principle selector |
+| `src/app/dashboard/marketplace/page.tsx` | **MODIFY** — show SoulBadge on cards, add SOUL filter |
+| `src/__tests__/api/skills-list-create.test.ts` | **MODIFY** — add soulPrinciple to fixtures |
+
+### API Contract
+
+**POST /api/skills** — add `soulPrinciple` to body:
+
+```json
+{
+  "slug": "agent-memory",
+  "name": "Agent Memory",
+  "manifestMd": "...",
+  "soulPrinciple": "MURAQABAH"
+}
+```
+
+**GET /api/skills?soulPrinciple=MURAQABAH** — filter by SOUL principle
+
+**Response includes** `soulPrinciple` field on each skill
+
+### UI Changes
+
+1. **PublishSkillForm** — dropdown selector for SOUL principle (optional)
+2. **SkillCard** — show SoulBadge with color-coded dot + principle name
+3. **SkillDetail** — show full SOUL alignment with description
+4. **Marketplace filters** — add SOUL principle filter alongside tier filter
 
 ---
 
-## Phase 4: Performance Tracking (Scoped)
+## Phase 4: Performance Tracking 📋
 
-Planned for follow-up PR:
+### Goal
 
-| Addition | Detail |
-|----------|--------|
-| `SkillExecution` Prisma model | skillId, agentId, success, duration, error, timestamp |
-| `POST /api/skills/[slug]/execute` | Record execution |
-| `GET /api/skills/[slug]/stats` | Success rate, avg duration, totals |
-| Frontend analytics | Success rate gauge on skill detail |
+Track skill execution success/fail rates. Show analytics to authors and buyers.
+
+### Schema Changes
+
+```prisma
+model SkillExecution {
+  id        String   @id @default(cuid())
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id])
+  agentId   String
+  agent     UserAgent @relation(fields: [agentId], references: [id])
+  success   Boolean
+  duration  Int?                 // ms
+  error     String?              // Tawbah: root cause
+  inputHash String?              // for dedup
+  outputHash String?
+  timestamp DateTime @default(now())
+
+  @@index([skillId, success])
+  @@index([skillId, timestamp])
+}
+```
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `prisma/schema.prisma` | **MODIFY** — add `SkillExecution` model |
+| `prisma/migrations/` | **NEW** — migration |
+| `src/app/api/skills/[slug]/execute/route.ts` | **NEW** — POST endpoint |
+| `src/app/api/skills/[slug]/stats/route.ts` | **NEW** — GET endpoint |
+| `src/lib/validators.ts` | **MODIFY** — add `RecordExecutionSchema` |
+| `src/app/dashboard/marketplace/page.tsx` | **MODIFY** — show success rate gauge |
+| `src/components/marketplace/SkillDetail.tsx` | **MODIFY** — execution history display |
+
+### API Contract
+
+**POST /api/skills/[slug]/execute** — record execution:
+
+```json
+{
+  "agentId": "uuid",
+  "success": true,
+  "duration": 150,
+  "inputHash": "abc123"
+}
+```
+
+**GET /api/skills/[slug]/stats** — return analytics:
+
+```json
+{
+  "totalExecutions": 150,
+  "successRate": 0.94,
+  "avgDuration": 150,
+  "recentExecutions": [...]
+}
+```
+
+---
+
+## Phase 5: Chain Flag 📋
+
+### Goal
+
+Skills can compose into pipelines. Mark `chainable: true` skills as pipeline-compatible.
+
+### Schema Changes
+
+```prisma
+model Skill {
+  // ...existing fields
+  chainable Boolean @default(false)
+}
+
+model SkillPipeline {
+  id        String   @id @default(cuid())
+  name      String
+  steps     SkillPipelineStep[]
+  agentId   String
+  createdAt DateTime @default(now())
+}
+
+model SkillPipelineStep {
+  id         String        @id @default(cuid())
+  pipelineId String
+  skillId    String
+  order      Int           @default(0)
+  inputMap   Json?         // { "in_key": "prev.out_key" }
+  pipeline   SkillPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  skill      Skill         @relation(fields: [skillId], references: [id])
+
+  @@unique([pipelineId, order])
+}
+```
+
+### Files to Create/Modify
+
+| File | Change |
+|------|--------|
+| `prisma/schema.prisma` | **MODIFY** — add models |
+| `src/app/api/skills/pipelines/route.ts` | **NEW** — CRUD |
+| `src/app/api/skills/pipelines/[id]/execute/route.ts` | **NEW** — execute pipeline |
+| `src/app/dashboard/marketplace/page.tsx` | **MODIFY** — show chainable badge |
+
+---
+
+## Phase 6: x402-Inspired Payment Flow 📋
+
+### Goal
+
+Apply x402 pattern (402 → payment → resource) to Pi payment flow.
+
+### Current Flow
+
+```
+POST /install → { error: "requires payment" }
+→ user triggers Pi payment manually
+→ POST /install with consumablePaymentId
+```
+
+### New Flow (x402-inspired)
+
+```
+POST /install → 402 + X-PAYMENT-REQUIRED: { price, method: "pi" }
+→ SDK auto-calls Pi.createPayment()
+→ SDK re-POSTs /install with X-PAYMENT header
+→ 200 OK + installation record
+```
+
+### Files to Modify
+
+| File | Change |
+|------|--------|
+| `src/app/api/skills/[slug]/install/route.ts` | **MODIFY** — return 402 + payment info |
+| `src/lib/pi-sdk.ts` | **MODIFY** — handle 402 auto-retry |
+| `src/app/dashboard/marketplace/page.tsx` | **MODIFY** — auto-prompt payment |
 
 ---
 
@@ -170,9 +367,11 @@ Planned for follow-up PR:
 | **Zod over custom parser** | Already used throughout codebase; consistent tooling |
 | **Bilingual headers** | Matches AxiomID's Arabic/English mandate |
 | **`INCOMPLETE_MANIFEST` error code** | Follows existing `ErrorCode` pattern; allows CI + API to share validation |
-| **Server-side first, client-side second** | API validation is authoritative; form hints are UX enhancement |
+| **Server-side first, client-side second** | API validation is authoritative; form hints are UX |
 | **`--changed` mode default in CI** | Grandfathers existing skills; prevents flag-day rewrites (same as AIX approach) |
 | **Single branch per milestone** | Phases 1+2 in one branch for atomic review; 3+4 in follow-up branches |
+| **Optional `soulPrinciple`** | Not all skills need SOUL alignment; don't block on it |
+| **Execution tracking via aggregation** | No separate stats table; stats computed via SQL aggregation |
 
 ## Migration Strategy
 

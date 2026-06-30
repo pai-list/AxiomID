@@ -187,6 +187,7 @@ export const SkillsListQuerySchema = z.object({
   sort: SkillsListSortSchema,
   minPrice: z.coerce.number().nonnegative().optional().nullable(),
   maxPrice: z.coerce.number().nonnegative().optional().nullable(),
+  soulPrinciple: z.enum(['MURAQABAH', 'TAWBAH', 'TRUSTCHAIN', 'TASBIH', 'SABIYYAH', 'BARAKAH']).optional().nullable(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -201,6 +202,8 @@ export const SkillPublishSchema = z.object({
   tier: z.enum(['BASIC_TOOL', 'ADVANCED_TOOL', 'ADVANCED_INFRASTRUCTURE', 'PRO', 'SOVEREIGN']).default('BASIC_TOOL'),
   pricePi: z.number().nonnegative().default(0),
   version: z.string().default('1.0.0'),
+  soulPrinciple: z.enum(['MURAQABAH', 'TAWBAH', 'TRUSTCHAIN', 'TASBIH', 'SABIYYAH', 'BARAKAH']).optional().nullable(),
+  chainable: z.boolean().optional().default(false),
 });
 
 export const SkillUpdateSchema = z.object({
@@ -215,6 +218,8 @@ export const SkillUpdateSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED', 'DEPRECATED']).optional(),
   isPublished: z.boolean().optional(),
   changelog: z.string().max(2000).optional(),
+  soulPrinciple: z.enum(['MURAQABAH', 'TAWBAH', 'TRUSTCHAIN', 'TASBIH', 'SABIYYAH', 'BARAKAH']).optional().nullable(),
+  chainable: z.boolean().optional(),
 });
 
 export const SkillReviewCreateSchema = z.object({
