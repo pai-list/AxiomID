@@ -48,6 +48,111 @@ export const AgentMainSchema = z.object({
   params: z.record(z.string(), z.unknown()).optional(),
 });
 
+// ── Manifest Validation ────────────────────────────────────────
+
+const REQUIRED_MANIFEST_SECTIONS = [
+  { en: 'Purpose', ar: 'الغرض', header: 'الغرض — Purpose' },
+  { en: 'SOUL Alignment', ar: 'التوافق الروحي', header: 'التوافق الروحي — SOUL Alignment' },
+  { en: 'Operational Flow', ar: 'سير التشغيل', header: 'سير التشغيل — Operational Flow' },
+  { en: 'Failure Modes', ar: 'أنماط الفشل', header: 'أنماط الفشل — Failure Modes' },
+] as const;
+
+const STUB_PATTERNS = [
+  /TODO:/i,
+  /TBD/i,
+  /<fill in>/i,
+  /^\s*\.\.\.\s*$/,
+  /<!--\s*.*?\s*-->/,
+];
+
+export interface ManifestSection {
+  header: string;
+  body: string;
+}
+
+export interface ManifestValidation {
+  valid: boolean;
+  missing: string[];
+  stubs: string[];
+  sections: ManifestSection[];
+}
+
+function parseManifestSections(md: string): ManifestSection[] {
+  const sections: ManifestSection[] = [];
+  const headerRegex = /^##\s+(.+)$/gm;
+  let lastIndex = 0;
+  let lastHeader = '';
+
+  let match: RegExpExecArray | null;
+  while ((match = headerRegex.exec(md)) !== null) {
+    if (lastHeader) {
+      const body = md.slice(lastIndex, match.index).trim();
+      sections.push({ header: lastHeader, body });
+    }
+    lastHeader = match[1].trim();
+    lastIndex = headerRegex.lastIndex;
+  }
+  if (lastHeader) {
+    const body = md.slice(lastIndex).trim();
+    sections.push({ header: lastHeader, body });
+  }
+  return sections;
+}
+
+function isStubBody(body: string): boolean {
+  if (!body) return true;
+  const stripped = body.replace(/<!--[\s\S]*?-->/g, '').trim();
+  if (!stripped) return true;
+  const lines = stripped.split('\n').filter(l => l.trim());
+  if (lines.length === 0) return true;
+  if (STUB_PATTERNS.some(p => p.test(stripped))) return true;
+  if (lines.length === 1 && STUB_PATTERNS.some(p => p.test(lines[0].trim()))) return true;
+  return false;
+}
+
+export function validateManifest(md: string): ManifestValidation {
+  const sections = parseManifestSections(md);
+  const missing: string[] = [];
+  const stubs: string[] = [];
+
+  for (const required of REQUIRED_MANIFEST_SECTIONS) {
+    const found = sections.find(s =>
+      s.header === required.header ||
+      s.header === required.en ||
+      s.header === required.ar
+    );
+    if (!found) {
+      missing.push(required.header);
+    } else if (isStubBody(found.body)) {
+      stubs.push(required.header);
+    }
+  }
+
+  return {
+    valid: missing.length === 0 && stubs.length === 0,
+    missing,
+    stubs,
+    sections,
+  };
+}
+
+export function describeManifestIssues(md: string): string {
+  const result = validateManifest(md);
+  const issues: string[] = [];
+  for (const m of result.missing) {
+    issues.push(`missing required section: ${m}`);
+  }
+  for (const s of result.stubs) {
+    issues.push(`section "${s}" contains placeholder or empty content`);
+  }
+  return issues.join('; ');
+}
+
+export const ManifestSchema = z.string().refine(
+  (md) => validateManifest(md).valid,
+  { message: 'Manifest is incomplete — missing required sections or contains placeholder content' }
+);
+
 export const SkillsListSortSchema = z.enum([
   'newest', 'popular', 'rating', 'price_asc', 'price_desc',
 ]).optional().nullable();

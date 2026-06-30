@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
-import { SlugParamSchema, SkillUpdateSchema } from '@/lib/validators';
+import { describeManifestIssues, ManifestSchema, SlugParamSchema, SkillUpdateSchema } from '@/lib/validators';
 import { requireAuth } from '@/lib/auth-middleware';
 
 /**
@@ -141,6 +141,14 @@ export async function PATCH(
   }
 
   const { changelog, ...updateData } = parsedBody.data;
+
+  if (updateData.manifestMd) {
+    const manifestResult = ManifestSchema.safeParse(updateData.manifestMd);
+    if (!manifestResult.success) {
+      const details = describeManifestIssues(updateData.manifestMd);
+      return apiError('INCOMPLETE_MANIFEST', details);
+    }
+  }
 
   try {
     const existing = await prisma.skill.findUnique({ where: { slug } });

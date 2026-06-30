@@ -6,7 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
 import { SkillTier } from '@prisma/client';
-import { SkillsListQuerySchema, SkillPublishSchema } from '@/lib/validators';
+import { describeManifestIssues, ManifestSchema, SkillsListQuerySchema, SkillPublishSchema } from '@/lib/validators';
 
 /**
  * GET /api/skills — List published skills from the Agentic Marketplace.
@@ -157,6 +157,12 @@ export async function POST(request: NextRequest) {
   const parsed = SkillPublishSchema.safeParse(body);
   if (!parsed.success) {
     return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
+  }
+
+  const manifestResult = ManifestSchema.safeParse(parsed.data.manifestMd);
+  if (!manifestResult.success) {
+    const details = describeManifestIssues(parsed.data.manifestMd);
+    return apiError('INCOMPLETE_MANIFEST', details);
   }
 
   const {
