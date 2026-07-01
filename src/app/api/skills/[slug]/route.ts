@@ -67,8 +67,9 @@ export async function GET(
           }
         }
       }
-    } catch {
-      // Ignore parsing/revocation error to allow public fetch
+    } catch (err) {
+      // Ignore parsing/revocation error to allow public fetch, but log for visibility
+      logger.error("[SKILL-DETAIL] isInstalled check failed:", err);
     }
 
     return apiSuccess({
