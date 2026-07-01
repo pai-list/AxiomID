@@ -8,19 +8,14 @@ interface DiagnosticCode {
   fix: string;
 }
 
-interface Diagnostics {
-  docsBase: (code: string) => string;
-  codes: Record<string, DiagnosticCode>;
-}
+// Mock nostics so Jest doesn't try to load the ESM module
+jest.mock("nostics", () => ({
+  defineDiagnostics: <T>(config: T): T => config
+}));
+
+import { diagnostics } from "@/diagnostics/catalog";
 
 describe("Diagnostics Catalog", () => {
-  let diagnostics: Diagnostics;
-
-  beforeAll(() => {
-    // Unmock to test the actual catalog implementation
-    jest.unmock("@/diagnostics/catalog");
-    diagnostics = require("@/diagnostics/catalog").diagnostics as Diagnostics;
-  });
 
   it("generates correct docsBase URL", () => {
     expect(diagnostics.docsBase("AXIOMID_E001")).toBe(
