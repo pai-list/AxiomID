@@ -265,12 +265,13 @@ export default function SandboxPage() {
       }
     };
 
+    const piAccessToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+    const controller = new AbortController();
+    executionAbortRef.current = controller;
+
     try {
       flushIntervalRef.current = setInterval(flushPending, 30);
 
-      const piAccessToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
-      const controller = new AbortController();
-      executionAbortRef.current = controller;
 
       const res = await fetch("/api/sandbox/execute", {
         method: "POST",
@@ -356,7 +357,11 @@ export default function SandboxPage() {
         `[FATAL] ${err instanceof Error ? err.message : String(err)}`,
       ].slice(-200));
     } finally {
-      setExecuting(false);
+      // Only clear the executing flag if this run is still the active one.
+      // A superseded (aborted) run must not reset the state of the newer run.
+      if (executionAbortRef.current === controller) {
+        setExecuting(false);
+      }
     }
   };
 

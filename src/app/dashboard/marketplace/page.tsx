@@ -65,12 +65,9 @@ export default function MarketplacePage() {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 20;
 
-  const [serverStats, setServerStats] = useState<{
-    total: number;
-    totalInstalls: number;
-    proCount: number;
-    freeCount: number;
-  } | null>(null);
+  // Total count of published skills across all pages (from the API), used for
+  // the "Published" stat since `skills` only holds the pages loaded so far.
+  const [totalSkills, setTotalSkills] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,7 +90,7 @@ export default function MarketplacePage() {
           const newSkills = data.skills || [];
           setSkills((prev) => offset === 0 ? newSkills : [...prev, ...newSkills]);
           setHasMore(newSkills.length === PAGE_SIZE);
-          setServerStats(data.stats ?? null);
+          setTotalSkills(typeof data.total === "number" ? data.total : null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -275,27 +272,27 @@ export default function MarketplacePage() {
             {/* Stats Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="bento-card p-4 text-center">
-                <span className="text-2xl font-bold text-neon-green font-mono">{serverStats?.total ?? skills.length}</span>
+                <span className="text-2xl font-bold text-neon-green font-mono">{totalSkills ?? skills.length}</span>
                 <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>{t("marketplace_published")}</p>
                 <p className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-faint)" }}>{t("marketplace_published_desc")}</p>
               </div>
               <div className="bento-card p-4 text-center">
                 <span className="text-2xl font-bold text-electric-blue font-mono">
-                  {serverStats?.totalInstalls ?? skills.reduce((acc, s) => acc + s.installCount, 0)}
+                  {skills.reduce((acc, s) => acc + s.installCount, 0)}
                 </span>
                 <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>{t("marketplace_installs")}</p>
                 <p className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-faint)" }}>{t("marketplace_installs_desc")}</p>
               </div>
               <div className="bento-card p-4 text-center">
                 <span className="text-2xl font-bold text-axiom-purple font-mono">
-                  {serverStats?.proCount ?? skills.filter((s) => s.tier === "PRO" || s.tier === "SOVEREIGN").length}
+                  {skills.filter((s) => s.tier === "PRO" || s.tier === "SOVEREIGN").length}
                 </span>
                 <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>{t("marketplace_pro_skills")}</p>
                 <p className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-faint)" }}>{t("marketplace_pro_skills_desc")}</p>
               </div>
               <div className="bento-card p-4 text-center">
                 <span className="text-2xl font-bold text-amber-400 font-mono">
-                  {serverStats?.freeCount ?? skills.filter((s) => s.pricePi === 0).length}
+                  {skills.filter((s) => s.pricePi === 0).length}
                 </span>
                 <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>{t("marketplace_free_skills")}</p>
                 <p className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-faint)" }}>{t("marketplace_free_skills_desc")}</p>
