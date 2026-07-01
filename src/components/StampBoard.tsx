@@ -111,9 +111,9 @@ export function StampBoard({ user, claimAction, connectWallet }: StampBoardProps
     if (!activeVc) return;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
