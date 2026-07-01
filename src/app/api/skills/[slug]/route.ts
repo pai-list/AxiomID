@@ -33,11 +33,43 @@ export async function GET(
         _count: {
           select: { installations: true, reviews: true },
         },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                color: true,
+              }
+            }
+          }
+        }
       },
     });
 
     if (!skill) {
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+    }
+
+    let isInstalled = false;
+    try {
+      const authHeader = request.headers?.get?.('authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const auth = await requireAuth(request);
+        if (auth.user) {
+          const agent = await prisma.userAgent.findUnique({ where: { userId: auth.user.id } });
+          if (agent) {
+            const installation = await prisma.skillInstallation.findFirst({
+              where: { skillId: skill.id, agentId: agent.id, status: 'active' }
+            });
+            isInstalled = !!installation;
+          }
+        }
+      }
+    } catch (err) {
+      // Ignore parsing/revocation error to allow public fetch, but log for visibility
+      logger.error("[SKILL-DETAIL] isInstalled check failed:", err);
     }
 
     return apiSuccess({
@@ -58,6 +90,13 @@ export async function GET(
       ratingCount: skill.ratingCount,
       installationCount: skill._count.installations,
       reviewCount: skill._count.reviews,
+      isInstalled,
+      tags: skill.tags?.map(t => ({
+        id: t.tag.id,
+        name: t.tag.name,
+        slug: t.tag.slug,
+        color: t.tag.color,
+      })) || [],
       createdAt: skill.createdAt,
       updatedAt: skill.updatedAt,
     });

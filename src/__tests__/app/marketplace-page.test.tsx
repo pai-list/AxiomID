@@ -65,7 +65,46 @@ const mockUseWallet = useWallet as jest.MockedFunction<typeof useWallet>;
 
 // Mock fetch
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+const fetchProxyImplementation = (url: string, init?: unknown) => {
+  if (typeof url === "string") {
+    if (url.includes("/api/skills/tags")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ tags: [] }),
+      });
+    }
+    if (url.includes("/review") && !url.includes("/install")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => [],
+      });
+    }
+    if (url.includes("/versions")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ versions: [] }),
+      });
+    }
+  }
+  return mockFetch(url, init);
+};
+
+const fetchProxy = jest.fn().mockImplementation(fetchProxyImplementation);
+
+// Sync jest mock resets and clears
+const originalClear = mockFetch.mockClear.bind(mockFetch);
+mockFetch.mockClear = () => {
+  fetchProxy.mockClear();
+  return originalClear();
+};
+const originalReset = mockFetch.mockReset.bind(mockFetch);
+mockFetch.mockReset = () => {
+  fetchProxy.mockReset();
+  fetchProxy.mockImplementation(fetchProxyImplementation);
+  return originalReset();
+};
+
+global.fetch = fetchProxy;
 
 // Mock navigator.clipboard
 Object.defineProperty(navigator, "clipboard", {
