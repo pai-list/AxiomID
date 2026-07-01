@@ -3,10 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useWallet } from "../../context/wallet-context";
+import { motion } from "framer-motion";
 import { Dna, Download, Star, Coins } from "lucide-react";
 import { PublishSkillForm } from "@/components/dashboard/PublishSkillForm";
 import { useLanguage } from "../../context/language-context";
 import { createPiPayment } from "@/lib/pi-sdk";
+
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+}
 
 interface Skill {
   id: string;
@@ -20,6 +28,27 @@ interface Skill {
   avgRating: number;
   ratingCount: number;
   createdAt: string;
+  tags?: Tag[];
+}
+
+interface SkillReview {
+  id: string;
+  skillId: string;
+  userId: string;
+  rating: number;
+  review: string | null;
+  createdAt: string;
+}
+
+interface SkillVersion {
+  id: string;
+  version: string;
+  manifestMd: string;
+  agentScript: string | null;
+  testSuite: string | null;
+  changelog: string | null;
+  status: string;
+  createdAt: string;
 }
 
 interface SkillDetail extends Skill {
@@ -30,6 +59,8 @@ interface SkillDetail extends Skill {
   isPublished: boolean;
   installationCount: number;
   reviewCount: number;
+  isInstalled: boolean;
+  tags: Tag[];
   updatedAt: string;
 }
 
@@ -65,6 +96,33 @@ export default function MarketplacePage() {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 20;
 
+  // New States for Enhancements
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [reviews, setReviews] = useState<SkillReview[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [versions, setVersions] = useState<SkillVersion[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [newRating, setNewRating] = useState<number>(5);
+  const [newReviewText, setNewReviewText] = useState<string>("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Fetch Tags on mount
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const res = await fetch("/api/skills/tags");
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableTags(data.tags || []);
+        }
+      } catch (err) {
+        console.error("Failed to load tags:", err);
+      }
+    };
+    loadTags();
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -74,6 +132,7 @@ export default function MarketplacePage() {
       try {
         const params = new URLSearchParams();
         if (filterTier) params.set("tier", filterTier);
+        if (selectedTag) params.set("tags", selectedTag);
         if (searchQuery) params.set("q", searchQuery);
         params.set("limit", String(PAGE_SIZE));
         params.set("offset", String(offset));
@@ -97,10 +156,15 @@ export default function MarketplacePage() {
     };
     load();
     return () => { cancelled = true; };
-  }, [filterTier, searchQuery, offset]);
+  }, [filterTier, selectedTag, searchQuery, offset]);
 
   const handleFilterChange = (tier: string) => {
     setFilterTier(tier);
+    setOffset(0);
+  };
+
+  const handleTagChange = (tagSlug: string) => {
+    setSelectedTag(tagSlug);
     setOffset(0);
   };
 
@@ -129,14 +193,48 @@ export default function MarketplacePage() {
     const controller = new AbortController();
     fetchAbortRef.current = controller;
     setDetailLoading(true);
+    setReviews([]);
+    setVersions([]);
+    setNewRating(5);
+    setNewReviewText("");
     try {
-      const res = await fetch(`/api/skills/${slug}`, { signal: controller.signal });
+      const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/skills/${slug}`, { 
+        signal: controller.signal,
+        headers
+      });
       if (!res.ok) {
         setError(`Failed to load skill (${res.status})`);
         return;
       }
       const data = await res.json();
       setSelectedSkill(data);
+
+      // Fetch Reviews in background
+      setReviewsLoading(true);
+      fetch(`/api/skills/${slug}/review`, { signal: controller.signal })
+        .then(r => r.ok ? r.json() : { data: [] })
+        .then(revData => {
+          const revs = Array.isArray(revData) ? revData : revData.data || [];
+          setReviews(revs);
+        })
+        .catch(err => console.error("Failed to load reviews:", err))
+        .finally(() => setReviewsLoading(false));
+
+      // Fetch Versions in background
+      setVersionsLoading(true);
+      fetch(`/api/skills/${slug}/versions`, { signal: controller.signal })
+        .then(r => r.ok ? r.json() : { versions: [] })
+        .then(verData => {
+          const vers = verData.versions || verData.data?.versions || [];
+          setVersions(vers);
+        })
+        .catch(err => console.error("Failed to load versions:", err))
+        .finally(() => setVersionsLoading(false));
+
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError("Failed to load skill details");
@@ -192,6 +290,72 @@ export default function MarketplacePage() {
     }
   };
 
+  const handleUninstall = async (skill: Pick<Skill, "slug" | "name">) => {
+    if (!user) return;
+    setInstalling(true);
+    try {
+      const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+      const res = await fetch(`/api/skills/${skill.slug}/install`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data?.message || data?.error || 'Uninstall failed (' + res.status + ')');
+      }
+      toast.success(t("marketplace_uninstall_success") || "Skill uninstalled successfully!");
+      openDetail(skill.slug);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to uninstall skill");
+    } finally {
+      setInstalling(false);
+    }
+  };
+
+  const handleAddReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSkill) return;
+    setSubmittingReview(true);
+    setError(null);
+    try {
+      const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+      if (!token) throw new Error(t("marketplace_login_required") || "Authentication required");
+      
+      const res = await fetch(`/api/skills/${selectedSkill.slug}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ rating: newRating, review: newReviewText }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data?.message || data?.error || "Failed to submit review");
+      }
+      
+      const savedReview = await res.json();
+      const reviewObj = savedReview.data || savedReview;
+      setReviews(prev => [reviewObj, ...prev]);
+      toast.success(t("marketplace_review_success") || "Review submitted successfully!");
+      setNewReviewText("");
+      setSelectedSkill(prev => {
+        if (!prev) return null;
+        const newCount = prev.reviewCount + 1;
+        const newAvg = ((prev.avgRating * prev.reviewCount) + newRating) / newCount;
+        return {
+          ...prev,
+          reviewCount: newCount,
+          avgRating: newAvg,
+        };
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
     <>
       {error && (
@@ -237,31 +401,68 @@ export default function MarketplacePage() {
         ) : (
           <>
             {/* Search + Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <label htmlFor="marketplace-search" className="sr-only">Search skills</label>
-              <input
-                id="marketplace-search"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder={t("marketplace_search")}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-surface placeholder-gray-600 focus:outline-none focus:border-neon-green/40 font-mono"
-              />
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by tier">
-                {["", "BASIC_TOOL", "ADVANCED_TOOL", "ADVANCED_INFRASTRUCTURE", "PRO", "SOVEREIGN"].map((tier) => (
+            <div className="flex flex-col gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <label htmlFor="marketplace-search" className="sr-only">Search skills</label>
+                <input
+                  id="marketplace-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder={t("marketplace_search")}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-surface placeholder-gray-600 focus:outline-none focus:border-neon-green/40 font-mono"
+                />
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by tier">
+                  {["", "BASIC_TOOL", "ADVANCED_TOOL", "ADVANCED_INFRASTRUCTURE", "PRO", "SOVEREIGN"].map((tier) => (
+                    <button
+                      key={tier}
+                      onClick={() => handleFilterChange(tier)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-mono border transition-colors ${
+                        filterTier === tier
+                          ? "bg-neon-green/10 text-neon-green border-neon-green/30"
+                          : "bg-white/5 text-faint border-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      {tier ? t(TIER_LABEL_KEYS[tier] || tier) : t("marketplace_all")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tag filters */}
+              {availableTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 items-center border-t border-white/5 pt-3" role="group" aria-label="Filter by tag">
+                  <span className="text-[10px] font-mono text-faint me-2">{t("marketplace_tags") || "Tags:"}</span>
                   <button
-                    key={tier}
-                    onClick={() => handleFilterChange(tier)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-mono border transition-colors ${
-                      filterTier === tier
-                        ? "bg-neon-green/10 text-neon-green border-neon-green/30"
+                    onClick={() => handleTagChange("")}
+                    className={`px-2.5 py-1 rounded-md text-[9px] font-mono border transition-colors ${
+                      selectedTag === ""
+                        ? "bg-electric-blue/10 text-electric-blue border-electric-blue/30"
                         : "bg-white/5 text-faint border-white/10 hover:border-white/20"
                     }`}
                   >
-                    {tier ? t(TIER_LABEL_KEYS[tier] || tier) : t("marketplace_all")}
+                    {t("marketplace_all") || "All"}
                   </button>
-                ))}
-              </div>
+                  {availableTags.map((tag) => {
+                    const isSelected = selectedTag === tag.slug;
+                    const color = tag.color || "#10b981";
+                    return (
+                      <button
+                        key={tag.id}
+                        onClick={() => handleTagChange(tag.slug)}
+                        className="px-2.5 py-1 rounded-md text-[9px] font-mono border transition-colors"
+                        style={{
+                          borderColor: isSelected ? `${color}50` : "rgba(255, 255, 255, 0.1)",
+                          color: isSelected ? color : "var(--text-muted)",
+                          backgroundColor: isSelected ? `${color}15` : "rgba(255, 255, 255, 0.05)",
+                        }}
+                      >
+                        #{tag.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Stats Bar */}
@@ -370,6 +571,28 @@ export default function MarketplacePage() {
                         {skill.description || t("marketplace_no_desc")}
                       </p>
 
+                      {/* Tags list */}
+                      {skill.tags && skill.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3 relative z-10">
+                          {skill.tags.map((t) => {
+                            const color = t.color || "#10b981";
+                            return (
+                              <span
+                                key={t.id}
+                                className="text-[7px] font-mono px-1 py-0.5 rounded-sm border"
+                                style={{
+                                  borderColor: `${color}30`,
+                                  color: color,
+                                  backgroundColor: `${color}08`,
+                                }}
+                              >
+                                #{t.name}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       {/* Cryptographic L0 Authority Trust Stamp Indicator */}
                       <div className="flex items-center gap-1.5 mb-4 text-[9px] font-mono text-emerald-400 bg-emerald-500/5 border border-emerald-500/20 px-2 py-0.5 rounded w-fit relative z-10">
                         <svg className="w-3 h-3 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -431,8 +654,12 @@ export default function MarketplacePage() {
                 <div className="h-32 bg-white/5 rounded" />
               </div>
             ) : selectedSkill && (
-              <>
-                <div className="flex items-start justify-between mb-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98, y: 5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="flex items-start justify-between mb-2">
                   <div>
                     <h2 className="text-xl font-bold text-surface font-mono">{selectedSkill.name}</h2>
                     <p className="text-xs font-mono mt-1" style={{ color: TIER_COLORS[selectedSkill.tier] }}>
@@ -447,18 +674,45 @@ export default function MarketplacePage() {
                   </button>
                 </div>
 
+                {/* Skill tags inside modal */}
+                {selectedSkill.tags && selectedSkill.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {selectedSkill.tags.map((t) => {
+                      const color = t.color || "#10b981";
+                      return (
+                        <span
+                          key={t.id}
+                          className="text-[8px] font-mono px-2 py-0.5 rounded border"
+                          style={{
+                            borderColor: `${color}30`,
+                            color: color,
+                            backgroundColor: `${color}08`,
+                          }}
+                        >
+                          #{t.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <p className="text-sm text-subtle mb-4">{selectedSkill.description || t("marketplace_no_desc")}</p>
 
                 <div className="flex items-center gap-4 text-[10px] font-mono mb-6">
                   <span className="text-neon-green"><Download className="w-3 h-3 inline me-1" />{selectedSkill.installCount} {t("marketplace_installs_label")}</span>
                   <span className="text-amber-400"><Star className="w-3 h-3 inline me-1" />{(selectedSkill.avgRating ?? 0).toFixed(1)} ({selectedSkill.ratingCount})</span>
                   <span className="text-electric-blue"><Coins className="w-3 h-3 inline me-1" />{selectedSkill.pricePi === 0 ? t("marketplace_free") : `${selectedSkill.pricePi} π`}</span>
+                  {selectedSkill.isInstalled && (
+                    <span className="text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded text-[8px] uppercase font-bold tracking-wider">
+                      {t("marketplace_installed") || "Installed"}
+                    </span>
+                  )}
                 </div>
 
                 {/* What This Skill Does */}
                 <div className="mb-4">
-                    <h3 className="text-xs font-mono font-bold mb-1" style={{ color: "var(--text-secondary)" }}>
-                      {t("marketplace_manifest")}
+                  <h3 className="text-xs font-mono font-bold mb-1" style={{ color: "var(--text-secondary)" }}>
+                    {t("marketplace_manifest")}
                   </h3>
                   <p className="text-[10px] font-mono mb-2" style={{ color: "var(--text-muted)" }}>
                     {t("marketplace_manifest_desc")}
@@ -485,7 +739,7 @@ export default function MarketplacePage() {
 
                 {/* Test Suite */}
                 {selectedSkill.testSuite && (
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <h3 className="text-xs font-mono font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
                       {t("marketplace_test_suite")}
                     </h3>
@@ -495,30 +749,146 @@ export default function MarketplacePage() {
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => handleInstall(selectedSkill)}
-                    disabled={installing || isConnecting}
-                    aria-busy={installing}
-                    aria-label={installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
-                    className="flex-1 btn-primary py-2.5 text-xs font-mono uppercase"
-                  >
-                    {installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
-                  </button>
+                {/* Version History (Changelog) */}
+                {(versionsLoading || versions.length > 0) && (
+                  <div className="mb-6 border-t border-white/5 pt-4">
+                    <h3 className="text-xs font-mono font-bold mb-2 text-surface">
+                      {t("marketplace_version_history") || "Version History & Changelogs"}
+                    </h3>
+                    {versionsLoading ? (
+                      <div className="space-y-2 animate-pulse">
+                        <div className="h-10 bg-white/5 rounded" />
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-thin pr-1">
+                        {versions.map((ver) => (
+                          <div key={ver.id} className="bg-white/5 border border-white/5 rounded-lg p-2.5 text-[9px] font-mono">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-emerald-400 font-bold">v{ver.version}</span>
+                              <span className="text-faint">{new Date(ver.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            {ver.changelog && (
+                              <p className="text-subtle leading-relaxed whitespace-pre-wrap mt-1 border-t border-white/5 pt-1">{ver.changelog}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Reviews & Ratings Section */}
+                <div className="mb-6 border-t border-white/5 pt-4">
+                  <h3 className="text-xs font-mono font-bold mb-3 text-surface">
+                    {t("marketplace_reviews") || "Community Reviews"}
+                  </h3>
+
+                  {/* Add Review Form */}
+                  {selectedSkill.isInstalled && user && (
+                    <form onSubmit={handleAddReview} className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
+                      <h4 className="text-[10px] font-mono font-bold mb-2 text-surface">{t("marketplace_add_review") || "Write a Review"}</h4>
+                      <div className="flex gap-2 items-center mb-2">
+                        <span className="text-[9px] font-mono text-faint">{t("marketplace_rating") || "Rating:"}</span>
+                        <div className="flex gap-1" role="img" aria-label={`Rating: ${newRating} out of 5 stars`}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setNewRating(star)}
+                              className="focus:outline-none"
+                            >
+                              <Star className={`w-3.5 h-3.5 ${star <= newRating ? "text-amber-400 fill-amber-400" : "text-gray-600"}`} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        value={newReviewText}
+                        onChange={(e) => setNewReviewText(e.target.value)}
+                        placeholder={t("marketplace_review_placeholder") || "Share your feedback about this skill..."}
+                        className="w-full bg-black/20 border border-white/10 rounded p-2 text-[10px] font-mono text-surface placeholder-gray-600 focus:outline-none focus:border-emerald-500/40 mb-2 min-h-[40px] resize-y"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        disabled={submittingReview}
+                        className="btn-primary text-[8px] font-mono px-2.5 py-1.5"
+                      >
+                        {submittingReview ? t("marketplace_submitting") || "Submitting..." : t("marketplace_submit") || "Submit Review"}
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Reviews List */}
+                  {reviewsLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-10 bg-white/5 rounded" />
+                      <div className="h-10 bg-white/5 rounded" />
+                    </div>
+                  ) : reviews.length === 0 ? (
+                    <p className="text-[9px] font-mono text-muted text-center py-2">{t("marketplace_no_reviews") || "No reviews yet."}</p>
+                  ) : (
+                    <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin pr-1">
+                      {reviews.map((rev) => (
+                        <div key={rev.id} className="border-b border-white/5 pb-2 last:border-b-0">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex gap-1.5 items-center">
+                              <span className="text-[9px] font-mono text-surface font-bold">User {rev.userId.slice(0, 8)}</span>
+                              <div className="flex gap-0.5" role="img" aria-label={`Rating: ${rev.rating} stars`}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className={`w-2 h-2 ${star <= rev.rating ? "text-amber-400 fill-amber-400" : "text-gray-700"}`} />
+                                ))}
+                              </div>
+                            </div>
+                            <span className="text-faint text-[8px] font-mono">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {rev.review && (
+                            <p className="text-subtle text-[9px] font-mono leading-relaxed whitespace-pre-wrap">{rev.review}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-6 border-t border-white/5 pt-4">
+                  {selectedSkill.isInstalled ? (
+                    <button
+                      onClick={() => handleUninstall(selectedSkill)}
+                      disabled={installing || isConnecting}
+                      aria-busy={installing}
+                      aria-label={installing ? t("marketplace_uninstalling") || "Uninstalling..." : t("marketplace_uninstall") || "Uninstall Skill"}
+                      className="flex-1 btn-ghost border-red-500/30 hover:bg-red-500/10 text-red-400 py-2.5 text-xs font-mono uppercase"
+                    >
+                      {installing ? t("marketplace_uninstalling") || "Uninstalling..." : t("marketplace_uninstall") || "Uninstall Skill"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleInstall(selectedSkill)}
+                      disabled={installing || isConnecting}
+                      aria-busy={installing}
+                      aria-label={installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
+                      className="flex-1 btn-primary py-2.5 text-xs font-mono uppercase"
+                    >
+                      {installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
+                    </button>
+                  )}
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify({
-                        slug: selectedSkill.slug,
-                        manifest: selectedSkill.manifestMd,
-                        script: selectedSkill.agentScript,
-                      }, null, 2));
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(JSON.stringify({
+                          slug: selectedSkill.slug,
+                          manifest: selectedSkill.manifestMd,
+                          script: selectedSkill.agentScript,
+                        }, null, 2));
+                      }
                     }}
                     className="btn-ghost py-2.5 text-xs font-mono px-4"
                   >
                     {t("marketplace_copy_payload")}
                   </button>
                 </div>
-              </>
+              </motion.div>
             )}
           </div>
       </dialog>

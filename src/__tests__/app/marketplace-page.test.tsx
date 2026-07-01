@@ -65,7 +65,29 @@ const mockUseWallet = useWallet as jest.MockedFunction<typeof useWallet>;
 
 // Mock fetch
 const mockFetch = jest.fn();
-global.fetch = mockFetch;
+global.fetch = jest.fn().mockImplementation((url: string, init?: any) => {
+  if (typeof url === "string") {
+    if (url.includes("/api/skills/tags")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ tags: [] }),
+      });
+    }
+    if (url.includes("/review") && !url.includes("/install")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ data: [] }),
+      });
+    }
+    if (url.includes("/versions")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ versions: [] }),
+      });
+    }
+  }
+  return mockFetch(url, init);
+});
 
 // Mock navigator.clipboard
 Object.defineProperty(navigator, "clipboard", {

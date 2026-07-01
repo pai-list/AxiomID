@@ -99,6 +99,18 @@ export async function GET(request: NextRequest) {
           ratingCount: true,
           authorId: true,
           createdAt: true,
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  color: true,
+                }
+              }
+            }
+          }
         },
         orderBy,
         take: limit,
