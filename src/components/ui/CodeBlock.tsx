@@ -14,9 +14,9 @@ export default function CodeBlock({ code, language = "json" }: CodeBlockProps) {
   const handleCopy = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
