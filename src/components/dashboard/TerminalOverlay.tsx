@@ -1,6 +1,6 @@
 "use client";
  
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Terminal, Trash2, Play, Cpu, Activity, HardDrive } from "lucide-react";
 import { useLanguage } from "@/app/context/language-context";
@@ -19,17 +19,8 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
   const { t, language } = useLanguage();
   const { user } = useWallet();
  
-  // Simulated state for live telemetry vibes
-  const [cpuLoad, setCpuLoad] = useState(42);
-  const [memUsage, setMemUsage] = useState(68);
- 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCpuLoad((prev) => Math.max(10, Math.min(95, prev + (Math.random() * 12 - 6))));
-      setMemUsage((prev) => Math.max(50, Math.min(90, prev + (Math.random() * 4 - 2))));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const cpuLoad = 0;
+  const memUsage = 0;
  
   useEffect(() => {
     if (scrollRef.current) {
