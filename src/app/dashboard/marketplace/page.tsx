@@ -65,6 +65,10 @@ export default function MarketplacePage() {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 20;
 
+  // Total count of published skills across all pages (from the API), used for
+  // the "Published" stat since `skills` only holds the pages loaded so far.
+  const [totalSkills, setTotalSkills] = useState<number | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -86,6 +90,7 @@ export default function MarketplacePage() {
           const newSkills = data.skills || [];
           setSkills((prev) => offset === 0 ? newSkills : [...prev, ...newSkills]);
           setHasMore(newSkills.length === PAGE_SIZE);
+          setTotalSkills(typeof data.total === "number" ? data.total : null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -267,7 +272,7 @@ export default function MarketplacePage() {
             {/* Stats Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="bento-card p-4 text-center">
-                <span className="text-2xl font-bold text-neon-green font-mono">{skills.length}</span>
+                <span className="text-2xl font-bold text-neon-green font-mono">{totalSkills ?? skills.length}</span>
                 <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>{t("marketplace_published")}</p>
                 <p className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-faint)" }}>{t("marketplace_published_desc")}</p>
               </div>
@@ -507,11 +512,13 @@ export default function MarketplacePage() {
                   </button>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify({
-                        slug: selectedSkill.slug,
-                        manifest: selectedSkill.manifestMd,
-                        script: selectedSkill.agentScript,
-                      }, null, 2));
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(JSON.stringify({
+                          slug: selectedSkill.slug,
+                          manifest: selectedSkill.manifestMd,
+                          script: selectedSkill.agentScript,
+                        }, null, 2));
+                      }
                     }}
                     className="btn-ghost py-2.5 text-xs font-mono px-4"
                   >
