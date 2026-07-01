@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { motion } from "framer-motion";
 import { Smartphone } from "lucide-react";
 import { checkPiBrowser, determineSandboxMode } from "@/lib/pi-sdk";
+import { useLanguage } from "@/app/context/language-context";
 
 interface PiBrowserContextType {
   isPiBrowser: boolean;
@@ -33,6 +34,8 @@ export function PiBrowserGuard({
   const [isDetecting, setIsDetecting] = useState(true);
   const [isPiBrowser, setIsPiBrowser] = useState(false);
   const [isSandbox, setIsSandbox] = useState(false);
+  const { language } = useLanguage();
+  const t = (en: string, ar: string) => (language === "en" ? en : ar);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,7 +60,7 @@ export function PiBrowserGuard({
             <div className="h-4 bg-white/5 rounded w-1/2" />
             <div className="h-8 bg-white/5 rounded w-full" />
           </div>
-          <p className="text-sm text-[var(--text-secondary)]">Detecting environment...</p>
+          <p className="text-sm text-[var(--text-secondary)]">{t("Detecting environment...", "جاري اكتشاف البيئة...")}</p>
         </motion.div>
       </div>
     );
@@ -84,6 +87,8 @@ export function PiBrowserGuard({
 
 export function PiBrowserBanner() {
   const { isPiBrowser, isSandbox } = usePiBrowser();
+  const { language } = useLanguage();
+  const t = (en: string, ar: string) => (language === "en" ? en : ar);
   
   if (isPiBrowser) {
     return (
@@ -96,12 +101,12 @@ export function PiBrowserBanner() {
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-neon-green" />
             <span className="text-xs font-mono text-neon-green">
-              {isSandbox ? "Pi Sandbox" : "Pi Browser"} Connected
+              {isSandbox ? "Pi Sandbox" : "Pi Browser"} {t("Connected", "متصل")}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-neon-green/70">
-              Full functionality available
+              {t("Full functionality available", "جميع الوظائف متاحة")}
             </span>
           </div>
         </div>
