@@ -5,7 +5,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { logger } from "@/lib/logger";
 import { AgentIdentitySchema } from "@/lib/validators";
-import { createIdentityAssertion } from "@/lib/auth-tokens";
+import { createIdentityAssertion, verifyPiTokenWithJwks } from "@/lib/auth-tokens";
 import { createClaimToken } from "@/lib/claim-ceremony";
 
 /**
@@ -44,7 +44,21 @@ export async function POST(request: NextRequest) {
 
   try {
     if (parsed.data.type === "identity_assertion") {
-      const did = deriveDid(parsed.data.assertion);
+      let did: string;
+      try {
+        const payload = await verifyPiTokenWithJwks(parsed.data.assertion);
+        const uid = payload.uid || payload.sub;
+        did = `did:axiom:axiomid.app:pi:${uid}`;
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") {
+          logger.warn("[AGENT-IDENTITY] Pi JWKS verification failed, falling back to deterministic DID for dev");
+          did = deriveDid(parsed.data.assertion);
+        } else {
+          logger.error("[AGENT-IDENTITY] Pi JWKS verification failed:", err);
+          return apiError("UNAUTHORIZED", "Invalid identity assertion");
+        }
+      }
+
       const scopes = ["api.read", "api.write"];
       const identityAssertion = await createIdentityAssertion(did, scopes);
       return apiSuccess({ identity_assertion: identityAssertion, did, scopes });
