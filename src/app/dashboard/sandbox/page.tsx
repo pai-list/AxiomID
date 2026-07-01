@@ -330,7 +330,10 @@ export default function SandboxPage() {
       flushPending();
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
-        // Stream aborted, ignore error state update
+        // Stream aborted, clean up timers and ignore error state update
+        stopFlushTimer();
+        auditTimerRefs.current.forEach(clearTimeout);
+        auditTimerRefs.current = [];
         return;
       }
       // Stop the throttle timer, clear audit timeouts, and fail active items
