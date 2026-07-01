@@ -41,7 +41,7 @@ interface StampBoardProps {
   connectWallet: () => Promise<boolean>;
 }
 
-const STAMP_DEFS = [
+export const STAMP_DEFS = [
   { type: "connect_wallet", label: "Wallet Connection", xp: 100, icon: <Wallet className="w-6 h-6" />, isAutomatic: false },
   { type: "complete_kyc", label: "KYC Verification", xp: 200, icon: <Shield className="w-6 h-6" />, isAutomatic: false },
   { type: "pi_payment", label: "Pi Payment", xp: 0, icon: <CircleDollarSign className="w-6 h-6" />, isAutomatic: false },
@@ -109,9 +109,11 @@ export function StampBoard({ user, claimAction, connectWallet }: StampBoardProps
 
   const copyVcPayload = () => {
     if (!activeVc) return;
-    navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(JSON.stringify(activeVc, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {

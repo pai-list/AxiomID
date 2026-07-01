@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, ShieldAlert, Cpu, Dna, Terminal, Copy, Check, ShieldCheck, Loader2 } from "lucide-react";
 import { useLanguage } from "../../context/language-context";
 
@@ -174,6 +174,22 @@ export default function SandboxPage() {
     provenance: "pending",
   });
 
+  const executionAbortRef = useRef<AbortController | null>(null);
+  const auditTimerRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const flushIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      executionAbortRef.current?.abort();
+      auditTimerRefs.current.forEach(clearTimeout);
+      auditTimerRefs.current = [];
+      if (flushIntervalRef.current) {
+        clearInterval(flushIntervalRef.current);
+        flushIntervalRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     // Load skills from the marketplace list API to allow quick-loading manifests
     fetch("/api/skills?limit=100")
@@ -202,6 +218,15 @@ export default function SandboxPage() {
   };
 
   const handleExecute = async () => {
+    // Abort previous execution if running
+    executionAbortRef.current?.abort();
+    auditTimerRefs.current.forEach(clearTimeout);
+    auditTimerRefs.current = [];
+    if (flushIntervalRef.current) {
+      clearInterval(flushIntervalRef.current);
+      flushIntervalRef.current = null;
+    }
+
     setExecuting(true);
     setLogs([`[SYSTEM] Triggering sandbox initialization...`]);
     setAuditStates({
@@ -216,33 +241,38 @@ export default function SandboxPage() {
     });
 
     // Animate security checkpoints step-by-step
-    const t1 = setTimeout(() => setAuditStates(prev => ({ ...prev, sandbox: "passed", ast: "scanning" })), 600);
-    const t2 = setTimeout(() => setAuditStates(prev => ({ ...prev, ast: "passed", injection: "scanning", signature: "scanning" })), 1400);
-    const t3 = setTimeout(() => setAuditStates(prev => ({ ...prev, injection: "passed", signature: "passed", exfil: "scanning", dangerous: "scanning", privilege: "scanning" })), 2000);
-    const t4 = setTimeout(() => setAuditStates(prev => ({ ...prev, exfil: "passed", dangerous: "passed", privilege: "passed", provenance: "scanning" })), 2900);
-    const t5 = setTimeout(() => setAuditStates(prev => ({ ...prev, provenance: "passed" })), 3600);
+    auditTimerRefs.current.push(
+      setTimeout(() => setAuditStates(prev => ({ ...prev, sandbox: "passed", ast: "scanning" })), 600),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, ast: "passed", injection: "scanning", signature: "scanning" })), 1400),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, injection: "passed", signature: "passed", exfil: "scanning", dangerous: "scanning", privilege: "scanning" })), 2000),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, exfil: "passed", dangerous: "passed", privilege: "passed", provenance: "scanning" })), 2900),
+      setTimeout(() => setAuditStates(prev => ({ ...prev, provenance: "passed" })), 3600),
+    );
 
     // Buffer streamed lines and flush on a fixed interval so the main thread
     // is not hit with a setState on every incoming chunk (per AGENTS.md:
     // throttle stream-driven UI updates to 16ms–30ms intervals).
     const pendingLines: string[] = [];
-    let flushTimer: ReturnType<typeof setInterval> | null = null;
     const flushPending = () => {
       if (pendingLines.length === 0) return;
       const batch = pendingLines.splice(0, pendingLines.length);
       setLogs((prev) => [...prev, ...batch].slice(-200));
     };
     const stopFlushTimer = () => {
-      if (flushTimer) {
-        clearInterval(flushTimer);
-        flushTimer = null;
+      if (flushIntervalRef.current) {
+        clearInterval(flushIntervalRef.current);
+        flushIntervalRef.current = null;
       }
     };
 
-    try {
-      flushTimer = setInterval(flushPending, 30);
+    const piAccessToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+    const controller = new AbortController();
+    executionAbortRef.current = controller;
 
-      const piAccessToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
+    try {
+      flushIntervalRef.current = setInterval(flushPending, 30);
+
+
       const res = await fetch("/api/sandbox/execute", {
         method: "POST",
         headers: {
@@ -250,6 +280,7 @@ export default function SandboxPage() {
           ...(piAccessToken ? { "Authorization": `Bearer ${piAccessToken}` } : {}),
         },
         body: JSON.stringify({ manifestMd: manifest, inputData }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -299,13 +330,17 @@ export default function SandboxPage() {
       stopFlushTimer();
       flushPending();
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        // Stream aborted, clean up timers and ignore error state update
+        stopFlushTimer();
+        auditTimerRefs.current.forEach(clearTimeout);
+        auditTimerRefs.current = [];
+        return;
+      }
       // Stop the throttle timer, clear audit timeouts, and fail active items
       stopFlushTimer();
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
+      auditTimerRefs.current.forEach(clearTimeout);
+      auditTimerRefs.current = [];
       
       setAuditStates(prev => {
         const next = { ...prev };
@@ -322,16 +357,22 @@ export default function SandboxPage() {
         `[FATAL] ${err instanceof Error ? err.message : String(err)}`,
       ].slice(-200));
     } finally {
-      setExecuting(false);
+      // Only clear the executing flag if this run is still the active one.
+      // A superseded (aborted) run must not reset the state of the newer run.
+      if (executionAbortRef.current === controller) {
+        setExecuting(false);
+      }
     }
   };
 
   const handleCopyPayload = () => {
-    navigator.clipboard.writeText(
-      JSON.stringify({ manifest, inputData }, null, 2)
-    );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(
+        JSON.stringify({ manifest, inputData }, null, 2)
+      );
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -437,7 +478,7 @@ export default function SandboxPage() {
           </div>
 
           {/* Action Row */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleExecute}
               disabled={executing}
