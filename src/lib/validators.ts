@@ -112,12 +112,22 @@ function parseManifestSections(md: string): ManifestSection[] {
  */
 function isStubBody(body: string): boolean {
   if (!body) return true;
-  const stripped = body.replace(/<!--[\s\S]*?-->/g, '').trim();
+
+  // Iteratively strip all comment pairs to handle nesting/overlapping cases.
+  let stripped = body;
+  let prev = '';
+  while (prev !== stripped) {
+    prev = stripped;
+    stripped = stripped.replace(/<!--[\s\S]*?-->/g, '');
+  }
+  stripped = stripped.trim();
   if (!stripped) return true;
+
   // Detect any unmatched HTML comment opener.
-  const lastOpen = body.lastIndexOf('<!--');
-  const lastClose = body.lastIndexOf('-->');
-  if (lastOpen !== -1 && lastOpen > lastClose) return true;
+  const lastOpen = stripped.lastIndexOf('<!--');
+  const lastClose = stripped.lastIndexOf('-->');
+  if (lastOpen !== -1 && (lastClose === -1 || lastOpen > lastClose)) return true;
+
   const lines = stripped.split('\n').filter(l => l.trim());
   if (lines.length === 0) return true;
   if (STUB_PATTERNS.some(p => p.test(stripped))) return true;
