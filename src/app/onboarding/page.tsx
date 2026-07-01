@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "../context/wallet-context";
 import { useLanguage } from "../context/language-context";
@@ -19,17 +19,23 @@ export default function OnboardingPage() {
   const [agentName, setAgentName] = useState("");
   const [creatingAgent, setCreatingAgent] = useState(false);
 
+  const didAutoAdvance = useRef(false);
+
   // Auto-advance returning users past completed steps
   useEffect(() => {
-    if (!user) return;
-    const targetStep = user.agent ? 4 : 2;
-    if (step !== targetStep) {
-      const timer = setTimeout(() => {
-        setStep(targetStep);
-      }, 0);
-      return () => clearTimeout(timer);
+    if (!user || didAutoAdvance.current) return;
+    didAutoAdvance.current = true;
+    let targetStep = 1;
+    if (user.agent) {
+      targetStep = user.kycStatus === "VERIFIED" ? 4 : 3;
+    } else {
+      targetStep = 2;
     }
-  }, [user, step]);
+    const timer = setTimeout(() => {
+      setStep((prev) => (prev !== targetStep ? targetStep : prev));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [user]);
 
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
