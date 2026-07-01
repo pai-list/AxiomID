@@ -141,17 +141,20 @@ export class DelegationResolver {
 
       const nextQueue: Array<{ did: string; chain: TrustChain[]; hop: number }> = [];
 
-      // Filter nodes to process (not visited, within maxHops)
+      // Filter nodes to process (not visited, within maxHops, and unique in this level)
+      const uniqueDidsInLevel = new Set<string>();
       const nodesToProcess = queue.filter(node => {
         if (node.hop >= this.maxHops) return false;
         if (visited.has(node.did)) return false;
+        if (uniqueDidsInLevel.has(node.did)) return false;
+        uniqueDidsInLevel.add(node.did);
         return true;
       });
 
       if (nodesToProcess.length === 0) break;
 
       // Mark as visited
-      const currentDids = [...new Set(nodesToProcess.map(n => n.did))];
+      const currentDids = nodesToProcess.map(n => n.did);
       for (const did of currentDids) {
         visited.add(did);
       }
