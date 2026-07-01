@@ -47,8 +47,7 @@ export async function POST(request: NextRequest) {
       let did: string;
       try {
         const payload = await verifyPiTokenWithJwks(parsed.data.assertion);
-        const uid = payload.uid || payload.sub;
-        did = `did:axiom:axiomid.app:pi:${uid}`;
+        did = "did:axiom:axiomid.app:pi:" + payload.sub;
       } catch (err) {
         if (process.env.NODE_ENV !== "production") {
           logger.warn("[AGENT-IDENTITY] Pi JWKS verification failed, falling back to deterministic DID for dev");
