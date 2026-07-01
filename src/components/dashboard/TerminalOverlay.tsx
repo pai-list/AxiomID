@@ -54,9 +54,9 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 40 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed bottom-[72px] left-0 right-0 z-40 backdrop-blur-xl h-[60vh] sm:h-[45vh] overflow-hidden flex flex-col border-t border-white/10"
+      className="fixed bottom-[calc(64px+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-40 backdrop-blur-xl h-[60vh] sm:h-[45vh] overflow-hidden flex flex-col border-t border-white/10"
       style={{ 
-        paddingBottom: "env(safe-area-inset-bottom, 0px)", 
+        paddingBottom: "0px", 
         background: "rgba(3, 3, 5, 0.98)",
         boxShadow: "0 -12px 50px -15px rgba(0, 212, 255, 0.2)"
       }}
@@ -140,18 +140,20 @@ export function TerminalOverlay({ logs, walletLogs, onClear, onRunTest, onClose 
             <div className="flex items-center gap-1.5">
               <button
                 onClick={onClear}
-                className="text-[10px] font-mono transition-all px-3 py-1.5 rounded border border-white/5 hover:border-white/20 hover:bg-white/5 flex items-center gap-1.5"
+                className="text-[10px] font-mono transition-all px-2.5 py-1.5 rounded border border-white/5 hover:border-white/20 hover:bg-white/5 flex items-center gap-1.5"
                 style={{ color: "var(--text-muted)" }}
+                title={t('terminal_clear')}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                {t('terminal_clear')}
+                <span className="hidden sm:inline">{t('terminal_clear')}</span>
               </button>
               <button
                 onClick={onRunTest}
-                className="text-[10px] font-mono text-neon-green transition-all px-3 py-1.5 rounded border border-neon-green/20 hover:border-neon-green/40 hover:bg-neon-green/10 flex items-center gap-1.5"
+                className="text-[10px] font-mono text-neon-green transition-all px-2.5 py-1.5 rounded border border-neon-green/20 hover:border-neon-green/40 hover:bg-neon-green/10 flex items-center gap-1.5"
+                title={t('terminal_run_test')}
               >
                 <Play className="w-3.5 h-3.5" />
-                {t('terminal_run_test')}
+                <span className="hidden sm:inline">{t('terminal_run_test')}</span>
               </button>
               <button
                 onClick={onClose}

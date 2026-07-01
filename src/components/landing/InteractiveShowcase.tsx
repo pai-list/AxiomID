@@ -98,7 +98,7 @@ export default function InteractiveShowcase() {
         </div>
 
         {/* State Selection List */}
-        <div className="grid grid-cols-3 lg:grid-cols-1 gap-2.5 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5 pt-2">
           {(["did", "stamps", "agent"] as DemoState[]).map((state) => {
             const isActive = activeState === state;
             const labels = {
@@ -136,8 +136,8 @@ export default function InteractiveShowcase() {
       </div>
 
       {/* Right Panel: The Holographic Animation Container */}
-      <div className="lg:col-span-7 flex items-center justify-center">
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-br from-white/[0.02] to-transparent shadow-2xl p-6 flex flex-col justify-between">
+      <div className="lg:col-span-7 flex items-center justify-center w-full">
+        <div className="relative w-full aspect-auto md:aspect-video min-h-[320px] md:min-h-0 rounded-2xl overflow-hidden border border-white/[0.06] bg-gradient-to-br from-white/[0.02] to-transparent shadow-2xl p-6 flex flex-col justify-between">
           
           {/* Subtle Grid overlay */}
           <div
