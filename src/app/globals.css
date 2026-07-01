@@ -244,6 +244,23 @@ body {
   transform: translateY(0);
 }
 
+/* ── Toast Notifications ──────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  animation: slideUp 0.3s ease;
+  z-index: 9999;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* Stitch UI components */
 .stitch-badge {
   display: inline-flex;

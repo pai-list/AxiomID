@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ErrorBanner } from "@/components/ErrorBanner";
@@ -40,7 +41,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
         <ErrorBoundary>
-          {children}
+          <Suspense fallback={
+            <div className="animate-pulse space-y-4 p-8">
+              <div className="h-6 bg-white/5 rounded w-1/3" />
+              <div className="h-4 bg-white/5 rounded w-2/3" />
+              <div className="h-32 bg-white/5 rounded w-full" />
+            </div>
+          }>
+            {children}
+          </Suspense>
         </ErrorBoundary>
       </div>
 
