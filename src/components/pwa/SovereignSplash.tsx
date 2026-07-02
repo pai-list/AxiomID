@@ -5,9 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 
 export default function SovereignSplash() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Only show the splash once per session to avoid blocking every navigation.
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("axiom_splash_shown") === "true") return;
+
+    sessionStorage.setItem("axiom_splash_shown", "true");
+    setIsVisible(true);
+
     // Simulate a brief "identity check" for premium feel
     const timer = setTimeout(() => {
       setIsVisible(false);

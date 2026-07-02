@@ -71,6 +71,8 @@ export default function Dashboard() {
   const [agentName, setAgentName] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [marketplaceSkills, setMarketplaceSkills] = useState<Array<{ name: string; description: string; tier?: string }>>([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+  const [skillsError, setSkillsError] = useState(false);
 
   const onboardingStep = !user ? 1 : !user.agent ? 2 : 3;
 
@@ -83,15 +85,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     const controller = new AbortController();
+    setSkillsLoading(true);
+    setSkillsError(false);
     fetch("/api/skills?limit=6", { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch skills");
         return res.json();
       })
-      .then((json) => setMarketplaceSkills(json.skills ?? []))
+      .then((json) => {
+        setMarketplaceSkills(json?.skills ?? []);
+        setSkillsLoading(false);
+      })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          // Silent catch
+          setSkillsError(true);
+          setSkillsLoading(false);
         }
       });
     return () => controller.abort();
@@ -422,24 +430,43 @@ export default function Dashboard() {
                     View all →
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {marketplaceSkills.slice(0, 6).map((skill: { name: string; description: string; tier?: string }) => (
-                    <div
-                      key={skill.name}
-                      className="p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-axiom-purple/30 transition-colors cursor-default"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-surface font-mono">{skill.name}</span>
-                        {skill.tier && (
-                          <span className="text-[9px] font-mono text-axiom-purple bg-axiom-purple/10 px-1.5 py-0.5 rounded">
-                            {skill.tier}
-                          </span>
-                        )}
+                {skillsLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
+                        <div className="h-4 bg-white/5 rounded animate-pulse mb-2 w-2/3" />
+                        <div className="h-3 bg-white/5 rounded animate-pulse w-full" />
                       </div>
-                      <p className="text-xs text-faint line-clamp-2">{skill.description}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : skillsError ? (
+                  <p className="text-xs text-faint py-4 text-center">
+                    {t("skills_load_error")}
+                  </p>
+                ) : marketplaceSkills.length === 0 ? (
+                  <p className="text-xs text-faint py-4 text-center">
+                    {t("skills_empty")}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {marketplaceSkills.slice(0, 6).map((skill: { name: string; description: string; tier?: string }) => (
+                      <div
+                        key={skill.name}
+                        className="p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-axiom-purple/30 transition-colors cursor-default"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-surface font-mono">{skill.name}</span>
+                          {skill.tier && (
+                            <span className="text-[9px] font-mono text-axiom-purple bg-axiom-purple/10 px-1.5 py-0.5 rounded">
+                              {skill.tier}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-faint line-clamp-2">{skill.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </TabPanel>

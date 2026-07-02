@@ -4,6 +4,8 @@
  * notifications on the home screen icon.
  */
 
+import { logger } from '@/lib/logger';
+
 export type BadgeEvent = 'XP_GAIN' | 'NEW_STAMP' | 'AGENT_READY';
 
 interface BadgeConfig {
@@ -26,7 +28,7 @@ const BADGE_CONFIG: BadgeConfig = {
  */
 export async function setSovereignBadge(event: BadgeEvent, currentCount: number = 0): Promise<number> {
   if (!('setAppBadge' in navigator)) {
-    console.log('[PWA] App Badging API not supported in this browser.');
+    logger.info('[PWA] App Badging API not supported in this browser.');
     return currentCount;
   }
 
@@ -41,10 +43,10 @@ export async function setSovereignBadge(event: BadgeEvent, currentCount: number 
   
   try {
     await navigator.setAppBadge(newCount);
-    console.log(`[PWA] Badge set to ${newCount} for ${config.label}`);
+    logger.info(`[PWA] Badge set to ${newCount} for ${config.label}`);
     return newCount;
   } catch (error) {
-    console.error('[PWA] Failed to set app badge:', error);
+    logger.error('[PWA] Failed to set app badge:', error);
     return currentCount;
   }
 }
