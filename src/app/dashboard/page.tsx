@@ -82,10 +82,19 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/skills?limit=6")
-      .then((res) => res.json())
+    const controller = new AbortController();
+    fetch("/api/skills?limit=6", { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch skills");
+        return res.json();
+      })
       .then((json) => setMarketplaceSkills(json.skills ?? []))
-      .catch(() => {});
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          // Silent catch or log error
+        }
+      });
+    return () => controller.abort();
   }, []);
 
   const shouldShowPiBrowserPrompt = !isPiBrowser;
