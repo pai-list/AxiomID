@@ -501,7 +501,7 @@
   "docs_stamp_pow_xp": "10 XP daily",
   "docs_stamp_pow_desc": "Establishes daily active human participation through lightweight cryptographic proof-of-work tasks. Consistency builds trust.",
   "docs_trust_formula_title": "Trust Score Formula",
-  "docs_trust_formula_desc": "Trust Score = (XP * 0.7) + (stamps * 0.3), clamped to 100.",
+  "docs_trust_formula_desc": "XP Score = min(100, XP/10). Stamp Score = (stamps claimed / 10 total) × 100. Trust Score = XP Score × 0.7 + Stamp Score × 0.3.",
   "docs_badge_sdk": "Client Integration",
   "docs_sdk_title": "SDK & Integration",
   "docs_sdk_desc": "AxiomID provides two packages: `@axiomid/sdk` for querying trust/passport data, and `@axiomid/crypto` for Ed25519 key derivation and signing. Both are MIT licensed.",
