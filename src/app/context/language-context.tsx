@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useCallback, ReactNode, useSyncExternalStore } from "react";
 
 export type Language = "en" | "ar";
 
@@ -1203,32 +1203,34 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-/**
- * Provides language selection, persistence, and a translation helper to descendant components.
- *
- * Persists the chosen language to localStorage under `aix_language` and updates
- * `document.documentElement.dir` and `document.documentElement.lang` after initial mount.
- *
- * @param children - React nodes that will receive the language context
- * @returns A React context provider that supplies `{ language, setLanguage, t }` to its descendants
- */
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window === "undefined") return "en";
-    const saved = localStorage.getItem("aix_language") as Language;
-    return saved === "en" || saved === "ar" ? saved : "en";
-  });
-  const mountedRef = useRef(false);
+
+// Sync external store setup
+function subscribe(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getSnapshot(): Language {
+  if (typeof window === "undefined") return "en";
+  const saved = localStorage.getItem("aix_language") as Language;
+  return saved === "ar" ? "ar" : "en";
+}
+
+function getServerSnapshot(): Language {
+  return "en";
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const language = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    mountedRef.current = true;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = language;
   }, [language]);
 
   const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
     localStorage.setItem("aix_language", lang);
+    window.dispatchEvent(new Event("storage"));
   }, []);
 
   const t = useCallback((key: string): string => {
