@@ -127,41 +127,74 @@ export class DelegationResolver {
    */
   async resolveChain(sourceDid: string, targetDid: string): Promise<TrustChain[]> {
     const visited = new Set<string>();
-    const queue: Array<{ did: string; chain: TrustChain[]; hop: number }> = [
+    let queue: Array<{ did: string; chain: TrustChain[]; hop: number }> = [
       { did: sourceDid, chain: [], hop: 0 },
     ];
 
     while (queue.length > 0) {
-      const current = queue.shift()!;
-
-      if (current.did === targetDid && current.chain.length > 0) {
-        return current.chain;
-      }
-
-      if (current.hop >= this.maxHops) continue;
-      if (visited.has(current.did)) continue;
-      visited.add(current.did);
-
-      // Query D1 for outgoing delegations
-      const delegations = await this.getOutgoingDelegations(current.did);
-
-      for (const d of delegations) {
-        if (!visited.has(d.delegatee_did)) {
-          queue.push({
-            did: d.delegatee_did,
-            chain: [
-              ...current.chain,
-              {
-                delegator: d.delegator_did,
-                delegatee: d.delegatee_did,
-                trustLevel: d.trust_level,
-                hop: current.hop + 1,
-              },
-            ],
-            hop: current.hop + 1,
-          });
+      // Check if we reached the target in the current level
+      for (const current of queue) {
+        if (current.did === targetDid && current.chain.length > 0) {
+          return current.chain;
         }
       }
+
+      const nextQueue: Array<{ did: string; chain: TrustChain[]; hop: number }> = [];
+
+      // Filter nodes to process (not visited, within maxHops, and unique in this level)
+      const uniqueDidsInLevel = new Set<string>();
+      const nodesToProcess = queue.filter(node => {
+        if (node.hop >= this.maxHops) return false;
+        if (visited.has(node.did)) return false;
+        if (uniqueDidsInLevel.has(node.did)) return false;
+        uniqueDidsInLevel.add(node.did);
+        return true;
+      });
+
+      if (nodesToProcess.length === 0) break;
+
+      // Mark as visited
+      const currentDids = nodesToProcess.map(n => n.did);
+      for (const did of currentDids) {
+        visited.add(did);
+      }
+
+      // Fetch outgoing delegations in batch
+      const delegations = await this.getOutgoingDelegationsBatch(currentDids);
+
+      // Group by delegator for quick lookup
+      const delegationsByDelegator = new Map<string, DelegationEdge[]>();
+      for (const d of delegations) {
+        if (!delegationsByDelegator.has(d.delegator_did)) {
+          delegationsByDelegator.set(d.delegator_did, []);
+        }
+        delegationsByDelegator.get(d.delegator_did)!.push(d);
+      }
+
+      // Build next level queue
+      for (const node of nodesToProcess) {
+        const nodeDelegations = delegationsByDelegator.get(node.did) || [];
+
+        for (const d of nodeDelegations) {
+          if (!visited.has(d.delegatee_did)) {
+            nextQueue.push({
+              did: d.delegatee_did,
+              chain: [
+                ...node.chain,
+                {
+                  delegator: d.delegator_did,
+                  delegatee: d.delegatee_did,
+                  trustLevel: d.trust_level,
+                  hop: node.hop + 1,
+                },
+              ],
+              hop: node.hop + 1,
+            });
+          }
+        }
+      }
+
+      queue = nextQueue;
     }
 
     return [];
@@ -179,16 +212,30 @@ export class DelegationResolver {
   }
 
   /**
-   * Get all outgoing delegations from a DID.
+   * Get all outgoing delegations for a batch of DIDs.
    */
-  private async getOutgoingDelegations(did: string): Promise<DelegationEdge[]> {
-    const result = await this.d1.db
-      .prepare(
-        "SELECT * FROM trust_delegations WHERE delegator_did = ? AND (expires_at IS NULL OR expires_at > datetime('now'))"
-      )
-      .bind(did)
-      .all<DelegationEdge>();
-    return result.results;
+  private async getOutgoingDelegationsBatch(dids: string[]): Promise<DelegationEdge[]> {
+    if (dids.length === 0) return [];
+
+    // Process in chunks of 99 to be safe with SQLite variables limits
+    const chunkSize = 99;
+    const results: DelegationEdge[] = [];
+
+    for (let i = 0; i < dids.length; i += chunkSize) {
+      const chunk = dids.slice(i, i + chunkSize);
+      const placeholders = chunk.map(() => '?').join(',');
+
+      const queryResult = await this.d1.db
+        .prepare(
+          "SELECT * FROM trust_delegations WHERE delegator_did IN (" + placeholders + ") AND (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
+        )
+        .bind(...chunk)
+        .all<DelegationEdge>();
+
+      results.push(...queryResult.results);
+    }
+
+    return results;
   }
 
   /**
@@ -250,7 +297,7 @@ export class DelegationResolver {
   private async getAllDelegations(): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
-        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR expires_at > datetime('now'))"
+        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
       )
       .all<DelegationEdge>();
     return result.results;
@@ -259,7 +306,7 @@ export class DelegationResolver {
   async getTrusters(delegateeDid: string): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
-        "SELECT * FROM trust_delegations WHERE delegatee_did = ? AND (expires_at IS NULL OR expires_at > datetime('now'))"
+        "SELECT * FROM trust_delegations WHERE delegatee_did = ? AND (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
       )
       .bind(delegateeDid)
       .all<DelegationEdge>();

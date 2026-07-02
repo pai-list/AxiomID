@@ -10,6 +10,7 @@ import { SoulBadge } from "@/components/marketplace/SoulBadge";
 import { useLanguage } from "../../context/language-context";
 import { createPiPayment } from "@/lib/pi-sdk";
 import { SOUL_PRINCIPLE_LIST, type SoulPrincipleKey } from "@/lib/soul-principles";
+import { logger } from "@/lib/logger";
 
 interface Tag {
   id: string;
@@ -125,7 +126,8 @@ export default function MarketplacePage() {
           const data = await res.json();
           setAvailableTags(data.tags || []);
         }
-      } catch {
+      } catch (err) {
+        logger.error("Failed to load tags:", err);
         toast.error(language === "ar" ? "فشل تحميل الأوسمة" : "Failed to load tags");
       }
     };
@@ -245,7 +247,7 @@ export default function MarketplacePage() {
           setReviews(revs);
         })
         .catch(err => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
+          logger.error("Failed to load reviews:", err);
           toast.error(language === "ar" ? "فشل تحميل المراجعات" : "Failed to load reviews");
         })
         .finally(() => {
@@ -264,7 +266,7 @@ export default function MarketplacePage() {
           setVersions(vers);
         })
         .catch(err => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
+          logger.error("Failed to load versions:", err);
           toast.error(language === "ar" ? "فشل تحميل الإصدارات" : "Failed to load versions");
         })
         .finally(() => {
