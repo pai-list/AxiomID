@@ -42,34 +42,35 @@ export default function InstallPWA() {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
-
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.9 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4"
-      >
-        <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex items-center justify-between shadow-2xl ring-1 ring-electric-blue/20">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-electric-blue/20 rounded-lg">
-              <Sparkles className="w-4 h-4 text-electric-blue" />
+      {isVisible && (
+        <motion.div
+          key="install-pwa-cta"
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.9 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4"
+        >
+          <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex items-center justify-between shadow-2xl ring-1 ring-electric-blue/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-electric-blue/20 rounded-lg">
+                <Sparkles className="w-4 h-4 text-electric-blue" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white">Install AxiomID</p>
+                <p className="text-[10px] text-white/40 font-mono">Sovereign Experience</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-medium text-white">Install AxiomID</p>
-              <p className="text-[10px] text-white/40 font-mono">Sovereign Experience</p>
-            </div>
+            <button
+              onClick={handleInstallClick}
+              className="px-3 py-1.5 bg-white text-black text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors"
+            >
+              Install
+            </button>
           </div>
-          <button
-            onClick={handleInstallClick}
-            className="px-3 py-1.5 bg-white text-black text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors"
-          >
-            Install
-          </button>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }

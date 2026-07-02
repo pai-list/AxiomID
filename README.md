@@ -21,7 +21,7 @@
 <p align="center">
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <a href="https://github.com/Moeabdelaziz007/AxiomID/releases"><img src="https://img.shields.io/github/v/release/Moeabdelaziz007/AxiomID?style=flat-square&color=blue" alt="Version" /></a>
-  <img src="https://img.shields.io/badge/tests-3037%20passing-brightgreen?style=flat-square" alt="Tests" />
+   <img src="https://img.shields.io/badge/tests-3073%20passing-brightgreen?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/status-beta-orange?style=flat-square" alt="Beta" />
   <img src="https://img.shields.io/badge/works%20with-Pi%20Browser-8b5cf6?style=flat-square" alt="Pi Browser" />
@@ -120,17 +120,18 @@ Open [`axiomid.app/claim`](https://axiomid.app/claim) in **Pi Browser** or any m
 | **Agent Passports** | Public identity cards with verification badges, trust scores, and attestation history |
 | **Skills Marketplace** | Install capabilities for agents. Agents execute skills in isolated sandboxes. |
 | **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
-| **Soul System** | Five-gate ethical evaluation loop — Muraqabah, Ethical, Sab'iyyah, Tawbah, Self-Review |
+| **Soul System** | Six-gate ethical evaluation loop — Vigilance, Correction, Ledger, Triad, Septet, Compounding |
 
-### The Soul System (5 Ethical Gates)
+### The Soul System (6 Ethical Gates)
 
-AI Agent execution and code validation inside AxiomID are strictly guarded by the **Soul System** — a five-gate ethical evaluation loop designed to enforce sovereign safety, auditability, and absolute alignment (defined in [AGENTS.md](file:///Users/cryptojoker710/Desktop/AxiomID/AGENTS.md)):
+AI Agent execution and code validation inside AxiomID are strictly guarded by the **Soul System** — a six-gate ethical evaluation loop designed to enforce sovereign safety, auditability, and absolute alignment (defined in [AGENTS.md](file:///Users/cryptojoker710/Desktop/AxiomID/AGENTS.md)):
 
-1. **Muraqabah (Divine/Self Awareness):** Absolute intention verification. Every mutating action is logged.
-2. **Ethical Boundaries:** Hard boundaries preventing code injections, unsafe sandbox functions, or malicious payload execution.
-3. **Sab'iyyah (Cycle Synthesis):** Holistic cycle reflection. Balances opposing states (security vs usability) every 7 cycles.
-4. **Tawbah (Self-Correction):** Fail-safe error tracking, logging, and proactive remediation logic.
-5. **Self-Review (Internal Verification):** Evaluates agent execution parameters prior to final commitment.
+1. **Vigilance (Self Awareness):** Absolute intention verification. Every mutating action is logged.
+2. **Correction (Self-Correction):** Fail-safe error tracking, logging, and proactive remediation logic.
+3. **Ledger (The Guardian):** Append-only logs and hash chains ensure nothing is lost or forged.
+4. **Triad (Self-Healing):** Three-cycle retry pattern for automated recovery from transient failures.
+5. **Septet (Cycle Learning):** Holistic reflection and synthesis every 7 cycles to balance security vs usability.
+6. **Compounding (Barakah):** Consistency-driven growth where trust compounds at key milestones.
 
 ### Dynamic Sandbox Mode
 
@@ -242,14 +243,14 @@ portless axiomid next dev
 | **AI** | Workers AI — Llama 3.1 8B · BGE-small-en-v1.5 |
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
-| **CI/CD** | GitHub Actions → Vercel · 3037 tests, 132 suites |
+| **CI/CD** | GitHub Actions → Vercel · 3073 tests, 134 suites |
 
 ---
 
 ## Testing
 
 ```bash
-npm test           # 3037 tests, 132 suites
+npm test           # 3073 tests, 134 suites
 npm run lint       # 0 errors, 0 warnings
 npx tsc --noEmit   # type check
 ```
