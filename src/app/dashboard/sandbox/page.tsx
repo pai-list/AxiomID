@@ -546,7 +546,7 @@ export default function SandboxPage() {
             </h3>
             <p className="text-[9px] text-faint mb-3">{t("sandbox_security_desc")}</p>
             <p className="text-[7px] font-mono text-amber-400/60 mb-3 pb-2 border-b border-white/5">
-              {language === "ar" ? "معاينة محاكاة — النتائج لأغراض العرض فقط" : "Simulated preview — results are for display purposes only"}
+              {t("sandbox_simulated_preview")}
             </p>
             <div className="space-y-2.5">
               {AUDIT_ITEMS.map((item) => {
