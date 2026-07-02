@@ -9,6 +9,7 @@ import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 import {
   Wallet,
   Shield,
