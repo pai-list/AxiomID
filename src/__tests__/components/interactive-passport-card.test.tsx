@@ -34,6 +34,17 @@ jest.mock("@/lib/tiers", () => ({
   Tier: {},
 }));
 
+// Mock sonner
+const mockToastInfo = jest.fn();
+const mockToastError = jest.fn();
+jest.mock("sonner", () => ({
+  toast: {
+    info: (...args: any[]) => mockToastInfo(...args),
+    error: (...args: any[]) => mockToastError(...args),
+    success: jest.fn(),
+  },
+}));
+
 // useLanguage is globally mocked in jest.setup.js
 // The mock returns key itself for unknown keys (export_image, mint_sbt, etc.)
 
@@ -207,20 +218,13 @@ describe("InteractivePassportCard — handleExportImage (PR change)", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
-  let alertSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
-    alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+    mockToastInfo.mockClear();
+    mockToastError.mockClear();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-    alertSpy.mockRestore();
-  });
-
-  it("calls alert with mint_success message after minting", async () => {
+  it("shows a coming-soon toast on click instead of fake minting", () => {
     renderCard();
     const buttons = screen.getAllByRole("button");
     const mintBtn = buttons.find(
@@ -231,64 +235,10 @@ describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
     );
 
     if (mintBtn) {
-      await act(async () => {
-        fireEvent.click(mintBtn);
-        jest.advanceTimersByTime(1500);
-      });
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledTimes(1);
-      });
-    }
-  });
-
-  it("mint button is disabled while minting (isMinting state)", async () => {
-    renderCard();
-    const buttons = screen.getAllByRole("button");
-    const mintBtn = buttons.find(
-      (b) => b.getAttribute("title") !== null && (
-        b.getAttribute("title")!.includes("mint_sbt") ||
-        b.getAttribute("title")!.includes("Mint")
-      )
-    );
-
-    if (mintBtn) {
-      await act(async () => {
-        fireEvent.click(mintBtn);
-      });
-      // Button should be disabled while the 1500ms timer is pending
-      expect(mintBtn).toBeDisabled();
-
-      // Complete the timer
-      await act(async () => {
-        jest.advanceTimersByTime(1500);
-      });
-    }
-  });
-
-  it("does not call alert on second click while minting is in progress", async () => {
-    renderCard();
-    const buttons = screen.getAllByRole("button");
-    const mintBtn = buttons.find(
-      (b) => b.getAttribute("title") !== null && (
-        b.getAttribute("title")!.includes("mint_sbt") ||
-        b.getAttribute("title")!.includes("Mint")
-      )
-    );
-
-    if (mintBtn) {
-      // First click — starts minting
-      await act(async () => {
-        fireEvent.click(mintBtn);
-      });
-      // Second click while isMinting=true — should be ignored
-      await act(async () => {
-        fireEvent.click(mintBtn);
-        jest.advanceTimersByTime(1500);
-      });
-      await waitFor(() => {
-        // Should only have been called once (first click only)
-        expect(alertSpy).toHaveBeenCalledTimes(1);
-      });
+      fireEvent.click(mintBtn);
+      // Verify toast.info was called with coming soon translation key
+      expect(mockToastInfo).toHaveBeenCalledWith("mint_sbt_coming_soon");
+      expect(mintBtn).not.toBeDisabled();
     }
   });
 });

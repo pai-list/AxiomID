@@ -9,6 +9,7 @@ interface Stats {
   agents: number;
 }
 
+
 /**
  * Displays protocol statistics. When values are 0, shows motivational copy
  * instead of discouraging zero counts.
@@ -50,7 +51,7 @@ export default function StatsBar() {
       icon: Users,
       color: "text-emerald-400",
       suffix: hasUsers ? "+" : "",
-      fallback: language === "ar" ? "كن من أوائل الرواد" : "Be among the first pioneers",
+      fallback: language === "ar" ? "كن أول من ينضم" : "Be the first to join",
     },
     {
       label: t("agents_deployed"),
@@ -58,7 +59,7 @@ export default function StatsBar() {
       icon: Bot,
       color: "text-electric-blue",
       suffix: hasAgents ? "+" : "",
-      fallback: language === "ar" ? "أنشئ وكيلك السيادي" : "Deploy your sovereign agent",
+      fallback: language === "ar" ? "انشئ وكيلك الآن" : "Create your agent",
     },
     {
       label: t("on_chain"),

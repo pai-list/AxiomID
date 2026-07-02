@@ -118,7 +118,10 @@ export default function MarketplacePage() {
   const [totalSkills, setTotalSkills] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch Tags on mount
+  const languageRef = useRef(language);
+  useEffect(() => { languageRef.current = language; });
+
+  // Fetch Tags on mount (language-independent — use ref to avoid re-fetch on toggle)
   useEffect(() => {
     const loadTags = async () => {
       try {
@@ -129,6 +132,7 @@ export default function MarketplacePage() {
         }
       } catch (err) {
         logger.error("Failed to load tags:", err);
+        toast.error(languageRef.current === "ar" ? "فشل تحميل الأوسمة" : "Failed to load tags");
       }
     };
     loadTags();
@@ -197,6 +201,11 @@ export default function MarketplacePage() {
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
 
+  // Abort any in-flight detail fetches on unmount to prevent error toasts after navigation away
+  useEffect(() => {
+    return () => { fetchAbortRef.current?.abort(); };
+  }, []);
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -249,6 +258,7 @@ export default function MarketplacePage() {
         .catch(err => {
           if (err instanceof DOMException && err.name === "AbortError") return;
           logger.error("Failed to load reviews:", err);
+          toast.error(languageRef.current === "ar" ? "فشل تحميل المراجعات" : "Failed to load reviews");
         })
         .finally(() => {
           if (fetchAbortRef.current === controller && !controller.signal.aborted) {
@@ -268,6 +278,7 @@ export default function MarketplacePage() {
         .catch(err => {
           if (err instanceof DOMException && err.name === "AbortError") return;
           logger.error("Failed to load versions:", err);
+          toast.error(languageRef.current === "ar" ? "فشل تحميل الإصدارات" : "Failed to load versions");
         })
         .finally(() => {
           if (fetchAbortRef.current === controller && !controller.signal.aborted) {

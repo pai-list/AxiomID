@@ -11,6 +11,7 @@ interface SoulBadgeProps {
 
 /**
  * Color-coded badge showing which SOUL principle a skill serves.
+ * Bilingual: uses meta.en or meta.ar based on current language.
  */
 export function SoulBadge({ principle, showLabel = true, size = 'sm' }: SoulBadgeProps) {
   const { language } = useLanguage();

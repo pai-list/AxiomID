@@ -41,7 +41,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
         <span className="opacity-80">{copyright || defaultCopy}</span>
         <span className="text-[9px] opacity-50 uppercase tracking-widest">L0 Authority • Axiom Protocol</span>
       </div>
-      <div className="flex flex-wrap gap-6 justify-center items-center">
+      <nav aria-label="Footer navigation" className="flex flex-wrap gap-6 justify-center items-center">
         <Link href="/privacy" className="relative text-subtle hover:text-surface transition-colors group">
           {t("nav_privacy")}
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-electric-blue transition-all group-hover:w-full" />
@@ -54,7 +54,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
           <div className="w-1 h-1 rounded-full bg-neon-green animate-pulse" />
           <span className="text-[9px] uppercase tracking-tighter">v{process.env.NEXT_PUBLIC_APP_VERSION || "0.1.2"}</span>
         </div>
-      </div>
+      </nav>
     </motion.footer>
   );
 }

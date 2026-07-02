@@ -143,10 +143,14 @@ export default function ClaimPage() {
     setIsDeploying(true);
     try {
       const created = await createAgent();
-      if (!created) return;
+      if (!created) {
+        toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
+        return;
+      }
       const activated = await activateAgent();
       if (activated) {
         setDeployed(true);
+        toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
         confetti({
           particleCount: 150,
           spread: 70,
@@ -154,9 +158,15 @@ export default function ClaimPage() {
           colors: ["#22c55e", "#3b82f6", "#6366f1", "#ffffff"],
           disableForReducedMotion: true,
         });
+      } else {
+        toast.error(t("Agent activation failed", "فشل تفعيل الوكيل"));
       }
+    } catch (err) {
+      logger.error("Deployment failed:", err);
+      toast.error(t("Deployment failed", "فشل عملية النشر"));
     } finally {
       setIsDeploying(false);
+    }
     }
   };
 
