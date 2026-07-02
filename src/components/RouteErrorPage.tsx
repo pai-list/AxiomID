@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 import { useLanguage } from "@/app/context/language-context";
+import { logger } from "@/lib/logger";
 
 interface RouteErrorPageProps {
   title: string;
@@ -17,7 +18,7 @@ export function RouteErrorPage({ title, fallbackMessage, error, reset }: RouteEr
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
 
   useEffect(() => {
-    console.error(`${title}:`, error);
+    logger.error(`${title}:`, error);
     Sentry.captureException(error, { extra: { title } });
   }, [title, error]);
 

@@ -4,9 +4,10 @@ import React, { useState, useRef } from "react";
 import { Tier, getTierColor } from "@/lib/tiers";
 import { useLanguage } from "@/app/context/language-context";
 import { sharePassport } from "@/lib/pi-native-features";
-import { Fingerprint, Award, CheckCircle, Lock, Download, Share2 } from "lucide-react";
+import { Fingerprint, Award, CheckCircle, Lock, Download, Share2, Coins } from "lucide-react";
 import { toast } from "sonner";
 import PassportKeyManager from "./PassportKeyManager";
+import { logger } from "@/lib/logger";
 
 interface InteractivePassportCardProps {
   user: {
@@ -79,9 +80,11 @@ export default function InteractivePassportCard({ user, readonly = false, locked
       const link = document.createElement("a");
       link.href = image;
       link.download = `axiom-passport-${displayUsername}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      console.error("Export failed:", err);
+      logger.error("Export failed:", err);
       toast.error(t("passport_export_failed"));
     } finally {
       if (cardRef.current) {
@@ -91,12 +94,16 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     }
   };
 
+  const handleMintSBT = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.info(t("mint_sbt_coming_soon"));
+  };
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/passport/${encodeURIComponent(did)}`;
     await sharePassport({
-      title: "AxiomID Passport",
-      text: "Check out my AxiomID Passport!",
+      title: t("share_title") || "AxiomID Passport",
+      text: t("share_text") || "Check out my AxiomID Passport!",
       url: shareUrl,
     });
   };
@@ -304,7 +311,13 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           >
             <Download className="w-4 h-4 text-white" />
           </button>
-
+          <button
+            onClick={handleMintSBT}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md border border-white/10 transition-colors tooltip-trigger"
+            title={t("mint_sbt") || "Mint as SBT (Stellar)"}
+          >
+            <Coins className="w-4 h-4 text-amber-400" />
+          </button>
           <button
             onClick={handleShare}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md border border-white/10 transition-colors tooltip-trigger"

@@ -34,6 +34,17 @@ jest.mock("@/lib/tiers", () => ({
   Tier: {},
 }));
 
+// Mock sonner
+const mockToastInfo = jest.fn();
+const mockToastError = jest.fn();
+jest.mock("sonner", () => ({
+  toast: {
+    info: (...args: any[]) => mockToastInfo(...args),
+    error: (...args: any[]) => mockToastError(...args),
+    success: jest.fn(),
+  },
+}));
+
 // useLanguage is globally mocked in jest.setup.js
 // The mock returns key itself for unknown keys (export_image, mint_sbt, etc.)
 
@@ -198,6 +209,36 @@ describe("InteractivePassportCard — handleExportImage (PR change)", () => {
           expect.objectContaining({ scale: 2, useCORS: true })
         );
       });
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mint SBT button
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockToastInfo.mockClear();
+    mockToastError.mockClear();
+  });
+
+  it("shows a coming-soon toast on click instead of fake minting", () => {
+    renderCard();
+    const buttons = screen.getAllByRole("button");
+    const mintBtn = buttons.find(
+      (b) => b.getAttribute("title") !== null && (
+        b.getAttribute("title")!.includes("mint_sbt") ||
+        b.getAttribute("title")!.includes("Mint")
+      )
+    );
+
+    if (mintBtn) {
+      fireEvent.click(mintBtn);
+      // Verify toast.info was called with coming soon translation key
+      expect(mockToastInfo).toHaveBeenCalledWith("mint_sbt_coming_soon");
+      expect(mintBtn).not.toBeDisabled();
     }
   });
 });
