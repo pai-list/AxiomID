@@ -17,9 +17,9 @@ export async function GET(
   }
 
   const { slug } = await params;
-
-  if (!slug) {
-     return apiError("VALIDATION_ERROR", "Slug is required");
+  const parsedParams = SlugParamSchema.safeParse({ slug });
+  if (!parsedParams.success) {
+    return apiError("VALIDATION_ERROR", parsedParams.error.issues[0].message, parsedParams.error.issues);
   }
 
   try {
