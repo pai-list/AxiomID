@@ -7,6 +7,7 @@ import { sharePassport } from "@/lib/pi-native-features";
 import { Fingerprint, Award, CheckCircle, Lock, Download, Coins, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import PassportKeyManager from "./PassportKeyManager";
+import { logger } from "@/lib/logger";
 
 interface InteractivePassportCardProps {
   user: {
@@ -79,9 +80,11 @@ export default function InteractivePassportCard({ user, readonly = false, locked
       const link = document.createElement("a");
       link.href = image;
       link.download = `axiom-passport-${displayUsername}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      console.error("Export failed:", err);
+      logger.error("Export failed:", err);
       toast.error(t("passport_export_failed"));
     } finally {
       if (cardRef.current) {

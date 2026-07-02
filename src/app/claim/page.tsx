@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { determineSandboxMode } from "@/lib/pi-sdk";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 import {
   Wallet,
   Shield,
@@ -128,18 +130,33 @@ export default function ClaimPage() {
         }
       }
     } catch (err) {
-      console.error("Verification failed:", err);
+      logger.error("Verification failed:", err);
+      toast.error(t("Verification failed", "فشل التحقق"));
     } finally {
       setIsVerifying(false);
     }
   };
 
   const handleDeploy = async () => {
-    const created = await createAgent();
-    if (!created) return;
-    const activated = await activateAgent();
-    if (activated) {
-      setDeployed(true);
+    setIsVerifying(true);
+    try {
+      const created = await createAgent();
+      if (!created) {
+        toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
+        return;
+      }
+      const activated = await activateAgent();
+      if (activated) {
+        setDeployed(true);
+        toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
+      } else {
+        toast.error(t("Agent activation failed", "فشل تفعيل الوكيل"));
+      }
+    } catch (err) {
+      logger.error("Deployment failed:", err);
+      toast.error(t("Deployment failed", "فشل عملية النشر"));
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -745,7 +762,7 @@ export default function ClaimPage() {
                             setTimeout(() => setCopied(false), 2000);
                           }
                         } catch (err) {
-                          console.error("Failed to copy link: ", err);
+                          logger.error("Failed to copy link: ", err);
                         }
                       }}
                       className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"
