@@ -130,6 +130,7 @@ export default function ClaimPage() {
       }
     } catch (err) {
       logger.error("Verification failed:", err);
+      toast.error(t("Verification failed", "فشل التحقق"));
     } finally {
       setIsVerifying(false);
     }
