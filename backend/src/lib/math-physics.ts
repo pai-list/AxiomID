@@ -1609,6 +1609,7 @@ export function langevinSimulation(
     totalTime = 10,
     timeStep = 0.1,
   } = options;
+  if (timeStep <= 0) throw new Error("timeStep must be positive");
   let currentExternalForce = options.externalForce;
 
   const trustHistory = [initialTrust];
