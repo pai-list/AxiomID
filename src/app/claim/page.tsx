@@ -167,7 +167,6 @@ export default function ClaimPage() {
     } finally {
       setIsDeploying(false);
     }
-    }
   };
 
   const canProceed = () => {
