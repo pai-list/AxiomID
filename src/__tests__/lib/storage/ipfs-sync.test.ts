@@ -142,5 +142,33 @@ describe("publishToIPFS — Pinata JWT path (PR change)", () => {
     expect(body.pinataContent).toEqual(payload);
     expect(body.pinataOptions.cidVersion).toBe(0);
   });
-});
+  it("falls back to mock gateway when Pinata returns 500 Internal Server Error (downtime simulation)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    });
 
+    const payload = { did: "did:axiom:test", claims: [] };
+    const res = await publishToIPFS(payload);
+
+    expect(res.cid).toMatch(/^Qm/);
+    expect(res.url).toContain(res.cid);
+    expect(res.mock).toBe(true);
+  });
+
+  it("falls back to mock gateway when Pinata returns 503 Service Unavailable (downtime simulation)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+    });
+
+    const payload = { did: "did:axiom:test", claims: [] };
+    const res = await publishToIPFS(payload);
+
+    expect(res.cid).toMatch(/^Qm/);
+    expect(res.url).toContain(res.cid);
+    expect(res.mock).toBe(true);
+  });
+});
