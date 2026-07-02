@@ -1,4 +1,4 @@
-import RouteLoadingSkeleton from "@/components/shared/RouteLoadingSkeleton";
+import RouteLoadingSkeleton from "@/components/RouteLoadingSkeleton";
 
 export default function Loading() {
   return <RouteLoadingSkeleton />;

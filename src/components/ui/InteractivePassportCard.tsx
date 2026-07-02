@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { Tier, getTierColor } from "@/lib/tiers";
 import { useLanguage } from "@/app/context/language-context";
 import { sharePassport } from "@/lib/pi-native-features";
-import { Fingerprint, Award, CheckCircle, Lock, Download, Share2, Coins } from "lucide-react";
+import { Fingerprint, Award, CheckCircle, Lock, Download, Coins, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import PassportKeyManager from "./PassportKeyManager";
 import { logger } from "@/lib/logger";
@@ -98,6 +98,7 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     e.stopPropagation();
     toast.info(t("mint_sbt_coming_soon"));
   };
+
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/passport/${encodeURIComponent(did)}`;
