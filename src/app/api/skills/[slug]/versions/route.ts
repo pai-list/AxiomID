@@ -5,7 +5,6 @@ import { getVersions } from "@/lib/skill-versions";
 import { logger } from "@/lib/logger";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
-import { SlugParamSchema } from "@/lib/validators";
 
 export async function GET(
   request: NextRequest,
