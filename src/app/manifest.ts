@@ -13,8 +13,25 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     orientation: "portrait-primary",
-    background_color: "#09090b",
-    theme_color: "#10131a", // OLED Black (matching globals.css background)
+    background_color: "#10131a",
+    theme_color: "#10131a", // OLED Black
+    shortcuts: [
+      {
+        name: "Claim Passport",
+        url: "/claim",
+        description: "Start your sovereign identity journey"
+      },
+      {
+        name: "Agent Dashboard",
+        url: "/dashboard",
+        description: "Manage your agents and skills"
+      },
+      {
+        name: "Leaderboard",
+        url: "/leaderboard",
+        description: "View top sovereign identities"
+      }
+    ],
     icons: [
       {
         src: "/icon-192x192.svg",
