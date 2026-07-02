@@ -21,6 +21,11 @@ function deriveDid(assertion: string): string {
 /**
  * Processes an agent identity request and returns either a scoped identity assertion or a claim token.
  *
+ * This endpoint intentionally does NOT use the requireAuth middleware because it must
+ * handle both authenticated (identity_assertion) and unauthenticated (anonymous) flows
+ * in a single route. The identity_assertion path performs its own Pi token verification,
+ * while the anonymous path is for pre-registration users.
+ *
  * @returns An API response containing either an identity assertion with its derived DID and scopes, or a claim token with verification details.
  */
 export async function POST(request: NextRequest) {

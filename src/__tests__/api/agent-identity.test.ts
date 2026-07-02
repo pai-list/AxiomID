@@ -35,7 +35,7 @@ const mockCreateClaim = createClaimToken as jest.Mock;
 function mockPostRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/agent/identity", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "User-Agent": "Pi Browser / AxiomID Testing" },
     body: JSON.stringify(body),
   });
 }
@@ -200,54 +200,55 @@ describe("POST /api/agent/identity - Pi JWT verification", () => {
   it("returns 401 when Pi JWKS verification fails in production", async () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
 
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
+    try {
+      const req = new NextRequest("http://localhost/api/agent/identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": "Pi Browser / AxiomID Testing" },
+        body: JSON.stringify({ type: "identity_assertion", assertion: "invalid-pi-jwt" }),
+      });
 
-    const req = new NextRequest("http://localhost/api/agent/identity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "identity_assertion", assertion: "invalid-pi-jwt" }),
-    });
+      const res = await POST(req);
+      const data = await res.json();
 
-    const res = await POST(req);
-    const data = await res.json();
-
-    process.env.NODE_ENV = originalEnv;
-
-    expect(res.status).toBe(401);
-    expect(data.code).toBe("UNAUTHORIZED");
+      expect(res.status).toBe(401);
+      expect(data.code).toBe("UNAUTHORIZED");
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 
   it("falls back to derived DID in development when Pi JWKS verification fails", async () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "development";
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
+    mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
-    (createIdentityAssertion as jest.Mock).mockResolvedValue("mock-jwt-token");
+    try {
+      const req = new NextRequest("http://localhost/api/agent/identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "User-Agent": "Pi Browser / AxiomID Testing" },
+        body: JSON.stringify({ type: "identity_assertion", assertion: "invalid-pi-jwt" }),
+      });
 
-    const req = new NextRequest("http://localhost/api/agent/identity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "identity_assertion", assertion: "invalid-pi-jwt" }),
-    });
+      const res = await POST(req);
+      const data = await res.json();
 
-    const res = await POST(req);
-    const data = await res.json();
-
-    process.env.NODE_ENV = originalEnv;
-
-    expect(res.status).toBe(200);
-    expect(data.identity_assertion).toBe("mock-jwt-token");
-    expect(data.did).toContain("did:axiom:user:");
+      expect(res.status).toBe(200);
+      expect(data.identity_assertion).toBe("mock-jwt-token");
+      expect(data.did).toContain("did:axiom:user:");
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 
   it("falls back to derived DID in the default test environment when Pi JWKS verification fails", async () => {
-    // NODE_ENV is "test" while running Jest, which is a non-production
-    // environment and should therefore also trigger the dev fallback path.
+    // NODE_ENV is "test" while running Jest, triggering the dev fallback.
     expect(process.env.NODE_ENV).not.toBe("production");
 
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
-    (createIdentityAssertion as jest.Mock).mockResolvedValue("mock-jwt-token");
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
+    mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
     const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
     const res = await POST(req);
@@ -258,8 +259,8 @@ describe("POST /api/agent/identity - Pi JWT verification", () => {
   });
 
   it("derives the same fallback DID for the same assertion (deterministic)", async () => {
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
-    (createIdentityAssertion as jest.Mock).mockResolvedValue("mock-jwt-token");
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
+    mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
     const req1 = mockPostRequest({ type: "identity_assertion", assertion: "same-assertion" });
     const res1 = await POST(req1);
@@ -298,49 +299,55 @@ describe("POST /api/agent/identity - Pi JWT verification", () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
     const verificationError = new Error("signature mismatch");
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(verificationError);
+    mockVerifyPiToken.mockRejectedValue(verificationError);
 
-    const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
-    const res = await POST(req);
-    const data = await res.json();
+    try {
+      const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
+      const res = await POST(req);
+      const data = await res.json();
 
-    process.env.NODE_ENV = originalEnv;
-
-    expect(res.status).toBe(401);
-    expect(data.error).toBe("Invalid identity assertion");
-    expect(createIdentityAssertion).not.toHaveBeenCalled();
-    expect(logger.error).toHaveBeenCalledWith(
-      "[AGENT-IDENTITY] Pi JWKS verification failed:",
-      verificationError
-    );
+      expect(res.status).toBe(401);
+      expect(data.error).toBe("Invalid identity assertion");
+      expect(mockCreateAssertion).not.toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(
+        "[AGENT-IDENTITY] Pi JWKS verification failed:",
+        verificationError
+      );
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 
   it("logs a warning when falling back to the deterministic DID outside production", async () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "development";
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
-    (createIdentityAssertion as jest.Mock).mockResolvedValue("mock-jwt-token");
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
+    mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
-    const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
-    await POST(req);
+    try {
+      const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
+      await POST(req);
 
-    process.env.NODE_ENV = originalEnv;
-
-    expect(logger.warn).toHaveBeenCalledWith(
-      "[AGENT-IDENTITY] Pi JWKS verification failed, falling back to deterministic DID for dev"
-    );
+      expect(logger.warn).toHaveBeenCalledWith(
+        "[AGENT-IDENTITY] Pi JWKS verification failed, falling back to deterministic DID for dev"
+      );
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 
   it("does not call createIdentityAssertion when verification fails in production", async () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
-    (verifyPiTokenWithJwks as jest.Mock).mockRejectedValue(new Error("Invalid token"));
+    mockVerifyPiToken.mockRejectedValue(new Error("Invalid token"));
 
-    const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
-    await POST(req);
+    try {
+      const req = mockPostRequest({ type: "identity_assertion", assertion: "invalid-pi-jwt" });
+      await POST(req);
 
-    process.env.NODE_ENV = originalEnv;
-
-    expect(createIdentityAssertion).not.toHaveBeenCalled();
+      expect(mockCreateAssertion).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 });

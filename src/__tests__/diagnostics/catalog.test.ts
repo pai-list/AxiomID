@@ -1,18 +1,14 @@
 jest.unmock("@/diagnostics/catalog");
 // Mock nostics so Jest doesn't try to load the ESM module
+// (jest.mock is hoisted; only the last call takes effect, so keep one)
 jest.mock("nostics", () => ({
-  defineDiagnostics: (config: unknown) => config
+  defineDiagnostics: <T>(config: T): T => config
 }));
 
 interface DiagnosticCode {
   why: (...args: unknown[]) => string;
   fix: string;
 }
-
-// Mock nostics so Jest doesn't try to load the ESM module
-jest.mock("nostics", () => ({
-  defineDiagnostics: <T>(config: T): T => config
-}));
 
 import { diagnostics } from "@/diagnostics/catalog";
 
