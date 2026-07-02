@@ -212,19 +212,6 @@ export class DelegationResolver {
   }
 
   /**
-   * Get all outgoing delegations from a DID.
-   */
-  private async getOutgoingDelegations(did: string): Promise<DelegationEdge[]> {
-    const result = await this.d1.db
-      .prepare(
-        "SELECT * FROM trust_delegations WHERE delegator_did = ? AND (expires_at IS NULL OR expires_at > datetime('now'))"
-      )
-      .bind(did)
-      .all<DelegationEdge>();
-    return result.results;
-  }
-
-  /**
    * Get all outgoing delegations for a batch of DIDs.
    */
   private async getOutgoingDelegationsBatch(dids: string[]): Promise<DelegationEdge[]> {
@@ -310,7 +297,7 @@ export class DelegationResolver {
   private async getAllDelegations(): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
-        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR expires_at > datetime('now'))"
+        "SELECT * FROM trust_delegations WHERE (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
       )
       .all<DelegationEdge>();
     return result.results;
@@ -319,7 +306,7 @@ export class DelegationResolver {
   async getTrusters(delegateeDid: string): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
-        "SELECT * FROM trust_delegations WHERE delegatee_did = ? AND (expires_at IS NULL OR expires_at > datetime('now'))"
+        "SELECT * FROM trust_delegations WHERE delegatee_did = ? AND (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"
       )
       .bind(delegateeDid)
       .all<DelegationEdge>();
