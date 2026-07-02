@@ -9,10 +9,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import AboutError from "@/app/about/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {

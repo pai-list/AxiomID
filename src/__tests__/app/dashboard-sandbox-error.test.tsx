@@ -10,10 +10,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import SandboxError from "@/app/dashboard/sandbox/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {
@@ -43,10 +44,10 @@ describe("dashboard/sandbox/error.tsx — SandboxError page", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
-  it("logs the error to console.error with the 'Sandbox Error' title", () => {
+  it("logs the error to logger.error with the 'Sandbox Error' title", () => {
     const error = makeError("sandbox failure");
     render(<SandboxError error={error} reset={jest.fn()} />);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Sandbox Error:", error);
+    expect(loggerSpy).toHaveBeenCalledWith("Sandbox Error:", error);
   });
 
   it("handles an error carrying a digest without crashing", () => {

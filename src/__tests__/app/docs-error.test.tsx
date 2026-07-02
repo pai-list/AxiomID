@@ -9,10 +9,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import DocsError from "@/app/docs/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {
@@ -42,10 +43,10 @@ describe("docs/error.tsx — DocsError page", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
-  it("logs the error to console.error with the 'Docs Error' title", () => {
+  it("logs the error to logger.error with the 'Docs Error' title", () => {
     const error = makeError("docs failure");
     render(<DocsError error={error} reset={jest.fn()} />);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Docs Error:", error);
+    expect(loggerSpy).toHaveBeenCalledWith("Docs Error:", error);
   });
 
   it("handles an error carrying a digest without crashing", () => {

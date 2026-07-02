@@ -10,10 +10,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import SettingsError from "@/app/dashboard/settings/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {
@@ -43,10 +44,10 @@ describe("dashboard/settings/error.tsx — SettingsError page", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
-  it("logs the error to console.error with the 'Settings Error' title", () => {
+  it("logs the error to logger.error with the 'Settings Error' title", () => {
     const error = makeError("settings failure");
     render(<SettingsError error={error} reset={jest.fn()} />);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Settings Error:", error);
+    expect(loggerSpy).toHaveBeenCalledWith("Settings Error:", error);
   });
 
   it("handles an error carrying a digest without crashing", () => {

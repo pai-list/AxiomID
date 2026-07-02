@@ -9,10 +9,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ClaimError from "@/app/claim/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {
@@ -42,10 +43,10 @@ describe("claim/error.tsx — ClaimError page", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
-  it("logs the error to console.error with the 'Claim Error' title", () => {
+  it("logs the error to logger.error with the 'Claim Error' title", () => {
     const error = makeError("claim failure");
     render(<ClaimError error={error} reset={jest.fn()} />);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Claim Error:", error);
+    expect(loggerSpy).toHaveBeenCalledWith("Claim Error:", error);
   });
 
   it("handles an error carrying a digest without crashing", () => {

@@ -10,10 +10,11 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import MarketplaceError from "@/app/dashboard/marketplace/error";
 
-const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+import { logger } from "@/lib/logger";
+const loggerSpy = jest.spyOn(logger, "error").mockImplementation(() => {});
 
 afterAll(() => {
-  consoleErrorSpy.mockRestore();
+  loggerSpy.mockRestore();
 });
 
 function makeError(message: string, digest?: string): Error & { digest?: string } {
@@ -43,10 +44,10 @@ describe("dashboard/marketplace/error.tsx — MarketplaceError page", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
-  it("logs the error to console.error with the 'Marketplace Error' title", () => {
+  it("logs the error to logger.error with the 'Marketplace Error' title", () => {
     const error = makeError("marketplace failure");
     render(<MarketplaceError error={error} reset={jest.fn()} />);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Marketplace Error:", error);
+    expect(loggerSpy).toHaveBeenCalledWith("Marketplace Error:", error);
   });
 
   it("handles an error carrying a digest without crashing", () => {
