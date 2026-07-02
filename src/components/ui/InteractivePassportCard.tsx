@@ -81,7 +81,9 @@ export default function InteractivePassportCard({ user, readonly = false, locked
       const link = document.createElement("a");
       link.href = image;
       link.download = `axiom-passport-${displayUsername}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
       logger.error("Export failed:", err);
       toast.error(t("passport_export_failed"));
