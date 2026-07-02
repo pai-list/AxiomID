@@ -91,7 +91,7 @@ export default function Dashboard() {
       .then((json) => setMarketplaceSkills(json.skills ?? []))
       .catch((err) => {
         if (err.name !== "AbortError") {
-          // Silent catch or log error
+          // Silent catch
         }
       });
     return () => controller.abort();
