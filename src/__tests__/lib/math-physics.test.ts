@@ -641,13 +641,23 @@ describe("mctsBackpropagate (PR sync)", () => {
 describe("mctsBestAction (PR sync)", () => {
   it("returns null when no children", () => {
     const root = createMCTSNode("root");
-    const result = mctsBestAction(root, 0, [], () => 0.5);
+    const result = mctsBestAction({
+      root,
+      iterations: 0,
+      possibleActions: [],
+      simulateFn: () => 0.5,
+    });
     expect(result).toBeNull();
   });
 
   it("returns a string action after iterations", () => {
     const root = createMCTSNode("root");
-    const result = mctsBestAction(root, 10, ["trust", "distrust"], () => Math.random());
+    const result = mctsBestAction({
+      root,
+      iterations: 10,
+      possibleActions: ["trust", "distrust"],
+      simulateFn: () => Math.random(),
+    });
     expect(typeof result === "string" || result === null).toBe(true);
   });
 });
