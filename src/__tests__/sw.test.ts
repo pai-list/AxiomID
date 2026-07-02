@@ -34,7 +34,7 @@ const swSource = fs.readFileSync(SW_PATH, "utf8");
 // ---------------------------------------------------------------------------
 
 /** The expected cache name. Bump whenever sw.js increments its version. */
-const EXPECTED_CACHE = "axiomid-v4";
+const EXPECTED_CACHE = "axiomid-v5";
 
 /** The expected static asset list (filenames only — not full paths). */
 const EXPECTED_STATIC_ASSETS = [
@@ -422,7 +422,7 @@ describe("sw.js fetch routing — full decision matrix", () => {
 // ---------------------------------------------------------------------------
 
 describe("sw.js — static assets list integrity", () => {
-  it("has exactly 6 precached static assets", () => {
+  it("has exactly 8 precached static assets", () => {
     expect(EXPECTED_STATIC_ASSETS).toHaveLength(6);
   });
 

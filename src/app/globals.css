@@ -1292,3 +1292,36 @@ a:focus-visible {
   }
 }
 
+
+/* ============================================
+   MOBILE ACCESSIBILITY (44px min touch targets)
+   ============================================ */
+@media (max-width: 639px) {
+  button,
+  a.btn-primary,
+  a.btn-secondary,
+  a.btn-ghost,
+  .btn-toggle,
+  [role="button"],
+  [role="tab"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   SAFE AREA INSETS (Notch Support)
+   ============================================ */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Ensure fixed bottom bars sit above the home indicator */
+.fixed.bottom-0 {
+  padding-bottom: env(safe-area-inset-bottom);
+}
