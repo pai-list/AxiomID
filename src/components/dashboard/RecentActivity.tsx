@@ -24,13 +24,25 @@ function getRelativeTime(dateStr: string, lang: string): string {
   const diff = Date.now() - parsed;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return lang === "ar" ? "الآن" : "just now";
-  if (mins < 60) return lang === "ar" ? `منذ ${mins} دقيقة` : `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return lang === "ar" ? `منذ ${hours} ساعة` : `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return lang === "ar" ? `منذ ${days} يوم` : `${days}d ago`;
-  const months = Math.floor(days / 30);
-  return lang === "ar" ? `منذ ${months} شهر` : `${months}mo ago`;
+
+  try {
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "always" });
+    if (mins < 60) return rtf.format(-mins, "minute");
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return rtf.format(-hours, "hour");
+    const days = Math.floor(hours / 24);
+    if (days < 30) return rtf.format(-days, "day");
+    const months = Math.floor(days / 30);
+    return rtf.format(-months, "month");
+  } catch {
+    if (mins < 60) return lang === "ar" ? `منذ ${mins} دقيقة` : `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return lang === "ar" ? `منذ ${hours} ساعة` : `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return lang === "ar" ? `منذ ${days} يوم` : `${days}d ago`;
+    const months = Math.floor(days / 30);
+    return lang === "ar" ? `منذ ${months} شهر` : `${months}mo ago`;
+  }
 }
 
 function buildRecentActivity(user: {
@@ -86,7 +98,7 @@ export function RecentActivity({ user }: { user: { xp: number; trustScore: numbe
             <div className="flex-1 min-w-0">
               <span className="text-xs text-surface font-mono block truncate">{a.description}</span>
             </div>
-            <span className="text-[9px] text-zinc-500 font-mono shrink-0">
+            <span className="text-[9px] text-zinc-500 font-mono shrink-0" suppressHydrationWarning>
               {getRelativeTime(a.timestamp, language)}
             </span>
           </div>

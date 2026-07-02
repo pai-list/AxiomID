@@ -100,8 +100,8 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/passport/${encodeURIComponent(did)}`;
     await sharePassport({
-      title: "AxiomID Passport",
-      text: "Check out my AxiomID Passport!",
+      title: t("share_title") || "AxiomID Passport",
+      text: t("share_text") || "Check out my AxiomID Passport!",
       url: shareUrl,
     });
   };

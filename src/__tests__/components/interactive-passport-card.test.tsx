@@ -34,6 +34,17 @@ jest.mock("@/lib/tiers", () => ({
   Tier: {},
 }));
 
+// Mock sonner
+const mockToastInfo = jest.fn();
+const mockToastError = jest.fn();
+jest.mock("sonner", () => ({
+  toast: {
+    info: (...args: any[]) => mockToastInfo(...args),
+    error: (...args: any[]) => mockToastError(...args),
+    success: jest.fn(),
+  },
+}));
+
 // useLanguage is globally mocked in jest.setup.js
 // The mock returns key itself for unknown keys (export_image, mint_sbt, etc.)
 
@@ -209,6 +220,8 @@ describe("InteractivePassportCard — handleExportImage (PR change)", () => {
 describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockToastInfo.mockClear();
+    mockToastError.mockClear();
   });
 
   it("shows a coming-soon toast on click instead of fake minting", () => {
@@ -223,7 +236,8 @@ describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
 
     if (mintBtn) {
       fireEvent.click(mintBtn);
-      // No alert/crashes — mint button now shows a toast and does nothing else
+      // Verify toast.info was called with coming soon translation key
+      expect(mockToastInfo).toHaveBeenCalledWith("mint_sbt_coming_soon");
       expect(mintBtn).not.toBeDisabled();
     }
   });
