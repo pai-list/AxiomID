@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import { determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
@@ -143,6 +144,13 @@ export default function ClaimPage() {
     const activated = await activateAgent();
     if (activated) {
       setDeployed(true);
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#22c55e", "#3b82f6", "#6366f1", "#ffffff"],
+        disableForReducedMotion: true,
+      });
     }
   };
 
@@ -189,19 +197,23 @@ export default function ClaimPage() {
           </motion.div>
 
           {/* Stepper Progress */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono text-white/40">{t("Step", "خطوة")} {currentStep}/3</span>
-              <span className="text-[10px] font-mono text-white/40">{Math.round((currentStep / 3) * 100)}%</span>
-            </div>
-            <div className="w-full h-1 rounded-full bg-white/5 overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-electric-blue to-neon-green rounded-full"
-                animate={{ width: `${(currentStep / 3) * 100}%` }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-          </div>
+           <div className="mb-4">
+             <div className="flex items-center justify-between mb-2">
+               <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                 {t("Step", "خطوة")} {currentStep}/3
+               </span>
+               <span className="text-[10px] font-mono text-white/40">
+                 {Math.round((currentStep / 3) * 100)}% {t("Complete", "مكتمل")}
+               </span>
+             </div>
+             <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden p-[1px] border border-white/5">
+               <motion.div
+                 className="h-full bg-gradient-to-r from-electric-blue via-blue-500 to-neon-green rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                 animate={{ width: `${(currentStep / 3) * 100}%` }}
+                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+               />
+             </div>
+           </div>
 
           {/* Circle Stepper */}
           <div className="flex items-center justify-center gap-3 mb-14">
@@ -285,37 +297,42 @@ export default function ClaimPage() {
                         )}
                       </p>
 
-                      {walletConnected || user?.walletAddress ? (
-                        <div className="bg-neon-green/10 border border-neon-green/20 rounded-xl p-4 mb-6">
-                          <div className="flex items-center justify-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-neon-green" />
-                            <span className="font-mono text-sm text-neon-green">
-                              {t("Connected", "متصل")}
-                            </span>
-                          </div>
-                          <p className="text-white/40 font-mono text-xs mt-2">
-                            {user?.walletAddress
-                              ? `${user.walletAddress.slice(0, 12)}...${user.walletAddress.slice(-6)}`
-                              : "Connected"}
-                          </p>
-                        </div>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                          whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                          onClick={handleConnect}
-                          disabled={isConnecting}
-                          className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue/80 to-blue-600/80 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Wallet className="w-5 h-5" />
-                          {isConnecting
-                            ? t("CONNECTING...", "جاري الاتصال...")
-                            : t("CONNECT PI WALLET",
-                            "اتصل بمحفظة PI"
-                          )}
-                          <ChevronRight className="w-4 h-4" />
-                        </motion.button>
-                      )}
+                       {walletConnected || user?.walletAddress ? (
+                         <div className="bg-neon-green/10 border border-neon-green/20 rounded-xl p-4 mb-6">
+                           <div className="flex items-center justify-center gap-3">
+                             <CheckCircle2 className="w-5 h-5 text-neon-green" />
+                             <span className="font-mono text-sm text-neon-green">
+                               {t("Connected", "متصل")}
+                             </span>
+                           </div>
+                           <p className="text-white/40 font-mono text-xs mt-2 text-center">
+                             {user?.walletAddress
+                               ? `${user.walletAddress.slice(0, 12)}...${user.walletAddress.slice(-6)}`
+                               : "Connected"}
+                           </p>
+                         </div>
+                       ) : (
+                         <motion.button
+                           whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                           whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                           onClick={handleConnect}
+                           disabled={isConnecting}
+                           className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue/80 to-blue-600/80 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                         >
+                           {isConnecting ? (
+                             <>
+                               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                               {t("CONNECTING...", "جاري الاتصال...")}
+                             </>
+                           ) : (
+                             <>
+                               <Wallet className="w-5 h-5" />
+                               {t("CONNECT PI WALLET", "اتصل بمحفظة PI")}
+                               <ChevronRight className="w-4 h-4" />
+                             </>
+                           )}
+                         </motion.button>
+                       )}
 
                       {!isPiBrowser && !walletConnected && !user?.walletAddress && (
                         <div className="mt-4 px-4 py-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
@@ -385,33 +402,43 @@ export default function ClaimPage() {
                             ].map((item) => {
                               const ItemIcon = item.icon;
                               return (
-                                <div
-                                  key={item.key}
-                                  className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {item.status ? (
-                                      <CheckCircle2 className="w-4 h-4 text-neon-green" />
-                                    ) : (
-                                      <div className="w-4 h-4 rounded-full border border-white/20" />
-                                    )}
-                                    <ItemIcon className="w-4 h-4 text-white/40" />
-                                    <span className="font-mono text-sm text-white/70">
-                                      {item.label}
-                                    </span>
-                                  </div>
-                                  <span
-                                    className={`font-mono text-xs ${
-                                      item.status
-                                        ? "text-neon-green"
-                                        : "text-white/30"
-                                    }`}
-                                  >
-                                    {item.status
-                                      ? t("VERIFIED", "موثق")
-                                      : t("PENDING", "قيد الانتظار")}
-                                  </span>
-                                </div>
+                                 <div
+                                   key={item.key}
+                                   className={`flex items-center justify-between bg-white/[0.03] border transition-all duration-500 rounded-lg px-4 py-3 ${
+                                     item.status 
+                                       ? "border-neon-green/30 bg-neon-green/[0.05]" 
+                                       : "border-white/[0.06]"
+                                   }`}
+                                 >
+                                   <div className="flex items-center gap-3">
+                                     {item.status ? (
+                                       <motion.div
+                                         initial={{ scale: 0 }}
+                                         animate={{ scale: 1 }}
+                                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                       >
+                                         <CheckCircle2 className="w-4 h-4 text-neon-green" />
+                                       </motion.div>
+                                     ) : (
+                                       <div className="w-4 h-4 rounded-full border border-white/20" />
+                                     )}
+                                     <ItemIcon className={`w-4 h-4 transition-colors duration-500 ${item.status ? "text-neon-green" : "text-white/40"}`} />
+                                     <span className={`font-mono text-sm transition-colors duration-500 ${item.status ? "text-white" : "text-white/70"}`}>
+                                       {item.label}
+                                     </span>
+                                   </div>
+                                   <span
+                                     className={`font-mono text-xs transition-colors duration-500 ${
+                                       item.status
+                                         ? "text-neon-green font-bold"
+                                         : "text-white/30"
+                                     }`}
+                                   >
+                                     {item.status
+                                       ? t("VERIFIED", "موثق")
+                                       : t("PENDING", "قيد الانتظار")}
+                                   </span>
+                                 </div>
                               );
                             })}
                           </div>
@@ -534,18 +561,19 @@ export default function ClaimPage() {
                             </div>
                           </div>
 
-                          <motion.button
-                            whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            onClick={handleDeploy}
-                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-neon-green/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
-                          >
-                            <Rocket className="w-5 h-5" />
-                            {t(
-                              "ACTIVATE AGENT",
-                              "تفعيل الوكيل"
-                            )}
-                          </motion.button>
+                           <motion.button
+                             whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                             whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+                             onClick={handleDeploy}
+                             disabled={isVerifying}
+                             className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-neon-green/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
+                           >
+                             <Rocket className="w-5 h-5" />
+                             {t(
+                               "ACTIVATE AGENT",
+                               "تفعيل الوكيل"
+                             )}
+                           </motion.button>
                           <p className="text-white/30 font-mono text-[10px] mt-2">
                             {t(
                               "This will create your DID document and mint your passport NFT.",
