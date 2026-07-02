@@ -138,11 +138,25 @@ export default function ClaimPage() {
   };
 
   const handleDeploy = async () => {
-    const created = await createAgent();
-    if (!created) return;
-    const activated = await activateAgent();
-    if (activated) {
-      setDeployed(true);
+    setIsVerifying(true);
+    try {
+      const created = await createAgent();
+      if (!created) {
+        toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
+        return;
+      }
+      const activated = await activateAgent();
+      if (activated) {
+        setDeployed(true);
+        toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
+      } else {
+        toast.error(t("Agent activation failed", "فشل تفعيل الوكيل"));
+      }
+    } catch (err) {
+      logger.error("Deployment failed:", err);
+      toast.error(t("Deployment failed", "فشل عملية النشر"));
+    } finally {
+      setIsVerifying(false);
     }
   };
 
