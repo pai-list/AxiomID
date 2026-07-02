@@ -254,7 +254,7 @@ export default function MarketplacePage() {
         })
         .catch(err => {
           if (err instanceof DOMException && err.name === "AbortError") return;
-          toast.error(language === "ar" ? "فشل تحميل المراجعات" : "Failed to load reviews");
+          toast.error(languageRef.current === "ar" ? "فشل تحميل المراجعات" : "Failed to load reviews");
         })
         .finally(() => {
           if (fetchAbortRef.current === controller && !controller.signal.aborted) {
@@ -273,7 +273,7 @@ export default function MarketplacePage() {
         })
         .catch(err => {
           if (err instanceof DOMException && err.name === "AbortError") return;
-          toast.error(language === "ar" ? "فشل تحميل الإصدارات" : "Failed to load versions");
+          toast.error(languageRef.current === "ar" ? "فشل تحميل الإصدارات" : "Failed to load versions");
         })
         .finally(() => {
           if (fetchAbortRef.current === controller && !controller.signal.aborted) {
