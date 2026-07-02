@@ -269,6 +269,8 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Regression & Test Stability:** The test suite status must remain stable. The number of passing tests must never decrease across PRs. Disabling or skipping active tests to bypass coverage requirements is strictly forbidden.
 - **Shell Quoting for Dynamic Routes:** Always wrap or escape path arguments containing brackets (e.g. `[slug]`) in double quotes (like `git add "src/app/api/passport/[slug]/publish/route.ts"`) when running git or terminal operations in zsh to avoid pattern matching expansion failures.
 - **Verify Against `main`, Not Your Working Tree:** Before writing a verdict that a claim is WRONG or CONFIRMED, open the file on `main` (not the working tree, not a PR diff) and confirm the exact line. Your session may be on a feature branch — what you see is not necessarily what was merged. Use `git show main:<path>` to check. A confident agent with a structured verdict table can still be wrong on the one line that matters.
+- **PR Remote Synchronization:** When merging or resolving conflicts locally for remote Pull Requests, explicitly push the resolved branches back to their remote counterparts on GitHub (`git push origin <branch>`) to trigger remote CI checks and update the PR states.
+- **Next.js Build Cache Purging:** When encountering unexpected TypeScript compilation errors (`TS2307`) or missing module declarations referencing `.next/types/` (especially after branch switching or merging large changes), purge the Next.js local cache by running `rm -rf .next` before running `npm run type-check` or `npm run build`.
 
 ### 📁 Architecture Map
 
