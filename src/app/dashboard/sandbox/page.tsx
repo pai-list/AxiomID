@@ -154,7 +154,7 @@ const AUDIT_ITEMS: { id: string; labelKey: string; descKey: string }[] = [
 ];
 
 export default function SandboxPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [manifest, setManifest] = useState(DEFAULT_MANIFEST);
   const [inputData, setInputData] = useState(`{"prompt": "Calculate prime sequence to 10"}`);
   const [logs, setLogs] = useState<string[]>([]);

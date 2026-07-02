@@ -221,6 +221,7 @@ export const translations = {
     share_passport: "SHARE PASSPORT",
     export_image: "Export as Image",
     mint_sbt: "Mint as SBT",
+    mint_sbt_coming_soon: "Coming soon — Stellar SBT minting",
     mint_success: "Soulbound Token minted successfully on Stellar!",
     passport_verified_by: "This passport is verified by AxiomID Protocol",
     passport_export_failed: "Failed to export passport image. Please try again.",
@@ -447,6 +448,7 @@ export const translations = {
     sandbox_input_hint: "Give your agent something to work with. This simulates a real request.",
     sandbox_security_title: "Safety Check",
     sandbox_security_desc: "Every skill is checked for safety before it can run. Green = safe.",
+    sandbox_simulated_preview: "Preview only — checks are simulated for demonstration.",
     // Marketplace page
     marketplace_title: "Skills Marketplace",
     marketplace_browse: "Back to Skills",
@@ -812,6 +814,7 @@ export const translations = {
     share_passport: "مشاركة الجواز",
     export_image: "تصدير كصورة",
     mint_sbt: "إصدار كـ SBT",
+    mint_sbt_coming_soon: "قريباً — إصدار SBT على Stellar",
     mint_success: "تم إصدار Soulbound Token بنجاح على Stellar!",
     passport_verified_by: "هذا الجواز موثق من بروتوكول AxiomID",
     passport_export_failed: "فشل تصدير صورة الجواز. حاول مرة أخرى.",
@@ -1038,6 +1041,7 @@ export const translations = {
     sandbox_input_hint: "أعطِ وكيلك شيئاً للعمل معه. هذا يحاكي طلباً حقيقياً.",
     sandbox_security_title: "فحص الأمان",
     sandbox_security_desc: "يتم فحص كل مهارة للسلامة قبل أن تتمكن من التشغيل. أخضر = آمن.",
+    sandbox_simulated_preview: "معاينة فقط — الفحوصات محاكاة لأغراض العرض.",
     // Marketplace page
     marketplace_title: "سوق المهارات",
     marketplace_browse: "العودة إلى المهارات",

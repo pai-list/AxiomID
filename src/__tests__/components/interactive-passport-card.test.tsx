@@ -228,32 +228,6 @@ describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
     }
   });
 });
-    renderCard();
-    const buttons = screen.getAllByRole("button");
-    const mintBtn = buttons.find(
-      (b) => b.getAttribute("title") !== null && (
-        b.getAttribute("title")!.includes("mint_sbt") ||
-        b.getAttribute("title")!.includes("Mint")
-      )
-    );
-
-    if (mintBtn) {
-      // First click — starts minting
-      await act(async () => {
-        fireEvent.click(mintBtn);
-      });
-      // Second click while isMinting=true — should be ignored
-      await act(async () => {
-        fireEvent.click(mintBtn);
-        jest.advanceTimersByTime(1500);
-      });
-      await waitFor(() => {
-        // Should only have been called once (first click only)
-        expect(alertSpy).toHaveBeenCalledTimes(1);
-      });
-    }
-  });
-});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Share button

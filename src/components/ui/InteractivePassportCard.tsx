@@ -56,7 +56,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
 
 
   const [isExporting, setIsExporting] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
 
   const handleExportImage = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -94,7 +93,7 @@ export default function InteractivePassportCard({ user, readonly = false, locked
 
   const handleMintSBT = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toast.info(language === "ar" ? "قريباً — minting على Stellar" : "Coming soon — Stellar SBT minting");
+    toast.info(t("mint_sbt_coming_soon"));
   };
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -312,7 +311,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           </button>
           <button
             onClick={handleMintSBT}
-            disabled={isMinting}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md border border-white/10 transition-colors tooltip-trigger"
             title={t("mint_sbt") || "Mint as SBT (Stellar)"}
           >
