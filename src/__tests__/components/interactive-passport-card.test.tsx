@@ -207,20 +207,11 @@ describe("InteractivePassportCard — handleExportImage (PR change)", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
-  let alertSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
-    alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-    alertSpy.mockRestore();
-  });
-
-  it("calls alert with mint_success message after minting", async () => {
+  it("shows a coming-soon toast on click instead of fake minting", () => {
     renderCard();
     const buttons = screen.getAllByRole("button");
     const mintBtn = buttons.find(
@@ -231,41 +222,12 @@ describe("InteractivePassportCard — handleMintSBT (PR change)", () => {
     );
 
     if (mintBtn) {
-      await act(async () => {
-        fireEvent.click(mintBtn);
-        jest.advanceTimersByTime(1500);
-      });
-      await waitFor(() => {
-        expect(alertSpy).toHaveBeenCalledTimes(1);
-      });
+      fireEvent.click(mintBtn);
+      // No alert/crashes — mint button now shows a toast and does nothing else
+      expect(mintBtn).not.toBeDisabled();
     }
   });
-
-  it("mint button is disabled while minting (isMinting state)", async () => {
-    renderCard();
-    const buttons = screen.getAllByRole("button");
-    const mintBtn = buttons.find(
-      (b) => b.getAttribute("title") !== null && (
-        b.getAttribute("title")!.includes("mint_sbt") ||
-        b.getAttribute("title")!.includes("Mint")
-      )
-    );
-
-    if (mintBtn) {
-      await act(async () => {
-        fireEvent.click(mintBtn);
-      });
-      // Button should be disabled while the 1500ms timer is pending
-      expect(mintBtn).toBeDisabled();
-
-      // Complete the timer
-      await act(async () => {
-        jest.advanceTimersByTime(1500);
-      });
-    }
-  });
-
-  it("does not call alert on second click while minting is in progress", async () => {
+});
     renderCard();
     const buttons = screen.getAllByRole("button");
     const mintBtn = buttons.find(

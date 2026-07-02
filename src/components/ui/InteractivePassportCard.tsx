@@ -92,21 +92,9 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     }
   };
 
-  const handleMintSBT = async (e: React.MouseEvent) => {
+  const handleMintSBT = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isMinting) return;
-
-    setIsMinting(true);
-    try {
-      // Simulate SBT Minting on Stellar
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      alert(t("mint_success") || "Soulbound Token minted successfully on Stellar!");
-    } catch (err) {
-      console.error("Minting failed:", err);
-      alert("Failed to mint SBT.");
-    } finally {
-      setIsMinting(false);
-    }
+    toast.info(language === "ar" ? "قريباً — minting على Stellar" : "Coming soon — Stellar SBT minting");
   };
 
   const handleShare = async (e: React.MouseEvent) => {

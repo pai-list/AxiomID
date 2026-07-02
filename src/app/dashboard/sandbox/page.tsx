@@ -154,7 +154,7 @@ const AUDIT_ITEMS: { id: string; labelKey: string; descKey: string }[] = [
 ];
 
 export default function SandboxPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [manifest, setManifest] = useState(DEFAULT_MANIFEST);
   const [inputData, setInputData] = useState(`{"prompt": "Calculate prime sequence to 10"}`);
   const [logs, setLogs] = useState<string[]>([]);
@@ -545,6 +545,9 @@ export default function SandboxPage() {
               {t("sandbox_security_scan")}
             </h3>
             <p className="text-[9px] text-faint mb-3">{t("sandbox_security_desc")}</p>
+            <p className="text-[7px] font-mono text-amber-400/60 mb-3 pb-2 border-b border-white/5">
+              {language === "ar" ? "معاينة محاكاة — النتائج لأغراض العرض فقط" : "Simulated preview — results are for display purposes only"}
+            </p>
             <div className="space-y-2.5">
               {AUDIT_ITEMS.map((item) => {
                 const state = auditStates[item.id];
