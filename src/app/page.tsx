@@ -62,11 +62,8 @@ export default function Home() {
 
       {/* Header */}
       <header
-        className="sticky top-0 w-full z-50 backdrop-blur-lg border-b shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset]"
+        className="sticky top-0 w-full z-50 backdrop-blur-lg border-b shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset] transition-colors duration-300"
         style={{
-          // Theme-aware solid background. Avoids color-mix() so older browsers
-          // without support still render an opaque header; backdrop-blur-lg
-          // already provides the glassy effect over scrolled content.
           backgroundColor: "var(--bg-deep)",
           borderColor: "var(--card-border)",
         }}
@@ -109,8 +106,24 @@ export default function Home() {
                 <Link href="/dashboard" prefetch={false} className="btn-ghost text-xs px-3 sm:px-4 py-1.5">
                   {t("nav_dashboard")}
                 </Link>
-                <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("connect")} className="btn-primary text-xs px-3 sm:px-4 py-1.5">
-                  {isConnecting ? t("connecting") : t("connect")}
+                <button 
+                  onClick={() => connectWallet()} 
+                  disabled={isConnecting} 
+                  aria-busy={isConnecting} 
+                  aria-label={isConnecting ? t("connecting") : t("connect")} 
+                  className={`btn-primary text-xs px-3 sm:px-4 py-1.5 flex items-center justify-center gap-2 transition-all duration-200 ${isConnecting ? 'opacity-80 cursor-wait' : ''}`}
+                >
+                  {isConnecting ? (
+                    <>
+                      <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {t("connecting")}
+                    </>
+                  ) : (
+                    <>
+                      {t("connect")}
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -165,12 +178,12 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2 animate-[fade-in-up_0.5s_ease-out_0.4s_both]">
               {!user ? (
                 isPiBrowser ? (
-                  <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("claim_passport")} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    {isConnecting ? <><span className="animate-spin">⟳</span> {t("connecting")}</> : <>{t("claim_passport")}<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
+                  <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("claim_passport")} className="flex items-center justify-center gap-3 text-base font-bold px-10 py-5 min-h-[64px] rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all group">
+                    {isConnecting ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("connecting")}</> : <>{t("claim_passport")} <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
                   </button>
                 ) : (
-                  <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    {isConnecting ? <><span className="animate-spin">⟳</span> {t("connecting")}</> : <>{t("claim_passport")}<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
+                  <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="flex items-center justify-center gap-3 text-base font-bold px-10 py-5 min-h-[64px] rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all group">
+                    {isConnecting ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("connecting")}</> : <>{t("claim_passport")} <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
                   </button>
                 )
               ) : (

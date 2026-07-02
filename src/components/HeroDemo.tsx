@@ -45,12 +45,20 @@ export default function HeroDemo() {
           opacity: 0;
           animation: hero-fade-in 0.6s ease-out forwards;
           animation-delay: 5.5s;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .group:hover .hero-card {
+          transform: translateY(-4px) scale(1.02);
+          border-color: rgba(59, 130, 246, 0.4);
+          box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3);
+          background: rgba(255, 255, 255, 0.05);
         }
         .hero-trust {
           opacity: 0;
           animation: hero-fade-in 0.6s ease-out forwards;
           animation-delay: 8s;
         }
+
 
         .group:hover * {
           animation-play-state: paused !important;

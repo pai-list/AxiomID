@@ -2,6 +2,7 @@ const CACHE = "axiomid-v4";
 const STATIC_ASSET_PATTERN = /\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|otf|eot|map)$/;
 const STATIC_ASSETS = [
   "/manifest.webmanifest",
+  "/offline",
   "/icon-192x192.png",
   "/icon-512x512.png",
   "/axiomid-logo.jpg",
@@ -69,7 +70,10 @@ self.addEventListener("fetch", (event) => {
       fetchPromise.then(() => cacheWritePromise).catch(() => {})
     );
     event.respondWith(
-      fetchPromise.catch(() => caches.match(event.request))
+      fetchPromise.catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached || caches.match("/offline");
+      })
     );
     return;
   }

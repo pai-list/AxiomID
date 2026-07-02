@@ -9,9 +9,6 @@ interface Stats {
   agents: number;
 }
 
-const PRESENTATION_USER_OFFSET = 15420;
-const PRESENTATION_AGENT_OFFSET = 342;
-
 /**
  * Displays protocol statistics. When values are 0, shows motivational copy
  * instead of discouraging zero counts.
@@ -31,8 +28,8 @@ export default function StatsBar() {
         const data = await res.json();
         const s = data.stats || {};
         setStats({
-          users: (s.registeredUsers ?? 0) + PRESENTATION_USER_OFFSET,
-          agents: (s.totalAgents ?? 0) + PRESENTATION_AGENT_OFFSET,
+          users: s.registeredUsers ?? 0,
+          agents: s.totalAgents ?? 0,
         });
       } catch {
         setStats({ users: 0, agents: 0 });
@@ -53,7 +50,7 @@ export default function StatsBar() {
       icon: Users,
       color: "text-emerald-400",
       suffix: hasUsers ? "+" : "",
-      fallback: language === "ar" ? "كن أول من ينضم" : "Be the first to join",
+      fallback: language === "ar" ? "كن من أوائل الرواد" : "Be among the first pioneers",
     },
     {
       label: t("agents_deployed"),
@@ -61,7 +58,7 @@ export default function StatsBar() {
       icon: Bot,
       color: "text-electric-blue",
       suffix: hasAgents ? "+" : "",
-      fallback: language === "ar" ? "انشئ وكيلك الآن" : "Create your agent",
+      fallback: language === "ar" ? "أنشئ وكيلك السيادي" : "Deploy your sovereign agent",
     },
     {
       label: t("on_chain"),

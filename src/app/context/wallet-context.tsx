@@ -5,6 +5,7 @@ import { getLevelProgress, getNextLevelXP } from "@/lib/tiers";
 import { checkPiBrowser, determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { User, getStoredWallet, getLocalStorageItem, removeLocalStorageItem, mapApiUser } from "./wallet-types";
+import { setSovereignBadge } from "@/lib/pwa-badging";
 
 export type { User } from "./wallet-types";
 import { useWalletAuth } from "./use-wallet-auth";
@@ -57,7 +58,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [walletLogs, setWalletLogs] = useState<string[]>([]);
 
   useEffect(() => {
+    // 1. Compare current user with previous state (stored in ref)
+    if (user && userRef.current) {
+      const prev = userRef.current;
+      if (user.xp > prev.xp) {
+        setSovereignBadge('XP_GAIN', 0);
+      }
+      if (user.stamps.length > prev.stamps.length) {
+        setSovereignBadge('NEW_STAMP', 0);
+      }
+    }
+
+    // 2. Update ref for next render
     userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const prevUser = userRef.current;
+    if (!prevUser || prevUser === user) return;
+
+    // Check for XP gain
+    if (user.xp > prevUser.xp) {
+      setSovereignBadge('XP_GAIN', 0); // Simplified count for now
+    }
+
+    // Check for new stamps
+    if (user.stamps.length > prevUser.stamps.length) {
+      setSovereignBadge('NEW_STAMP', 0);
+    }
   }, [user]);
 
   useEffect(() => {
