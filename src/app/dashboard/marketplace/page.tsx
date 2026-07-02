@@ -116,7 +116,10 @@ export default function MarketplacePage() {
   // the "Published" stat since `skills` only holds the pages loaded so far.
   const [totalSkills, setTotalSkills] = useState<number | null>(null);
 
-  // Fetch Tags on mount
+  const languageRef = useRef(language);
+  useEffect(() => { languageRef.current = language; });
+
+  // Fetch Tags on mount (language-independent — use ref to avoid re-fetch on toggle)
   useEffect(() => {
     const loadTags = async () => {
       try {
@@ -126,11 +129,11 @@ export default function MarketplacePage() {
           setAvailableTags(data.tags || []);
         }
       } catch {
-        toast.error(language === "ar" ? "فشل تحميل الأوسمة" : "Failed to load tags");
+        toast.error(languageRef.current === "ar" ? "فشل تحميل الأوسمة" : "Failed to load tags");
       }
     };
     loadTags();
-  }, [language]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,6 +197,11 @@ export default function MarketplacePage() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
+
+  // Abort any in-flight detail fetches on unmount to prevent error toasts after navigation away
+  useEffect(() => {
+    return () => { fetchAbortRef.current?.abort(); };
+  }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
