@@ -73,22 +73,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     userRef.current = user;
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const prevUser = userRef.current;
-    if (!prevUser || prevUser === user) return;
-
-    // Check for XP gain
-    if (user.xp > prevUser.xp) {
-      setSovereignBadge('XP_GAIN', 0); // Simplified count for now
-    }
-
-    // Check for new stamps
-    if (user.stamps.length > prevUser.stamps.length) {
-      setSovereignBadge('NEW_STAMP', 0);
-    }
-  }, [user]);
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
