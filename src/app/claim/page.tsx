@@ -65,6 +65,7 @@ export default function ClaimPage() {
   const [verified, setVerified] = useState(false);
   const [verifiedTrustScore, setVerifiedTrustScore] = useState<number | null>(null);
   const [deployed, setDeployed] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
@@ -139,18 +140,23 @@ export default function ClaimPage() {
   };
 
   const handleDeploy = async () => {
-    const created = await createAgent();
-    if (!created) return;
-    const activated = await activateAgent();
-    if (activated) {
-      setDeployed(true);
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ["#22c55e", "#3b82f6", "#6366f1", "#ffffff"],
-        disableForReducedMotion: true,
-      });
+    setIsDeploying(true);
+    try {
+      const created = await createAgent();
+      if (!created) return;
+      const activated = await activateAgent();
+      if (activated) {
+        setDeployed(true);
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#22c55e", "#3b82f6", "#6366f1", "#ffffff"],
+          disableForReducedMotion: true,
+        });
+      }
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -565,7 +571,7 @@ export default function ClaimPage() {
                              whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                              whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
                              onClick={handleDeploy}
-                             disabled={isVerifying}
+                             disabled={isDeploying}
                              className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-neon-green/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
                            >
                              <Rocket className="w-5 h-5" />
