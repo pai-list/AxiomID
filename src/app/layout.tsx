@@ -12,6 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import InstallPWA from "@/components/pwa/InstallPWA";
 import DynamicThemeColor from "@/components/pwa/DynamicThemeColor";
+import SovereignSplash from "@/components/pwa/SovereignSplash";
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -142,11 +143,12 @@ export default function RootLayout({
           // ponytail: SRI removed — Pi SDK updates without semver; stale hash silently blocks script load.
         />
         <Script src="/register-sw.js" strategy="afterInteractive" />
-         <ThemeProvider>
-           <DynamicThemeColor />
-           <LanguageProvider>
-             <SandboxProvider>
-               <WalletProvider>
+      <ThemeProvider>
+        <DynamicThemeColor />
+        <SovereignSplash />
+        <LanguageProvider>
+          <SandboxProvider>
+            <WalletProvider>
 
                 <MotionConfig reducedMotion="user">
                   {children}
