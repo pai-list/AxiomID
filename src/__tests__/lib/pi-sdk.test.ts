@@ -333,5 +333,19 @@ describe('pi-sdk', () => {
       g.document = { referrer: 'https://sandbox.minepi.com.attacker.com/auth' };
       expect(checkPiBrowser()).toBe(false);
     });
+
+    it('handles relative referrers without throwing uncaught exceptions', () => {
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: '/dashboard' };
+      expect(checkPiBrowser()).toBe(false);
+    });
+
+    it('handles invalid scheme referrers without throwing uncaught exceptions', () => {
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'invalid-scheme://foo' };
+      expect(checkPiBrowser()).toBe(false);
+    });
   });
 });

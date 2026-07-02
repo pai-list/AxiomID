@@ -11,6 +11,10 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
+  if (typeof caches === "undefined") {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
     caches
       .open(CACHE)
@@ -23,6 +27,10 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  if (typeof caches === "undefined") {
+    self.clients.claim();
+    return;
+  }
   event.waitUntil(
     caches
       .keys()
@@ -36,6 +44,9 @@ self.addEventListener("activate", (event) => {
 // Static immutable assets that are safe to serve Stale-While-Revalidate.
 
 self.addEventListener("fetch", (event) => {
+  if (typeof caches === "undefined") {
+    return;
+  }
   const url = new URL(event.request.url);
 
   // Bypass caching for non-GET requests, APIs, and external origins.

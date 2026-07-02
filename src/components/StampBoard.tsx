@@ -224,7 +224,7 @@ export function StampBoard({ user, claimAction, connectWallet }: StampBoardProps
             <StampCard
               key={stamp.type}
               type={stamp.type}
-              label={stamp.label}
+              label={t(`stamp_label_${stamp.type}`) || stamp.label}
               xp={stamp.xp}
               icon={stamp.icon}
               isConnected={isConnected(stamp.type)}

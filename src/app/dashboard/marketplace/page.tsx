@@ -116,6 +116,7 @@ export default function MarketplacePage() {
   // Total count of published skills across all pages (from the API), used for
   // the "Published" stat since `skills` only holds the pages loaded so far.
   const [totalSkills, setTotalSkills] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch Tags on mount
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function MarketplacePage() {
     };
     load();
     return () => { cancelled = true; };
-  }, [filterTier, selectedTag, filterSoul, searchQuery, offset]);
+  }, [filterTier, selectedTag, filterSoul, searchQuery, offset, refreshKey]);
 
   const handleFilterChange = (tier: string) => {
     setFilterTier(tier);
@@ -469,7 +470,11 @@ export default function MarketplacePage() {
         </div>
       )}
         {showPublish ? (
-          <PublishSkillForm onPublished={() => setShowPublish(false)} />
+          <PublishSkillForm onPublished={() => {
+            setShowPublish(false);
+            setOffset(0);
+            setRefreshKey(prev => prev + 1);
+          }} />
         ) : (
           <>
             {/* Search + Filters */}
@@ -882,6 +887,14 @@ export default function MarketplacePage() {
                   </h3>
 
                   {/* Add Review Form */}
+                  {selectedSkill.isInstalled && !user && (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4 text-center">
+                      <p className="text-[10px] font-mono text-faint">
+                        {t("marketplace_login_required") || "Authentication required to write a review"}
+                      </p>
+                    </div>
+                  )}
+
                   {selectedSkill.isInstalled && user && (
                     <form onSubmit={handleAddReview} className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
                       <h4 className="text-[10px] font-mono font-bold mb-2 text-surface">{t("marketplace_add_review") || "Write a Review"}</h4>
@@ -973,14 +986,22 @@ export default function MarketplacePage() {
                       {installing ? t("marketplace_installing") : isConnecting ? t("marketplace_connecting") : !user ? t("marketplace_connect_install") : t("marketplace_install_skill")}
                     </button>
                   )}
-                  <button
-                    onClick={() => {
-                      if (navigator.clipboard) {
-                        navigator.clipboard.writeText(JSON.stringify({
-                          slug: selectedSkill.slug,
-                          manifest: selectedSkill.manifestMd,
-                          script: selectedSkill.agentScript,
-                        }, null, 2));
+                   <button
+                    onClick={async () => {
+                      try {
+                        if (typeof navigator !== "undefined" && navigator.clipboard) {
+                          await navigator.clipboard.writeText(JSON.stringify({
+                            slug: selectedSkill.slug,
+                            manifest: selectedSkill.manifestMd,
+                            script: selectedSkill.agentScript,
+                          }, null, 2));
+                          toast.success(t("link_copied") || "Copied to clipboard!");
+                        } else {
+                          throw new Error("Clipboard API not supported");
+                        }
+                      } catch (err) {
+                        logger.error("Failed to copy payload:", err);
+                        toast.error(language === "ar" ? "فشل نسخ البيانات" : "Failed to copy payload");
                       }
                     }}
                     className="btn-ghost py-2.5 text-xs font-mono px-4"

@@ -83,12 +83,23 @@ export function loadPiSdk(): Promise<unknown> {
   });
 }
 
+function safeGetHostname(urlStr: string): string {
+  try {
+    if (!urlStr || (!urlStr.startsWith("http://") && !urlStr.startsWith("https://"))) {
+      return "";
+    }
+    return new URL(urlStr).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
 export function determineSandboxMode(): boolean {
   if (typeof window === "undefined" || !window.location) return false;
   if (process.env.NEXT_PUBLIC_PI_SANDBOX !== undefined) {
     return process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
   }
-  const hostname = window.location.hostname;
+  const hostname = window.location.hostname.toLowerCase();
 
   // ponytail: Production domains are NEVER sandbox — short-circuit before iframe/referrer checks.
   // Pi Browser loads apps inside an iframe where document.referrer can be sandbox.minepi.com
@@ -102,12 +113,20 @@ export function determineSandboxMode(): boolean {
     return false;
   }
 
+  // Staging/Dev fallback overrides
+  if (process.env.NEXT_PUBLIC_SANDBOX_OVERRIDE === "true") {
+    return true;
+  }
+  if (process.env.NEXT_PUBLIC_SANDBOX_OVERRIDE === "false") {
+    return false;
+  }
+
+  // Local network / LAN sandboxing standard fallback
   if (
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
-    hostname.endsWith(".localhost") ||
-    hostname.includes("192.168.") ||
-    hostname.includes("10.0.")
+    hostname.startsWith("192.168.") ||
+    hostname.startsWith("10.")
   ) {
     return true;
   }
@@ -118,7 +137,7 @@ export function determineSandboxMode(): boolean {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";
       if (referrer) {
-        const referrerHost = new URL(referrer).hostname.toLowerCase();
+        const referrerHost = safeGetHostname(referrer);
         if (
           referrerHost === "sandbox.minepi.com" ||
           referrerHost.endsWith(".sandbox.minepi.com")
@@ -197,7 +216,7 @@ export function checkPiBrowser(): boolean {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";
       if (referrer) {
-        const referrerHost = new URL(referrer).hostname.toLowerCase();
+        const referrerHost = safeGetHostname(referrer);
         if (referrerHost === "minepi.com" || referrerHost.endsWith(".minepi.com")) return true;
       }
     }

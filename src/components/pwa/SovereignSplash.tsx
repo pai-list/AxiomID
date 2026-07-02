@@ -13,14 +13,19 @@ export default function SovereignSplash() {
     if (sessionStorage.getItem("axiom_splash_shown") === "true") return;
 
     sessionStorage.setItem("axiom_splash_shown", "true");
-    setIsVisible(true);
+    const initTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 0);
 
     // Simulate a brief "identity check" for premium feel
     const timer = setTimeout(() => {
       setIsVisible(false);
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(initTimer);
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
