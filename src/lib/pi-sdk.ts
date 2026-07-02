@@ -90,12 +90,14 @@ export function determineSandboxMode(): boolean {
   }
   const hostname = window.location.hostname;
 
-  // ponytail: Production domain is NEVER sandbox — short-circuit before iframe/referrer checks.
+  // ponytail: Production domains are NEVER sandbox — short-circuit before iframe/referrer checks.
   // Pi Browser loads apps inside an iframe where document.referrer can be sandbox.minepi.com
   // even on production domains, causing false positives.
   if (
     hostname === "axiomid.app" ||
-    hostname.endsWith(".axiomid.app")
+    hostname.endsWith(".axiomid.app") ||
+    hostname === "pinet.com" ||
+    hostname.endsWith(".pinet.com")
   ) {
     return false;
   }
