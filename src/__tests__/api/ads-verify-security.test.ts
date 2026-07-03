@@ -14,6 +14,15 @@ jest.mock("@/lib/prisma", () => ({
       create: jest.fn(),
       findFirst: jest.fn(),
     },
+    skillModeration: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    skill: {
+      update: jest.fn(),
+    },
   },
 }));
 
@@ -21,6 +30,7 @@ jest.mock("@/lib/logger", () => ({
   logger: {
     error: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 
@@ -38,9 +48,15 @@ jest.mock("@/lib/ip", () => ({
 }));
 
 describe("Ads Verify Security", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.PI_API_KEY = "test-key";
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
   });
 
   it("should detect duplicate claims using findFirst", async () => {
@@ -84,7 +100,7 @@ describe("Ads Verify Security", () => {
     });
 
     const res = await POST(req);
-    // PI_PAYMENT_FAILED maps to 402
+    // PI_PAYMENT_FAILED maps to 402 in src/lib/errors.ts
     expect(res.status).toBe(402);
 
     expect(prisma.xpLedger.findFirst).toHaveBeenCalled();
