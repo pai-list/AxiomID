@@ -48,7 +48,7 @@ import { POST } from "@/app/api/admin/skills/[id]/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-middleware";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { isAdmin } from "@/lib/admin";
 
@@ -59,7 +59,7 @@ const mockGetClientIp = getClientIp as jest.Mock;
 const mockIsAdmin = isAdmin as jest.Mock;
 
 const mockAdminUser = {
-  id: "admin-user",
+  id: "admin-user-uuid",
   walletAddress: "pi:admin123",
   piUid: "pi-uid-admin",
   piUsername: "admin",
@@ -68,7 +68,7 @@ const mockAdminUser = {
 };
 
 const mockNonAdminUser = {
-  id: "regular-user",
+  id: "regular-user-uuid",
   walletAddress: "pi:user456",
   piUid: "pi-uid-user",
   piUsername: "user",
@@ -76,9 +76,12 @@ const mockNonAdminUser = {
   tier: "Beginner",
 };
 
+const MOCK_MODERATION_ID = "a1b2c3d4-e5f6-4890-8bcd-ef1234567890";
+const MOCK_SKILL_ID = "b2c3d4e5-f6a7-4901-abcd-f12345678901";
+
 const MOCK_MODERATION = {
-  id: "a1b2c3d4-e5f6-4890-8bcd-ef1234567890",
-  skillId: "b2c3d4e5-f6a7-4901-abcd-f12345678901",
+  id: MOCK_MODERATION_ID,
+  skillId: MOCK_SKILL_ID,
   status: "PENDING",
   reviewerId: null,
   reason: null,
@@ -86,11 +89,11 @@ const MOCK_MODERATION = {
   createdAt: new Date(),
   updatedAt: new Date(),
   skill: {
-    id: "b2c3d4e5-f6a7-4901-abcd-f12345678901",
+    id: MOCK_SKILL_ID,
     slug: "test-skill",
     name: "Test Skill",
     description: "A test skill",
-    authorId: "author-1",
+    authorId: "author-1-uuid",
   },
 };
 
@@ -100,19 +103,17 @@ function mockGetRequest(url?: string) {
   }) as any;
 }
 
-function mockPostRequest(body: unknown, id = "a1b2c3d4-e5f6-4890-8bcd-ef1234567890") {
+function mockPostRequest(body: any, id: string = MOCK_MODERATION_ID) {
   return new NextRequest(`http://localhost/api/admin/skills/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: typeof body === "string" ? body : JSON.stringify(body),
+    body: JSON.stringify(body),
   }) as any;
 }
 
-function makeParams(id = "a1b2c3d4-e5f6-4890-8bcd-ef1234567890") {
+function makeParams(id: string = MOCK_MODERATION_ID) {
   return { params: Promise.resolve({ id }) };
 }
-
-// ─── GET /api/admin/skills ────────────────────────────────────
 
 describe("GET /api/admin/skills — rate limiting", () => {
   beforeEach(() => {
@@ -121,7 +122,6 @@ describe("GET /api/admin/skills — rate limiting", () => {
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
-    mockPrisma.skillModeration.findMany.mockResolvedValue([]);
   });
 
   it("returns 429 when rate limit exceeded", async () => {
@@ -207,6 +207,7 @@ describe("GET /api/admin/skills — business logic", () => {
 
   it("returns pending moderation entries", async () => {
     mockPrisma.skillModeration.findMany.mockResolvedValue([MOCK_MODERATION]);
+    mockPrisma.skillModeration.count.mockResolvedValue(1);
 
     const req = mockGetRequest();
     const res = await GET(req);
@@ -214,11 +215,12 @@ describe("GET /api/admin/skills — business logic", () => {
 
     expect(res.status).toBe(200);
     expect(data.moderations).toHaveLength(1);
-    expect(data.moderations[0].id).toBe("a1b2c3d4-e5f6-4890-8bcd-ef1234567890");
+    expect(data.moderations[0].id).toBe(MOCK_MODERATION_ID);
   });
 
   it("returns empty array when no pending entries", async () => {
     mockPrisma.skillModeration.findMany.mockResolvedValue([]);
+    mockPrisma.skillModeration.count.mockResolvedValue(0);
 
     const req = mockGetRequest();
     const res = await GET(req);
@@ -230,6 +232,7 @@ describe("GET /api/admin/skills — business logic", () => {
 
   it("filters by PENDING status", async () => {
     mockPrisma.skillModeration.findMany.mockResolvedValue([]);
+    mockPrisma.skillModeration.count.mockResolvedValue(0);
 
     const req = mockGetRequest();
     await GET(req);
@@ -243,6 +246,7 @@ describe("GET /api/admin/skills — business logic", () => {
 
   it("includes skill relation", async () => {
     mockPrisma.skillModeration.findMany.mockResolvedValue([MOCK_MODERATION]);
+    mockPrisma.skillModeration.count.mockResolvedValue(1);
 
     const req = mockGetRequest();
     await GET(req);
@@ -277,6 +281,7 @@ describe("POST /api/admin/skills/[id] — rate limiting", () => {
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.skill.update.mockResolvedValue({} as any);
   });
 
   it("returns 429 when rate limit exceeded", async () => {
@@ -363,7 +368,7 @@ describe("POST /api/admin/skills/[id] — validation", () => {
   });
 
   it("returns 400 for invalid JSON body", async () => {
-    const req = new NextRequest("http://localhost/api/admin/skills/mod-1", {
+    const req = new NextRequest(`http://localhost/api/admin/skills/${MOCK_MODERATION_ID}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "{bad",
@@ -394,8 +399,8 @@ describe("POST /api/admin/skills/[id] — validation", () => {
   });
 
   it("returns 400 for empty id param", async () => {
-    const req = mockPostRequest({ action: "approve" }, "");
-    const res = await POST(req, makeParams(""));
+    const req = mockPostRequest({ action: "approve" }, "not-a-uuid");
+    const res = await POST(req, makeParams("not-a-uuid"));
     const data = await res.json();
 
     expect(res.status).toBe(400);
@@ -406,11 +411,11 @@ describe("POST /api/admin/skills/[id] — validation", () => {
 describe("POST /api/admin/skills/[id] — business logic", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockPrisma.skill.update.mockResolvedValue({} as any);
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
+    mockPrisma.skill.update.mockResolvedValue({} as any);
   });
 
   it("returns 404 when moderation entry does not exist", async () => {
@@ -431,7 +436,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
       status: "APPROVED",
       reviewerId: mockAdminUser.id,
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
@@ -451,7 +455,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
       reason: "Does not meet quality standards",
       notes: "Please improve documentation",
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({
       action: "reject",
@@ -473,13 +476,12 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
       ...MOCK_MODERATION,
       status: "APPROVED",
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({ action: "approve" });
     await POST(req, makeParams());
 
     expect(mockPrisma.skill.update).toHaveBeenCalledWith({
-      where: { id: MOCK_MODERATION.skillId },
+      where: { id: MOCK_SKILL_ID },
       data: { status: "PUBLISHED", isPublished: true },
     });
   });
@@ -490,13 +492,12 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
       ...MOCK_MODERATION,
       status: "REJECTED",
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({ action: "reject", reason: "Bad skill" });
     await POST(req, makeParams());
 
     expect(mockPrisma.skill.update).toHaveBeenCalledWith({
-      where: { id: MOCK_MODERATION.skillId },
+      where: { id: MOCK_SKILL_ID },
       data: { status: "DRAFT", isPublished: false },
     });
   });
