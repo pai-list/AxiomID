@@ -15,6 +15,8 @@
  */
 
 import { execFileSync } from "child_process";
+
+const NPX_CMD = process.platform === "win32" ? "npx.cmd" : "npx";
 import { writeFileSync, unlinkSync, mkdirSync } from "fs";
 
 const TRUTH_API = "https://api.quran.com/api/v4";
