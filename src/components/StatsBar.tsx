@@ -20,18 +20,22 @@ export default function StatsBar() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/status");
+        const res = await fetch("/api/status", { signal: controller.signal });
         if (!res.ok) {
           throw new Error(`Status fetch failed: ${res.status}`);
         }
         const data = await res.json();
         const s = data.stats || {};
-        setStats({
-          users: s.registeredUsers ?? 0,
-          agents: s.totalAgents ?? 0,
-        });
+        // check if component is still mounted to prevent act warnings in tests
+        if (!controller.signal.aborted) {
+          setStats({
+            users: s.registeredUsers ?? 0,
+            agents: s.totalAgents ?? 0,
+          });
+        }
       } catch {
         setStats({ users: 0, agents: 0 });
       } finally {
@@ -39,6 +43,7 @@ export default function StatsBar() {
       }
     };
     fetchStats();
+    return () => controller.abort();
   }, []);
 
   const hasUsers = (stats?.users ?? 0) > 0;

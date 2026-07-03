@@ -93,11 +93,13 @@ export default function Dashboard() {
         return res.json();
       })
       .then((json) => {
-        setMarketplaceSkills(json?.skills ?? []);
-        setSkillsLoading(false);
+        if (!controller.signal.aborted) {
+          setMarketplaceSkills(json?.skills ?? []);
+          setSkillsLoading(false);
+        }
       })
       .catch((err) => {
-        if (err.name !== "AbortError") {
+        if (err.name !== "AbortError" && !controller.signal.aborted) {
           setSkillsError(true);
           setSkillsLoading(false);
         }
