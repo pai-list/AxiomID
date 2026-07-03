@@ -20,8 +20,8 @@ This skill aligns with SOUL principles by ensuring transparency and accountabili
 ## أنماط الفشل — Failure Modes
 | النمط (Mode) | الكشف (Detection) | الاسترداد (Recovery) |
 | :--- | :--- | :--- |
-| فشل الهوية (Identity Failure) | توقيع غير صالح (Invalid Signature) | رفض الطلب مع رمز الخطأ AXIOM_E401 |
-| تجاوز المهلة (Timeout) | مراقب التنفيذ (Execution Watchdog) | إلغاء العملية وإعادة المحاولة التلقائية |
+| فشل الهوية (Identity Failure) | توقيع غير صالح (Invalid Signature) | رفض الطلب مع رمز الخطأ AXIOM_E401 / Reject request with AXIOM_E401 |
+| تجاوز المهلة (Timeout) | مراقب التنفيذ (Execution Watchdog) | إلغاء العملية وإعادة المحاولة (حد أقصى 3 دورات مع تراجع أسي) / Cancel and retry (max 3 cycles with exponential backoff) |
 
 ## الوسوم — Tags
 axiom-identity, agent-skill, decentralized-logic
