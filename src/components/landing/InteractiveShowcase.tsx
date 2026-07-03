@@ -137,7 +137,7 @@ export default function InteractiveShowcase() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.5 }}
               className="w-full h-full flex flex-col md:flex-row items-center gap-8"
             >
               <div className="flex-1 flex justify-center">
