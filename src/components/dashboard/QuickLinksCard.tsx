@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/app/context/language-context";
+import { toast } from "sonner";
 import { AxiomRenderer } from "../ui/AxiomRenderer";
 
 interface QuickLinksCardProps {
@@ -19,14 +21,44 @@ interface QuickLinksCardProps {
  */
 export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCardProps) {
   const { t } = useLanguage();
+  const handlePublish = async () => {
+    setPublishing(true);
+    const promise = fetch(`/api/passport/${passportSlug}/publish`, { method: 'POST' });
+
+    toast.promise(promise, {
+      loading: 'Publishing passport to IPFS & Stellar...',
+      success: (res) => {
+        if (!res.ok) throw new Error('Publish failed');
+        // Simple page reload to update passportUrl from server state
+        setTimeout(() => window.location.reload(), 1500);
+        return 'Passport published successfully!';
+      },
+      error: 'Failed to publish passport',
+      finally: () => setPublishing(false)
+    });
+  };
+
+  const [publishing, setPublishing] = useState(false);
   
   const spec = useMemo(() => ({
     root: "card",
     elements: {
+      publish: {
+        type: "Button",
+        props: {
+          label: publishing ? "Publishing..." : "Publish Passport",
+          onClick: handlePublish,
+          variant: "outline",
+          size: "sm",
+          icon: "upload",
+          loading: publishing,
+          className: "mt-2 w-full font-mono text-[10px] tracking-widest uppercase border-axiom-purple/30 text-axiom-purple hover:bg-axiom-purple/10"
+        }
+      },
       card: {
         type: "Card",
         props: { title: t("quick_links"), variant: "bento", animate: true },
-        children: passportUrl ? ["link1", "link2", "link3"] : ["link1", "link2"],
+        children: passportUrl ? ["link1", "link2", "link3"] : ["link1", "link2", "publish"],
       },
       link1: {
         type: "LinkItem",

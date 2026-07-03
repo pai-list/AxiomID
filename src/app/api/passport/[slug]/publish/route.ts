@@ -81,7 +81,7 @@ export async function POST(
       return apiError("FORBIDDEN", "You are not authorized to publish this passport");
     }
 
-    const did = user.did || createUserDid(user.id);
+    const did = user.did || createUserDid(user.id, user.piUid || undefined);
     const stamps = user.stamps || [];
     const trustScore = calculateTrustScore(user.xp || 0, stamps.length);
 
@@ -111,6 +111,12 @@ export async function POST(
         logger.error("Stellar anchoring failed (non-fatal)", { error: anchorErr });
       }
     }
+
+    // Save the passport URL to the user record so it appears in the UI
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passportUrl: ipfsResult.url },
+    });
 
     return apiSuccess({
       cid: ipfsResult.cid,

@@ -6,6 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
 import { SlugParamSchema } from '@/lib/validators';
+import { requireAuth } from '@/lib/auth-middleware';
 
 /**
  * POST /api/skills/[slug]/execute — Record a skill execution and update stats.
@@ -33,6 +34,10 @@ export async function POST(
     return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
   }
 
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+  const { user } = auth;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -54,9 +59,22 @@ export async function POST(
       return apiError('NOT_FOUND', `Skill "${slug}" not found`);
     }
 
+    // Verify user has installed the skill
+    const installation = await prisma.skillInstallation.findFirst({
+      where: {
+        skillId: skill.id,
+        userId: user.id
+      }
+    });
+
+    if (!installation && skill.authorId !== user.id) {
+      return apiError('FORBIDDEN', 'You must install this skill before executing it');
+    }
+
     const execution = await prisma.skillExecution.create({
       data: {
         skillId: skill.id,
+        userId: user.id,
         success: success !== false,
         input: input ?? undefined,
         output: output ?? undefined,

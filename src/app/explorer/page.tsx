@@ -1,3 +1,9 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Agent Explorer',
+  description: 'Browse and discover verified AI agents on the AxiomID network.',
+};
 "use client";
 
 import React, { useState, useEffect } from "react";

@@ -21,4 +21,7 @@ Allow: /.well-known/
 Allow: /api/did-document
 Disallow: /api/agent/sign
 Disallow: /api/oauth2/
-Disallow: /dashboard/
+Allow: /dashboard/
+Allow: /leaderboard/
+Allow: /explorer/
+Allow: /claim/
