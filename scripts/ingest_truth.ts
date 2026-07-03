@@ -223,7 +223,7 @@ function storeVectors(verses: VerseEntry[], embeddings: number[][]) {
     const ndjson = vectors.map((v) => JSON.stringify(v)).join("\n");
     writeFileSync(batchFile, ndjson);
 
-    execFileSync("npx", ["wrangler", "vectorize", "insert", VECTORIZE_INDEX, "--file", batchFile], { cwd: "backend", stdio: "pipe" });
+    execFileSync(NPX_CMD, ["wrangler", "vectorize", "insert", VECTORIZE_INDEX, "--file", batchFile], { cwd: "backend", stdio: "pipe" });
 
     unlinkSync(batchFile);
     if (Math.floor(i / VEC_BATCH) % 5 === 0) {
