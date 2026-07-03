@@ -196,7 +196,7 @@ function executeD1Batch(files: string[], remote: boolean) {
     const args = ["wrangler", "d1", "execute", "truth-db"];
     if (remote) args.push("--remote");
     args.push("--file", f);
-    execFileSync("npx", args, { cwd: "backend", stdio: "pipe" });
+    execFileSync(NPX_CMD, args, { cwd: "backend", stdio: "pipe" });
   }
 }
 
