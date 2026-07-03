@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLanguage } from "@/app/context/language-context";
 import { toast } from "sonner";
 import { AxiomRenderer } from "../ui/AxiomRenderer";
@@ -21,7 +20,7 @@ interface QuickLinksCardProps {
  */
 export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCardProps) {
   const { t } = useLanguage();
-  const handlePublish = async () => {
+    const handlePublish = useCallback(async () => {
     setPublishing(true);
     const promise = fetch(`/api/passport/${passportSlug}/publish`, { method: 'POST' });
 
@@ -36,7 +35,7 @@ export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCar
       error: 'Failed to publish passport',
       finally: () => setPublishing(false)
     });
-  };
+  }, [passportSlug, toast]);
 
   const [publishing, setPublishing] = useState(false);
   
