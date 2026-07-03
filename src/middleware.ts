@@ -87,7 +87,8 @@ export function middleware(request: NextRequest) {
 
   if (isSubdomain) {
     if (!url.pathname.startsWith("/api/")) {
-      const subdomain = host.replace(`.${ROOT_DOMAIN}`, "");
+      const plainHost = host.replace(/:\d+$/, '');
+      const subdomain = plainHost.replace('.' + ROOT_DOMAIN, '');
       
       if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain) || subdomain.length > 63) {
         return withCors(new NextResponse("Invalid subdomain", { status: 400 }));
