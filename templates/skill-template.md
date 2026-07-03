@@ -2,10 +2,7 @@
 <!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
 
 ## مبدأ التوافق — Principle Alignment
-<!-- TODO: Describe which SOUL principle this skill serves.
-     Vigilance / Correction / Ledger / Triad / Septet / Compounding.
-
-     Required. -->
+This skill aligns with **Vigilance (Muraqabah)**. Every mutating action is logged to ensure complete intention transparency and divine awareness of all state changes.
 
 ## سير التشغيل — Operational Flow
 <!-- TODO: List numbered steps describing execution. Required.
