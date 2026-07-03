@@ -20,6 +20,13 @@ jest.mock("@/lib/prisma", () => ({
     skill: {
       update: jest.fn(),
     },
+    $transaction: jest.fn().mockImplementation(async (callback) => {
+      // Pass a fake tx object that mimics the prisma client
+      return await callback({
+        skillModeration: prisma.skillModeration,
+        skill: prisma.skill,
+      });
+    }),
   },
 }));
 
