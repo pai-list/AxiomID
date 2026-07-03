@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-middleware";
@@ -6,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { isAdmin } from "@/lib/admin";
+import { ModerationActionSchema, ModerationIdParamSchema } from "@/lib/validators";
 
 export async function POST(
   request: NextRequest,
@@ -14,13 +16,21 @@ export async function POST(
   const auth = await requireAuth(request);
   if (auth.error) return auth.error;
 
+  if (!isAdmin(auth.user)) {
+    return apiError("FORBIDDEN", "Admin access required");
+  }
+
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`admin-skills-id:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
     return apiError("RATE_LIMITED", "Too many requests. Try again later.", undefined, rateLimitHeaders(rateLimit));
   }
 
-  if (!isAdmin(auth.user)) return apiError("FORBIDDEN", "Admin access required");
+  const resolvedParams = await params;
+  const parsedParams = ModerationIdParamSchema.safeParse(resolvedParams);
+  if (!parsedParams.success) {
+    return apiError("VALIDATION_ERROR", parsedParams.error.issues[0].message, parsedParams.error.issues);
+  }
 
   let body: unknown;
   try {
@@ -29,52 +39,48 @@ export async function POST(
     return apiError("VALIDATION_ERROR", "Invalid JSON body");
   }
 
-  const { id } = await params;
-  if (!id) {
-    return apiError("VALIDATION_ERROR", "Moderation id is required");
+  const parsed = ModerationActionSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("VALIDATION_ERROR", parsed.error.issues[0].message, parsed.error.issues);
   }
 
-  const { action, reason, notes } = body as { action: string; reason?: string; notes?: string };
-
-  if (!action) {
-    return apiError("VALIDATION_ERROR", "action is required");
-  }
-
-  if (!["approve", "reject"].includes(action)) {
-    return apiError("VALIDATION_ERROR", "action must be 'approve' or 'reject'");
-  }
+  const { action, reason, notes } = parsed.data;
+  const moderationId = parsedParams.data.id;
 
   try {
-    const existing = await prisma.skillModeration.findUnique({ where: { id } });
-    if (!existing) {
-      return apiError("NOT_FOUND", "Moderation not found");
-    }
-
-    const moderation = await prisma.skillModeration.update({
-      where: { id },
-      data: {
-        reviewerId: auth.user.id,
-        status: action === "approve" ? "APPROVED" : "REJECTED",
-        reason,
-        notes
-      },
+    const existing = await prisma.skillModeration.findUnique({
+      where: { id: moderationId },
     });
 
-    if (action === "approve") {
-      await prisma.skill.update({
-        where: { id: moderation.skillId },
-        data: { status: "PUBLISHED", isPublished: true },
-      });
-    } else {
-      await prisma.skill.update({
-        where: { id: moderation.skillId },
-        data: { status: "DRAFT", isPublished: false },
-      });
+    if (!existing) {
+      return apiError("NOT_FOUND", "Moderation entry not found");
     }
 
-    return apiSuccess({ moderation });
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const moderation = await tx.skillModeration.update({
+        where: { id: moderationId },
+        data: {
+          status: action === "approve" ? "APPROVED" : "REJECTED",
+          reviewerId: auth.user.id,
+          reason: reason ?? null,
+          notes: notes ?? null,
+        },
+      });
+
+      await tx.skill.update({
+        where: { id: existing.skillId },
+        data: {
+          status: action === "approve" ? "PUBLISHED" : "DRAFT",
+          isPublished: action === "approve",
+        },
+      });
+
+      return moderation;
+    });
+
+    return apiSuccess({ moderation: result });
   } catch (error) {
-    logger.error("[ADMIN-SKILLS] Error:", error);
-    return apiError("INTERNAL_ERROR", "Failed to process moderation");
+    logger.error("[ADMIN-SKILLS-ACTION] Database error:", error);
+    return apiError("INTERNAL_ERROR", "Failed to update moderation status");
   }
 }
