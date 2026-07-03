@@ -77,8 +77,8 @@ const mockNonAdminUser = {
 };
 
 const MOCK_MODERATION = {
-  id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  skillId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  id: "a1b2c3d4-e5f6-4890-8bcd-ef1234567890",
+  skillId: "b2c3d4e5-f6a7-4901-abcd-f12345678901",
   status: "PENDING",
   reviewerId: null,
   reason: null,
@@ -86,7 +86,7 @@ const MOCK_MODERATION = {
   createdAt: new Date(),
   updatedAt: new Date(),
   skill: {
-    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    id: "b2c3d4e5-f6a7-4901-abcd-f12345678901",
     slug: "test-skill",
     name: "Test Skill",
     description: "A test skill",
@@ -100,7 +100,7 @@ function mockGetRequest(url?: string) {
   }) as any;
 }
 
-function mockPostRequest(body: unknown, id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890") {
+function mockPostRequest(body: unknown, id = "a1b2c3d4-e5f6-4890-8bcd-ef1234567890") {
   return new NextRequest(`http://localhost/api/admin/skills/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -108,7 +108,7 @@ function mockPostRequest(body: unknown, id = "a1b2c3d4-e5f6-7890-abcd-ef12345678
   }) as any;
 }
 
-function makeParams(id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890") {
+function makeParams(id = "a1b2c3d4-e5f6-4890-8bcd-ef1234567890") {
   return { params: Promise.resolve({ id }) };
 }
 
@@ -192,8 +192,6 @@ describe("GET /api/admin/skills — admin check", () => {
     const req = mockGetRequest();
     const res = await GET(req);
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
   });
 });
@@ -214,11 +212,9 @@ describe("GET /api/admin/skills — business logic", () => {
     const res = await GET(req);
     const data = await res.json();
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderations).toHaveLength(1);
-    expect(data.moderations[0].id).toBe("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    expect(data.moderations[0].id).toBe("a1b2c3d4-e5f6-4890-8bcd-ef1234567890");
   });
 
   it("returns empty array when no pending entries", async () => {
@@ -228,8 +224,6 @@ describe("GET /api/admin/skills — business logic", () => {
     const res = await GET(req);
     const data = await res.json();
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderations).toEqual([]);
   });
@@ -350,12 +344,11 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
   });
 });
@@ -413,6 +406,7 @@ describe("POST /api/admin/skills/[id] — validation", () => {
 describe("POST /api/admin/skills/[id] — business logic", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPrisma.skill.update.mockResolvedValue({} as any);
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
@@ -443,8 +437,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
     const res = await POST(req, makeParams());
     const data = await res.json();
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderation.status).toBe("APPROVED");
     expect(data.moderation.reviewerId).toBe(mockAdminUser.id);
@@ -469,8 +461,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
     const res = await POST(req, makeParams());
     const data = await res.json();
 
-    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
-    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderation.status).toBe("REJECTED");
     expect(data.moderation.reason).toBe("Does not meet quality standards");
