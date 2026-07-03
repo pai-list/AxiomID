@@ -577,21 +577,25 @@ export function mctsIterate(
   return root;
 }
 
+export interface MCTSBestActionConfig {
+  root: MCTSNode;
+  iterations?: number;
+  possibleActions: string[];
+  simulateFn: (state: Record<string, unknown>) => number;
+}
+
 /**
  * Selects the most visited action from the root after repeated MCTS iterations.
  *
- * @param root - The search tree root
- * @param iterations - The number of MCTS iterations to run
- * @param possibleActions - The actions used to expand the tree
- * @param simulateFn - Computes the reward for a simulated state
+ * @param config - The configuration object
  * @returns The action associated with the most visited child, or `null` if the root has no children
  */
-export function mctsBestAction(
-  root: MCTSNode,
-  iterations: number = 1000,
-  possibleActions: string[],
-  simulateFn: (state: Record<string, unknown>) => number,
-): string | null {
+export function mctsBestAction({
+  root,
+  iterations = 1000,
+  possibleActions,
+  simulateFn,
+}: MCTSBestActionConfig): string | null {
   for (let i = 0; i < iterations; i++) {
     mctsIterate(root, possibleActions, simulateFn);
   }
