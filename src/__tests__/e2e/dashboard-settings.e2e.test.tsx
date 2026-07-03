@@ -3,11 +3,8 @@ HTMLDialogElement.prototype.showModal = jest.fn();
 HTMLDialogElement.prototype.close = jest.fn();
 import React from "react";
 import { render, screen, act, waitFor, fireEvent } from "@testing-library/react";
-import { VisibilityProvider, JSONUIProvider } from "@json-render/react";
-import { LanguageProvider } from "@/app/context/language-context";
 import SettingsPage from "@/app/dashboard/settings/page";
-import { WalletProvider, useWallet } from "@/app/context/wallet-context";
-import { defaultLanguageCtx } from "../app/wallet-test-helpers";
+import { useWallet } from "@/app/context/wallet-context";
 
 // Mock next/link
 jest.mock("next/link", () => {
@@ -105,8 +102,7 @@ describe("Dashboard Settings Page E2E/Integration", () => {
   });
 
   it("loads the page, fetches status details, and allows navigating through tabs", async () => {
-    const { unmount } = render(<SettingsPage />);
-    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    render(<SettingsPage />);
 
     // Check default tab (Profile)
     await waitFor(() => {
@@ -143,8 +139,7 @@ describe("Dashboard Settings Page E2E/Integration", () => {
   });
 
   it("handles the full disconnect flow successfully", async () => {
-    const { unmount } = render(<SettingsPage />);
-    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    render(<SettingsPage />);
 
     // Navigate to Settings tab where Danger Zone is
     act(() => { fireEvent.click(screen.getByText("settings_sidebar_settings")); });
@@ -176,8 +171,7 @@ describe("Dashboard Settings Page E2E/Integration", () => {
   });
 
   it("handles the export data functionality", async () => {
-    const { unmount } = render(<SettingsPage />);
-    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    render(<SettingsPage />);
 
     // Navigate to Settings tab
     act(() => { fireEvent.click(screen.getByText("settings_sidebar_settings")); });
@@ -191,8 +185,7 @@ describe("Dashboard Settings Page E2E/Integration", () => {
   });
 
   it("allows inspecting verifiable credentials from the accounts tab", async () => {
-    const { unmount } = render(<SettingsPage />);
-    await act(async () => { await new Promise(r => setTimeout(r, 0)); });
+    render(<SettingsPage />);
 
     // Navigate to Accounts tab
     act(() => { fireEvent.click(screen.getByText("settings_sidebar_accounts")); });
