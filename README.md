@@ -271,11 +271,11 @@ npm install @axiomid/crypto
 ```
 
 ```typescript
-import { generateKeypair, sign, verify } from "@axiomid/crypto";
+import { deriveKeypair, signPayload, verifySignature } from "@axiomid/crypto";
 
-const keypair = generateKeypair();
-const signature = sign(keypair.privateKey, "message");
-const valid = verify(keypair.publicKey, "message", signature);
+const keypair = deriveKeypair("seed");
+const signature = signPayload(keypair.privateKey, "message");
+const valid = verifySignature(keypair.publicKey, "message", signature);
 ```
 
 *Both packages are MIT-licensed for community use. See [`packages/sdk/`](./packages/sdk) and [`packages/crypto/`](./packages/crypto).*
