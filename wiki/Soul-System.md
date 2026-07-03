@@ -20,7 +20,7 @@ The **Soul System** is AxiomID's ethical framework — six principles derived fr
 | 2 | `TAWBAH` | التصحيح | **Correction** — Self-Correction | `#3b82f6` |
 | 3 | `TRUSTCHAIN` | السجل | **Ledger** — The Guardian | `#6366f1` |
 | 4 | `TASBIH` | الثلاثية | **Triad** — Three Retry Cycles | `#f59e0b` |
-| 5 | `SABIYYAH` | السبعية | **Septet** — Cycle Learning | `#ec4899` |
+| 5 | SABIYYAH | السبعية | Septet — Cycle Learning | #ec4899 |
 | 6 | `BARAKAH` | التراكم | **Compounding** — Milestone Multiplication | `#14b8a6` |
 
 ---
