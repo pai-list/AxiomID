@@ -3,7 +3,7 @@
  * Timing-safe shared-secret verification.
  */
 
-import { timingSafeEqual } from "node:crypto";
+import { timingSafeEqual, createHash } from "node:crypto";
 import type { Env } from "./types";
 
 export const PUBLIC_ROUTES = ["/health", "/status", "/api/trust/", "/api/truth/", "/api/skills"];
