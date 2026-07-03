@@ -100,11 +100,11 @@ function mockGetRequest(url?: string) {
   }) as any;
 }
 
-function mockPostRequest(body: unknown, id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890") {
+function mockPostRequest(body: any, id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890") {
   return new NextRequest(`http://localhost/api/admin/skills/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: typeof body === "string" ? body : JSON.stringify(body),
+    body: JSON.stringify(body),
   }) as any;
 }
 
@@ -112,18 +112,23 @@ function makeParams(id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890") {
   return { params: Promise.resolve({ id }) };
 }
 
+// ─── Top-level Setup ──────────────────────────────────────────
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
+  mockGetClientIp.mockReturnValue("127.0.0.1");
+  mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
+  mockIsAdmin.mockReturnValue(true);
+  mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+  mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
+  mockPrisma.skill.update.mockResolvedValue({} as any);
+  mockPrisma.skillModeration.findMany.mockResolvedValue([]);
+});
+
 // ─── GET /api/admin/skills ────────────────────────────────────
 
 describe("GET /api/admin/skills — rate limiting", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-    mockPrisma.skillModeration.findMany.mockResolvedValue([]);
-  });
-
   it("returns 429 when rate limit exceeded", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
 
@@ -147,31 +152,18 @@ describe("GET /api/admin/skills — rate limiting", () => {
 });
 
 describe("GET /api/admin/skills — auth", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-  });
-
   it("returns 401 when authentication fails", async () => {
     const { apiError } = jest.requireActual("@/lib/errors") as any;
     mockRequireAuth.mockResolvedValue({ error: apiError("UNAUTHORIZED", "Unauthorized"), user: null });
 
     const req = mockGetRequest();
     const res = await GET(req);
-    const data = await res.json();
 
     expect(res.status).toBe(401);
   });
 });
 
 describe("GET /api/admin/skills — admin check", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-  });
-
   it("returns 403 when user is not admin", async () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockNonAdminUser });
     mockIsAdmin.mockReturnValue(false);
@@ -185,10 +177,6 @@ describe("GET /api/admin/skills — admin check", () => {
   });
 
   it("allows admin user", async () => {
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-    mockPrisma.skillModeration.findMany.mockResolvedValue([]);
-
     const req = mockGetRequest();
     const res = await GET(req);
 
@@ -197,14 +185,6 @@ describe("GET /api/admin/skills — admin check", () => {
 });
 
 describe("GET /api/admin/skills — business logic", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-  });
-
   it("returns pending moderation entries", async () => {
     mockPrisma.skillModeration.findMany.mockResolvedValue([MOCK_MODERATION]);
 
@@ -214,7 +194,7 @@ describe("GET /api/admin/skills — business logic", () => {
 
     expect(res.status).toBe(200);
     expect(data.moderations).toHaveLength(1);
-    expect(data.moderations[0].id).toBe("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    expect(data.moderations[0].id).toBe(MOCK_MODERATION.id);
   });
 
   it("returns empty array when no pending entries", async () => {
@@ -229,8 +209,6 @@ describe("GET /api/admin/skills — business logic", () => {
   });
 
   it("filters by PENDING status", async () => {
-    mockPrisma.skillModeration.findMany.mockResolvedValue([]);
-
     const req = mockGetRequest();
     await GET(req);
 
@@ -242,8 +220,6 @@ describe("GET /api/admin/skills — business logic", () => {
   });
 
   it("includes skill relation", async () => {
-    mockPrisma.skillModeration.findMany.mockResolvedValue([MOCK_MODERATION]);
-
     const req = mockGetRequest();
     await GET(req);
 
@@ -269,16 +245,6 @@ describe("GET /api/admin/skills — business logic", () => {
 // ─── POST /api/admin/skills/[id] ─────────────────────────────
 
 describe("POST /api/admin/skills/[id] — rate limiting", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
-    mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
-  });
-
   it("returns 429 when rate limit exceeded", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
 
@@ -302,31 +268,18 @@ describe("POST /api/admin/skills/[id] — rate limiting", () => {
 });
 
 describe("POST /api/admin/skills/[id] — auth", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-  });
-
   it("returns 401 when authentication fails", async () => {
     const { apiError } = jest.requireActual("@/lib/errors") as any;
     mockRequireAuth.mockResolvedValue({ error: apiError("UNAUTHORIZED", "Unauthorized"), user: null });
 
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
-    const data = await res.json();
 
     expect(res.status).toBe(401);
   });
 });
 
 describe("POST /api/admin/skills/[id] — admin check", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-  });
-
   it("returns 403 when user is not admin", async () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockNonAdminUser });
     mockIsAdmin.mockReturnValue(false);
@@ -340,11 +293,6 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
   });
 
   it("allows admin user", async () => {
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
-    mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
-
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
 
@@ -353,16 +301,8 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
 });
 
 describe("POST /api/admin/skills/[id] — validation", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-  });
-
   it("returns 400 for invalid JSON body", async () => {
-    const req = new NextRequest("http://localhost/api/admin/skills/mod-1", {
+    const req = new NextRequest("http://localhost/api/admin/skills/a1b2c3d4-e5f6-7890-abcd-ef1234567890", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "{bad",
@@ -403,14 +343,6 @@ describe("POST /api/admin/skills/[id] — validation", () => {
 });
 
 describe("POST /api/admin/skills/[id] — business logic", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
-    mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
-    mockIsAdmin.mockReturnValue(true);
-  });
-
   it("returns 404 when moderation entry does not exist", async () => {
     mockPrisma.skillModeration.findUnique.mockResolvedValue(null);
 
@@ -423,13 +355,11 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
   });
 
   it("approves a skill moderation entry", async () => {
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
     mockPrisma.skillModeration.update.mockResolvedValue({
       ...MOCK_MODERATION,
       status: "APPROVED",
       reviewerId: mockAdminUser.id,
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
@@ -441,7 +371,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
   });
 
   it("rejects a skill moderation entry with reason", async () => {
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
     mockPrisma.skillModeration.update.mockResolvedValue({
       ...MOCK_MODERATION,
       status: "REJECTED",
@@ -449,7 +378,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
       reason: "Does not meet quality standards",
       notes: "Please improve documentation",
     });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
 
     const req = mockPostRequest({
       action: "reject",
@@ -466,13 +394,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
   });
 
   it("updates skill status to PUBLISHED on approve", async () => {
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
-    mockPrisma.skillModeration.update.mockResolvedValue({
-      ...MOCK_MODERATION,
-      status: "APPROVED",
-    });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
-
     const req = mockPostRequest({ action: "approve" });
     await POST(req, makeParams());
 
@@ -483,13 +404,6 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
   });
 
   it("updates skill status to DRAFT on reject", async () => {
-    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
-    mockPrisma.skillModeration.update.mockResolvedValue({
-      ...MOCK_MODERATION,
-      status: "REJECTED",
-    });
-    mockPrisma.skill.update.mockResolvedValue({} as any);
-
     const req = mockPostRequest({ action: "reject", reason: "Bad skill" });
     await POST(req, makeParams());
 

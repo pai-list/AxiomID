@@ -1,12 +1,10 @@
 ## الغرض — Purpose
-<!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
+توفر هذه المهارة وظيفة محددة لتعزيز قدرات العميل الذكي في إطار عمل AxiomID.
+This skill provides specific functionality to enhance agent capabilities within the AxiomID framework.
 
 ## مبدأ التوافق — Principle Alignment
-تتوافق هذه المهارة مع مبادئ SOUL من خلال تحديد المبدأ المناسب (اليقظة / التصحيح / السباعية / الأخلاقي / المراجعة الذاتية).
-<!-- TODO: Describe which active SOUL principle this skill serves.
-     Vigilance (Muraqabah) / Correction (Tawbah) / Septet (Sab'iyyah) / Ethical / Self-Review.
-
-     Required. -->
+تتوافق هذه المهارة مع مبادئ SOUL من خلال ضمان الشفافية والمساءلة في معالجة الهوية والبيانات.
+This skill aligns with SOUL principles by ensuring transparency and accountability in identity and data processing.
 
 ## سير التشغيل — Operational Flow
 1. استقبال المدخلات والتحقق من صحة تكامل الطلب.
@@ -23,8 +21,8 @@
 ## أنماط الفشل — Failure Modes
 | النمط (Mode) | الكشف (Detection) | الاسترداد (Recovery) |
 | :--- | :--- | :--- |
-| فشل الهوية (Identity Failure) | توقيع غير صالح (Invalid Signature) | رفض الطلب مع رمز الخطأ AXIOM_E401 / Reject request with AXIOM_E401 |
-| تجاوز المهلة (Timeout) | مراقب التنفيذ (Execution Watchdog) | إلغاء العملية وإعادة المحاولة (حد أقصى 3 دورات مع تراجع أسي) / Cancel and retry (max 3 cycles with exponential backoff) |
+| فشل الهوية (Identity Failure) | توقيع غير صالح (Invalid Signature) | رفض الطلب مع رمز الخطأ AXIOM_E401 |
+| تجاوز المهلة (Timeout) | مراقب التنفيذ (Execution Watchdog) | إلغاء العملية وإعادة المحاولة التلقائية |
 
 ## الوسوم — Tags
 axiom-identity, agent-skill, decentralized-logic
