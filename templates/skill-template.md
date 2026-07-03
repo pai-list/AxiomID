@@ -16,11 +16,10 @@
 ## أنماط الفشل — Failure Modes
 | النمط (Mode) | الكشف (Detection) | الاسترداد (Recovery) |
 | :--- | :--- | :--- |
-| RATE_LIMITED | HTTP 429 response / استجابة 429 | Exponential backoff / تراجع أسي |
-| TIMEOUT | No response > 30s / لا توجد استجابة > 30 ثانية | Retry up to 3 times / إعادة المحاولة حتى 3 مرات |
-| AUTH_ERROR | 401 Unauthorized / 401 غير مصرح به | Refresh session/token / تحديث الجلسة/الرمز |
-| INVALID_DATA | Validation failure / فشل التحقق من البيانات | Log and notify user / تسجيل وتنبيه المستخدم |
-| TODO: Custom Mode | TODO: Detection | TODO: Recovery |
+| RATE_LIMITED | HTTP 429 response | Exponential backoff |
+| TIMEOUT | No response > 30s | Retry up to 3 times |
+| AUTH_ERROR | 401 Unauthorized | Refresh session/token |
+| INVALID_DATA | Validation failure | Log and notify user |
 
 ## الوسوم — Tags
 <!-- Optional: comma-separated tags. -->

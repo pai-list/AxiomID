@@ -192,6 +192,8 @@ describe("GET /api/admin/skills — admin check", () => {
     const req = mockGetRequest();
     const res = await GET(req);
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
   });
 });
@@ -212,6 +214,8 @@ describe("GET /api/admin/skills — business logic", () => {
     const res = await GET(req);
     const data = await res.json();
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderations).toHaveLength(1);
     expect(data.moderations[0].id).toBe("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
@@ -224,6 +228,8 @@ describe("GET /api/admin/skills — business logic", () => {
     const res = await GET(req);
     const data = await res.json();
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderations).toEqual([]);
   });
@@ -348,6 +354,8 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
     const req = mockPostRequest({ action: "approve" });
     const res = await POST(req, makeParams());
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
   });
 });
@@ -435,6 +443,8 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
     const res = await POST(req, makeParams());
     const data = await res.json();
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderation.status).toBe("APPROVED");
     expect(data.moderation.reviewerId).toBe(mockAdminUser.id);
@@ -459,6 +469,8 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
     const res = await POST(req, makeParams());
     const data = await res.json();
 
+    if (res.status !== 200) { const body = await res.json(); console.error("Response failed:", res.status, body); }
+    if (res.status === 500) { const { logger } = require("@/lib/logger"); console.error("LOGGER ERROR CALLS:", JSON.stringify(logger.error.mock.calls, null, 2)); }
     expect(res.status).toBe(200);
     expect(data.moderation.status).toBe("REJECTED");
     expect(data.moderation.reason).toBe("Does not meet quality standards");
