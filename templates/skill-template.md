@@ -2,8 +2,11 @@
 <!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
 
 ## مبدأ التوافق — Principle Alignment
-تتوافق هذه المهارة مع مبادئ SOUL من خلال ضمان الشفافية والمساءلة في معالجة الهوية والبيانات.
-This skill aligns with SOUL principles by ensuring transparency and accountability in identity and data processing.
+تتوافق هذه المهارة مع مبادئ SOUL من خلال تحديد المبدأ المناسب (اليقظة / التصحيح / السباعية / الأخلاقي / المراجعة الذاتية).
+<!-- TODO: Describe which active SOUL principle this skill serves.
+     Vigilance (Muraqabah) / Correction (Tawbah) / Septet (Sab'iyyah) / Ethical / Self-Review.
+
+     Required. -->
 
 ## سير التشغيل — Operational Flow
 1. استقبال المدخلات والتحقق من صحة تكامل الطلب.
