@@ -276,6 +276,7 @@ describe("POST /api/admin/skills/[id] — rate limiting", () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.$transaction = jest.fn(async (cb) => cb(mockPrisma));
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
   });
 
@@ -343,6 +344,7 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.$transaction = jest.fn(async (cb) => cb(mockPrisma));
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
 
     const req = mockPostRequest({ action: "approve" });
