@@ -1,6 +1,5 @@
 ## الغرض — Purpose
-توفر هذه المهارة وظيفة محددة لتعزيز قدرات العميل الذكي في إطار عمل AxiomID.
-This skill provides specific functionality to enhance agent capabilities within the AxiomID framework.
+<!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
 
 ## مبدأ التوافق — Principle Alignment
 تتوافق هذه المهارة مع مبادئ SOUL من خلال ضمان الشفافية والمساءلة في معالجة الهوية والبيانات.
