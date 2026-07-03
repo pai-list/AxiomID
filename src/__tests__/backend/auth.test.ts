@@ -6,7 +6,7 @@
  * Uses inline replicas to avoid Cloudflare-specific module resolution issues.
  */
 
-import { timingSafeEqual } from "node:crypto";
+import { timingSafeEqual, createHash } from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // Inline replicas matching backend/src/lib/auth.ts exactly
