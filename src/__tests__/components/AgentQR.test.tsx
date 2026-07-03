@@ -4,7 +4,7 @@ import { AgentQR } from "@/components/AgentQR";
 
 // Mock QRCodeSVG to isolate testing and avoid actual canvas rendering issues
 jest.mock("qrcode.react", () => ({
-  QRCodeSVG: ({ value, size, "aria-label": ariaLabel, bgColor, fgColor, level, includeMargin }: any) => (
+  QRCodeSVG: ({ value, size, "aria-label": ariaLabel, bgColor, fgColor, level, includeMargin }: { value: string; size?: number; "aria-label"?: string; bgColor?: string; fgColor?: string; level?: string; includeMargin?: boolean }) => (
     <svg
       data-testid="qrcode-svg"
       data-value={value}
