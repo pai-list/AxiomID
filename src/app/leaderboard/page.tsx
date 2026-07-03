@@ -1,9 +1,3 @@
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Leaderboard',
-  description: 'Top AxiomID users ranked by XP and trust score.',
-};
 "use client";
 
 import React, { useState, useEffect } from "react";
