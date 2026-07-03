@@ -18,6 +18,7 @@ const customJestConfig = {
     '^@emulators/github$': '<rootDir>/node_modules/@emulators/github/dist/index.js',
     '^@emulators/adapter-next$': '<rootDir>/node_modules/@emulators/adapter-next/dist/index.js',
     '^@emulators/core$': '<rootDir>/node_modules/@emulators/core/dist/index.js',
+    '^@stellar/stellar-sdk$': '<rootDir>/src/__mocks__/@stellar/stellar-sdk.js',
   },
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -38,5 +39,16 @@ const customJestConfig = {
   },
 }
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+const buildConfig = createJestConfig(customJestConfig);
+module.exports = async () => {
+  const config = await buildConfig();
+  // Transpile ESM-only packages that ship un-bundled ES modules
+  const esmPackages = '@noble/hashes|@noble/ed25519|@stellar/stellar-sdk|@stellar/stellar-base|uint8array-extras';
+  const transpilePattern = `/node_modules/(?!(${esmPackages})/)`;
+  // Safe merge: keep any existing patterns from Next.js defaults, replace only the default node_modules rule
+  config.transformIgnorePatterns = [
+    ...(config.transformIgnorePatterns || []).filter(p => p !== '/node_modules/'),
+    transpilePattern,
+  ];
+  return config;
+};
