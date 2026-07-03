@@ -1,9 +1,3 @@
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Documentation',
-  description: 'Learn how to integrate AxiomID, manage stamps, and build sovereign agents.',
-};
 "use client";
 
 import React, { useState, useMemo } from "react";
