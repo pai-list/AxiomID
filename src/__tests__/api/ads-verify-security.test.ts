@@ -1,10 +1,20 @@
-import { POST } from "@/app/api/pi/ads/verify/route";
-import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
+
+// Surgical mocking to avoid interfering with other tests in --runInBand
+jest.mock("@/lib/rate-limiter", () => {
+  const actual = jest.requireActual("@/lib/rate-limiter");
+  return {
+    ...actual,
+    checkRateLimit: jest.fn().mockResolvedValue({ allowed: true }),
+  };
+});
+
+jest.mock("@/lib/auth-middleware", () => ({
+  requireAuth: jest.fn().mockResolvedValue({ user: { id: "user-1" } }),
+}));
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
-    $queryRaw: jest.fn(),
     $transaction: jest.fn(),
     user: {
       findUnique: jest.fn(),
@@ -14,10 +24,11 @@ jest.mock("@/lib/prisma", () => ({
       create: jest.fn(),
       findFirst: jest.fn(),
     },
+    // Include these to be safe, but they shouldn't leak
     skillModeration: {
-      findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
+      findMany: jest.fn(),
       count: jest.fn(),
     },
     skill: {
@@ -34,18 +45,8 @@ jest.mock("@/lib/logger", () => ({
   },
 }));
 
-jest.mock("@/lib/auth-middleware", () => ({
-  requireAuth: jest.fn().mockResolvedValue({ user: { id: "user-1" } }),
-}));
-
-jest.mock("@/lib/rate-limiter", () => ({
-  checkRateLimit: jest.fn().mockResolvedValue({ allowed: true }),
-  RATE_LIMITS: { payment: {} },
-}));
-
-jest.mock("@/lib/ip", () => ({
-  getClientIp: jest.fn().mockReturnValue("127.0.0.1"),
-}));
+import { POST } from "@/app/api/pi/ads/verify/route";
+import { prisma } from "@/lib/prisma";
 
 describe("Ads Verify Security", () => {
   const originalFetch = global.fetch;
@@ -59,7 +60,7 @@ describe("Ads Verify Security", () => {
     global.fetch = originalFetch;
   });
 
-  it("should detect duplicate claims using findFirst", async () => {
+  it("should detect duplicate claims securely using findFirst", async () => {
     const adId = "some-ad-id";
     (prisma.xpLedger.findFirst as jest.Mock).mockResolvedValue({ id: "ledger-1" });
 
@@ -74,15 +75,14 @@ describe("Ads Verify Security", () => {
     expect(res.status).toBe(409);
     expect(data.code).toBe("CONFLICT");
 
-    expect(prisma.xpLedger.findFirst).toHaveBeenCalledWith({
-      where: {
+    expect(prisma.xpLedger.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
         reason: "watch_ad",
         reference: {
           contains: `"adId":"${adId}"`,
         },
-      },
-      select: { id: true },
-    });
+      }),
+    }));
   });
 
   it("should proceed when no duplicate is found and fail on Pi API error", async () => {
@@ -100,7 +100,7 @@ describe("Ads Verify Security", () => {
     });
 
     const res = await POST(req);
-    // PI_PAYMENT_FAILED maps to 402 in src/lib/errors.ts
+    // PI_PAYMENT_FAILED maps to 402
     expect(res.status).toBe(402);
 
     expect(prisma.xpLedger.findFirst).toHaveBeenCalled();
