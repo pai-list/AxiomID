@@ -476,13 +476,13 @@ describe("harmonicOscillator (PR sync)", () => {
   it("starts at amplitude * cos(phase) when damping=0 and time=0", () => {
     const amplitude = 1.0;
     const phase = 0;
-    const result = harmonicOscillator(amplitude, 0, 1, phase, 0);
+    const result = harmonicOscillator({ amplitude, damping: 0, frequency: 1, phase, time: 0 });
     expect(result).toBeCloseTo(amplitude, 5);
   });
 
   it("decays to 0 as time increases with positive damping", () => {
-    const early = harmonicOscillator(1, 0.5, 1, 0, 1);
-    const late = harmonicOscillator(1, 0.5, 1, 0, 100);
+    const early = harmonicOscillator({ amplitude: 1, damping: 0.5, frequency: 1, phase: 0, time: 1 });
+    const late = harmonicOscillator({ amplitude: 1, damping: 0.5, frequency: 1, phase: 0, time: 100 });
     expect(Math.abs(late)).toBeLessThan(Math.abs(early));
   });
 
@@ -490,7 +490,7 @@ describe("harmonicOscillator (PR sync)", () => {
     const amplitude = 2;
     const damping = 0.1;
     const time = 5;
-    const result = harmonicOscillator(amplitude, damping, 1, 0, time);
+    const result = harmonicOscillator({ amplitude, damping, frequency: 1, phase: 0, time });
     const envelope = amplitude * Math.exp(-damping * time);
     expect(Math.abs(result)).toBeLessThanOrEqual(envelope + 1e-10);
   });

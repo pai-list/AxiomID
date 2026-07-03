@@ -361,13 +361,21 @@ export function brownianSearch(
  *
  * Used to model trust score fluctuations over time.
  */
-export function harmonicOscillator(
-  amplitude: number,
-  damping: number,
-  frequency: number,
-  phase: number,
-  time: number,
-): number {
+export interface HarmonicOscillatorOptions {
+  amplitude: number;
+  damping: number;
+  frequency: number;
+  phase: number;
+  time: number;
+}
+
+export function harmonicOscillator({
+  amplitude,
+  damping,
+  frequency,
+  phase,
+  time,
+}: HarmonicOscillatorOptions): number {
   return amplitude * Math.exp(-damping * time) * Math.cos(frequency * time + phase);
 }
 
