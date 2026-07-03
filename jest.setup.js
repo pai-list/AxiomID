@@ -55,6 +55,7 @@ jest.mock("@/diagnostics/catalog", () => {
     AXIOMID_E024: jest.fn(),
     AXIOMID_E030: jest.fn(),
     AXIOMID_E040: jest.fn(),
+    AXIOMID_E050: jest.fn(),
   };
   return {
     diagnostics: new Proxy(diagnosticsMock, {
