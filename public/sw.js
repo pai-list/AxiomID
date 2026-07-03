@@ -1,8 +1,7 @@
-const CACHE = "axiomid-v4";
+const CACHE = "axiomid-v5";
 const STATIC_ASSET_PATTERN = /\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|otf|eot|map)$/;
 const STATIC_ASSETS = [
   "/manifest.webmanifest",
-  "/offline",
   "/icon-192x192.png",
   "/icon-512x512.png",
   "/axiomid-logo.jpg",
@@ -11,10 +10,6 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  if (typeof caches === "undefined") {
-    self.skipWaiting();
-    return;
-  }
   event.waitUntil(
     caches
       .open(CACHE)
@@ -27,10 +22,6 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  if (typeof caches === "undefined") {
-    self.clients.claim();
-    return;
-  }
   event.waitUntil(
     caches
       .keys()
@@ -44,9 +35,6 @@ self.addEventListener("activate", (event) => {
 // Static immutable assets that are safe to serve Stale-While-Revalidate.
 
 self.addEventListener("fetch", (event) => {
-  if (typeof caches === "undefined") {
-    return;
-  }
   const url = new URL(event.request.url);
 
   // Bypass caching for non-GET requests, APIs, and external origins.
@@ -81,10 +69,7 @@ self.addEventListener("fetch", (event) => {
       fetchPromise.then(() => cacheWritePromise).catch(() => {})
     );
     event.respondWith(
-      fetchPromise.catch(async () => {
-        const cached = await caches.match(event.request);
-        return cached || caches.match("/offline");
-      })
+      fetchPromise.catch(() => caches.match(event.request))
     );
     return;
   }
