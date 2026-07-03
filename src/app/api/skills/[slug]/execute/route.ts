@@ -60,10 +60,11 @@ export async function POST(
     }
 
     // Verify user has installed the skill
+    // Verify user has installed the skill via their agent
     const installation = await prisma.skillInstallation.findFirst({
       where: {
         skillId: skill.id,
-        userId: user.id
+        agent: { userId: user.id }
       }
     });
 
@@ -71,10 +72,15 @@ export async function POST(
       return apiError('FORBIDDEN', 'You must install this skill before executing it');
     }
 
+    // Find user agent to associate with execution
+    const userAgent = await prisma.userAgent.findUnique({
+      where: { userId: user.id }
+    });
+
     const execution = await prisma.skillExecution.create({
       data: {
         skillId: skill.id,
-        userId: user.id,
+        agentId: userAgent?.id || null,
         success: success !== false,
         input: input ?? undefined,
         output: output ?? undefined,
