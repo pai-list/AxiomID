@@ -1,5 +1,6 @@
 ## الغرض — Purpose
-<!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
+تمكن هذه المهارة الوكيل الآلي من تنفيذ منطق متخصص داخل بيئة AxiomID السيادية، مما يوفر جسراً قابلاً للتحقق بين النية البشرية والعمل المؤتمت.
+This skill enables an AI agent to execute specialized logic within the AxiomID sovereign sandbox, providing a verifiable bridge between human intent and automated action.
 
 ## مبدأ التوافق — Principle Alignment
 <!-- TODO: Describe which SOUL principle this skill serves.
