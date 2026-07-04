@@ -27,14 +27,14 @@ const getCachedAverageTrustScore = unstable_cache(
       take: 100,
       select: {
         xp: true,
-        stamps: {
-          select: { id: true }
+        _count: {
+          select: { stamps: true }
         }
       }
     });
     let totalTrustScore = 0;
     usersSample.forEach(u => {
-      totalTrustScore += calculateTrustScore(u.xp, u.stamps.length);
+      totalTrustScore += calculateTrustScore(u.xp, u._count.stamps);
     });
     return usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
   },
