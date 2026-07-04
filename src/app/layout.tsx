@@ -57,11 +57,15 @@ export const metadata: Metadata = {
   publisher: "AxiomID",
   icons: {
     icon: [
+      { url: '/icon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
       { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
     ],
-    apple: '/icon-192x192.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' },
+    ],
   },
   formatDetection: {
     email: false,
@@ -83,9 +87,9 @@ export const metadata: Metadata = {
     siteName: 'AxiomID',
     images: [
       {
-        url: '/axiomid-banner.jpg',
-        width: 640,
-        height: 640,
+        url: '/axiomid-og-1200x630.jpg',
+        width: 1200,
+        height: 630,
         alt: 'AxiomID - Human Authorization Protocol',
       },
     ],
