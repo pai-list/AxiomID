@@ -1,5 +1,7 @@
 import { logger } from '@/lib/logger';
 import { NextRequest } from 'next/server';
+import { unstable_cache } from 'next/cache';
+
 import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
@@ -18,6 +20,28 @@ import { calculateTrustScore } from '@/lib/trust';
  * - On rate limit exceeded: an error response with code `RATE_LIMITED`
  * - On database or internal failure: an error response with code `INTERNAL_ERROR`
  */
+
+const getCachedAverageTrustScore = unstable_cache(
+  async () => {
+    const usersSample = await prisma.user.findMany({
+      take: 100,
+      select: {
+        xp: true,
+        _count: {
+          select: { stamps: true }
+        }
+      }
+    });
+    let totalTrustScore = 0;
+    usersSample.forEach(u => {
+      totalTrustScore += calculateTrustScore(u.xp, u._count.stamps);
+    });
+    return usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
+  },
+  ['status-average-trust-score'],
+  { revalidate: 300 } // cache for 5 minutes
+);
+
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`status:${ip}`, RATE_LIMITS.anonymous);
@@ -26,7 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [userCount, agentCount, activeAgentCount, paymentCount, xpSum, activeUsersCount, verifiedUsersCount, usersSample] = await Promise.all([
+    const [userCount, agentCount, activeAgentCount, paymentCount, xpSum, activeUsersCount, verifiedUsersCount, averageTrustScore] = await Promise.all([
       prisma.user.count(),
       prisma.userAgent.count(),
       prisma.userAgent.count({ where: { status: 'ACTIVE' } }),
@@ -40,22 +64,10 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.user.count({ where: { kycStatus: 'VERIFIED' } }),
-      prisma.user.findMany({
-        take: 100,
-        select: {
-          xp: true,
-          stamps: {
-            select: { id: true }
-          }
-        }
-      })
+      getCachedAverageTrustScore()
     ]);
 
-    let totalTrustScore = 0;
-    usersSample.forEach(u => {
-      totalTrustScore += calculateTrustScore(u.xp, u.stamps.length);
-    });
-    const averageTrustScore = usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
+
     const verificationRate = userCount > 0 ? Math.round((verifiedUsersCount / userCount) * 100) : 0;
 
     return apiSuccess({

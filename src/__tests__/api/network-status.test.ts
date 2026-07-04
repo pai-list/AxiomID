@@ -1,8 +1,12 @@
- 
+
 /**
  * @jest-environment node
  */
 
+
+jest.mock('next/cache', () => ({
+  unstable_cache: (cb) => cb
+}));
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
