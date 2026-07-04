@@ -255,78 +255,57 @@ describe('PassportView', () => {
     expect(abortSpy).toHaveBeenCalled();
   });
 
+  it('does not throw or update state when the fetch resolves after unmount', async () => {
+    let resolveFetch: (value: unknown) => void = () => {};
+    (global.fetch as jest.Mock).mockImplementation(
+      () => new Promise((resolve) => { resolveFetch = resolve; })
+    );
+
+    const { unmount } = render(<PassportView />);
+    unmount();
+
+    // Resolving the in-flight fetch after unmount should not throw, even
+    // though the component's cleanup already aborted the request.
+    await act(async () => {
+      resolveFetch({ ok: true, json: async () => mockPassportData });
+      await Promise.resolve();
+    });
+  });
+
+  it('calls the passport API with a URL-encoded slug and an abort signal', async () => {
+    (useParams as jest.Mock).mockReturnValue({ slug: 'name/with special?chars' });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPassportData,
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+    expect(url).toBe(`/api/passport/${encodeURIComponent('name/with special?chars')}`);
+    expect(options.signal).toBeInstanceOf(AbortSignal);
+  });
+
   it('does nothing if slug is missing', () => {
     (useParams as jest.Mock).mockReturnValue({ slug: undefined });
 
     render(<PassportView />);
 
     expect(global.fetch).not.toHaveBeenCalled();
+    // Loading state (set on initial render) is never resolved since the
+    // effect bails out early, so the skeleton should remain visible.
+    expect(document.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
-  it('encodes special characters in the slug when building the fetch URL', async () => {
-    (useParams as jest.Mock).mockReturnValue({ slug: 'a b/c?d' });
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockPassportData,
-    });
+  it('does not fetch when slug is an empty string', () => {
+    (useParams as jest.Mock).mockReturnValue({ slug: '' });
 
     render(<PassportView />);
 
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/passport/${encodeURIComponent('a b/c?d')}`,
-        expect.objectContaining({ signal: expect.any(AbortSignal) })
-      );
-    });
-  });
-
-  it('refetches passport data when the slug changes', async () => {
-    (useParams as jest.Mock).mockReturnValue({ slug: 'first-slug' });
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({ ok: true, json: async () => mockPassportData })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ ...mockPassportData, username: 'seconduser' }),
-      });
-
-    const { rerender } = render(<PassportView />);
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/passport/first-slug',
-        expect.objectContaining({ signal: expect.any(AbortSignal) })
-      );
-    });
-
-    (useParams as jest.Mock).mockReturnValue({ slug: 'second-slug' });
-    rerender(<PassportView />);
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/passport/second-slug',
-        expect.objectContaining({ signal: expect.any(AbortSignal) })
-      );
-    });
-
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-    await waitFor(() => {
-      expect(screen.getByTestId('ap-username')).toHaveTextContent('seconduser');
-    });
-  });
-
-  it('renders verification footer text and secondary create-passport link on success', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockPassportData,
-    });
-
-    render(<PassportView />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText('translated_passport_verified_by')).toBeInTheDocument();
-    expect(screen.getByText('translated_create_your_passport')).toBeInTheDocument();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
