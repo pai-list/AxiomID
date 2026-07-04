@@ -292,9 +292,51 @@ jest.mock("@/app/passport/[slug]/PassportView", () => ({ PassportView: () => nul
 jest.mock("@/app/passport/[slug]/PassportHeader", () => ({ PassportHeader: () => null }));
 jest.mock("@/components/Footer", () => ({ default: () => null }));
 
-import { generateMetadata } from "@/app/passport/[slug]/page";
+import PassportPage, { generateMetadata } from "@/app/passport/[slug]/page";
 
 describe("generateMetadata — PR change: OG image and URL decoding", () => {
+  it("uses user.tier and user.xp in ogUrl when user is found", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValueOnce({
+      tier: "Pioneer",
+      xp: 150,
+    });
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "alice" }) });
+    const og = metadata.openGraph as { images?: Array<{ url: string }> };
+    const ogUrl = og.images?.[0].url ?? "";
+    expect(ogUrl).toContain("tier=Pioneer");
+    expect(ogUrl).toContain("xp=150");
+  });
+
+  it("uses defaults in ogUrl when user properties are missing", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValueOnce({
+      tier: null,
+      xp: null,
+    });
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "alice" }) });
+    const og = metadata.openGraph as { images?: Array<{ url: string }> };
+    const ogUrl = og.images?.[0].url ?? "";
+    expect(ogUrl).toContain("tier=Visitor");
+    expect(ogUrl).toContain("xp=0");
+  });
+
+  it("uses defaults in ogUrl when user is not found", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockResolvedValueOnce(null);
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "alice" }) });
+    const og = metadata.openGraph as { images?: Array<{ url: string }> };
+    const ogUrl = og.images?.[0].url ?? "";
+    expect(ogUrl).toContain("tier=Visitor");
+    expect(ogUrl).toContain("xp=0");
+  });
+
+  it("uses defaults in ogUrl when DB throws an error", async () => {
+    (mockPrisma.user.findFirst as jest.Mock).mockRejectedValueOnce(new Error("DB error"));
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "alice" }) });
+    const og = metadata.openGraph as { images?: Array<{ url: string }> };
+    const ogUrl = og.images?.[0].url ?? "";
+    expect(ogUrl).toContain("tier=Visitor");
+    expect(ogUrl).toContain("xp=0");
+  });
+
   it("decodes a simple slug to build the title", async () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "alice" }) });
     expect(metadata.title).toBe("Passport: alice | AxiomID");
@@ -394,6 +436,16 @@ describe("generateMetadata — PR change: OG image and URL decoding", () => {
     const og = metadata.openGraph as { images?: Array<{ url: string }> };
     expect(og.images?.[0].url).toMatch(/^https:\/\/axiomid\.app/);
   });
+
+  describe("PassportPage", () => {
+  it("renders the layout correctly", () => {
+    // PassportPage is a simple component with no props
+    const element = PassportPage();
+    expect(element).toBeDefined();
+    // basic check to ensure it returns a valid React element-like object
+    expect(element.type).toBe("main");
+  });
+});
 
   // Regression: previous metadata fields must still be present
   it("title still follows 'Passport: <slug> | AxiomID' pattern", async () => {
