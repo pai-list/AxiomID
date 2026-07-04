@@ -23,7 +23,7 @@ jest.mock('@/lib/pi-native-features', () => ({
 
 // Mock child components
 jest.mock('@/components/AgentPassport', () => ({
-  AgentPassport: (props: any) => (
+  AgentPassport: (props: { username: string; did: string; tier: string }) => (
     <div data-testid="agent-passport">
       <span data-testid="ap-username">{props.username}</span>
       <span data-testid="ap-did">{props.did}</span>
