@@ -104,11 +104,11 @@ export function determineSandboxMode(): boolean {
   // ponytail: Production domains are NEVER sandbox — short-circuit before iframe/referrer checks.
   // Pi Browser loads apps inside an iframe where document.referrer can be sandbox.minepi.com
   // even on production domains, causing false positives.
+  // NOTE: .pinet.com is NOT included here — PiNet URLs can host either Testnet or Mainnet apps.
+  // Use the referrer check (sandbox.minepi.com) or NEXT_PUBLIC_PI_SANDBOX env var for PiNet apps.
   if (
     hostname === "axiomid.app" ||
-    hostname.endsWith(".axiomid.app") ||
-    hostname === "pinet.com" ||
-    hostname.endsWith(".pinet.com")
+    hostname.endsWith(".axiomid.app")
   ) {
     return false;
   }
