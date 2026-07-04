@@ -20,7 +20,9 @@ interface QuickLinksCardProps {
  */
 export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCardProps) {
   const { t } = useLanguage();
-    const handlePublish = useCallback(async () => {
+  const [publishing, setPublishing] = useState(false);
+
+  const handlePublish = useCallback(async () => {
     setPublishing(true);
     const promise = fetch(`/api/passport/${passportSlug}/publish`, { method: 'POST' });
 
@@ -28,16 +30,13 @@ export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCar
       loading: 'Publishing passport to IPFS & Stellar...',
       success: (res) => {
         if (!res.ok) throw new Error('Publish failed');
-        // Simple page reload to update passportUrl from server state
         setTimeout(() => window.location.reload(), 1500);
         return 'Passport published successfully!';
       },
       error: 'Failed to publish passport',
       finally: () => setPublishing(false)
     });
-  }, [passportSlug, toast]);
-
-  const [publishing, setPublishing] = useState(false);
+  }, [passportSlug]);
   
   const spec = useMemo(() => ({
     root: "card",
@@ -90,7 +89,7 @@ export function QuickLinksCard({ passportSlug, did, passportUrl }: QuickLinksCar
         },
       } : {}),
     },
-  }), [t, passportSlug, did, passportUrl]);
+  }), [t, passportSlug, did, passportUrl, publishing, handlePublish]);
 
   return <AxiomRenderer spec={spec} />;
 }
