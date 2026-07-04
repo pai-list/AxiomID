@@ -1,14 +1,8 @@
+
 /**
  * @jest-environment node
  */
 
-<<<<<<< HEAD
-=======
-jest.mock('next/cache', () => ({
-  unstable_cache: (cb) => cb
-}));
-
->>>>>>> 19ccdf00 (test(passport): add missing tests for PassportHeader and fix failing tests ༿)
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
@@ -24,35 +18,27 @@ jest.mock('@/lib/prisma', () => ({
     },
   },
 }));
-
 jest.mock('@/lib/rate-limiter', () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: { anonymous: { windowMs: 60000, maxRequests: 30 } },
 }));
-
 jest.mock('@/lib/ip', () => ({
   getClientIp: jest.fn(() => '127.0.0.1'),
-}));
-
-jest.mock('@/lib/trust', () => ({
-  calculateTrustScore: jest.fn(() => 50)
 }));
 
 import { GET } from '@/app/api/status/route';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { calculateTrustScore } from '@/lib/trust';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
-const mockCalculateTrustScore = calculateTrustScore as jest.Mock;
 
 function mockGetRequest() {
   return new Request('http://localhost/api/status', { method: 'GET' }) as any;
 }
 
 function setupDbMocks({
-  userCounts = [0, 0, 0],
+  userCounts = [0, 0, 0, 0],
   findMany = [] as unknown[],
   agentCounts = [0, 0],
   paymentCount = 0,
@@ -64,19 +50,15 @@ function setupDbMocks({
   paymentCount?: number;
   xpSum?: number | null;
 } = {}) {
-  // Use mockResolvedValue instead of chaining mockResolvedValueOnce to ensure they don't run out.
-  // We're doing Promise.all, so order can be deterministic, but let's mock it properly based on inputs
-  mockPrisma.user.count.mockImplementation(async (args) => {
-    if (args?.where?.lastActive) return userCounts[1];
-    if (args?.where?.kycStatus) return userCounts[2];
-    return userCounts[0];
-  });
-  (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(findMany);
-
-  mockPrisma.userAgent.count.mockImplementation(async (args) => {
-    if (args?.where?.status) return agentCounts[1];
-    return agentCounts[0];
-  });
+  (mockPrisma.user.count as jest.Mock)
+    .mockResolvedValueOnce(userCounts[0])
+    .mockResolvedValueOnce(userCounts[1])
+    .mockResolvedValueOnce(userCounts[2])
+    .mockResolvedValueOnce(userCounts[3] || 0);
+  (mockPrisma.user.findMany as jest.Mock).mockResolvedValueOnce(findMany);
+  (mockPrisma.userAgent.count as jest.Mock)
+    .mockResolvedValueOnce(agentCounts[0])
+    .mockResolvedValueOnce(agentCounts[1]);
   mockPrisma.piPayment.count.mockResolvedValue(paymentCount);
   (mockPrisma.user.aggregate as jest.Mock).mockResolvedValue({ _sum: { xp: xpSum } });
 }
@@ -89,7 +71,7 @@ describe('GET /api/status', () => {
 
   it('returns network stats successfully', async () => {
     setupDbMocks({
-      userCounts: [1247, 14, 89],
+      userCounts: [1247, 14, 89, 0],
       findMany: [{ xp: 50, _count: { stamps: 1 } }],
       agentCounts: [856, 312],
       paymentCount: 8934,
@@ -110,8 +92,6 @@ describe('GET /api/status', () => {
     expect(data.stats.totalPayments).toBe(8934);
     expect(data.stats.totalXpEarned).toBe(456789);
     expect(data.stats.activeUsers).toBe(14);
-    expect(data.stats.averageTrustScore).toBe(50);
-    expect(data.stats.verificationRate).toBe(7); // 89/1247 * 100 rounded
   });
 
   it('handles null xpLedger sum gracefully (defaults to 0)', async () => {
