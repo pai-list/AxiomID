@@ -78,6 +78,21 @@ describe("SandboxProvider", () => {
     expect(initSandboxCompatibility).toHaveBeenCalledTimes(1);
   });
 
+  it("should call the cleanup function returned by initSandboxCompatibility on unmount", () => {
+    const mockCleanup = jest.fn();
+    (initSandboxCompatibility as jest.Mock).mockReturnValue(mockCleanup);
+
+    const { unmount } = render(
+      <SandboxProvider>
+        <div>Test Child Component</div>
+      </SandboxProvider>
+    );
+
+    unmount();
+
+    expect(mockCleanup).toHaveBeenCalledTimes(1);
+  });
+
   it("should propagate an error if initSandboxCompatibility throws", () => {
     (initSandboxCompatibility as jest.Mock).mockImplementationOnce(() => {
       throw new Error("sandbox init failed");
