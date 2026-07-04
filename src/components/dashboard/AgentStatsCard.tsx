@@ -1,7 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import { useLanguage } from "@/app/context/language-context";
+import { Info } from "lucide-react";
 
 interface AgentStatsCardProps {
   tier: string;
@@ -43,6 +44,7 @@ function Sparkline({ xp }: { xp: number }) {
 
 export function AgentStatsCard({ tier, xp, agentName, agentStatus, trustScore }: AgentStatsCardProps) {
   const { t, language } = useLanguage();
+  const [showTooltip, setShowTooltip] = useState(false);
 
   return (
     <div className="glass-card p-5 relative overflow-hidden">
@@ -64,16 +66,38 @@ export function AgentStatsCard({ tier, xp, agentName, agentStatus, trustScore }:
           <p className="text-[11px] text-zinc-500">{language === "en" ? "Agent" : "العميل"}</p>
           <p className="text-sm font-mono mt-0.5 text-surface font-semibold truncate">{agentName || t('status_none')}</p>
         </div>
-        <div>
-          <p className="text-[11px] text-zinc-500">{language === "en" ? "Trust Score" : "نقاط الثقة"}</p>
+        <div className="relative">
+          <div className="flex items-center gap-1">
+            <p className="text-[11px] text-zinc-500">{language === "en" ? "Trust Score" : "نقاط الثقة"}</p>
+            <button
+              className="text-zinc-500 hover:text-zinc-300 focus:outline-none focus:text-zinc-300"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={() => setShowTooltip(!showTooltip)}
+              aria-label={language === "en" ? "Trust Score Info" : "معلومات نقاط الثقة"}
+            >
+              <Info className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <p className="text-sm font-mono mt-0.5 text-surface font-semibold">{trustScore}%</p>
+
+          {showTooltip && (
+            <div className="absolute z-20 bottom-full left-0 mb-2 w-48 p-2 text-[10px] bg-zinc-900 border border-zinc-800 rounded shadow-lg text-zinc-300 pointer-events-none">
+              <p className="font-semibold text-white mb-1">{language === "en" ? "Score Calculation:" : "حساب النقاط:"}</p>
+              <ul className="space-y-0.5">
+                <li>• 50% KYC & Verifications</li>
+                <li>• 30% App Activity & XP</li>
+                <li>• 20% Social Graph</li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Sparkline */}
       <div className="mt-3 pt-3 border-t border-white/[0.06] relative z-10">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{language === "ar" ? "تقدم النقاط" : "XP Progress"}</span>
+          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{language === "ar" ? "آخر 7 أيام" : "Last 7 days"}</span>
         </div>
         <Sparkline xp={xp} />
       </div>
