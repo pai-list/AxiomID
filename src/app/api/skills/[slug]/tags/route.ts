@@ -1,35 +1,47 @@
-import { logger } from '@/lib/logger';
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
-import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
-import { getClientIp } from '@/lib/ip';
-import { SlugParamSchema, SkillTagsUpdateSchema } from '@/lib/validators';
-import { requireAuth } from '@/lib/auth-middleware';
+import { logger } from "@/lib/logger";
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
+import { SlugParamSchema, SkillTagsUpdateSchema } from "@/lib/validators";
+import { requireAuth } from "@/lib/auth-middleware";
 
 /**
  * GET /api/skills/[slug]/tags — Get tags for a specific skill.
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
   const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {
-    return apiError('VALIDATION_ERROR', parsedParams.error.issues[0].message, parsedParams.error.issues);
+    return apiError(
+      "VALIDATION_ERROR",
+      parsedParams.error.issues[0].message,
+      parsedParams.error.issues,
+    );
   }
 
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(`skill-tags:${ip}`, RATE_LIMITS.anonymous);
+  const rateLimit = await checkRateLimit(
+    `skill-tags:${ip}`,
+    RATE_LIMITS.anonymous,
+  );
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
+    return apiError(
+      "RATE_LIMITED",
+      "Too many requests. Try again later.",
+      undefined,
+      rateLimitHeaders(rateLimit),
+    );
   }
 
   try {
     const skill = await prisma.skill.findUnique({ where: { slug } });
     if (!skill) {
-      return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+      return apiError("NOT_FOUND", `Skill "${slug}" not found`);
     }
 
     const relations = await prisma.skillTagRelation.findMany({
@@ -47,8 +59,8 @@ export async function GET(
 
     return apiSuccess({ tags });
   } catch (error) {
-    logger.error('[SKILL-TAGS-GET] Database error:', error);
-    return apiError('INTERNAL_ERROR', 'Failed to fetch skill tags');
+    logger.error("[SKILL-TAGS-GET] Database error:", error);
+    return apiError("INTERNAL_ERROR", "Failed to fetch skill tags");
   }
 }
 
@@ -60,18 +72,30 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
   const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {
-    return apiError('VALIDATION_ERROR', parsedParams.error.issues[0].message, parsedParams.error.issues);
+    return apiError(
+      "VALIDATION_ERROR",
+      parsedParams.error.issues[0].message,
+      parsedParams.error.issues,
+    );
   }
 
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(`skill-tags-update:${ip}`, RATE_LIMITS.authenticated);
+  const rateLimit = await checkRateLimit(
+    `skill-tags-update:${ip}`,
+    RATE_LIMITS.authenticated,
+  );
   if (!rateLimit.allowed) {
-    return apiError('RATE_LIMITED', 'Too many requests. Try again later.', undefined, rateLimitHeaders(rateLimit));
+    return apiError(
+      "RATE_LIMITED",
+      "Too many requests. Try again later.",
+      undefined,
+      rateLimitHeaders(rateLimit),
+    );
   }
 
   const auth = await requireAuth(request);
@@ -81,12 +105,16 @@ export async function PUT(
   try {
     body = await request.json();
   } catch {
-    return apiError('VALIDATION_ERROR', 'Invalid JSON body');
+    return apiError("VALIDATION_ERROR", "Invalid JSON body");
   }
 
   const parsedBody = SkillTagsUpdateSchema.safeParse(body);
   if (!parsedBody.success) {
-    return apiError('VALIDATION_ERROR', parsedBody.error.issues[0].message, parsedBody.error.issues);
+    return apiError(
+      "VALIDATION_ERROR",
+      parsedBody.error.issues[0].message,
+      parsedBody.error.issues,
+    );
   }
 
   const { tags: tagNames } = parsedBody.data;
@@ -94,31 +122,69 @@ export async function PUT(
   try {
     const skill = await prisma.skill.findUnique({ where: { slug } });
     if (!skill) {
-      return apiError('NOT_FOUND', `Skill "${slug}" not found`);
+      return apiError("NOT_FOUND", `Skill "${slug}" not found`);
     }
 
     if (skill.authorId !== auth.user.id) {
-      return apiError('FORBIDDEN', 'You can only update tags for your own skills');
+      return apiError(
+        "FORBIDDEN",
+        "You can only update tags for your own skills",
+      );
     }
 
     // Remove existing tags
     await prisma.skillTagRelation.deleteMany({ where: { skillId: skill.id } });
 
     // Create or reuse tags and link them
-    const tagLinks: { skillId: string; tagId: string }[] = [];
+    const uniqueTags = new Map<string, { name: string; slug: string }>();
     for (const name of tagNames) {
       const trimmed = name.trim();
       if (!trimmed) continue;
-      const slugified = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const slugified = trimmed
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
 
-      let tag = await prisma.skillTag.findUnique({ where: { slug: slugified } });
-      if (!tag) {
-        tag = await prisma.skillTag.create({
-          data: { name: trimmed, slug: slugified },
-        });
+      if (!uniqueTags.has(slugified)) {
+        uniqueTags.set(slugified, { name: trimmed, slug: slugified });
       }
-      tagLinks.push({ skillId: skill.id, tagId: tag.id });
     }
+
+    const slugs = Array.from(uniqueTags.keys());
+    const existingTags = await prisma.skillTag.findMany({
+      where: { slug: { in: slugs } },
+    });
+
+    const existingSlugs = new Set(existingTags.map((t) => t.slug));
+    const missingTags = Array.from(uniqueTags.values()).filter(
+      (t) => !existingSlugs.has(t.slug),
+    );
+
+    // Prisma's createManyAndReturn is available in v6.2.0 for Postgres
+    let createdTags: typeof existingTags = [];
+    if (missingTags.length > 0) {
+      // Prisma's createManyAndReturn is available but to be 100% type safe and compatible with all adapters
+      // without ANY casts, and given the max 10 tags limit, Promise.all is both clean and avoids N+1 sequential overhead
+      // (It runs concurrently, which is vastly faster than the sequential loop)
+      // Actually let's use createMany and then fetch them to be true bulk
+      await prisma.skillTag.createMany({
+        data: missingTags,
+        skipDuplicates: true,
+      });
+      createdTags = await prisma.skillTag.findMany({
+        where: { slug: { in: missingTags.map((t) => t.slug) } },
+      });
+    }
+
+    const allTags = [...existingTags, ...createdTags];
+    const tagLinks: { skillId: string; tagId: string }[] = allTags.map(
+      (tag) => ({
+        skillId: skill.id,
+        tagId: tag.id,
+      }),
+    );
 
     if (tagLinks.length > 0) {
       await prisma.skillTagRelation.createMany({ data: tagLinks });
@@ -126,7 +192,7 @@ export async function PUT(
 
     return apiSuccess({ success: true, tagCount: tagLinks.length });
   } catch (error) {
-    logger.error('[SKILL-TAGS-UPDATE] Database error:', error);
-    return apiError('INTERNAL_ERROR', 'Failed to update skill tags');
+    logger.error("[SKILL-TAGS-UPDATE] Database error:", error);
+    return apiError("INTERNAL_ERROR", "Failed to update skill tags");
   }
 }
