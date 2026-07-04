@@ -5,7 +5,8 @@ import { initSandboxCompatibility } from "@/lib/pi-sandbox";
 
 export function SandboxProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    initSandboxCompatibility();
+    const cleanup = initSandboxCompatibility();
+    return cleanup;
   }, []);
 
   return <>{children}</>;
