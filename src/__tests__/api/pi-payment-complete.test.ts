@@ -90,7 +90,7 @@ describe("POST /api/pi/payment/complete", () => {
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(data.data.status).toBe("completed");
+    expect(data.status).toBe("completed");
     expect(prisma.piPayment.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { paymentId: mockPaymentId },
       data: { status: "RELEASED", txid: mockTxid }

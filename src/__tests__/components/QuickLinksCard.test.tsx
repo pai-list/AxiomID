@@ -46,10 +46,10 @@ describe("QuickLinksCard — spec structure", () => {
     expect(spec.elements.card.props.title).toBe("quick_links");
   });
 
-  it("card children reference link1 and link2", () => {
+  it("card children reference link1, link2 and publish", () => {
     render(<QuickLinksCard passportSlug="my-passport" />);
     const spec = capturedSpec as any;
-    expect(spec.elements.card.children).toEqual(["link1", "link2"]);
+    expect(spec.elements.card.children).toEqual(["link1", "link2", "publish"]);
   });
 
   it("link1 is a 'LinkItem' type with view_passport label", () => {
