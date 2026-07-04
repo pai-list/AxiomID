@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createIssuerDid } from "@/lib/did";
+import { deriveUserRootKey } from "@/lib/sovereign-keys";
 import { buildDidDocument } from "@/lib/did-document";
 import { resolveDid } from "@/lib/did-resolver";
 import { DidDocumentQuerySchema } from "@/lib/validators";
@@ -38,7 +39,16 @@ export async function GET(request: NextRequest) {
         return apiError("VALIDATION_ERROR", "User has no DID configured");
       }
 
-      const doc = buildDidDocument(user.did);
+      
+      let publicKeyPem: string | undefined;
+      try {
+         const keys = deriveUserRootKey(user.piUid || user.id);
+         publicKeyPem = keys.publicKey;
+      } catch (err) {
+         logger.error("[DID-DOC] Key derivation failed", err);
+      }
+      
+      const doc = buildDidDocument(user.did, publicKeyPem);
       return apiSuccess(doc, 200, {
         "Content-Type": "application/did+ld+json",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",

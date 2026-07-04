@@ -299,4 +299,101 @@ describe("middleware — invalid subdomain rejection", () => {
     const res = middleware(req);
     expect(res.status).toBe(400);
   });
+
+  it("returns 400 for a subdomain longer than 63 characters", () => {
+    const longSubdomain = "a".repeat(64);
+    const req = makeRequest(`https://${longSubdomain}.axiomid.app/profile`, {
+      headers: { host: `${longSubdomain}.axiomid.app` },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(400);
+  });
+
+  it("accepts a subdomain exactly 63 characters long", () => {
+    const maxSubdomain = "a".repeat(63);
+    const req = makeRequest(`https://${maxSubdomain}.axiomid.app/profile`, {
+      headers: { host: `${maxSubdomain}.axiomid.app` },
+    });
+    const res = middleware(req);
+    expect(res.status).not.toBe(400);
+  });
+});
+
+describe("middleware — subdomain rewrite to /passport/<slug> (PR change: identity endpoint)", () => {
+  it("rewrites a valid subdomain request to /passport/<subdomain>", () => {
+    const req = makeRequest("https://alice.axiomid.app/profile", {
+      headers: { host: "alice.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/alice");
+  });
+
+  it("preserves the subdomain casing as-is in the rewritten path", () => {
+    const req = makeRequest("https://AliceBob.axiomid.app/profile", {
+      headers: { host: "AliceBob.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/AliceBob");
+  });
+
+  it("does not rewrite subdomain requests targeting /api/ paths", () => {
+    const req = makeRequest("https://alice.axiomid.app/api/whoami", {
+      headers: { host: "alice.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.status).not.toBe(403);
+  });
+
+  it("does not rewrite (and returns non-error) for the root domain itself", () => {
+    const req = makeRequest("https://axiomid.app/dashboard", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.status).not.toBe(403);
+  });
+
+  it("does not rewrite for the www subdomain", () => {
+    const req = makeRequest("https://www.axiomid.app/dashboard", {
+      headers: { host: "www.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+});
+
+describe("middleware — reserved subdomains (PR change: 'build' added to RESERVED_SUBDOMAINS)", () => {
+  it("returns 404 for the newly reserved 'build' subdomain", () => {
+    const req = makeRequest("https://build.axiomid.app/anything", {
+      headers: { host: "build.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 for other pre-existing reserved subdomains (e.g. 'docs')", () => {
+    const req = makeRequest("https://docs.axiomid.app/getting-started", {
+      headers: { host: "docs.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(404);
+  });
+
+  it("treats reserved subdomain matching case-insensitively", () => {
+    const req = makeRequest("https://BUILD.axiomid.app/anything", {
+      headers: { host: "BUILD.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(404);
+  });
+
+  it("does not reject a subdomain that merely contains a reserved word as substring", () => {
+    const req = makeRequest("https://buildmaster.axiomid.app/profile", {
+      headers: { host: "buildmaster.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).not.toBe(404);
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/buildmaster");
+  });
 });

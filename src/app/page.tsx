@@ -1,210 +1,83 @@
-"use client";
+import { Metadata } from "next";
+import { Fingerprint, Shield, Zap } from "lucide-react";
+import { getTranslation } from "@/i18n";
+import { headers } from "next/headers";
 
-import { useWallet } from "./context/wallet-context";
-import { ErrorBanner } from "@/components/ErrorBanner";
-import Link from "next/link";
-import { useLanguage } from "./context/language-context";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Zap, AlertTriangle, Shield, Fingerprint } from "lucide-react";
-import Script from "next/script";
-import LanguageToggle from "@/components/LanguageToggle";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import HeroDemo from "@/components/HeroDemo";
+import TrustTiers from "@/components/TrustTiers";
 import StatsBar from "@/components/StatsBar";
 import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
-import TrustTiers from "@/components/TrustTiers";
-import { AxiomLogo } from "@/components/AxiomLogo";
 
-export const dynamic = 'force-dynamic';
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const acceptLang = headersList.get("accept-language") || "";
+  const lang = acceptLang.startsWith("ar") ? "ar" : "en";
+  const t = (key: string) => getTranslation(lang, key);
 
+  return {
+    title: t("landing_headline_en") + " " + t("landing_headline_rules_en"),
+    description: t("landing_tagline"),
+  };
+}
 
-/**
- * Renders the AxiomID landing page with hero section, feature overview, identity tiers, and authentication controls.
- */
-export default function Home() {
-  const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
-  const { t } = useLanguage();
+export default async function Home() {
+  const headersList = await headers();
+  const acceptLang = headersList.get("accept-language") || "";
+  const lang = acceptLang.startsWith("ar") ? "ar" : "en";
+  const t = (key: string) => getTranslation(lang, key);
 
   return (
     <>
-    <Script
-      id="axiomid-jsonld"
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebApplication",
-          name: "AxiomID",
-          url: "https://axiomid.app",
-          description: "W3C DID-based identity layer for humans delegating authority to AI agents on Pi Network and Stellar. Cryptographic proof that an AI agent is working with human authorization.",
-          applicationCategory: "Identity Application",
-          operatingSystem: "Web",
-          offers: { "@type": "Offer", price: "0", priceCurrency: "XLM" },
-          provider: { "@type": "Organization", name: "AxiomID", url: "https://axiomid.app" },
-          featureList: [
-            "W3C DID Document Generation",
-            "Ed25519 Key Pair Management",
-            "Verifiable Credential Issuance",
-            "Agent Identity Verification",
-            "Pi Network Integration",
-            "Stellar Blockchain Anchoring",
-            "AI Agent Delegation",
-            "Zero-Knowledge Proof Privacy",
-          ],
-          inLanguage: ["en", "ar"],
-          isAccessibleForFree: true,
-        }),
-      }}
-    />
-    <main className="min-h-screen bg-grid flex flex-col items-center relative overflow-hidden">
+    <main className="flex min-h-screen flex-col items-center bg-grid relative overflow-hidden" id="main-content">
+      {/* Dynamic Background Effects */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] spotlight-primary rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] spotlight-accent rounded-full pointer-events-none" />
       <div className="scanline" />
-      <ErrorBanner />
 
-      {/* Header */}
-      <header
-        className="sticky top-0 w-full z-50 backdrop-blur-lg border-b shadow-[0_1px_0_0_rgba(255,255,255,0.02)_inset] transition-colors duration-300"
-        style={{
-          backgroundColor: "var(--bg-deep)",
-          borderColor: "var(--card-border)",
-        }}
-      >
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3 px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <AxiomLogo size="sm" />
-            <div className="w-px h-6 hidden sm:block" style={{ background: "var(--card-border)" }} />
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
-              <svg viewBox="0 0 100 100" className="w-4 h-4" fill="currentColor">
-                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
-                <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
-              </svg>
-              <span className="text-[9px] font-mono tracking-wider" style={{ color: "var(--text-secondary)" }}>PI NETWORK</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <LanguageToggle />
-            <ThemeToggle />
-            {isPiBrowser && !user && (
-              <span className="hidden sm:inline text-[10px] font-mono px-2 py-1 rounded border" style={{ background: "rgba(59, 130, 246, 0.1)", borderColor: "rgba(59, 130, 246, 0.2)", color: "#3b82f6" }}>
-                Pi Browser
-              </span>
-            )}
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Link href="/dashboard" prefetch={false} className="btn-primary text-xs px-3 sm:px-4 py-1.5">
-                  {t("nav_dashboard")}
-                </Link>
-                <button onClick={() => logout()} className="btn-ghost text-xs px-3 py-1.5 hidden sm:flex items-center gap-1.5">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  {t("logout")}
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link href="/dashboard" prefetch={false} className="btn-ghost text-xs px-3 sm:px-4 py-1.5">
-                  {t("nav_dashboard")}
-                </Link>
-                <button 
-                  onClick={() => connectWallet()} 
-                  disabled={isConnecting} 
-                  aria-busy={isConnecting} 
-                  aria-label={isConnecting ? t("connecting") : t("connect")} 
-                  className={`btn-primary text-xs px-3 sm:px-4 py-1.5 flex items-center justify-center gap-2 transition-all duration-200 ${isConnecting ? 'opacity-80 cursor-wait' : ''}`}
-                >
-                  {isConnecting ? (
-                    <>
-                      <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {t("connecting")}
-                    </>
-                  ) : (
-                    <>
-                      {t("connect")}
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
-      <div className="relative w-full max-w-6xl px-4 sm:px-6 mt-6 md:mt-10 z-10 min-h-[60vh] flex items-center hero-mesh-bg">
-        {/* Floating particles — CSS-only */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          <div className="particle" style={{ left: "15%", top: "20%", animationDelay: "0s", animationDuration: "7s", background: "rgba(34,197,94,0.12)" }} />
-          <div className="particle" style={{ left: "75%", top: "30%", animationDelay: "1.5s", animationDuration: "8s", background: "rgba(59,130,246,0.12)" }} />
-          <div className="particle" style={{ left: "45%", top: "70%", animationDelay: "3s", animationDuration: "6s", background: "rgba(99,102,241,0.12)" }} />
-          <div className="particle" style={{ left: "85%", top: "60%", animationDelay: "2s", animationDuration: "9s", background: "rgba(34,197,94,0.12)" }} />
-          <div className="particle" style={{ left: "30%", top: "85%", animationDelay: "4s", animationDuration: "7s", background: "rgba(59,130,246,0.12)" }} />
-          <div className="particle" style={{ left: "60%", top: "15%", animationDelay: "0.5s", animationDuration: "8s", background: "rgba(99,102,241,0.12)" }} />
-        </div>
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: "radial-gradient(#424754 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
-
-        <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center py-12 relative z-10">
-          {/* Left: Headline + CTAs */}
-          <div className="md:col-span-7 flex flex-col items-center md:items-start text-center md:text-left space-y-5">
-            <div className="flex flex-wrap gap-2 justify-center md:justify-start items-center animate-[fade-in-up_0.4s_ease-out_0.1s_both]">
-              <span className="px-3 py-1 rounded-full text-[10px] font-mono bg-neon-green/10 text-neon-green border border-neon-green/20 uppercase tracking-widest">
-                {t("hero_badge")}
-              </span>
-              <span className="stitch-badge">
-                <svg viewBox="0 0 100 100" className="w-4 h-4 animate-spin" style={{ animationDuration: "6s" }} fill="currentColor">
-                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
-                  <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
-                </svg>
-                {t("landing_pi_badge")}
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-semibold font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest">
-                <svg viewBox="0 0 100 100" className="w-3 h-3 inline me-1 -mt-0.5 align-middle" fill="currentColor">
-                  <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3" />
-                  <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
-                </svg>
-                {t("backed_by_pi")}
-              </span>
+      <div className="w-full max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 z-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
+          {/* Left: Copy & CTA */}
+          <div className="md:col-span-7 space-y-6 sm:space-y-8 animate-fade-in text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">{t("landing_pi_badge")}</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05] text-white animate-[fade-in-up_0.6s_ease-out_0.2s_both]">
-              <>{t("landing_headline_en")}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-electric-blue to-axiom-purple">{t("landing_headline_rules_en")}</span></>
-            </h1>
-
-            <p className="text-lg sm:text-xl md:text-2xl font-medium tracking-tight text-zinc-300 max-w-xl animate-[fade-in-up_0.5s_ease-out_0.3s_both]">
-              {t("landing_tagline")}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-2 animate-[fade-in-up_0.5s_ease-out_0.4s_both]">
-              {!user ? (
-                isPiBrowser ? (
-                  <button onClick={() => connectWallet()} disabled={isConnecting} aria-busy={isConnecting} aria-label={isConnecting ? t("connecting") : t("claim_passport")} className="flex items-center justify-center gap-3 text-base font-bold px-10 py-5 min-h-[64px] rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all group">
-                    {isConnecting ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("connecting")}</> : <>{t("claim_passport")} <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
-                  </button>
-                ) : (
-                  <button onClick={connectWallet} disabled={isConnecting} aria-busy={isConnecting} className="flex items-center justify-center gap-3 text-base font-bold px-10 py-5 min-h-[64px] rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.03] active:scale-[0.97] transition-all group">
-                    {isConnecting ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("connecting")}</> : <>{t("claim_passport")} <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg></>}
-                  </button>
-                )
-              ) : (
-                <Link href="/dashboard" prefetch={false} className="flex items-center justify-center gap-2 text-sm font-semibold px-8 py-4 min-h-[52px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                  {t("open_dashboard")}
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                </Link>
-              )}
-              <Link href="/docs" className="flex items-center justify-center text-sm font-medium px-8 py-4 min-h-[52px] w-full rounded-xl border border-white/10 text-zinc-300 hover:bg-white/5 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                {t("read_docs")}
-              </Link>
+            <div className="space-y-2">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
+                <span className="block animate-slide-up" style={{ animationDelay: "0.1s" }}>Create your</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up" style={{ animationDelay: "0.2s" }}>
+                  AI Identity
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4" style={{ animationDelay: "0.3s" }}>
+                Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign W3C DID, Passport, and live endpoint.
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 items-center justify-center md:justify-start pt-6 text-[11px] font-mono text-zinc-400 animate-[fade-in-up_0.6s_ease-out_0.5s_both]">
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 animate-slide-up justify-center md:justify-start" style={{ animationDelay: "0.4s" }}>
+              <a href="/claim" className="btn-primary py-4 px-8 text-sm sm:text-base group relative overflow-hidden w-full sm:w-auto font-mono tracking-wider shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all">
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Create My AI Agent
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </a>
+              <a href="/docs" className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-3">
+                <Shield className="w-4 h-4 opacity-50" />
+                Explore the Protocol
+              </a>
+            </div>
+
+            <div className="flex items-center justify-center md:justify-start gap-4 pt-6 animate-slide-up text-[10px] font-mono text-zinc-500" style={{ animationDelay: "0.5s" }}>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="tracking-wider">100% On-chain</span>
-              </div>
-              <div className="w-1 h-1 rounded-full bg-zinc-700" />
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                <span className="w-1 h-1 rounded-full bg-electric-blue" />
                 <span className="tracking-wider">W3C DID</span>
               </div>
               <div className="w-1 h-1 rounded-full bg-zinc-700" />
@@ -226,7 +99,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Stats — fades in via CSS transition */}
+      {/* Stats */}
       <div className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 mb-4 z-10">
         <StatsBar />
       </div>
@@ -286,67 +159,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Why AxiomID? */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-        <SectionHeader
-          label={t("landing_sovereign_advantage")}
-          title={t("landing_why_title")}
-          labelColor="text-zinc-400"
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-3xl border border-red-500/10 glass-card flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-4 h-4 text-red-400 animate-pulse" />
-                <h3 className="text-base font-bold text-red-400 font-mono tracking-tight">{t("landing_web2_title")}</h3>
-              </div>
-              <ul className="space-y-3 text-xs font-mono text-zinc-400">
-                {[
-                  t("landing_web2_item1"),
-                  t("landing_web2_item2"),
-                  t("landing_web2_item3"),
-                  t("landing_web2_item4"),
-                ].map((text, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="text-red-500/50">✗</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="border-t border-red-500/5 pt-4 mt-6 text-[10px] text-zinc-400 font-mono">
-              {t("landing_web2_result")}
-            </div>
-          </div>
-
-          <div className="p-6 rounded-3xl border border-emerald-500/20 glass-card flex flex-col justify-between min-h-[300px] shadow-lg shadow-emerald-500/[0.01]">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-base font-bold text-emerald-400 font-mono tracking-tight">{t("landing_axiom_title")}</h3>
-              </div>
-              <ul className="space-y-3 text-xs font-mono text-zinc-300">
-                {[
-                  t("landing_axiom_item1"),
-                  t("landing_axiom_item2"),
-                  t("landing_axiom_item3"),
-                  t("landing_axiom_item4"),
-                ].map((text, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="text-emerald-400">✓</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="border-t border-emerald-500/10 pt-4 mt-6 text-[10px] text-zinc-400 font-mono">
-              {t("landing_axiom_result")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust Tiers — Interactive */}
+      {/* Trust Tiers */}
       <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
         <SectionHeader
           label={t("tier")}
@@ -362,13 +175,6 @@ export default function Home() {
   );
 }
 
-/**
- * Renders a centered section heading with a label and title.
- *
- * @param label - The small uppercase label text
- * @param title - The section title text
- * @param labelColor - The text color class applied to the label
- */
 function SectionHeader({ label, title, labelColor }: { label: string; title: string; labelColor: string }) {
   return (
     <div className="text-center mb-10 sm:mb-12">

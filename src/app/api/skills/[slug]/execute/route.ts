@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
+import { requireAuth } from '@/lib/auth-middleware';
 import { SlugParamSchema } from '@/lib/validators';
 
 /**
@@ -17,6 +18,13 @@ export async function POST(
   const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {
     return apiError('VALIDATION_ERROR', parsedParams.error.issues[0].message, parsedParams.error.issues);
+  }
+
+  
+  
+  const authResult = await requireAuth(request);
+  if (authResult.error) {
+    return authResult.error;
   }
 
   const ip = getClientIp(request);

@@ -24,6 +24,10 @@ jest.mock("@/lib/did-resolver", () => ({
   resolveDid: jest.fn(),
 }));
 
+jest.mock("@/lib/sovereign-keys", () => ({
+  deriveUserRootKey: jest.fn(),
+}));
+
 jest.mock("@/lib/rate-limiter", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 59, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: {
@@ -35,16 +39,24 @@ jest.mock("@/lib/ip", () => ({
   getClientIp: jest.fn(() => "127.0.0.1"),
 }));
 
+jest.mock("@/lib/logger", () => ({
+  logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
+}));
+
 import { GET } from "@/app/api/did-document/route";
 import { resolveDid } from "@/lib/did-resolver";
 import { buildDidDocument } from "@/lib/did-document";
+import { deriveUserRootKey } from "@/lib/sovereign-keys";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
+import { logger } from "@/lib/logger";
 
 const mockResolveDid = resolveDid as jest.Mock;
 const mockBuildDidDocument = buildDidDocument as jest.Mock;
+const mockDeriveUserRootKey = deriveUserRootKey as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockGetClientIp = getClientIp as jest.Mock;
+const mockLoggerError = logger.error as jest.Mock;
 
 function mockGetRequest(params: Record<string, string> = {}) {
   const url = new URL("http://localhost/api/did-document");
@@ -191,5 +203,84 @@ describe("GET /api/did-document — issuer DID fallback", () => {
     const res = await GET(req);
 
     expect(res.status).toBe(200);
+  });
+
+  it("does not attempt sovereign key derivation for the issuer document path", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "test-public-key";
+
+    const req = mockGetRequest();
+    await GET(req);
+
+    expect(mockDeriveUserRootKey).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/did-document — sovereign key derivation for resolved users (PR change)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 59, resetAt: Date.now() + 60000 });
+    mockGetClientIp.mockReturnValue("127.0.0.1");
+    mockBuildDidDocument.mockImplementation((did: string, publicKeyPem?: string) => ({
+      "@context": ["https://www.w3.org/ns/did/v1"],
+      id: did,
+      ...(publicKeyPem ? { verificationMethod: [{ publicKeyMultibase: publicKeyPem }] } : {}),
+    }));
+  });
+
+  it("derives the user's root key using piUid when present", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-1", did: "did:axiom:pi:alice", piUid: "pi-uid-alice" });
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-alice-pub", privateKey: "pem-alice-priv" });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:alice" });
+    await GET(req);
+
+    expect(mockDeriveUserRootKey).toHaveBeenCalledWith("pi-uid-alice");
+  });
+
+  it("falls back to the user's id when piUid is not set", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-2", did: "did:axiom:pi:bob", piUid: null });
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-bob-pub", privateKey: "pem-bob-priv" });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:bob" });
+    await GET(req);
+
+    expect(mockDeriveUserRootKey).toHaveBeenCalledWith("user-2");
+  });
+
+  it("passes the derived public key into buildDidDocument", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-3", did: "did:axiom:pi:carol", piUid: "pi-uid-carol" });
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-carol-pub", privateKey: "pem-carol-priv" });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:carol" });
+    await GET(req);
+
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:pi:carol", "pem-carol-pub");
+  });
+
+  it("still returns 200 with the DID document when key derivation throws", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-4", did: "did:axiom:pi:dave", piUid: "pi-uid-dave" });
+    mockDeriveUserRootKey.mockImplementation(() => {
+      throw new Error("SOVEREIGN_KEY_SALT is not configured");
+    });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:dave" });
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.id).toBe("did:axiom:pi:dave");
+  });
+
+  it("logs an error and omits the public key when key derivation throws", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-5", did: "did:axiom:pi:erin", piUid: "pi-uid-erin" });
+    mockDeriveUserRootKey.mockImplementation(() => {
+      throw new Error("boom");
+    });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:erin" });
+    await GET(req);
+
+    expect(mockLoggerError).toHaveBeenCalledWith("[DID-DOC] Key derivation failed", expect.any(Error));
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:pi:erin", undefined);
   });
 });

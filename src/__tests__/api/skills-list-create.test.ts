@@ -175,6 +175,36 @@ describe("GET /api/skills — query validation", () => {
       })
     );
   });
+
+  it("filters by soulPrinciple when provided (PR change)", async () => {
+    const req = mockGetRequest("http://localhost/api/skills?soulPrinciple=TAWBAH");
+    await GET(req);
+
+    expect(mockPrisma.skill.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ soulPrinciple: "TAWBAH" }),
+      })
+    );
+  });
+
+  it("does not include soulPrinciple in the where clause when omitted (PR change)", async () => {
+    const req = mockGetRequest("http://localhost/api/skills");
+    await GET(req);
+
+    const callArgs = mockPrisma.skill.findMany.mock.calls[0][0] as { where: Record<string, unknown> };
+    expect(callArgs.where).not.toHaveProperty("soulPrinciple");
+  });
+
+  it("combines soulPrinciple with tier filter", async () => {
+    const req = mockGetRequest("http://localhost/api/skills?tier=PRO&soulPrinciple=BARAKAH");
+    await GET(req);
+
+    expect(mockPrisma.skill.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ tier: "PRO", soulPrinciple: "BARAKAH" }),
+      })
+    );
+  });
 });
 
 describe("GET /api/skills — success responses", () => {
