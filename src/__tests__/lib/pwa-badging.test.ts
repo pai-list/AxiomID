@@ -9,7 +9,7 @@ jest.mock('@/lib/logger', () => ({
 }));
 
 describe('PWA Badging', () => {
-  let originalNavigator: any;
+  let originalNavigator: typeof global.navigator;
 
   beforeAll(() => {
     originalNavigator = global.navigator;
