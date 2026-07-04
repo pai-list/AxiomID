@@ -17,6 +17,7 @@ jest.mock("@/lib/prisma", () => ({
       update: jest.fn(),
       count: jest.fn(),
     },
+    $transaction: jest.fn(async (cb) => cb(require("@/lib/prisma").prisma)),
     skill: {
       update: jest.fn(),
     },
