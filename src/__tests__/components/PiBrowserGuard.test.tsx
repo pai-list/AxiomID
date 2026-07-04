@@ -38,7 +38,7 @@ describe('PiBrowserBanner', () => {
 
     jest.useFakeTimers();
 
-    let result: any;
+    let result: ReturnType<typeof render>;
 
     act(() => {
       result = render(
