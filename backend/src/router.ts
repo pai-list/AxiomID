@@ -4,7 +4,7 @@
  */
 
 import type { Env } from "./lib/types";
-import { verifyAuth, jsonResponse, errorResponse, PUBLIC_ROUTES, rateLimitHeaders } from "./lib/auth";
+import { verifyAuth, safeCompare, jsonResponse, errorResponse, PUBLIC_ROUTES, rateLimitHeaders } from "./lib/auth";
 import { KVHelper } from "./db/kv";
 import { D1Helper } from "./db/d1";
 import { RateLimiter } from "./lib/rate-limiter";
@@ -99,14 +99,8 @@ export class Router {
     if (path === "/api/embed" && method === "POST") {
       const embedSecret = request.headers.get("X-Shared-Secret");
       const expected = this.env.SHARED_SECRET_TOKEN_VERCEL_CF;
-      if (!embedSecret || !expected || embedSecret.length !== expected.length) {
-        return errorResponse("Unauthorized", 401);
-      }
-      let match = 0;
-      for (let i = 0; i < embedSecret.length; i++) {
-        match |= embedSecret.charCodeAt(i) ^ expected.charCodeAt(i);
-      }
-      if (match !== 0) {
+
+      if (!embedSecret || !expected || !safeCompare(embedSecret, expected)) {
         return errorResponse("Unauthorized", 401);
       }
 

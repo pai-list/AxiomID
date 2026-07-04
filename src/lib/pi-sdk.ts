@@ -104,11 +104,11 @@ export function determineSandboxMode(): boolean {
   // ponytail: Production domains are NEVER sandbox — short-circuit before iframe/referrer checks.
   // Pi Browser loads apps inside an iframe where document.referrer can be sandbox.minepi.com
   // even on production domains, causing false positives.
-  // NOTE: .pinet.com is NOT included here — PiNet URLs can host either Testnet or Mainnet apps.
-  // Use the referrer check (sandbox.minepi.com) or NEXT_PUBLIC_PI_SANDBOX env var for PiNet apps.
   if (
     hostname === "axiomid.app" ||
-    hostname.endsWith(".axiomid.app")
+    hostname.endsWith(".axiomid.app") ||
+    hostname === "pinet.com" ||
+    hostname.endsWith(".pinet.com")
   ) {
     return false;
   }
@@ -158,7 +158,7 @@ export function determineSandboxMode(): boolean {
 
 export async function ensurePiInitialized(pushLog?: (msg: string) => void): Promise<unknown> {
   if (typeof window === "undefined") return null;
-  const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void; authenticate?: unknown } };
+  const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void } };
 
   if (process.env.NODE_ENV === "test" && win.Pi) {
     return win.Pi;
@@ -172,18 +172,6 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
       PiSdkErrorCode.SDK_NOT_AVAILABLE,
       "Pi SDK is not available in this environment."
     );
-  }
-
-  // ponytail: If Pi Browser pre-injected window.Pi with authenticate(), the SDK
-  // is already initialized by the browser runtime. Calling init() again resets
-  // the internal state and causes "SDK was not initialized" on authenticate().
-  // Only call init() when we loaded the script ourselves (non-Pi-Browser web).
-  if (win.Pi && typeof win.Pi.authenticate === "function") {
-    if (!isInitialized) {
-      isInitialized = true;
-      pushLog?.("Pi SDK pre-initialized by Pi Browser — skipping init().");
-    }
-    return win.Pi;
   }
 
   const piInstance = Pi as { init: (args: { version: string; sandbox: boolean }) => void };
@@ -203,6 +191,8 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
         isInitialized = true;
         pushLog?.("Pi SDK was already initialized.");
       } else {
+        // A genuine init failure: surface it instead of returning an
+        // uninitialized SDK that callers would treat as usable.
         pushLog?.(`Pi SDK init failed: ${errMsg}`);
         throw new PiSdkError(
           PiSdkErrorCode.SDK_NOT_AVAILABLE,

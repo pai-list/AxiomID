@@ -9,9 +9,8 @@
  * so content assertions see the real hero layout.
  */
 
-import React from "react";
+import React, { act } from "react";
 import { render, screen } from "@testing-library/react";
-import { act } from "react";
 import Home from "@/app/page";
 
 jest.mock("@/components/ThemeToggle", () => ({
@@ -66,17 +65,23 @@ function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {})
   } as ReturnType<typeof useWallet>;
 }
 
-function renderHome() {
-  render(<Home />);
-  act(() => { jest.advanceTimersByTime(101); });
+async function renderHome() {
+  await act(async () => {
+    render(<Home />);
+  });
+  await act(async () => {
+    jest.advanceTimersByTime(101);
+  });
 }
 
 beforeAll(() => {
   jest.useFakeTimers();
-  global.fetch = jest.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({ stats: { registeredUsers: 100, totalAgents: 50, totalXpEarned: 10000, totalPayments: 500 } }),
-  }) as unknown as typeof fetch;
+  global.fetch = jest.fn().mockImplementation(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ stats: { registeredUsers: 100, totalAgents: 50, totalXpEarned: 10000, totalPayments: 500 } })
+    })
+  );
 });
 
 afterAll(() => {
@@ -88,26 +93,26 @@ describe("Landing page — Stitch hero", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx());
   });
 
-  it("renders the main heading", () => {
-    renderHome();
+  it("renders the main heading", async () => {
+    await renderHome();
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toHaveTextContent(/Your Identity/);
   });
 
-  it("renders the Live on Pi Network badge", () => {
-    renderHome();
+  it("renders the Live on Pi Network badge", async () => {
+    await renderHome();
     expect(screen.getByText("Live on Pi Network Testnet")).toBeInTheDocument();
   });
 
-  it("renders features section", () => {
-    renderHome();
+  it("renders features section", async () => {
+    await renderHome();
     expect(screen.getByText("Connect")).toBeInTheDocument();
     expect(screen.getByText("Verify")).toBeInTheDocument();
     expect(screen.getByText("Deploy")).toBeInTheDocument();
   });
 
-  it("renders tier cards", () => {
-    renderHome();
+  it("renders tier cards", async () => {
+    await renderHome();
     expect(screen.getByText("Visitor")).toBeInTheDocument();
     expect(screen.getByText("Citizen")).toBeInTheDocument();
     expect(screen.getByText("Validator")).toBeInTheDocument();
@@ -132,24 +137,26 @@ describe("Landing page — authenticated user", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user }));
   });
 
-  it("renders LOGOUT button when authenticated", () => {
-    renderHome();
+  it("renders LOGOUT button when authenticated", async () => {
+    await renderHome();
     const logoutButtons = screen.getAllByRole("button", { name: /logout/i });
     expect(logoutButtons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders DASHBOARD link when authenticated", () => {
-    renderHome();
+  it("renders DASHBOARD link when authenticated", async () => {
+    await renderHome();
     const dashboardLinks = screen.getAllByRole("link", { name: /dashboard/i });
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("calls logout when LOGOUT button is clicked", () => {
+  it("calls logout when LOGOUT button is clicked", async () => {
     const logoutFn = jest.fn();
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user, logout: logoutFn }));
-    renderHome();
+    await renderHome();
     const logoutButtons = screen.getAllByRole("button", { name: /logout/i });
-    logoutButtons[0].click();
+    await act(async () => {
+      logoutButtons[0].click();
+    });
     expect(logoutFn).toHaveBeenCalledTimes(1);
   });
 });
@@ -159,13 +166,13 @@ describe("Landing page — unauthenticated user", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null }));
   });
 
-  it("does NOT render a LOGOUT button when there is no user", () => {
-    renderHome();
+  it("does NOT render a LOGOUT button when there is no user", async () => {
+    await renderHome();
     expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
   });
 
-  it("renders DASHBOARD link or CONNECT button when there is no user", () => {
-    renderHome();
+  it("renders DASHBOARD link or CONNECT button when there is no user", async () => {
+    await renderHome();
     const dashboardLinks = screen.getAllByRole("link", { name: /dashboard/i });
     const connectButtons = screen.queryAllByRole("button", { name: /connect/i });
     expect(dashboardLinks.length + connectButtons.length).toBeGreaterThanOrEqual(1);

@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import * as StellarSdk from "@stellar/stellar-sdk";
+import * as StellarSdk from "stellar-sdk";
 import { canonicalize } from "./sanitize";
 
 /**

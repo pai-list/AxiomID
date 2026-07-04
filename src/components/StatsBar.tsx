@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Users, Bot, Shield, Sparkles } from "lucide-react";
 import { useLanguage } from "@/app/context/language-context";
 
@@ -21,6 +21,7 @@ export default function StatsBar() {
 
   useEffect(() => {
     const controller = new AbortController();
+
     const fetchStats = async () => {
       try {
         const res = await fetch("/api/status", { signal: controller.signal });
@@ -29,27 +30,34 @@ export default function StatsBar() {
         }
         const data = await res.json();
         const s = data.stats || {};
-        // check if component is still mounted to prevent act warnings in tests
+
         if (!controller.signal.aborted) {
           setStats({
             users: s.registeredUsers ?? 0,
             agents: s.totalAgents ?? 0,
           });
+          requestAnimationFrame(() => {
+            if (!controller.signal.aborted) setVisible(true);
+          });
         }
-      } catch {
-        setStats({ users: 0, agents: 0 });
-      } finally {
-        requestAnimationFrame(() => setVisible(true));
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== 'AbortError' && !controller.signal.aborted) {
+          setStats({ users: 0, agents: 0 });
+          requestAnimationFrame(() => {
+            if (!controller.signal.aborted) setVisible(true);
+          });
+        }
       }
     };
     fetchStats();
+
     return () => controller.abort();
   }, []);
 
   const hasUsers = (stats?.users ?? 0) > 0;
   const hasAgents = (stats?.agents ?? 0) > 0;
 
-  const items = [
+  const items = useMemo(() => [
     {
       label: t("pioneers_joined"),
       value: hasUsers ? (stats?.users ?? 0).toLocaleString() : null,
@@ -62,7 +70,7 @@ export default function StatsBar() {
       label: t("agents_deployed"),
       value: hasAgents ? (stats?.agents ?? 0).toLocaleString() : null,
       icon: Bot,
-      color: "text-electric-blue",
+      color: "electric-blue",
       suffix: hasAgents ? "+" : "",
       fallback: language === "ar" ? "انشئ وكيلك الآن" : "Create your agent",
     },
@@ -74,7 +82,7 @@ export default function StatsBar() {
       suffix: "",
       fallback: null,
     },
-  ];
+  ], [t, language, stats, hasUsers, hasAgents]);
 
   return (
     <div
@@ -84,7 +92,7 @@ export default function StatsBar() {
       {items.map((item) => (
         <div key={item.label} className="text-center p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
           <div className="flex items-center gap-2 mb-2 justify-center">
-            <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
+            <item.icon className={`w-3.5 h-3.5 ${item.color === 'electric-blue' ? 'text-electric-blue' : item.color}`} />
             <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{item.label}</span>
           </div>
           {item.value !== null ? (

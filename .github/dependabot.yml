@@ -1,73 +1,42 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: npm
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "UTC"
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
     open-pull-requests-limit: 10
-    reviewers:
-      - "Moeabdelaziz007"
     labels:
-      - "dependencies"
-      - "automated"
+      - dependencies
+      - automated
     commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
+      prefix: "deps"
     groups:
       production:
-        patterns:
-          - "next"
-          - "react"
-          - "react-dom"
-          - "@prisma/*"
-          - "zod"
+        dependency-type: production
         update-types:
-          - "minor"
-          - "patch"
+          - minor
+          - patch
       dev:
-        patterns:
-          - "@types/*"
-          - "jest"
-          - "ts-jest"
-          - "typescript"
-          - "eslint*"
-          - "prettier"
+        dependency-type: development
         update-types:
-          - "patch"
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
-  - package-ecosystem: "npm"
-    directory: "/packages/crypto"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
     labels:
-      - "dependencies"
-      - "automated"
+      - dependencies
+      - automated
+      - ci
     commit-message:
-      prefix: "chore(deps-crypto)"
-
-  - package-ecosystem: "npm"
-    directory: "/packages/sdk"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore(deps-sdk)"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "dependencies"
-      - "automated"
-      - "ci"
-    commit-message:
-      prefix: "chore(ci)"
+      prefix: "ci"
