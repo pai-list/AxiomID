@@ -141,8 +141,8 @@ export default function RootLayout({
         </a>
         <Script
           src="https://sdk.minepi.com/pi-sdk.js"
-          strategy="afterInteractive"
-          // ponytail: afterInteractive frees ~100-300ms FCP — Pi SDK is only needed on user click.
+          strategy="beforeInteractive"
+          // ponytail: SRI removed — Pi SDK updates without semver; stale hash silently blocks script load.
         />
         <Script src="/register-sw.js" strategy="afterInteractive" />
       <ThemeProvider>
