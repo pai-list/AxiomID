@@ -2,7 +2,10 @@
 <!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
 
 ## مبدأ التوافق — Principle Alignment
-This skill aligns with **Vigilance (Muraqabah)**. Every mutating action is logged to ensure complete intention transparency and divine awareness of all state changes.
+<!-- TODO: Define which constitutional principle this skill aligns with and how.
+     Example: This skill aligns with Vigilance (Muraqabah). Every mutating action
+     is logged to ensure complete intention transparency and awareness of all
+     state changes. -->
 
 ## سير التشغيل — Operational Flow
 <!-- TODO: List numbered steps describing execution. Required.
