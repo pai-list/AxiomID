@@ -113,7 +113,7 @@ export function PassportView() {
           </div>
           <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
           <p className="text-subtle mb-8">{error}</p>
-          <Link href={"/build" as any} className="btn-primary text-xs">
+          <Link href="/claim" className="btn-primary text-xs">
             {t('create_your_passport')}
           </Link>
         </div>
@@ -156,7 +156,7 @@ export function PassportView() {
             <p className="text-xs text-faint mb-4">
               {t('passport_verified_by')}
             </p>
-            <Link href={"/build" as any} className="btn-primary text-xs">
+            <Link href="/claim" className="btn-primary text-xs">
               {t('create_your_passport')}
             </Link>
           </div>

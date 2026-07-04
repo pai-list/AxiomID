@@ -9,7 +9,7 @@
  *   is true, independent of `error`/`passport`.
  * - New "Preparing your AI..." intermediate UI shown while the identity job
  *   is still building (jobStatus present and not COMPLETED/ACTIVE).
- * - CTA links now point to "/build" instead of "/".
+ * - CTA links now point to "/claim" instead of "/".
  */
 
 import React from "react";
@@ -145,12 +145,12 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
   });
 
-  it("renders CTA links pointing to /build", async () => {
+  it("renders CTA links pointing to /claim", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
     render(<PassportView />);
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
-    const buildLinks = screen.getAllByRole("link").filter((el) => el.getAttribute("href") === "/build");
-    expect(buildLinks.length).toBeGreaterThan(0);
+    const claimLinks = screen.getAllByRole("link").filter((el) => el.getAttribute("href") === "/claim");
+    expect(claimLinks.length).toBeGreaterThan(0);
   });
 
   it("calls sharePassport with the current URL when the share button is clicked", async () => {
@@ -271,12 +271,12 @@ describe("PassportView — fetch error handling", () => {
     await waitFor(() => expect(screen.getByText("network down")).toBeInTheDocument());
   });
 
-  it("renders a CTA link to /build on the error screen", async () => {
+  it("renders a CTA link to /claim on the error screen", async () => {
     mockFetchOnce({ ok: false, json: async () => ({ message: "Not found" }) });
     render(<PassportView />);
     await waitFor(() => expect(screen.getByText("Not found")).toBeInTheDocument());
     const link = screen.getByText("CREATE YOUR PASSPORT");
-    expect(link.closest("a")).toHaveAttribute("href", "/build");
+    expect(link.closest("a")).toHaveAttribute("href", "/claim");
   });
 
   it("stops showing the loading indicator once an error occurs", async () => {

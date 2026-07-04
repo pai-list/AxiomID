@@ -11,7 +11,7 @@
  * - delegates header/nav UI to a new `<Header />` component
  * - drops the old "Why AxiomID?" comparison section and inline JSON-LD script
  * - changes hero copy/CTAs to "Create your AI Identity" / "Create My AI Agent"
- *   linking to "/build"
+ *   linking to "/claim"
  *
  * Since `Home` is an async Server Component, it cannot be rendered directly
  * via JSX in a browser-like test — but because it is just an async function
@@ -131,10 +131,10 @@ describe("Home — rendering with English (default) language", () => {
     expect(screen.getByText("AI Identity")).toBeInTheDocument();
   });
 
-  it("renders the primary CTA linking to /build", async () => {
+  it("renders the primary CTA linking to /claim", async () => {
     render(await Home());
     const cta = screen.getByText("Create My AI Agent").closest("a");
-    expect(cta).toHaveAttribute("href", "/build");
+    expect(cta).toHaveAttribute("href", "/claim");
   });
 
   it("renders the secondary CTA linking to /docs", async () => {
