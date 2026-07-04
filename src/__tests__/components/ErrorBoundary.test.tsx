@@ -128,7 +128,7 @@ describe("ErrorBoundary", () => {
       // Create a mock for react-error-boundary
       jest.doMock("react-error-boundary", () => {
         return {
-          ErrorBoundary: (props: any) => {
+          ErrorBoundary: (props: { children?: React.ReactNode; onReset?: () => void }) => {
             if (props.onReset) {
               // Call onReset to cover it
               try {
