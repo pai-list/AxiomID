@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AxiomID — Sovereign Technical Ledger v1.0</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-soft: #10131a;
+      --bg-card: #14171f;
+      --border: #1f2937;
+      --emerald: #22c55e;
+      --emerald-2: #00ff41;
+      --blue: #3b82f6;
+      --cyan: #00d4ff;
+      --magenta: #d946ef;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #e5e7eb;
+      --text-soft: #9ca3af;
+      --text-dim: #6b7280;
+      --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: radial-gradient(circle at center, #14171f 0%, #0a0a0f 100%);
+      border-bottom: 1px solid var(--emerald);
+      page-break-after: always;
+    }
+    .cover h1 {
+      font-family: var(--mono);
+      font-size: 48pt;
+      color: var(--emerald-2);
+      text-transform: uppercase;
+      letter-spacing: 8px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+    }
+    .cover h2 {
+      font-family: var(--sans);
+      font-size: 18pt;
+      color: var(--cyan);
+      font-weight: 300;
+      margin-bottom: 40px;
+    }
+    .meta-box {
+      border: 1px solid var(--blue);
+      padding: 20px 40px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 10pt;
+      color: var(--text-soft);
+      text-align: left;
+    }
+    .container {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    h3 {
+      font-family: var(--mono);
+      font-size: 14pt;
+      color: var(--emerald);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-top: 40px;
+    }
+    h3::before { content: "۞ "; color: var(--cyan); }
+    p, li { font-size: 10.5pt; margin-bottom: 1rem; }
+    ul { padding-left: 20px; }
+    .warning {
+      border-left: 4px solid var(--amber);
+      background: rgba(245, 158, 11, 0.1);
+      padding: 15px;
+      margin: 20px 0;
+      font-size: 10pt;
+      color: var(--text);
+    }
+    .recommendation {
+      border-left: 4px solid var(--cyan);
+      background: rgba(0, 212, 255, 0.1);
+      padding: 15px;
+      margin: 20px 0;
+      font-size: 10pt;
+      color: var(--text);
+    }
+    .actions {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 25px;
+      border-radius: 8px;
+      margin-top: 40px;
+    }
+    .actions h3 { border: none; margin-top: 0; color: var(--magenta); }
+    .code {
+      font-family: var(--mono);
+      background: var(--bg-card);
+      color: var(--emerald-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 9pt;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 10pt;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      text-align: left;
+    }
+    th { background: var(--bg-soft); color: var(--cyan); font-family: var(--mono); }
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 8pt;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .status-working { background: rgba(34, 197, 94, 0.2); color: var(--emerald); border: 1px solid var(--emerald); }
+    .status-partial { background: rgba(245, 158, 11, 0.2); color: var(--amber); border: 1px solid var(--amber); }
+    .status-broken { background: rgba(239, 68, 68, 0.2); color: var(--red); border: 1px solid var(--red); }
+
+    @media print {
+      body { background: white; color: black; }
+      .cover { background: none; border: none; page-break-after: always; }
+      .cover h1 { color: black; text-shadow: none; }
+      .cover h2 { color: black; }
+      .meta-box { border: 1px solid black; color: black; }
+      .container { margin: 0; }
+      h3 { color: black; border-bottom: 1px solid black; }
+      .warning, .recommendation { border-color: black; background: none; color: black; }
+      .actions { border: 1px solid black; background: white; color: black; }
+      .code { background: #eee; color: black; }
+      .status-pill { border: 1px solid black; color: black; background: none; }
+      @page { size: A4; margin: 18mm 16mm 22mm 16mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <h1>AXIOMID</h1>
+    <h2>Sovereign Technical Ledger v1.0</h2>
+    <div class="meta-box">
+      <p><strong>DATE:</strong> July 03, 2026</p>
+      <p><strong>STATUS:</strong> Pre-Production Audit Complete</p>
+      <p><strong>AUTHOR:</strong> Gemma 4 (via opencode)</p>
+      <p><strong>SCOPE:</strong> Full Stack / E2E Infrastructure</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <h3>1. Architectural Blueprint</h3>
+    <p>AxiomID is a decentralized identity layer leveraging a <strong>Sovereign-Symmetric</strong> architecture. It bridges traditional Pi Network identities with W3C-compliant DIDs via a specialized anchor system on the Stellar blockchain.</p>
+    
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Technology Stack</th><th>Core Responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Next.js 16 / React 19 / Tailwind 4</td><td>Client-side state, PWA shell, and identity visualization.</td></tr>
+        <tr><td>API / Logic</td><td>Vercel Functions / Node.js</td><td>Sovereign identity logic, Zod validation, and rate limiting.</td></tr>
+        <tr><td>State/Auth</td><td>Pi SDK / Stellar SDK / JWT</td><td>Sovereign auth, DID resolution, and anchor verification.</td></tr>
+        <tr><td>Data Layer</td><td>Cloudflare D1 (Edge) / PostgreSQL (Core)</td><td>Distributed event logs, user identities, and skill genomic data.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Subsystem Deep-Dive</h3>
+    <p><strong>A. Sovereign Identity (DID)</strong><br>
+    The system implements a custom <span class="code">did:axiom:</span> method. Identity is established by binding a Pi username to a Stellar public key. The <strong>Sovereign Passport</strong> is a Verifiable Credential (VC) signed by the AxiomID Issuer, which can be independently verified on-chain via the anchor hash.</p>
+    
+    <p><strong>B. Trust Score Algorithm</strong><br>
+    Trust is not a static value but a dynamic probability. It uses a physics-inspired <strong>Inverse Square Decay</strong> for delegation hops and a <strong>Boltzmann Probability</strong> distribution to map trust scores to action-weights. The current formula is <span class="code">XP * 0.7 + stamps * 0.3</span>.</p>
+    
+    <p><strong>C. The Genomic Marketplace</strong><br>
+    Skills are treated as "Genomes" — Markdown-based manifests containing logic and tests. They are published through a moderation queue and executed in a confined <strong>Sovereign Sandbox</strong> utilizing an AST scanner to prevent malicious execution.</p>
+
+    <h3>3. E2E Journey Audit: Reality vs. Claim</h3>
+    <p>I traced the full user journey from registration to agent execution. Here is the honest status of the implementation.</p>
+    
+    <table>
+      <thead>
+        <tr><th>Step</th><th>Journey Phase</th><th>Status</th><th>Technical Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Landing $\rightarrow$ Connect Pi</td><td><span class="status-pill status-working">WORKING</span></td><td>Direct Pi SDK integration; handles sandbox/prod correctly.</td></tr>
+        <tr><td>2</td><td>User Registration</td><td><span class="status-pill status-working">WORKING</span></td><td>Identity created in DB; however, <strong>Zod validation is missing</strong> in the route.</td></tr>
+        <tr><td>3</td><td>Session Establishment</td><td><span class="status-pill status-working">WORKING</span></td><td>Pi Auth $\rightarrow$ JWT $\rightarrow$ WalletProvider state.</td></tr>
+        <tr><td>4</td><td>KYC Verification</td><td><span class="status-pill status-working">WORKING</span></td><td>Sovereign stamps awarded upon successful verification.</td></tr>
+        <tr><td>5</td><td>XP & Tier Progression</td><td><span class="status-pill status-working">WORKING</span></td><td>Correct balance tracking; tiered access is enforced.</td></tr>
+        <tr><td>6</td><td>DID Document Generation</td><td><span class="status-pill status-broken">BROKEN</span></td><td>Sovereign DIDs are created but <strong>public keys are missing</strong> from the document.</td></tr>
+        <tr><td>7</td><td>Passport Publishing</td><td><span class="status-pill status-broken">BROKEN</span></td><td>IPFS URL is returned to client but <strong>never saved to DB</strong>.</td></tr>
+        <tr><td>8</td><td>Marketplace Browse</td><td><span class="status-pill status-broken">BROKEN</span></td><td>The <strong>soulPrinciple</strong> filter is parsed but ignored by the database query.</td></tr>
+        <tr><td>9</td><td>Install Skill (Free)</td><td><span class="status-pill status-working">WORKING</span></td><td>Installation logic and count increments are correct.</td></tr>
+        <tr><td>10</td><td>Install Skill (Paid)</td><td><span class="status-pill status-partial">RISKY</span></td><td>Logic exists, but the <strong>payment complete</strong> endpoint has zero tests.</td></tr>
+        <tr><td>11</td><td>Execute Skill</td><td><span class="status-pill status-broken">BROKEN</span></td><td>Critical <strong>Security Gap</strong>: The execute route has no auth middleware.</td></tr>
+        <tr><td>12</td><td>Agent Management</td><td><span class="status-pill status-working">WORKING</span></td><td>Pause/Activate logic and identity assertions are functional.</td></tr>
+        <tr><td>13</td><td>Vault / Staking</td><td><span class="status-pill status-partial">RISKY</span></td><td>API works, but <strong>no UI</strong> exists to interact with it.</td></tr>
+        <tr><td>14</td><td>Dashboard/Settings</td><td><span class="status-pill status-working">WORKING</span></td><td>Core pages render; 3 tabs are functional; settings is mostly read-only.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4. Gap Analysis & Critical Failures</h3>
+    <div class="warning">
+      <strong>Critical Security Risk (P0):</strong> The <code>/api/skills/[slug]/execute</code> route is completely open. Any user can trigger skill execution for any agent if they know the slug. This must be gated by <code>requireAuth()</code> immediately.
+    </div>
+
+    <div class="warning">
+      <strong>Data Integrity Risk (P0):</strong> The admin moderation process is not atomic. A failure during the skill update after the moderation record is updated leaves the system in an inconsistent state. Must be wrapped in a <code>prisma.$transaction</code>.
+    </div>
+
+    <div class="recommendation">
+      <strong>Sovereign Identity Gap:</strong> To achieve true "Sovereign" status, the DID documents must include the public keys. Without them, the identity cannot be verified by third-party auditors outside the AxiomID system.
+    </div>
+
+    <div class="recommendation">
+      <strong>Pi App Store Readiness:</strong> The app is 90% ready. The <code>manifest.ts</code> is correct, and all icons exist. The remaining hurdle is the "Unverified" status on the pinet.com domain, which requires final submission to the Pi Developer portal.
+    </div>
+
+    <h3>5. Master Remediation Plan</h3>
+    <div class="actions">
+      <h3>Next Actions (Order of Priority)</h3>
+      <ul>
+        <li><strong>[P0] Security:</strong> Add <code>requireAuth()</code> to the execution route.</td>
+        <li><strong>[P0] Integrity:</strong> Implement <code>$transaction</code> in admin moderation.</td>
+        <li><strong>[P0] Identity:</strong> Fix <code>buildDidDocument</code> to include public keys.</td>
+        <li><strong>[P0] Persistence:</strong> Save <code>passportUrl</code> to DB on publish.</td>
+        <li><strong>[P1] Coverage:</strong> Write 7+ test cases for <code>/api/pi/payment/complete</code>.</td>
+        <li><strong>[P1] UX:</strong> Add "Publish" button to Dashboard and fix Trust Score tooltip formula.</td>
+        <li>[P2] Feature: Implement the Vault UI and payment history page.</td>
+        <li>[P2] Infra: Build the D1 $\rightarrow$ PostgreSQL sync bridge.</td>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
