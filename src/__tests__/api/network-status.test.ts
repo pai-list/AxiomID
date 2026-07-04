@@ -75,7 +75,7 @@ describe('GET /api/status', () => {
   it('returns network stats successfully', async () => {
     setupDbMocks({
       userCounts: [1247, 14, 89],
-      findMany: [{ xp: 50, stamps: [{ id: '1' }] }],
+      findMany: [{ xp: 50, _count: { stamps: 1 } }],
       agentCounts: [856, 312],
       paymentCount: 8934,
       xpSum: 456789,
