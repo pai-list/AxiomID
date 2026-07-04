@@ -21,7 +21,7 @@ const InteractiveShowcase = dynamicLoader(
   { ssr: false, loading: () => <div className="min-h-[400px]" /> }
 );
 const HeroDemo = dynamicLoader(() => import("@/components/HeroDemo"), { ssr: false });
-const Footer = dynamicLoader(() => import("@/components/Footer"), { ssr: false });
+const Footer = dynamicLoader(() => import("@/components/Footer"));
 
 export const dynamic = 'force-dynamic';
 
