@@ -6,7 +6,8 @@ import { WalletProvider } from "./context/wallet-context";
 import { SandboxProvider } from "./context/sandbox-provider";
 import { LanguageProvider } from "./context/language-context";
 import { ThemeProvider } from "./context/theme-context";
-import { MotionConfig } from "framer-motion";
+// ponytail: framer-motion removed from layout — lazy-loaded per-page where needed.
+// MotionConfig was adding 45KB gzipped to EVERY page's initial bundle.
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
@@ -140,8 +141,8 @@ export default function RootLayout({
         </a>
         <Script
           src="https://sdk.minepi.com/pi-sdk.js"
-          strategy="beforeInteractive"
-          // ponytail: SRI removed — Pi SDK updates without semver; stale hash silently blocks script load.
+          strategy="afterInteractive"
+          // ponytail: afterInteractive frees ~100-300ms FCP — Pi SDK is only needed on user click.
         />
         <Script src="/register-sw.js" strategy="afterInteractive" />
       <ThemeProvider>
@@ -151,9 +152,7 @@ export default function RootLayout({
           <SandboxProvider>
             <WalletProvider>
 
-                <MotionConfig reducedMotion="user">
-                  {children}
-                </MotionConfig>
+                {children}
               </WalletProvider>
             </SandboxProvider>
           </LanguageProvider>

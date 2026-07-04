@@ -183,24 +183,13 @@ export async function requireAuth(request: NextRequest): Promise<
         username: usernameVal || piUsernameVal || null,
       };
     } catch {
-      // Fallback: Verify Pi token via online API
-      const userAgent = request.headers.get("user-agent") || "";
-      const isPiBrowserReq = /Pi Browser|minepi|PiApp/i.test(userAgent);
-      
-      const isSandboxOrDev = !isProduction &&
-        process.env.SANDBOX_AUTH_BYPASS === "true" &&
-        (request.nextUrl?.hostname === "localhost" ||
-         request.nextUrl?.hostname === "127.0.0.1" ||
-         request.nextUrl?.hostname === "::1");
-
-      if (!isPiBrowserReq && !isSandboxOrDev) {
-        invalidateCachedToken(tokenHash);
-        return { error: apiError('UNAUTHORIZED', 'Invalid Pi access token (Pi Browser required)'), user: null };
-      }
-
+      // JWKS verification failed — fall back to Pi API verification.
+      // Never gate on User-Agent here: Pi Browser's WebView UA varies across
+      // platforms (iOS, Android) and versions, making UA detection unreliable.
+      // The Pi API /v2/me endpoint is the authoritative token verifier.
       const piResponse = await fetch('https://api.minepi.com/v2/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!piResponse.ok) {
