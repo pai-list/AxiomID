@@ -1,104 +1,237 @@
-import React from 'react';
-import { render, screen, act } from '@testing-library/react';
-import { PiBrowserBanner, PiBrowserGuard } from '@/components/PiBrowserGuard';
-import { useLanguage } from '@/app/context/language-context';
+import React from "react";
+import { render, screen, act } from "@testing-library/react";
+import { PiBrowserGuard, PiBrowserBanner, usePiBrowser } from "@/components/PiBrowserGuard";
+import * as piSdk from "@/lib/pi-sdk";
+import * as languageContext from "@/app/context/language-context";
 
-// Mock framer motion to just render children immediately
-jest.mock('framer-motion', () => ({
+// Mock dependencies
+jest.mock("@/lib/pi-sdk", () => ({
+  checkPiBrowser: jest.fn(),
+  determineSandboxMode: jest.fn(),
+}));
+
+jest.mock("@/app/context/language-context", () => ({
+  useLanguage: jest.fn(),
+}));
+
+// Mock framer-motion to avoid animation issues in tests
+jest.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentPropsWithoutRef<'div'>) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
 }));
 
-jest.mock('@/lib/pi-sdk', () => ({
-  checkPiBrowser: jest.fn(),
-  determineSandboxMode: jest.fn()
-}));
-
-import { checkPiBrowser, determineSandboxMode } from '@/lib/pi-sdk';
-
-const mockCheckPiBrowser = checkPiBrowser as jest.Mock;
-const mockDetermineSandboxMode = determineSandboxMode as jest.Mock;
-const mockUseLanguage = useLanguage as jest.Mock;
-
-describe('PiBrowserBanner', () => {
+describe("PiBrowserGuard", () => {
   beforeEach(() => {
-    mockCheckPiBrowser.mockReset();
-    mockDetermineSandboxMode.mockReset();
-    mockUseLanguage.mockReset();
-
-    mockUseLanguage.mockReturnValue({
-      language: 'en',
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    (languageContext.useLanguage as jest.Mock).mockReturnValue({
+      language: "en",
     });
   });
-
-  const renderWithGuard = async (isPiBrowser: boolean, isSandbox: boolean) => {
-    mockCheckPiBrowser.mockReturnValue(isPiBrowser);
-    mockDetermineSandboxMode.mockReturnValue(isSandbox);
-
-    jest.useFakeTimers();
-
-    let result: ReturnType<typeof render>;
-
-    act(() => {
-      result = render(
-        <PiBrowserGuard showSplash={false}>
-          <PiBrowserBanner />
-        </PiBrowserGuard>
-      );
-    });
-
-    act(() => {
-      jest.advanceTimersByTime(500);
-    });
-
-    return result;
-  };
 
   afterEach(() => {
     jest.useRealTimers();
   });
 
-  it('renders null when not in PiBrowser', async () => {
-    await renderWithGuard(false, false);
-    expect(screen.queryByText(/Pi Browser/)).not.toBeInTheDocument();
+  it("should render splash screen initially while detecting", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    expect(screen.getByText("Detecting environment...")).toBeInTheDocument();
+    expect(screen.queryByTestId("children")).not.toBeInTheDocument();
   });
 
-  describe('English locale', () => {
-    it('renders Pi Browser text when in PiBrowser and not sandbox', async () => {
-      await renderWithGuard(true, false);
-      expect(screen.getByText(/Pi Browser/)).toBeInTheDocument();
-      expect(screen.getByText(/Connected/)).toBeInTheDocument();
-      expect(screen.getByText(/Full functionality available/)).toBeInTheDocument();
+  it("should render children if it is in the Pi Browser", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
     });
 
-    it('renders Pi Sandbox text when in PiBrowser and sandbox', async () => {
-      await renderWithGuard(true, true);
-      expect(screen.getByText(/Pi Sandbox/)).toBeInTheDocument();
-      expect(screen.getByText(/Connected/)).toBeInTheDocument();
-      expect(screen.getByText(/Full functionality available/)).toBeInTheDocument();
+    expect(screen.queryByText("Detecting environment...")).not.toBeInTheDocument();
+    expect(screen.getByTestId("children")).toBeInTheDocument();
+  });
+
+  it("should render fallback if outside Pi Browser and fallback is provided", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(false);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard fallback={<div data-testid="fallback">Fallback</div>}>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    expect(screen.getByTestId("fallback")).toBeInTheDocument();
+    expect(screen.queryByTestId("children")).not.toBeInTheDocument();
+  });
+
+  it("should render children if outside Pi Browser but no fallback provided", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(false);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    expect(screen.getByTestId("children")).toBeInTheDocument();
+  });
+
+  it("should render children if in Sandbox mode", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(false);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(true);
+
+    render(
+      <PiBrowserGuard fallback={<div data-testid="fallback">Fallback</div>}>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    expect(screen.getByTestId("children")).toBeInTheDocument();
+    expect(screen.queryByTestId("fallback")).not.toBeInTheDocument();
+  });
+
+  it("should respect the showSplash prop", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard showSplash={false}>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    expect(screen.queryByText("Detecting environment...")).not.toBeInTheDocument();
+    expect(screen.getByTestId("children")).toBeInTheDocument();
+  });
+
+  it("should translate the detecting message to Arabic if language is ar", () => {
+    (languageContext.useLanguage as jest.Mock).mockReturnValue({
+      language: "ar",
+    });
+
+    render(
+      <PiBrowserGuard>
+        <div data-testid="children">Content</div>
+      </PiBrowserGuard>
+    );
+
+    expect(screen.getByText("جاري اكتشاف البيئة...")).toBeInTheDocument();
+  });
+});
+
+describe("PiBrowserBanner", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    (languageContext.useLanguage as jest.Mock).mockReturnValue({
+      language: "en",
     });
   });
 
-  describe('Arabic locale', () => {
-    beforeEach(() => {
-      mockUseLanguage.mockReturnValue({
-        language: 'ar',
-      });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("should render the banner if in Pi Browser", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    render(
+      <PiBrowserGuard>
+        <PiBrowserBanner />
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
     });
 
-    it('renders Pi Browser text in Arabic when in PiBrowser and not sandbox', async () => {
-      await renderWithGuard(true, false);
-      expect(screen.getByText(/Pi Browser/)).toBeInTheDocument();
-      expect(screen.getByText(/متصل/)).toBeInTheDocument();
-      expect(screen.getByText(/جميع الوظائف متاحة/)).toBeInTheDocument();
+    expect(screen.getByText(/Connected/i)).toBeInTheDocument();
+    expect(screen.getByText("Full functionality available")).toBeInTheDocument();
+    expect(screen.getByText(/Pi Browser/i)).toBeInTheDocument();
+  });
+
+  it("should render Pi Sandbox text if in sandbox mode and Pi Browser", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(true);
+
+    render(
+      <PiBrowserGuard>
+        <PiBrowserBanner />
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
     });
 
-    it('renders Pi Sandbox text in Arabic when in PiBrowser and sandbox', async () => {
-      await renderWithGuard(true, true);
-      expect(screen.getByText(/Pi Sandbox/)).toBeInTheDocument();
-      expect(screen.getByText(/متصل/)).toBeInTheDocument();
-      expect(screen.getByText(/جميع الوظائف متاحة/)).toBeInTheDocument();
+    expect(screen.getByText(/Pi Sandbox/i)).toBeInTheDocument();
+  });
+
+  it("should not render the banner if not in Pi Browser", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(false);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+
+    const { container } = render(
+      <PiBrowserGuard>
+        <PiBrowserBanner />
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
     });
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("should translate banner text to Arabic if language is ar", () => {
+    (piSdk.checkPiBrowser as jest.Mock).mockReturnValue(true);
+    (piSdk.determineSandboxMode as jest.Mock).mockReturnValue(false);
+    (languageContext.useLanguage as jest.Mock).mockReturnValue({
+      language: "ar",
+    });
+
+    render(
+      <PiBrowserGuard>
+        <PiBrowserBanner />
+      </PiBrowserGuard>
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    expect(screen.getByText(/متصل/i)).toBeInTheDocument();
+    expect(screen.getByText("جميع الوظائف متاحة")).toBeInTheDocument();
   });
 });
