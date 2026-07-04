@@ -4,24 +4,16 @@ import { useWallet } from "./context/wallet-context";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import Link from "next/link";
 import { useLanguage } from "./context/language-context";
+import Footer from "@/components/Footer";
 import { Zap, AlertTriangle, Shield, Fingerprint } from "lucide-react";
 import Script from "next/script";
 import LanguageToggle from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import HeroDemo from "@/components/HeroDemo";
 import StatsBar from "@/components/StatsBar";
+import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
 import TrustTiers from "@/components/TrustTiers";
 import { AxiomLogo } from "@/components/AxiomLogo";
-import dynamicLoader from "next/dynamic";
-
-// ponytail: Lazy-load heavy framer-motion components to split bundle.
-// InteractiveShowcase (366 lines + framer-motion) and Footer (framer-motion)
-// are deferred until after first paint — saving ~80ms parse + hydration time.
-const InteractiveShowcase = dynamicLoader(
-  () => import("@/components/landing/InteractiveShowcase"),
-  { ssr: false, loading: () => <div className="min-h-[400px]" /> }
-);
-const HeroDemo = dynamicLoader(() => import("@/components/HeroDemo"), { ssr: false });
-const Footer = dynamicLoader(() => import("@/components/Footer"));
 
 export const dynamic = 'force-dynamic';
 

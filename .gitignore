@@ -41,9 +41,6 @@ Desktop.ini
 # gemini CLI (local tool config)
 .gemini/
 
-# devin (subscription ended)
-.devin/
-
 # superpowers (local workflow scripts)
 .superpowers/
 
@@ -63,22 +60,6 @@ packages/sdk/dist
 stitch-*.html
 packages/crypto/node_modules/
 ai-report.html
-Sovereign_Technical_Ledger_v1.html
-
-# Python scripts (keep appearing from PRs)
-*.py
-
-# Cognitive OS / internal docs (not for public repo)
-Engineering/
-TODO/
-docs/agents/
-docs/decisions/
-docs/missions/
-handoffs/
-
-# Audit / report files
-MANUS_AUDIT_PROMPT.md
-NEXT_STEPS_REPORT.md
 
 # Sensitive internal files
 memory.graph.json
