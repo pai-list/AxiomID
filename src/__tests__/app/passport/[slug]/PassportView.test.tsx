@@ -262,4 +262,71 @@ describe('PassportView', () => {
 
     expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  it('encodes special characters in the slug when building the fetch URL', async () => {
+    (useParams as jest.Mock).mockReturnValue({ slug: 'a b/c?d' });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPassportData,
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        `/api/passport/${encodeURIComponent('a b/c?d')}`,
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+    });
+  });
+
+  it('refetches passport data when the slug changes', async () => {
+    (useParams as jest.Mock).mockReturnValue({ slug: 'first-slug' });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => mockPassportData })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ...mockPassportData, username: 'seconduser' }),
+      });
+
+    const { rerender } = render(<PassportView />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/passport/first-slug',
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+    });
+
+    (useParams as jest.Mock).mockReturnValue({ slug: 'second-slug' });
+    rerender(<PassportView />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/passport/second-slug',
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(screen.getByTestId('ap-username')).toHaveTextContent('seconduser');
+    });
+  });
+
+  it('renders verification footer text and secondary create-passport link on success', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPassportData,
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('translated_passport_verified_by')).toBeInTheDocument();
+    expect(screen.getByText('translated_create_your_passport')).toBeInTheDocument();
+  });
 });
