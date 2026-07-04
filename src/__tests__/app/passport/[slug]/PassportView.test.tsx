@@ -33,7 +33,7 @@ jest.mock('@/components/AgentPassport', () => ({
 }));
 
 jest.mock('@/components/AgentQR', () => ({
-  AgentQR: (props: any) => <div data-testid="agent-qr" data-did={props.did} />,
+  AgentQR: (props: { did: string }) => <div data-testid="agent-qr" data-did={props.did} />,
 }));
 
 const mockPassportData = {
