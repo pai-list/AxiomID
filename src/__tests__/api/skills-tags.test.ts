@@ -51,7 +51,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
-mockPrisma.skillTag.createMany = jest.fn() as any;
+mockPrisma.skillTag.createMany = jest.fn() as unknown as jest.Mock;
 const mockRequireAuth = requireAuth as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockGetClientIp = getClientIp as jest.Mock;
