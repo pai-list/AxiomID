@@ -62,7 +62,7 @@ const STUB_PATTERNS = [
   /TBD/i,
   /<fill in>/i,
   /^\s*\.\.\.\s*$/,
-  /<!--\s*.*?\s*-->/,
+  /<!--[\s\S]*?-->/,
 ];
 
 export interface ManifestSection {
@@ -118,14 +118,15 @@ function isStubBody(body: string): boolean {
   let prev = '';
   while (prev !== stripped) {
     prev = stripped;
-    stripped = stripped.replace(/<!--[\s\S]*?-->/g, '');
+    stripped = stripped.replace(/<!--[\s\S]*?--!?>/g, '');
   }
   stripped = stripped.trim();
   if (!stripped) return true;
 
   // Detect any unmatched HTML comment opener.
   const lastOpen = stripped.lastIndexOf('<!--');
-  const lastClose = stripped.lastIndexOf('-->');
+  let lastClose = stripped.lastIndexOf('-->');
+  if (lastClose === -1) lastClose = stripped.lastIndexOf('--!>');
   if (lastOpen !== -1 && (lastClose === -1 || lastOpen > lastClose)) return true;
 
   const lines = stripped.split('\n').filter(l => l.trim());
