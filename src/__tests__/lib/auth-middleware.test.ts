@@ -430,35 +430,20 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
 });
 
 // ---------------------------------------------------------------------------
-// requireAuth — JWKS fallback to Pi API (PR #234)
-// When JWKS verification fails, ALWAYS fall back to Pi API /v2/me.
-// No User-Agent gating: Pi Browser's WebView UA varies across platforms
-// (iOS, Android) and versions, making UA detection unreliable.
-// The Pi API /v2/me endpoint is the authoritative token verifier.
+// requireAuth — Pi Browser user-agent enforcement (PR change)
+// When JWKS verification fails, the fallback now checks the User-Agent header
+// for Pi Browser identity before calling the Pi API. Non-Pi-Browser requests
+// are rejected unless SANDBOX_AUTH_BYPASS is set and hostname is loopback.
 // ---------------------------------------------------------------------------
-describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
+describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockReset();
     clearAuthCache();
   });
 
-  it('falls through to Pi API for any user-agent when JWKS fails', async () => {
-    const mockUser = {
-      id: 'user-chrome',
-      walletAddress: '0xaaa',
-      piUid: 'pi-chrome-test',
-      piUsername: 'chromeuser',
-      did: null,
-      xp: 0,
-      tier: 'Visitor',
-    };
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ uid: 'pi-chrome-test', username: 'chromeuser' }),
-    });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
-
+  it('rejects non-Pi-Browser user-agent when JWKS fails (no sandbox bypass)', async () => {
+    // Chrome UA, no SANDBOX_AUTH_BYPASS — must be rejected before the Pi API is called
     const req = mockRequestWithHeader({
       authorization: 'Bearer chrome-only-token',
       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/537.36 Chrome/120.0',
@@ -466,28 +451,13 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
 
     const result = await requireAuth(req);
 
-    expect(result.error).toBeNull();
-    expect(result.user).toEqual(mockUser);
-    // Pi API IS called — no UA gating
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    // Pi API must NOT be called — the middleware short-circuits before fetch
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('falls through to Pi API for empty user-agent when JWKS fails', async () => {
-    const mockUser = {
-      id: 'user-empty-ua',
-      walletAddress: '0xbbb',
-      piUid: 'pi-empty-ua',
-      piUsername: 'emptyua',
-      did: null,
-      xp: 0,
-      tier: 'Visitor',
-    };
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ uid: 'pi-empty-ua', username: 'emptyua' }),
-    });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
-
+  it('rejects empty user-agent when JWKS fails (no sandbox bypass)', async () => {
     const req = mockRequestWithHeader({
       authorization: 'Bearer empty-ua-token',
       'user-agent': '',
@@ -495,16 +465,15 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
 
     const result = await requireAuth(req);
 
-    expect(result.error).toBeNull();
-    expect(result.user).toEqual(mockUser);
-    // Pi API IS called — no UA gating
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('accepts Pi Browser user-agent when JWKS fails (falls through to Pi API)', async () => {
     const mockUser = {
       id: 'user-pi-browser',
-      walletAddress: '0xccc',
+      walletAddress: '0xaaa',
       piUid: 'pi-ua-test-1',
       piUsername: 'pibrowseruser',
       did: null,
@@ -529,10 +498,10 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('accepts minepi user-agent variant when JWKS fails', async () => {
+  it('accepts minepi user-agent variant (case-insensitive match)', async () => {
     const mockUser = {
       id: 'user-minepi',
-      walletAddress: '0xddd',
+      walletAddress: '0xbbb',
       piUid: 'pi-ua-test-2',
       piUsername: 'minepiuser',
       did: null,
@@ -557,10 +526,10 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('accepts PiApp user-agent variant when JWKS fails', async () => {
+  it('accepts PiApp user-agent variant (case-insensitive match)', async () => {
     const mockUser = {
       id: 'user-piapp',
-      walletAddress: '0xeee',
+      walletAddress: '0xccc',
       piUid: 'pi-ua-test-3',
       piUsername: 'piappuser',
       did: null,
@@ -585,28 +554,76 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('returns error when Pi API returns non-ok response', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-    });
+  it('allows non-Pi-Browser UA when SANDBOX_AUTH_BYPASS=true and hostname is localhost', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
 
-    const req = mockRequestWithHeader({
-      authorization: 'Bearer bad-token',
-      'user-agent': 'Pi Browser v4.2',
-    });
+    try {
+      const mockUser = {
+        id: 'user-sandbox-bypass',
+        walletAddress: '0xddd',
+        piUid: 'pi-sandbox-bypass',
+        piUsername: 'sandboxbypassuser',
+        did: null,
+        xp: 0,
+        tier: 'Visitor',
+      };
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ uid: 'pi-sandbox-bypass', username: 'sandboxbypassuser' }),
+      });
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
 
-    const result = await requireAuth(req);
+      // Chrome UA but SANDBOX_AUTH_BYPASS=true + localhost → isSandboxOrDev=true → Pi Browser check bypassed
+      const req = mockRequestWithHeader({
+        authorization: 'Bearer sandbox-chrome-token',
+        'user-agent': 'Mozilla/5.0 Chrome/120.0',
+      });
 
-    expect(result.user).toBeNull();
-    expect(result.error).toBeDefined();
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeNull();
+      expect(result.user).toEqual(mockUser);
+      // fetch WAS called because the Pi Browser check was bypassed
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    } finally {
+      if (originalBypass === undefined) {
+        delete process.env.SANDBOX_AUTH_BYPASS;
+      } else {
+        process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      }
+    }
   });
 
-  it('does not crash when nextUrl is null — falls back gracefully', async () => {
+  it('does NOT allow SANDBOX_AUTH_BYPASS=false non-Pi-Browser requests', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'false';
+
+    try {
+      const req = mockRequestWithHeader({
+        authorization: 'Bearer bypass-false-token',
+        'user-agent': 'Mozilla/5.0 Chrome/120.0',
+      });
+
+      const result = await requireAuth(req);
+
+      expect(result.user).toBeNull();
+      expect(result.error).toBeDefined();
+      expect(mockFetch).not.toHaveBeenCalled();
+    } finally {
+      if (originalBypass === undefined) {
+        delete process.env.SANDBOX_AUTH_BYPASS;
+      } else {
+        process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      }
+    }
+  });
+
+  it('does not crash when nextUrl is null — falls back to "localhost" hostname', async () => {
+    // Tests the null-safety fix: request.nextUrl?.hostname || "localhost"
     const mockUser = {
       id: 'user-null-url',
-      walletAddress: '0xfff',
+      walletAddress: '0xeee',
       piUid: 'pi-null-url',
       piUsername: 'nullurluser',
       did: null,
@@ -619,6 +636,7 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
     });
     mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
 
+    // Manually build a request with null nextUrl and a Pi Browser UA
     const req = {
       headers: {
         get: (name: string) => {
@@ -632,8 +650,10 @@ describe('requireAuth — JWKS fallback to Pi API (no UA gating)', () => {
       nextUrl: null,
     } as any;
 
+    // Should not throw even when nextUrl is null
     const result = await requireAuth(req);
 
+    // With Pi Browser UA it should proceed normally and succeed
     expect(result.error).toBeNull();
     expect(result.user).toEqual(mockUser);
   });

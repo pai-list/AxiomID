@@ -7,8 +7,8 @@
  * - Dashboard header layout change: flex items-center justify-between
  */
 
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import React, { act } from "react";
+import { render, screen } from "@testing-library/react";
 import Dashboard from "@/app/dashboard/page";
 import { useWallet } from "@/app/context/wallet-context";
 import { defaultWalletCtx } from "./wallet-test-helpers";
@@ -71,6 +71,12 @@ const authenticatedUser = {
 beforeEach(() => {
   jest.clearAllMocks();
   jest.useFakeTimers();
+  global.fetch = jest.fn().mockImplementation(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ skills: [] })
+    })
+  );
 });
 
 afterEach(() => {
@@ -79,60 +85,78 @@ afterEach(() => {
 });
 
 describe("Dashboard page — loading state", () => {
-  it("renders skeleton placeholder UI when isLoading is true", () => {
+  it("renders skeleton placeholder UI when isLoading is true", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ isLoading: true }));
-    const { container } = renderWithProvider(<Dashboard />);
+    let container: HTMLElement;
+    await act(async () => {
+      const res = renderWithProvider(<Dashboard />);
+      container = res.container;
+    });
     // animate-pulse elements signal the loading skeleton
-    const pulseElements = container.querySelectorAll(".animate-pulse");
+    const pulseElements = container!.querySelectorAll(".animate-pulse");
     expect(pulseElements.length).toBeGreaterThan(0);
   });
 
-  it("does NOT render the LOGOUT button while loading", () => {
+  it("does NOT render the LOGOUT button while loading", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ isLoading: true }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     // user is null during load so logout btn should not appear
     expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
   });
 });
 
 describe("Dashboard page — no user (unauthenticated)", () => {
-  it("renders a 'CONNECT WALLET' button when user is null and not loading", () => {
+  it("renders a 'CONNECT WALLET' button when user is null and not loading", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null, isLoading: false, isPiBrowser: true }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     expect(screen.getByRole("button", { name: /connect wallet/i })).toBeInTheDocument();
   });
 
-  it("renders 'CONNECTING...' text on the button when isConnecting is true", () => {
+  it("renders 'CONNECTING...' text on the button when isConnecting is true", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null, isLoading: false, isConnecting: true, isPiBrowser: true }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     expect(screen.getByRole("button", { name: /connecting/i })).toBeInTheDocument();
   });
 
-  it("the connect button is disabled when isConnecting is true", () => {
+  it("the connect button is disabled when isConnecting is true", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null, isLoading: false, isConnecting: true, isPiBrowser: true }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     expect(screen.getByRole("button", { name: /connecting/i })).toBeDisabled();
   });
 });
 
 describe("Dashboard page — authenticated user content", () => {
-  it("renders a welcome message that includes the user's piUsername", () => {
+  it("renders a welcome message that includes the user's piUsername", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     expect(screen.getByText(new RegExp(`hello.*${authenticatedUser.piUsername}`, "i"))).toBeInTheDocument();
   });
 
-  it("shows the user's tier in the Agent Stats section", () => {
+  it("shows the user's tier in the Agent Stats section", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     // tier shown in stats panel
     const tierTexts = screen.getAllByText(authenticatedUser.tier);
     expect(tierTexts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("shows the user's XP in the Agent Stats section", () => {
+  it("shows the user's XP in the Agent Stats section", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
     const xpTexts = screen.getAllByText(String(authenticatedUser.xp));
     expect(xpTexts.length).toBeGreaterThanOrEqual(1);
   });
@@ -140,19 +164,23 @@ describe("Dashboard page — authenticated user content", () => {
 });
 
 describe("Dashboard page — tab navigation", () => {
-  it("passport tab is initially active (aria-selected=true)", () => {
+  it("passport tab is initially active (aria-selected=true)", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
 
     const passportTab = screen.getByRole("tab", { name: /passport/i });
     expect(passportTab).toHaveAttribute("aria-selected", "true");
   });
 
-  it("clicking Actions tab sets it as active", () => {
+  it("clicking Actions tab sets it as active", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
 
-    act(() => {
+    await act(async () => {
       screen.getByRole("tab", { name: /actions/i }).click();
     });
 
@@ -160,11 +188,13 @@ describe("Dashboard page — tab navigation", () => {
     expect(actionsTab).toHaveAttribute("aria-selected", "true");
   });
 
-  it("clicking Agent tab sets it as active", () => {
+  it("clicking Agent tab sets it as active", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
 
-    act(() => {
+    await act(async () => {
       screen.getByRole("tab", { name: /agent/i }).click();
     });
 
@@ -172,9 +202,11 @@ describe("Dashboard page — tab navigation", () => {
     expect(agentTab).toHaveAttribute("aria-selected", "true");
   });
 
-  it("all four page tabs are rendered", () => {
+  it("all four page tabs are rendered", async () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
-    renderWithProvider(<Dashboard />);
+    await act(async () => {
+      renderWithProvider(<Dashboard />);
+    });
 
     expect(screen.getByRole("tab", { name: /passport/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /actions/i })).toBeInTheDocument();

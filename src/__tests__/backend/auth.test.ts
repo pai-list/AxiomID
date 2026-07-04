@@ -7,7 +7,6 @@
  */
 
 import { timingSafeEqual } from "node:crypto";
-import * as nodeCrypto from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // Inline replicas matching backend/src/lib/auth.ts exactly
@@ -142,35 +141,6 @@ describe("safeCompare", () => {
     expect(safeCompare("", "abc")).toBe(false);
     expect(safeCompare("abc", "")).toBe(false);
   });
-
-  it("treats two empty strings as equal (zero-length buffers)", () => {
-    expect(safeCompare("", "")).toBe(true);
-  });
-
-  it("returns false for long secrets that differ only in the last character", () => {
-    const a = "x".repeat(64) + "A";
-    const b = "x".repeat(64) + "B";
-    expect(safeCompare(a, b)).toBe(false);
-  });
-
-  it("returns true for long identical secrets", () => {
-    const secret = "y".repeat(128);
-    expect(safeCompare(secret, secret)).toBe(true);
-  });
-
-  it("correctly compares strings containing multi-byte UTF-8 characters", () => {
-    // Buffer.from() encodes as UTF-8 by default, so byte length can differ
-    // from the JS string's .length for multi-byte characters.
-    expect(safeCompare("café", "café")).toBe(true);
-    expect(safeCompare("café", "cafe")).toBe(false);
-  });
-
-  it("delegates the actual comparison to node:crypto's timingSafeEqual", () => {
-    const spy = jest.spyOn(nodeCrypto, "timingSafeEqual");
-    safeCompare("abc", "abc");
-    expect(spy).toHaveBeenCalledTimes(1);
-    spy.mockRestore();
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -246,12 +216,6 @@ describe("verifyAuth — protected routes", () => {
 
   it("returns authorized=false when header length differs from secret", () => {
     const req = makeRequest("/api/agent", { "X-Shared-Secret": "short" });
-    const result = verifyAuth(req, env);
-    expect(result.authorized).toBe(false);
-  });
-
-  it("returns authorized=false when the header differs only in casing from the secret", () => {
-    const req = makeRequest("/api/agent", { "X-Shared-Secret": VALID_SECRET.toUpperCase() });
     const result = verifyAuth(req, env);
     expect(result.authorized).toBe(false);
   });

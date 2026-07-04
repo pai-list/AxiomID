@@ -1,7 +1,5 @@
 import { logger } from '@/lib/logger';
 import { NextRequest } from 'next/server';
-import { unstable_cache } from 'next/cache';
-
 import { prisma } from '@/lib/prisma';
 import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
@@ -10,38 +8,7 @@ import { calculateTrustScore } from '@/lib/trust';
 
 /**
  * Handle GET /status requests and return network metadata and aggregate statistics.
- *
- * Performs client IP-based rate limiting, queries counts and aggregates from the database,
- * and returns a standardized API success payload with network info and stats.
- *
- * @param request - The incoming NextRequest used to determine the client IP for rate limiting
- * @returns An API response object:
- * - On success: a payload containing `network`, `version`, `timestamp`, and `stats` (registeredUsers, totalAgents, activeAgents, totalPayments, totalXpEarned)
- * - On rate limit exceeded: an error response with code `RATE_LIMITED`
- * - On database or internal failure: an error response with code `INTERNAL_ERROR`
  */
-
-const getCachedAverageTrustScore = unstable_cache(
-  async () => {
-    const usersSample = await prisma.user.findMany({
-      take: 100,
-      select: {
-        xp: true,
-        _count: {
-          select: { stamps: true }
-        }
-      }
-    });
-    let totalTrustScore = 0;
-    usersSample.forEach(u => {
-      totalTrustScore += calculateTrustScore(u.xp, u._count.stamps);
-    });
-    return usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
-  },
-  ['status-average-trust-score'],
-  { revalidate: 300 } // cache for 5 minutes
-);
-
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`status:${ip}`, RATE_LIMITS.anonymous);
@@ -50,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [userCount, agentCount, activeAgentCount, paymentCount, xpSum, activeUsersCount, verifiedUsersCount, averageTrustScore] = await Promise.all([
+    const results = await Promise.allSettled([
       prisma.user.count(),
       prisma.userAgent.count(),
       prisma.userAgent.count({ where: { status: 'ACTIVE' } }),
@@ -64,10 +31,41 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.user.count({ where: { kycStatus: 'VERIFIED' } }),
-      getCachedAverageTrustScore()
+      prisma.user.findMany({
+        take: 100,
+        select: {
+          xp: true,
+          stamps: {
+            select: { id: true }
+          }
+        }
+      })
     ]);
 
+    const getValue = <T>(index: number, fallback: T): T => {
+      const res = results[index];
+      return res.status === 'fulfilled' ? (res.value as T) : fallback;
+    };
 
+    const userCount = getValue(0, 0);
+    const agentCount = getValue(1, 0);
+    const activeAgentCount = getValue(2, 0);
+    const paymentCount = getValue(3, 0);
+    const xpSum = getValue(4, { _sum: { xp: 0 } });
+    const activeUsersCount = getValue(5, 0);
+    const verifiedUsersCount = getValue(6, 0);
+    const usersSample = getValue(7, [] as { xp: number; stamps: { id: string }[] }[]);
+
+    let totalTrustScore = 0;
+    usersSample.forEach(u => {
+      try {
+        totalTrustScore += calculateTrustScore(u.xp || 0, u.stamps?.length || 0);
+      } catch {
+        // Ignore individual errors in sample
+      }
+    });
+
+    const averageTrustScore = usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
     const verificationRate = userCount > 0 ? Math.round((verifiedUsersCount / userCount) * 100) : 0;
 
     return apiSuccess({
@@ -79,7 +77,7 @@ export async function GET(request: NextRequest) {
         totalAgents: agentCount,
         activeAgents: activeAgentCount,
         totalPayments: paymentCount,
-        totalXpEarned: xpSum._sum.xp ?? 0,
+        totalXpEarned: xpSum?._sum?.xp ?? 0,
         activeUsers: Math.max(1, activeUsersCount),
         averageTrustScore,
         verificationRate,

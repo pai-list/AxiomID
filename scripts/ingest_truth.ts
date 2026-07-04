@@ -14,9 +14,7 @@
  * D1 uses wrangler OAuth (wrangler login)
  */
 
-import { execFileSync } from "child_process";
-
-const NPX_CMD = process.platform === "win32" ? "npx.cmd" : "npx";
+import { execSync } from "child_process";
 import { writeFileSync, unlinkSync, mkdirSync } from "fs";
 
 const TRUTH_API = "https://api.quran.com/api/v4";
@@ -191,12 +189,10 @@ function writeBatchSql(chapters: Chapter[], verses: VerseEntry[], translations: 
 }
 
 function executeD1Batch(files: string[], remote: boolean) {
+  const flag = remote ? "--remote" : "";
   for (const f of files) {
     console.log(`  Executing ${f}...`);
-    const args = ["wrangler", "d1", "execute", "truth-db"];
-    if (remote) args.push("--remote");
-    args.push("--file", f);
-    execFileSync(NPX_CMD, args, { cwd: "backend", stdio: "pipe" });
+    execSync(`cd backend && npx wrangler d1 execute truth-db ${flag} --file ${f}`, { stdio: "pipe" });
   }
 }
 
@@ -223,7 +219,10 @@ function storeVectors(verses: VerseEntry[], embeddings: number[][]) {
     const ndjson = vectors.map((v) => JSON.stringify(v)).join("\n");
     writeFileSync(batchFile, ndjson);
 
-    execFileSync(NPX_CMD, ["wrangler", "vectorize", "insert", VECTORIZE_INDEX, "--file", batchFile], { cwd: "backend", stdio: "pipe" });
+    execSync(
+      `cd backend && npx wrangler vectorize insert ${VECTORIZE_INDEX} --file ${batchFile}`,
+      { stdio: "pipe" }
+    );
 
     unlinkSync(batchFile);
     if (Math.floor(i / VEC_BATCH) % 5 === 0) {

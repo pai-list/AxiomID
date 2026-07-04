@@ -1,37 +1,106 @@
-# CodeRabbit configuration for AxiomID
-# Free tier: 200 files/hour, 4 PR reviews/hour
-# Docs: https://docs.coderabbit.ai
+# CodeRabbit Configuration for AxiomID
+# Docs: https://docs.coderabbit.ai/reference/configuration
 
 reviews:
-  profile: chill
+  # Start with chill, move to assertive after 2 weeks of tuning
+  profile: "chill"
+
+  auto_review:
+    enabled: true
+    drafts: false              # Skip draft PRs
+    base_branches:
+      - main
+
+  # Exclude files that don't benefit from AI review
   path_filters:
-    - "!**/*.md"
-    - "!**/*.json"
     - "!**/*.lock"
-    - "!**/public/**"
-    - "!**/*.css"
-  paths:
-    - "src/app/api/**"
-      instructions: |
-        All API routes must use requireAuth() for authentication.
-        Use apiError() with pre-registered ErrorCode strings only.
-        Never pass ad-hoc strings to apiError().
-    - "src/lib/**"
-      instructions: |
-        TypeScript strict mode. No `as any` casts.
-        Use `unknown` for external data boundaries.
-    - "src/middleware.ts"
-      instructions: |
-        CORS allowlist must include .pinet.com wildcard for Pi Browser.
-        Never remove the production sandbox bypass guard.
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/generated/**"
+    - "!**/__snapshots__/**"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.svg"
+    - "!**/*.ico"
+    - "!**/*.woff"
+    - "!**/*.woff2"
+    - "!**/coverage/**"
+    - "!**/.vercel/**"
+    - "!**/stitch-*.html"
 
-chat:
-  auto_reply: true
+  # Global review instructions
+  instructions: |
+    Follow AxiomID engineering covenant (AGENTS.md).
+    No `any` types. No eslint-disable. No setTimeout in API routes.
+    All commits use IQRA Chronicle format: type(scope): description ۞
+    Trust score = XP (70%) + stamps (30%), range 0-100.
+    Soul system has 5 gates: Muraqabah, Ethical, Sab'iyyah, Tawbah, Self-Review.
 
-keywords:
-  - "Pi Browser"
-  - "Pi SDK"
-  - "CORS"
-  - "auth"
-  - "middleware"
-  - "AxiomID"
+  # Path-specific instructions (the most powerful feature)
+  path_instructions:
+    - path: "src/app/api/**"
+      instructions: |
+        Review for: auth checks (requireAuth), Zod validation,
+        rate limiting, error response format, logger.error() in catch blocks.
+        No setTimeout. Use waitUntil for async work.
+
+    - path: "backend/src/**"
+      instructions: |
+        Review for: timing-safe auth (X-Shared-Secret), D1 parameterized queries,
+        KV cache TTL, CORS headers, error boundaries.
+        Env type must match wrangler.toml bindings exactly.
+
+    - path: "src/lib/soul/**"
+      instructions: |
+        Review for: async/await correctness, 5000ms timeout on AI calls,
+        ethical evaluation completeness, Telegram notification error handling.
+        soul-loop.ts has 5 gates (Barakah was removed).
+
+    - path: "src/lib/trust.ts"
+      instructions: |
+        Trust score formula: XP (70%) + stamps (30%), clamped 0-100.
+        Never hardcode default trust score (was 85, fixed to 0).
+
+    - path: "src/components/**"
+      instructions: |
+        Review for: "use client" directive on client components,
+        framer-motion spring easing [0.16, 1, 0.3, 1],
+        responsive design, accessibility (aria labels).
+
+    - path: "src/app/api/daily-review/**"
+      instructions: |
+        CRON_SECRET must be set. Return 503 if env var missing.
+        Never bypass auth for scheduled endpoints.
+
+    - path: "**/*.test.*"
+      instructions: |
+        Focus on: edge cases, proper assertions, mock cleanup.
+        No skipped tests. Test count must never decrease.
+
+    - path: "prisma/**"
+      instructions: |
+        Review for: index on frequently queried columns,
+        proper migration naming, no data loss in migrations.
+
+  # Chat settings
+  chat:
+    auto_reply: true           # Auto-reply to @coderabbitai mentions
+
+  # Tools (enable/disable specific review tools)
+  tools:
+    ruff:
+      enabled: false           # Not a Python project
+    mypy:
+      enabled: false           # Not a Python project
+
+# Sequence diagrams for complex PRs
+summarize:
+  enabled: true
+  language: "en"
+
+# Layout diagrams
+layout:
+  diagrams:
+    enabled: true
