@@ -126,7 +126,7 @@ describe("ErrorBoundary", () => {
     // We isolate this to avoid breaking other tests
     jest.isolateModules(() => {
       // Create a mock for react-error-boundary
-      jest.mock("react-error-boundary", () => {
+      jest.doMock("react-error-boundary", () => {
         return {
           ErrorBoundary: (props: any) => {
             if (props.onReset) {
