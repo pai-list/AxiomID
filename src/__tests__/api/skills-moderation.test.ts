@@ -17,16 +17,11 @@ jest.mock("@/lib/prisma", () => ({
       update: jest.fn(),
       count: jest.fn(),
     },
+    $transaction: jest.fn(async (cb) => cb(require("@/lib/prisma").prisma)),
     skill: {
       update: jest.fn(),
     },
-    $transaction: jest.fn().mockImplementation(async (callback) => {
-      // Pass a fake tx object that mimics the prisma client
-      return await callback({
-        skillModeration: prisma.skillModeration,
-        skill: prisma.skill,
-      });
-    }),
+    $transaction: jest.fn(async (cb) => cb(require("@/lib/prisma").prisma)),
   },
 }));
 
@@ -283,6 +278,7 @@ describe("POST /api/admin/skills/[id] — rate limiting", () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.$transaction = jest.fn(async (cb) => cb(mockPrisma));
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
   });
 
@@ -332,6 +328,11 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
     jest.clearAllMocks();
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
+    // Mock transaction
+    // @ts-expect-error Mocking transaction method
+    mockPrisma.$transaction = jest.fn().mockImplementation(async (callback) => {
+      return callback(mockPrisma);
+    });
   });
 
   it("returns 403 when user is not admin", async () => {
@@ -350,6 +351,7 @@ describe("POST /api/admin/skills/[id] — admin check", () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
     mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.$transaction = jest.fn(async (cb) => cb(mockPrisma));
     mockPrisma.skillModeration.update.mockResolvedValue(MOCK_MODERATION);
 
     const req = mockPostRequest({ action: "approve" });
@@ -416,6 +418,11 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockRequireAuth.mockResolvedValue({ error: null, user: mockAdminUser });
     mockIsAdmin.mockReturnValue(true);
+    // Mock transaction
+    // @ts-expect-error Mocking transaction method
+    mockPrisma.$transaction = jest.fn().mockImplementation(async (callback) => {
+      return callback(mockPrisma);
+    });
   });
 
   it("returns 404 when moderation entry does not exist", async () => {
