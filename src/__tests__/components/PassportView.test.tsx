@@ -95,7 +95,7 @@ describe("PassportView — no slug", () => {
   });
 });
 
-describe.skip("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
+describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseParams.mockReturnValue({ slug: "alice" });
