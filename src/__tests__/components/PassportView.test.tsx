@@ -117,6 +117,21 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/passport/alice"));
   });
 
+  it('renders error state on non-ok response', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ message: 'Custom API Error' }),
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('translated_passport_not_found')[0]).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Custom API Error')).toBeInTheDocument();
+  });
+
   it("URL-encodes the slug in the fetch request", async () => {
     mockUseParams.mockReturnValue({ slug: "alice bob" });
     mockFetchOnce({ ok: true, json: async () => basePassport });
@@ -173,7 +188,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     });
 
     expect(sharePassport).toHaveBeenCalledWith(
-      expect.objectContaining({ url: window.location.href })
+      expect.objectContaining({ url: window.location.href, title: 'translated_share_title', text: 'translated_share_text' })
     );
   });
 });

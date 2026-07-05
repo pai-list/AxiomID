@@ -173,6 +173,51 @@ describe('POST /api/auth/pi', () => {
     expect(data.stellarAddress).toBe(officialStellarAddress);
   });
 
+  it('rejects the request when Pi API verification does not return a verified username', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-uid-123' }),
+    });
+
+    const req = mockRequest({
+      accessToken: 'valid-token',
+      uid: 'pi-uid-123',
+      username: 'spoofed-user',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(401);
+    expect(data.code).toBe('PI_AUTH_FAILED');
+    expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('never persists a client-sent username when server verification did not confirm it', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-uid-456' }),
+    });
+
+    const req = mockRequest({
+      accessToken: 'another-token',
+      uid: 'pi-uid-456',
+      username: 'spoofed-user-2',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(401);
+    expect(data.code).toBe('PI_AUTH_FAILED');
+    expect(mockPrisma.user.create).not.toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        piUsername: 'spoofed-user-2',
+      }),
+    }));
+  });
+
   it('returns 401 on invalid Pi token', async () => {
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: false,

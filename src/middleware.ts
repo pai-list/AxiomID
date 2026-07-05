@@ -80,6 +80,14 @@ export function middleware(request: NextRequest) {
     return withCors(NextResponse.rewrite(url));
   }
 
+  if (url.pathname === "/settings") {
+    return withCors(NextResponse.redirect(new URL("/dashboard/settings", request.url)));
+  }
+
+  if (url.pathname === "/login" || url.pathname === "/register") {
+    return withCors(NextResponse.redirect(new URL("/claim", request.url)));
+  }
+
   const isSubdomain =
     host.endsWith(`.${ROOT_DOMAIN}`) &&
     host !== `www.${ROOT_DOMAIN}` &&
