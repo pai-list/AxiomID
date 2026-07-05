@@ -40,13 +40,13 @@ const stepVariants = {
     x: 0,
     opacity: 1,
     scale: 1,
-    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
+    transition: { duration: 0.5 }
   },
   exit: (direction: number) => ({
     x: direction < 0 ? 300 : -300,
     opacity: 0,
     scale: 0.95,
-    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
+    transition: { duration: 0.5 }
   }),
 };
 
@@ -75,7 +75,6 @@ export default function ClaimPage() {
   const { language } = useLanguage();
 
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
-
 
   const nextStep = () => {
     if (currentStep < 3) {
@@ -193,7 +192,6 @@ export default function ClaimPage() {
       <main className="relative z-10 pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
 
-
           {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -225,7 +223,7 @@ export default function ClaimPage() {
                <motion.div
                  className="h-full bg-gradient-to-r from-electric-blue via-blue-500 to-neon-green rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
                  animate={{ width: `${(currentStep / 3) * 100}%` }}
-                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                 transition={{ duration: 0.5 }}
                />
              </div>
            </div>
@@ -247,7 +245,7 @@ export default function ClaimPage() {
                           ? "rgba(0,120,255,0.6)"
                           : "rgba(255,255,255,0.1)",
                     }}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
                       isCompleted
                         ? "bg-neon-green/10"
                         : isActive
@@ -419,7 +417,7 @@ export default function ClaimPage() {
                               return (
                                  <div
                                    key={item.key}
-                                   className={`flex items-center justify-between bg-white/[0.03] border transition-all duration-500 rounded-lg px-4 py-3 ${
+                                   className={`flex items-center justify-between bg-white/[0.03] border transition-all rounded-lg px-4 py-3 ${
                                      item.status 
                                        ? "border-neon-green/30 bg-neon-green/[0.05]" 
                                        : "border-white/[0.06]"

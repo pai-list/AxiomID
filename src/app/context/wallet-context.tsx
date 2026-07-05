@@ -73,7 +73,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     userRef.current = user;
   }, [user]);
 
-
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       let reasonStr = "";

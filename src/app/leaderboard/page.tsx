@@ -13,7 +13,6 @@ import { logger } from "@/lib/logger";
 
 export const dynamic = 'force-dynamic';
 
-
 const PAGE_SIZE = 20;
 
 interface LeaderboardUser {
@@ -76,7 +75,6 @@ export default function LeaderboardPage() {
   const allTableUsers = filteredUsers.filter((u) => u.rank > 3 || search !== "");
   const tableUsers = allTableUsers.slice(0, visibleCount);
   const hasMore = visibleCount < allTableUsers.length;
-
 
   return (
     <main className="min-h-screen bg-grid relative pb-20">

@@ -9,7 +9,6 @@ interface Stats {
   agents: number;
 }
 
-
 /**
  * Displays protocol statistics. When values are 0, shows motivational copy
  * instead of discouraging zero counts.

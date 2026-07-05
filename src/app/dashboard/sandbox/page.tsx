@@ -126,8 +126,6 @@ interface SkillListItem {
   tier: string;
 }
 
-
-
 const DEFAULT_MANIFEST = `---
 name: my-first-custom-skill
 description: "A custom test skill to run inside the secure Vercel Sandbox"
@@ -271,7 +269,6 @@ export default function SandboxPage() {
 
     try {
       flushIntervalRef.current = setInterval(flushPending, 30);
-
 
       const res = await fetch("/api/sandbox/execute", {
         method: "POST",

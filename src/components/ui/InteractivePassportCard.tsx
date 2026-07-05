@@ -55,7 +55,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
   const isKyc = !locked && user?.kycStatus === "verified";
   const did = locked ? "did:axiom:locked_credential" : (user?.walletAddress || "did:axiom:unconnected");
 
-
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportImage = async (e: React.MouseEvent) => {

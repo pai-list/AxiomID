@@ -64,7 +64,6 @@ export default function HeroDemo() {
           animation-delay: 8s;
         }
 
-
         .group:hover * {
           animation-play-state: paused !important;
         }

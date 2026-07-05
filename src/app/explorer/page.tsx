@@ -12,7 +12,6 @@ import { Tier } from "@/lib/tiers";
 
 export const dynamic = 'force-dynamic';
 
-
 interface ExplorerData {
   stats: {
     registeredUsers: number;
