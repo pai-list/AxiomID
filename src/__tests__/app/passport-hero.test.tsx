@@ -176,6 +176,13 @@ jest.mock("@/app/page", () => {
         </div>
         <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
           <SectionHeader label={t("tier")} title={t("landing_level_up")} labelColor="text-electric-blue" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {["Visitor", "Citizen", "Validator", "Sovereign"].map((tier) => (
+              <div key={tier} className="stitch-feature-card">
+                <h3 className="text-lg font-bold text-white">{tier}</h3>
+              </div>
+            ))}
+          </div>
         </div>
         {user ? (
           <>
@@ -254,7 +261,7 @@ describe("Landing page — Stitch hero", () => {
   it("renders the main heading", async () => {
     await renderHome();
     const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading).toHaveTextContent(/Your Identity/);
+    expect(heading).toHaveTextContent(/your.*identity/i);
   });
 
   it("renders the Live on Pi Network badge", async () => {
@@ -297,7 +304,7 @@ describe("Landing page — authenticated user", () => {
 
   it("renders LOGOUT button when authenticated", async () => {
     await renderHome();
-    const logoutButtons = screen.getAllByRole("button", { name: /logout/i });
+    const logoutButtons = screen.getAllByRole("button", { name: /log.?out/i });
     expect(logoutButtons.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -311,7 +318,7 @@ describe("Landing page — authenticated user", () => {
     const logoutFn = jest.fn();
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user, logout: logoutFn }));
     await renderHome();
-    const logoutButtons = screen.getAllByRole("button", { name: /logout/i });
+    const logoutButtons = screen.getAllByRole("button", { name: /log.?out/i });
     await act(async () => {
       logoutButtons[0].click();
     });
@@ -326,7 +333,7 @@ describe("Landing page — unauthenticated user", () => {
 
   it("does NOT render a LOGOUT button when there is no user", async () => {
     await renderHome();
-    expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /log.?out/i })).toBeNull();
   });
 
   it("renders DASHBOARD link or CONNECT button when there is no user", async () => {

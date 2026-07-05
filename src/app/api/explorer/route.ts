@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return apiSuccess({
+    const response = apiSuccess({
       stats: {
         registeredUsers: userCount,
         totalAgents: agentCount,
@@ -105,6 +105,8 @@ export async function GET(request: NextRequest) {
       activeNodes,
       tierDistribution,
     });
+    response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    return response;
   } catch (error) {
     logger.error("[EXPLORER API] Failed to fetch explorer database metadata:", error);
     return apiError("INTERNAL_ERROR", "Failed to retrieve network explorer datasets.");
