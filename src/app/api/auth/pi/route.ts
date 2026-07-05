@@ -57,8 +57,9 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
   }
 
-  const { accessToken, uid, username } = parsed.data;
+  const { accessToken, uid, username: clientUsername } = parsed.data;
   let verifiedStellarAddress: string | null = null;
+  let verifiedUsername = clientUsername;
 
   // ponytail: Rely strictly on NODE_ENV to prevent auth bypass via Host header injection
   const isLocalDev = process.env.NODE_ENV !== "production";
@@ -92,6 +93,9 @@ export async function POST(request: NextRequest) {
       }
 
       verifiedStellarAddress = getVerifiedStellarAddress(piUser);
+      if (piUser.username) {
+        verifiedUsername = piUser.username;
+      }
     }
   } catch (fetchError) {
     const message = fetchError instanceof Error ? fetchError.message : String(fetchError);
@@ -109,7 +113,7 @@ export async function POST(request: NextRequest) {
     });
 
     const walletAddress = `pi:${uid}`;
-    const piDid = createPiDid(username);
+    const piDid = createPiDid(verifiedUsername);
 
     let user;
     if (existingUser) {
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
       user = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
-          piUsername: username,
+          piUsername: verifiedUsername,
           walletAddress,
           stellarAddress: verifiedStellarAddress,
           piAccessToken: encryptToken(accessToken),
@@ -135,7 +139,7 @@ export async function POST(request: NextRequest) {
           walletAddress,
           stellarAddress: verifiedStellarAddress,
           piUid: uid,
-          piUsername: username,
+          piUsername: verifiedUsername,
           piAccessToken: encryptToken(accessToken),
           did: piDid,
           didMethod: 'did:axiom',
