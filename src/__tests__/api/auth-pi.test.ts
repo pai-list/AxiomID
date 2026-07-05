@@ -68,7 +68,7 @@ describe('POST /api/auth/pi', () => {
       piUsername: 'testuser',
       xp: 0,
       tier: 'Visitor',
-      did: 'did:axiom:axiomid.app:pi:pi-uid-123',
+      did: 'did:axiom:pi:pi-uid-123',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -85,7 +85,7 @@ describe('POST /api/auth/pi', () => {
     expect(res.status).toBe(200);
     expect(data.userId).toBe('user-1');
     expect(data.walletAddress).toBe('pi:pi-uid-123');
-    expect(data.did).toBe('did:axiom:axiomid.app:pi:pi-uid-123');
+    expect(data.did).toBe('did:axiom:pi:pi-uid-123');
   });
 
   it('updates existing user on return visit and repairs missing DID', async () => {
@@ -109,7 +109,7 @@ describe('POST /api/auth/pi', () => {
       piUsername: 'updated',
       xp: 100,
       tier: 'Citizen',
-      did: 'did:axiom:axiomid.app:pi:updated',
+      did: 'did:axiom:pi:updated',
       didMethod: 'did:axiom',
       kycStatus: 'VERIFIED',
       agent: { name: 'My Agent' },
@@ -126,10 +126,10 @@ describe('POST /api/auth/pi', () => {
 
     expect(res.status).toBe(200);
     expect(data.userId).toBe('existing-user');
-    expect(data.did).toBe('did:axiom:axiomid.app:pi:updated');
+    expect(data.did).toBe('did:axiom:pi:updated');
     expect(mockPrisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-      did: 'did:axiom:axiomid.app:pi:updated',
+      did: 'did:axiom:pi:updated',
         didMethod: 'did:axiom',
       }),
     }));
@@ -166,7 +166,7 @@ describe('POST /api/auth/pi', () => {
         walletAddress: 'pi:secure-pi-uid',
         stellarAddress: officialStellarAddress,
         piUid: 'secure-pi-uid',
-        did: 'did:axiom:axiomid.app:pi:secureuser',
+        did: 'did:axiom:pi:secureuser',
       }),
     }));
     expect(data.walletAddress).toBe('pi:secure-pi-uid');
@@ -258,7 +258,7 @@ describe('POST /api/auth/pi', () => {
       piUsername: 'testuser',
       xp: 0,
       tier: 'Visitor',
-      did: 'did:axiom:axiomid.app:pi:testuser',
+      did: 'did:axiom:pi:testuser',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -307,7 +307,7 @@ describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
       piUsername: 'developer',
       xp: 0,
       tier: 'Visitor',
-      did: 'did:axiom:axiomid.app:pi:sandbox-developer',
+      did: 'did:axiom:pi:sandbox-developer',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -350,7 +350,7 @@ describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
       piUsername: 'realuser',
       xp: 0,
       tier: 'Visitor',
-      did: 'did:axiom:axiomid.app:pi:real-uid',
+      did: 'did:axiom:pi:real-uid',
       kycStatus: 'NONE',
       agent: null,
     } as any);
@@ -442,7 +442,7 @@ describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       id: 'existing-sandbox-user',
       piUid: 'sandbox-developer',
-      did: 'did:axiom:axiomid.app:pi:sandbox-developer',
+      did: 'did:axiom:pi:sandbox-developer',
       didMethod: 'did:axiom',
       agent: null,
     } as any);
@@ -455,7 +455,7 @@ describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
       piUsername: 'developer',
       xp: 50,
       tier: 'Citizen',
-      did: 'did:axiom:axiomid.app:pi:sandbox-developer',
+      did: 'did:axiom:pi:sandbox-developer',
       kycStatus: 'NONE',
       agent: null,
     } as any);
