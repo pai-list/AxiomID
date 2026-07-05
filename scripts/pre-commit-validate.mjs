@@ -150,7 +150,7 @@ if (diff) {
     /(?:sk|pk)_(?:test|live|prod)_[A-Za-z0-9]{10,}/,
     /BEGIN (?:RSA |EC )?PRIVATE KEY/,
     /ghp_[A-Za-z0-9]{36}/,
-    /(?:NPM_TOKEN|AUTH_TOKEN|API_KEY|PI_API_KEY)\s*[=:]\s*['"][A-Za-z0-9]{10,}['"]/,
+    /(?:NPM_TOKEN|AUTH_TOKEN|API_KEY|PI_API_KEY)\s*[=:]\s*['"]?[A-Za-z0-9]{10,}['"]?/,
   ];
   for (const pat of secretPatterns) {
     const hits = diff.match(new RegExp(`^\\+.*${pat.source}`, "gm"));
