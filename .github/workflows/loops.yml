@@ -32,7 +32,7 @@ jobs:
   sub-50ms:
     name: Sub-50ms Page Load
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.loop == 'all' || github.event.inputs.loop == 'sub-50ms' }}
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.loop == 'all' || github.event.inputs.loop == 'sub-50ms' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -62,7 +62,7 @@ jobs:
   coverage:
     name: Test Coverage
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.loop == 'all' || github.event.inputs.loop == 'coverage' }}
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.loop == 'all' || github.event.inputs.loop == 'coverage' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -86,7 +86,7 @@ jobs:
   logging-coverage:
     name: Logging Coverage
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.loop == 'all' || github.event.inputs.loop == 'logging-coverage' }}
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.loop == 'all' || github.event.inputs.loop == 'logging-coverage' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -115,7 +115,7 @@ jobs:
   fresh-clone:
     name: Fresh Clone Test
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.loop == 'all' || github.event.inputs.loop == 'fresh-clone' }}
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.loop == 'all' || github.event.inputs.loop == 'fresh-clone' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
