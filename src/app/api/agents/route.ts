@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+\n\nExtracted the three wizard steps (Connect Wallet, Verify, Activate Agent) \nfrom `src/app/claim/page.tsx` into their own dedicated components under \n`src/components/claim/`:\n- `ConnectStep.tsx`\n- `VerifyStep.tsx`\n- `DeployStep.tsx`\n\nThis addresses an overly long file issue (reducing it from ~820 lines down to 476 lines), significantly improving readability and maintainability of the ClaimPage component. All functionality remains identical and all tests and typescript checks continue to pass successfully. \n\nAlso addressed an unused variable lint warning in `src/app/api/agents/route.ts`.)
 import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
@@ -30,10 +31,8 @@ export async function GET(request: NextRequest) {
         description: true,
         status: true,
         createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        updatedAt: true},
+      orderBy: { createdAt: "desc" }});
 
     return apiSuccess({ agents });
   } catch (error) {
