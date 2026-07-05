@@ -40,7 +40,7 @@ const stepVariants = {
     x: 0,
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.5 }
+    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
   },
   exit: (direction: number) => ({
     x: direction < 0 ? 300 : -300,
