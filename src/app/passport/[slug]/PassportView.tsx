@@ -49,7 +49,10 @@ export function PassportView() {
 
     const fetchPassport = async () => {
       try {
-        const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
+        const abortController = new AbortController();
+        const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`, {
+          signal: abortController.signal
+        });
         if (!res.ok) {
           const data = await res.json().catch(() => null);
           throw new Error(data?.message || t('passport_not_found'));
