@@ -1,7 +1,7 @@
 # AxiomID Agent Workflow Optimization Plan
 
 > Last updated: 2026-06-22
-> Based on research of CodeRabbit, Devin, Gemini CLI, and multi-agent patterns.
+> Based on research of CodeRabbit, Jules, Gemini CLI, and multi-agent patterns.
 
 ---
 
@@ -12,7 +12,7 @@
 | **OpenCode** | Primary orchestrator + implementation | Subscription | Real-time coding, skill dispatch |
 | **CodeRabbit** | Automated PR review | Free (OSS) / $24/user/mo | Diff-based review, security checks |
 | **Gemini CLI** | Research + multimodal analysis | Free tier | Terminal agent, image analysis |
-| **Devin** | Autonomous complex tasks | $20-500/mo | Long-running, well-scoped tasks |
+| **Jules** | Autonomous complex tasks | Free (Google) | Long-running, well-scoped tasks |
 
 ---
 
@@ -138,11 +138,11 @@ Output: CRITICAL / HIGH / MEDIUM / LOW with file:line references
 
 ---
 
-## Phase 3: Devin for Complex Tasks (Paid — $20/mo)
+## Phase 3: Jules for Complex Tasks (Free — Google Account)
 
-### 3.1 When to Use Devin
+### 3.1 When to Use Jules
 
-| Use Devin For | Don't Use Devin For |
+| Use Jules For | Don't Use Jules For |
 |:---|:---|
 | Multi-file refactoring | Quick bug fixes |
 | Dependency upgrades | Creative UI work |
@@ -150,20 +150,19 @@ Output: CRITICAL / HIGH / MEDIUM / LOW with file:line references
 | Large-scale migrations | Real-time collaboration |
 | Weekend autonomous tasks | Tasks needing codebase context |
 
-### 3.2 Devin + Linear Integration
+### 3.2 Jules + GitHub Integration
 
-1. Connect Devin to Linear (Settings → Integrations)
-2. Label issues with `devin` tag
-3. Devin auto-creates implementation plan
-4. Review plan → approve → Devin executes autonomously
-5. PR created automatically
+1. Connect Jules to GitHub repo (jules.google.com)
+2. Label issues with `jules` tag
+3. Jules reads issue + codebase context
+4. Creates implementation plan → PR
+5. Review PR → approve → merge
 
 ### 3.3 Cost Control
 
-- **Core plan** ($20/mo): Pay-per-ACU at $2.25 each
-- **ACU = 1 task** (typical: 1-3 ACUs per task)
-- **Budget cap**: Set $50/mo max, fail pipeline if exceeded
+- **Free tier**: Included with Google account
 - **Best ROI**: Use for weekend batches of well-scoped tasks
+- **Budget**: $0 — fully free alternative to paid autonomous agents
 
 ---
 
@@ -252,8 +251,8 @@ task({ subagent_type: "general", description: "Documentation" })
 | OpenCode | Subscription | Primary orchestrator |
 | CodeRabbit | Free (OSS) | PR review automation |
 | Gemini CLI | Free tier | Research + multimodal |
-| Devin | $0-50/mo | Autonomous complex tasks |
-| **Total** | **$0-50/mo** | **Full agent stack** |
+| Jules | Free | Autonomous complex tasks |
+| **Total** | **$0/mo** | **Full agent stack** |
 
 ---
 
@@ -261,6 +260,6 @@ task({ subagent_type: "general", description: "Documentation" })
 
 - CodeRabbit docs: https://docs.coderabbit.ai/guides/configuration-overview
 - Gemini CLI: https://github.com/google-gemini/gemini-cli
-- Devin: https://devin.ai
+- Jules: https://jules.google.com
 - Addy Osmani's Gemini tips: https://addyosmani.com/blog/gemini-cli
 - CodeRabbit YAML template: https://docs.coderabbit.ai/reference/yaml-template

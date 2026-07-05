@@ -1,0 +1,65 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices"
+  ],
+  "schedule": ["before 6am on Monday", "before 6am on Thursday"],
+  "timezone": "UTC",
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "dependencyDashboardApproval": false,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "description": "Group all non-major npm updates into one PR",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major npm updates",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group all GitHub Actions updates into one PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group Prisma updates together (must update in lockstep)",
+      "matchPackageNames": ["@prisma/client", "prisma"],
+      "groupName": "prisma",
+      "automerge": false
+    },
+    {
+      "description": "Major npm updates require manual review",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "TypeScript major updates require manual review",
+      "matchPackageNames": ["typescript"],
+      "automerge": false
+    },
+    {
+      "description": "Pin dev dependencies for reproducible builds",
+      "matchDepTypes": ["devDependencies"],
+      "pinDigests": true
+    },
+    {
+      "description": "Group dev dependency updates separately",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "devDependencies (non-major)",
+      "automerge": true
+    }
+  ],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**"
+  ]
+}

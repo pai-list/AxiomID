@@ -3,8 +3,6 @@ name: CI Intelligence Agent
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
 
 permissions:
   contents: read
@@ -14,7 +12,6 @@ jobs:
   index-changes:
     name: Index Code Changes → Vectorize
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -114,7 +111,6 @@ jobs:
 
           if not CF_ACCOUNT_ID or not CF_API_TOKEN:
               print("⚠️  Skipping Vectorize: CF_ACCOUNT_ID/CF_API_TOKEN not set")
-              print("   See .github/CI_INTELLIGENCE_SETUP.md for setup instructions")
               sys.exit(0)
 
           with open("/tmp/changes.json") as f:
@@ -169,46 +165,3 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           VECTORIZE_INDEX: ${{ vars.VECTORIZE_INDEX || 'ci-code-vectors' }}
-
-  update-index:
-    name: Update Knowledge Base
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 5
-          persist-credentials: false
-
-      - name: Index merged changes
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%s)
-          FILES_CHANGED=$(git diff HEAD~1 --name-only | head -50)
-          FILE_COUNT=$(echo "$FILES_CHANGED" | wc -l)
-
-          echo "### 🔍 CI Intelligence: Main Branch Update" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit**: $COMMIT_MSG" >> $GITHUB_STEP_SUMMARY
-          echo "**Files**: $FILE_COUNT" >> $GITHUB_STEP_SUMMARY
-
-          python3 << EOF
-          import json, os
-
-          files = """$FILES_CHANGED""".strip().split("\n")
-          data = [{
-              "file": f,
-              "extension": f.rsplit(".", 1)[-1] if "." in f else "",
-              "commit": "$COMMIT_MSG",
-              "branch": "main"
-          } for f in files if f.strip()]
-
-          with open("/tmp/main-index.json", "w") as fh:
-              json.dump(data, fh)
-
-          print(f"Indexed {len(data)} files from main branch")
-          EOF
-
-      - name: Update KV metadata
-        run: |
-          COMMIT_SHA=$(git rev-parse HEAD)
-          echo "{\"last_commit\": \"$COMMIT_SHA\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /tmp/kv-meta.json
-          cat /tmp/kv-meta.json
