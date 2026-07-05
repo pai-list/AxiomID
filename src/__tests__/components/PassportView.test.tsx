@@ -184,7 +184,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
   });
 });
 
-describe.skip("PassportView — identity still building (jobStatus not COMPLETED/ACTIVE)", () => {
+describe("PassportView — identity still building (jobStatus not COMPLETED/ACTIVE)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
