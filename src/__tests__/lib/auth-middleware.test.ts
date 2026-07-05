@@ -658,3 +658,118 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
     expect(result.user).toEqual(mockUser);
   });
 });
+
+// ---------------------------------------------------------------------------
+// requireAuth — role field selection (PR change: AuthenticatedUser now
+// includes a `role` field, and both Prisma lookups select it)
+// ---------------------------------------------------------------------------
+describe('requireAuth — role field (PR change: user role selection)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch.mockReset();
+    clearAuthCache();
+  });
+
+  it('requests the role field in the Prisma select for user lookup', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-role-select', username: 'roleselectuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-role-select',
+      walletAddress: '0xrole',
+      role: 'USER',
+      piUid: 'pi-role-select',
+      piUsername: 'roleselectuser',
+      xp: 0,
+      tier: 'Visitor',
+    } as any);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer role-select-token' });
+    await requireAuth(req);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({ role: true }),
+      })
+    );
+  });
+
+  it('propagates an ADMIN role returned from the database onto the authenticated user', async () => {
+    const mockUser = {
+      id: 'user-admin-role',
+      walletAddress: '0xadmin',
+      role: 'ADMIN',
+      piUid: 'pi-admin-role',
+      piUsername: 'adminuser',
+      xp: 500,
+      tier: 'Elder',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-admin-role', username: 'adminuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer admin-role-token' });
+    const result = await requireAuth(req);
+
+    expect(result.error).toBeNull();
+    expect(result.user).toEqual(mockUser);
+    expect(result.user?.role).toBe('ADMIN');
+  });
+
+  it('propagates a USER role returned from the database onto the authenticated user', async () => {
+    const mockUser = {
+      id: 'user-plain-role',
+      walletAddress: '0xplain',
+      role: 'USER',
+      piUid: 'pi-plain-role',
+      piUsername: 'plainuser',
+      xp: 10,
+      tier: 'Visitor',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-plain-role', username: 'plainuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer plain-role-token' });
+    const result = await requireAuth(req);
+
+    expect(result.error).toBeNull();
+    expect(result.user).toEqual(mockUser);
+    expect(result.user?.role).toBe('USER');
+  });
+
+  it('keeps the role field intact for cached users on subsequent requests', async () => {
+    const mockUser = {
+      id: 'user-cached-role',
+      walletAddress: '0xcached',
+      role: 'ADMIN',
+      piUid: 'pi-cached-role',
+      piUsername: 'cacheduser',
+      xp: 0,
+      tier: 'Visitor',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-cached-role', username: 'cacheduser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer cached-role-token' });
+
+    const result1 = await requireAuth(req);
+    expect(result1.user?.role).toBe('ADMIN');
+
+    // Second call should hit the cache, but role must still be present
+    const result2 = await requireAuth(req);
+    expect(result2.user?.role).toBe('ADMIN');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+});
