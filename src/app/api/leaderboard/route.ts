@@ -57,9 +57,11 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return apiSuccess({
+    const response = apiSuccess({
       leaderboard,
     });
+    response.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+    return response;
   } catch (error) {
     logger.error("[LEADERBOARD API] Database query failure:", error);
     return apiError("INTERNAL_ERROR", "Failed to retrieve protocol leaderboard data.");

@@ -32,7 +32,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
     <motion.footer
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.5 }}
       className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mt-16 sm:mt-24 py-8 border-t text-[11px] font-mono z-10 gap-6 px-4 sm:px-6 mx-auto transition-colors duration-300"
       style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}

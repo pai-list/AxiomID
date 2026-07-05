@@ -10,6 +10,8 @@ import TrustTiers from "@/components/TrustTiers";
 import StatsBar from "@/components/StatsBar";
 import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
 
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const acceptLang = headersList.get("accept-language") || "";
