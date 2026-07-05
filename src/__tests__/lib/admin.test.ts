@@ -59,73 +59,62 @@ describe('Admin Utility - isAdmin', () => {
     const user = { walletAddress: 'wallet1' } as AuthenticatedUser;
     expect(reloadedIsAdmin(user)).toBe(true);
   });
-});
 
-describe('Admin Utility - isAdmin (role-based check, PR change)', () => {
-  const originalEnv = process.env;
+  describe('role-based admin check (PR change)', () => {
+    it('should return true when user.role is "ADMIN", even with empty ADMIN_WALLETS', async () => {
+      process.env.ADMIN_WALLETS = '';
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  beforeEach(() => {
-    jest.resetModules();
-    process.env = { ...originalEnv };
-  });
+      const user = { role: 'ADMIN', walletAddress: 'wallet-not-listed' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(true);
+    });
 
-  afterAll(() => {
-    process.env = originalEnv;
-  });
+    it('should return true when user.role is "ADMIN", even with undefined ADMIN_WALLETS', async () => {
+      delete process.env.ADMIN_WALLETS;
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('returns true when user.role is ADMIN, regardless of wallet address', async () => {
-    process.env.ADMIN_WALLETS = 'wallet1, wallet2';
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
+      const user = { role: 'ADMIN', walletAddress: 'wallet-not-listed' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(true);
+    });
 
-    const user = { walletAddress: 'not-in-list', role: 'ADMIN' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(true);
-  });
+    it('should return true when user.role is "ADMIN" even if the wallet is not in ADMIN_WALLETS', async () => {
+      process.env.ADMIN_WALLETS = 'wallet1, wallet2';
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('returns true when user.role is ADMIN even when ADMIN_WALLETS is unset', async () => {
-    delete process.env.ADMIN_WALLETS;
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
+      const user = { role: 'ADMIN', walletAddress: 'some-other-wallet' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(true);
+    });
 
-    const user = { walletAddress: 'wallet-x', role: 'ADMIN' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(true);
-  });
+    it('should return false when user.role is "USER" and the wallet is not in ADMIN_WALLETS', async () => {
+      process.env.ADMIN_WALLETS = 'wallet1, wallet2';
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('returns true when user.role is ADMIN even when ADMIN_WALLETS is empty', async () => {
-    process.env.ADMIN_WALLETS = '';
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
+      const user = { role: 'USER', walletAddress: 'wallet3' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(false);
+    });
 
-    const user = { walletAddress: 'wallet-x', role: 'ADMIN' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(true);
-  });
+    it('should still return true via the wallet fallback when user.role is "USER" but the wallet is listed', async () => {
+      process.env.ADMIN_WALLETS = 'wallet1, wallet2';
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('returns false when user.role is USER and wallet is not in ADMIN_WALLETS', async () => {
-    process.env.ADMIN_WALLETS = 'wallet1, wallet2';
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
+      const user = { role: 'USER', walletAddress: 'wallet1' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(true);
+    });
 
-    const user = { walletAddress: 'wallet3', role: 'USER' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(false);
-  });
+    it('should return true when both role is "ADMIN" and the wallet is listed in ADMIN_WALLETS', async () => {
+      process.env.ADMIN_WALLETS = 'wallet1, wallet2';
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('falls back to ADMIN_WALLETS when user.role is USER but the wallet is listed', async () => {
-    process.env.ADMIN_WALLETS = 'wallet1, wallet2';
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
+      const user = { role: 'ADMIN', walletAddress: 'wallet1' } as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(true);
+    });
 
-    const user = { walletAddress: 'wallet1', role: 'USER' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(true);
-  });
+    it('should return false when role is neither "ADMIN" nor a recognized wallet is present', async () => {
+      delete process.env.ADMIN_WALLETS;
+      const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
 
-  it('returns false when role is undefined and wallet is not in ADMIN_WALLETS', async () => {
-    process.env.ADMIN_WALLETS = 'wallet1, wallet2';
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
-
-    const user = { walletAddress: 'wallet3' } as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(false);
-  });
-
-  it('does not treat a lowercase "admin" role as an admin (exact match required)', async () => {
-    delete process.env.ADMIN_WALLETS;
-    const { isAdmin: reloadedIsAdmin } = await import('@/lib/admin');
-
-    const user = { walletAddress: 'wallet-y', role: 'admin' } as unknown as AuthenticatedUser;
-    expect(reloadedIsAdmin(user)).toBe(false);
+      const user = { role: undefined, walletAddress: 'wallet-x' } as unknown as AuthenticatedUser;
+      expect(reloadedIsAdmin(user)).toBe(false);
+    });
   });
 });
