@@ -775,3 +775,255 @@ describe("POST /api/skills/[slug]/install — free skill: no payment required (b
     expect(mockPrisma.piPayment.updateMany).not.toHaveBeenCalled();
   });
 });
+
+// ─── POST /api/skills/[slug]/install — payment fast-path pre-check (PR change) ──
+//
+// This PR adds a cheap string-based short-circuit
+// (`p.amount < skill.pricePi || !p.metadata || !p.metadata.includes(skill.id)`)
+// that runs *before* the expensive `JSON.parse(p.metadata)` call, and removes
+// the now-redundant `p.amount >= skill.pricePi` check that used to run after
+// parsing. These tests verify: (1) JSON.parse is skipped whenever the fast
+// path disqualifies a payment, (2) JSON.parse still runs and is still the
+// source of truth when the fast path passes, and (3) the overall
+// authorization outcome is unchanged by the optimization, including at the
+// amount boundary and for malformed/misleading metadata.
+
+describe("POST /api/skills/[slug]/install — paid skill: fast-path metadata check (PR change)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
+    mockGetClientIp.mockReturnValue("127.0.0.1");
+    mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
+    mockPrisma.skill.findUnique.mockResolvedValue(PAID_SKILL);
+    mockPrisma.userAgent.findUnique.mockResolvedValue(AGENT);
+    mockPrisma.skillInstallation.findFirst.mockResolvedValue(null);
+    mockPrisma.skillInstallation.create.mockResolvedValue({ id: "inst-new" } as any);
+    mockPrisma.skill.update.mockResolvedValue(PAID_SKILL);
+  });
+
+  it("skips JSON.parse when payment amount is below the skill price (fast path short-circuit)", async () => {
+    const parseSpy = jest.spyOn(JSON, "parse");
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-cheap",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: PAID_SKILL.pricePi - 0.01, // below price
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(res.status).toBe(402);
+    parseSpy.mockRestore();
+  });
+
+  it("skips JSON.parse when payment metadata is null (fast path short-circuit)", async () => {
+    const parseSpy = jest.spyOn(JSON, "parse");
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-no-meta",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        metadata: null,
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(res.status).toBe(402);
+    parseSpy.mockRestore();
+  });
+
+  it("skips JSON.parse when metadata is an empty string (falsy, fast path short-circuit)", async () => {
+    const parseSpy = jest.spyOn(JSON, "parse");
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-empty-meta",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        metadata: "",
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(res.status).toBe(402);
+    parseSpy.mockRestore();
+  });
+
+  it("skips JSON.parse when metadata does not contain the skill id substring (fast path short-circuit)", async () => {
+    const parseSpy = jest.spyOn(JSON, "parse");
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-other-skill",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        metadata: JSON.stringify({ skillId: "totally-different-skill" }),
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(res.status).toBe(402);
+    parseSpy.mockRestore();
+  });
+
+  it("calls JSON.parse when the fast path passes (amount sufficient and metadata contains the id)", async () => {
+    const parseSpy = jest.spyOn(JSON, "parse");
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-valid",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+    ]);
+    (mockPrisma.piPayment.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+
+    expect(parseSpy).toHaveBeenCalledWith(JSON.stringify({ skillId: PUBLISHED_SKILL.id }));
+    expect(res.status).toBe(200);
+    parseSpy.mockRestore();
+  });
+
+  it("authorizes a payment whose amount exactly equals the skill price (boundary, no longer double-checked)", async () => {
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-exact",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: PAID_SKILL.pricePi, // exactly equal
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+    ]);
+    (mockPrisma.piPayment.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.installed).toBe(true);
+  });
+
+  it("rejects a payment whose amount is just below the skill price (boundary)", async () => {
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-just-under",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: PAID_SKILL.pricePi - 0.001,
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(402);
+    expect(data.code).toBe("PAYMENT_INVALID");
+  });
+
+  it("does not authorize when the skill id only appears as a substring of unrelated metadata (fast path false-positive is caught by the full parse)", async () => {
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-substring-only",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        // The skill id text appears in the metadata (passes the fast
+        // substring check) but the actual `skillId` field refers to a
+        // different skill, so the payment must NOT be authorized.
+        metadata: JSON.stringify({ skillId: "unrelated-skill", note: PUBLISHED_SKILL.id }),
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(402);
+    expect(data.code).toBe("PAYMENT_INVALID");
+  });
+
+  it("gracefully continues past malformed JSON metadata that still passes the substring fast path", async () => {
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-malformed",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: 2.0,
+        // Contains the skill id substring (passes fast path) but is not
+        // valid JSON, so JSON.parse throws and must be caught.
+        metadata: `{"skillId":"${PUBLISHED_SKILL.id}", "broken":`,
+      },
+    ]);
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(402);
+    expect(data.code).toBe("PAYMENT_INVALID");
+  });
+
+  it("skips a disqualified payment via the fast path and still finds a later valid payment", async () => {
+    (mockPrisma.piPayment.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: "pay-too-cheap",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: PAID_SKILL.pricePi - 1, // fails fast path on amount
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+      {
+        id: "pay-valid-second",
+        userId: mockUser.id,
+        status: "RELEASED",
+        consumedByInstallationId: null,
+        amount: PAID_SKILL.pricePi + 1,
+        metadata: JSON.stringify({ skillId: PUBLISHED_SKILL.id }),
+      },
+    ]);
+    (mockPrisma.piPayment.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+
+    const req = makeInstallRequest("POST");
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.installed).toBe(true);
+    expect(mockPrisma.piPayment.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: "pay-valid-second" }),
+      })
+    );
+  });
+});
