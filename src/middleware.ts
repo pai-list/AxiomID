@@ -98,8 +98,8 @@ export function middleware(request: NextRequest) {
         return withCors(new NextResponse("Subdomain not available", { status: 404 }));
       }
       
-      // IDENTITY ENDPOINT: Seamlessly rewrite amrikyy.axiomid.app to /passport/amrikyy
-      url.pathname = `/passport/${subdomain}`;
+      // AGENT SUBDOMAIN: Seamlessly rewrite username.axiomid.app to /agent/username
+      url.pathname = `/agent/${subdomain}`;
       return withCors(NextResponse.rewrite(url));
     }
   }
