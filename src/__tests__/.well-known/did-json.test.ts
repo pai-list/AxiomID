@@ -296,6 +296,51 @@ describe("GET /.well-known/did.json — buildDidDocument invocation", () => {
   });
 });
 
+describe("GET /.well-known/did.json — ISSUER_PUBLIC_KEY edge cases", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: true,
+      remaining: 59,
+      resetAt: Date.now() + 60000,
+    });
+    mockGetClientIp.mockReturnValue("127.0.0.1");
+  });
+
+  afterEach(() => {
+    delete process.env.ISSUER_PUBLIC_KEY;
+  });
+
+  it("treats an empty string ISSUER_PUBLIC_KEY as not configured", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "";
+
+    const req = mockGetRequest();
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toContain("ISSUER_PUBLIC_KEY");
+    expect(mockBuildDidDocument).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 (not 500) when rate limited even if ISSUER_PUBLIC_KEY is also missing", async () => {
+    delete process.env.ISSUER_PUBLIC_KEY;
+    mockCheckRateLimit.mockResolvedValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 30000,
+    });
+
+    const req = mockGetRequest();
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(429);
+    expect(data.code).toBe("RATE_LIMITED");
+    expect(mockCreateIssuerDid).not.toHaveBeenCalled();
+  });
+});
+
 describe("GET /.well-known/did.json — error handling", () => {
   beforeEach(() => {
     jest.clearAllMocks();
