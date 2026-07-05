@@ -21,11 +21,18 @@
       "automergeType": "pr"
     },
     {
-      "description": "Group all GitHub Actions updates into one PR",
+      "description": "Group all non-major GitHub Actions updates into one PR",
       "matchManagers": ["github-actions"],
-      "groupName": "GitHub Actions",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "GitHub Actions (non-major)",
       "automerge": true,
       "automergeType": "pr"
+    },
+    {
+      "description": "Major GitHub Actions updates require manual review",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     },
     {
       "description": "Group Prisma updates together (must update in lockstep)",
@@ -42,6 +49,7 @@
     {
       "description": "TypeScript major updates require manual review",
       "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
       "automerge": false
     },
     {

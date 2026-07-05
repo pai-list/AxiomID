@@ -366,7 +366,7 @@ git push origin feat/my-feature
 Built with passion in Cairo, Egypt.
 
 <a href="https://github.com/Moeabdelaziz007/AxiomID/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Moeabdelaziz007/AxiomID" />
+  <img src="https://contrib.rocks/image?repo=Moeabdelaziz007/AxiomID" alt="Contributors" />
 </a>
 
 </div>
