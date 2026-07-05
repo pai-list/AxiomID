@@ -9,6 +9,7 @@ import { getSandboxDevToken } from '@/lib/sandbox-token';
 export interface AuthenticatedUser {
   id: string;
   walletAddress: string;
+  role: string;
   piUid: string;
   piUsername: string | null;
   did: string | null;
@@ -157,6 +158,7 @@ export async function requireAuth(request: NextRequest): Promise<
         select: {
           id: true,
           walletAddress: true,
+          role: true,
           piUid: true,
           piUsername: true,
           did: true,
@@ -224,6 +226,7 @@ export async function requireAuth(request: NextRequest): Promise<
       select: {
         id: true,
         walletAddress: true,
+        role: true,
         piUid: true,
         piUsername: true,
         did: true,

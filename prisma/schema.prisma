@@ -9,11 +9,17 @@ datasource db {
 
 // ─────────────────────────────────────────────
 // IDENTITY & KYC
+enum Role {
+  USER
+  ADMIN
+}
+
 // ─────────────────────────────────────────────
 
 model User {
   id             String  @id @default(uuid())
   walletAddress  String  @unique @db.VarChar(120)
+  role           Role    @default(USER)
   stellarAddress String? @db.VarChar(56)
   piUid          String? @unique @db.VarChar(100)
   piUsername     String? @db.VarChar(100)

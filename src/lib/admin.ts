@@ -6,6 +6,11 @@ const ADMIN_WALLETS = (process.env.ADMIN_WALLETS || "")
   .filter(Boolean);
 
 export function isAdmin(user: AuthenticatedUser): boolean {
-  if (ADMIN_WALLETS.length === 0) return false;
-  return ADMIN_WALLETS.includes(user.walletAddress);
+  if (user.role === "ADMIN") return true;
+
+  if (ADMIN_WALLETS.length > 0 && ADMIN_WALLETS.includes(user.walletAddress)) {
+    return true;
+  }
+
+  return false;
 }
