@@ -1694,22 +1694,30 @@ export function minCutTrustBottleneck(
 /**
  * Advances trust using a Langevin-style dynamics model.
  *
- * @param currentTrust - The current trust value
- * @param externalForce - The applied external influence
- * @param damping - The resistance to change
- * @param noiseStrength - The magnitude of random fluctuation
- * @param mass - The inertia term
- * @param timeStep - The integration step size
+ * @param options - The simulation options
  * @returns The updated trust value and instantaneous velocity
  */
+export interface LangevinTrustDynamicsOptions {
+  currentTrust: number;
+  externalForce: number;     // F(t) — evidence/delegation push
+  damping?: number;          // γ — resistance to change
+  noiseStrength?: number;    // η — random uncertainty
+  mass?: number;             // m — inertia (resistance to change)
+  timeStep?: number;         // dt
+}
+
 export function langevinTrustDynamics(
-  currentTrust: number,
-  externalForce: number,     // F(t) — evidence/delegation push
-  damping: number = 0.1,     // γ — resistance to change
-  noiseStrength: number = 0.05, // η — random uncertainty
-  mass: number = 1,          // m — inertia (resistance to change)
-  timeStep: number = 0.1,   // dt
+  options: LangevinTrustDynamicsOptions
 ): { newTrust: number; velocity: number } {
+  const {
+    currentTrust,
+    externalForce,
+    damping = 0.1,
+    noiseStrength = 0.05,
+    mass = 1,
+    timeStep = 0.1,
+  } = options;
+
   // Random thermal noise (Gaussian)
   const u1 = Math.random();
   const u2 = Math.random();
@@ -1762,7 +1770,7 @@ export function langevinSimulation(
   let trust = initialTrust;
 
   for (let t = 0; t < totalTime; t += timeStep) {
-    const result = langevinTrustDynamics(trust, currentExternalForce, damping, noiseStrength, 1, timeStep);
+    const result = langevinTrustDynamics({ currentTrust: trust, externalForce: currentExternalForce, damping, noiseStrength, mass: 1, timeStep });
     trust = result.newTrust;
 
     // External force decays with time (evidence ages)
