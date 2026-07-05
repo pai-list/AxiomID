@@ -13,14 +13,13 @@ import { prisma } from "@/lib/prisma";
  * @returns An HTTP response with the user's agents, or an error response on failure.
  */
 export async function GET(request: NextRequest) {
-  const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(`agents-list:${ip}`, RATE_LIMITS.authenticated);
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+
+  const rateLimit = await checkRateLimit(`agents-list:${auth.user.id}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
     return apiError("RATE_LIMITED", "Too many requests.", undefined, rateLimitHeaders(rateLimit));
   }
-
-  const auth = await requireAuth(request);
-  if (auth.error) return auth.error;
 
   try {
     const agents = await prisma.userAgent.findMany({
