@@ -52,7 +52,7 @@ function runSafe(cmd, timeout = 60000) {
   try {
     return { ok: true, out: run(cmd, timeout) };
   } catch (e) {
-    return { ok: false, out: (e.stdout?.toString() || "") + (e.message || "") };
+    return { ok: false, out: (e.stdout?.toString() || "") + (e.stderr?.toString() || "") + (e.message || "") };
   }
 }
 
