@@ -153,4 +153,3 @@ export function verifyChain(store: StoredEntry[]): number {
   }
   return -1;
 }
-}
