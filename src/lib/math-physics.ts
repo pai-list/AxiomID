@@ -93,7 +93,7 @@ export function dataFreshness(
 // IDEAL GAS LAW
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export function idealGasPressure(n: number, v: number, t: number, r: number = 8.314): number {
+export function idealGasPressure(n: number, v: number, t: number, r: number = 1): number {
   if (v <= 0) return Infinity;
   return (n * r * t) / v;
 }
