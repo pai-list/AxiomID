@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWallet } from "@/app/context/wallet-context";
 
 /**
  * Memory tab — IQRA mesh placeholder (full implementation in PR 2).
@@ -9,7 +8,6 @@ import { useWallet } from "@/app/context/wallet-context";
  * Skills node list (fetched from /api/skills).
  */
 export function MemoryTab() {
-  const { user: _user } = useWallet();
   const [skillNodes, setSkillNodes] = useState<Array<{ name: string; tier: string }>>([]);
   const [loading, setLoading] = useState(true);
 

@@ -41,7 +41,7 @@ export default function Dashboard() {
   const {
     user, isLoading, connectWallet, isConnecting, levelProgress,
     walletLogs, clearWalletLogs, runWalletTest,
-    claimAction, createAgent, _activateAgent, _pauseAgent,
+    claimAction, createAgent,
     claimKya, isPiBrowser, connectDemo,
   } = useWallet();
 
@@ -88,7 +88,6 @@ export default function Dashboard() {
   };
 
   const agent = user?.agent;
-  const _hasAgent = !!agent;
   const agentStatus = (agent?.status ?? "NONE") as "ACTIVE" | "INACTIVE" | "PAUSED";
   const daysActive = useMemo(() => user ? Math.max(1, Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86400000)) : 0, [user]);
 
