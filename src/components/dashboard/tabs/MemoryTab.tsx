@@ -30,6 +30,7 @@ export function MemoryTab() {
 
   return (
     <div className="space-y-5">
+<<<<<<< HEAD
       {/* IQRA Neural Mesh */}
       <div className="bento-card p-5">
         <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
