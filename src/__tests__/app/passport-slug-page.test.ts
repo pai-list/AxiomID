@@ -118,9 +118,9 @@ describe("getAgentData — user not found", () => {
     expect((result as Record<string, unknown>).walletAddress).toBe("pi:alice");
   });
 
-  it("builds DID as 'did:axiom:user-<slug>' when user not found", async () => {
+  it("builds DID as 'did:axiom:pi:<slug>' when user not found", async () => {
     const result = await getAgentData("bob");
-    expect((result as Record<string, unknown>).did).toBe("did:axiom:user-bob");
+    expect((result as Record<string, unknown>).did).toBe("did:axiom:pi:bob");
   });
 
   it("queries by piUsername, walletAddress with pi: prefix, and id", async () => {
@@ -208,7 +208,7 @@ describe("getAgentData — user found", () => {
       did: null,
     });
     const result = await getAgentData("alice");
-    expect(result.did).toBe("did:axiom:user-user-123");
+    expect(result.did).toBe("did:axiom:pi:user-123");
   });
 
   it("uses createdAt.toISOString() as issuedDate", async () => {

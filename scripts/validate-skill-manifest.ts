@@ -23,7 +23,13 @@ async function main() {
   const skills: { name: string; slug: string; manifestMd: string }[] = [];
 
   if (mode === 'changed') {
-    const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1').toString().trim();
+    let diffOutput = '';
+    try {
+      diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null', { stdio: ['pipe', 'pipe', 'pipe'] }).toString().trim();
+    } catch {
+      console.warn('[validate-skill-manifest] Could not determine changed files via git diff; validating all local skill files.');
+      diffOutput = execSync('find skills -name "*.md" 2>/dev/null || true').toString().trim();
+    }
     const changedFiles = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
 
     for (const file of changedFiles) {

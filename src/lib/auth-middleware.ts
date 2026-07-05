@@ -9,7 +9,7 @@ import { getSandboxDevToken } from '@/lib/sandbox-token';
 export interface AuthenticatedUser {
   id: string;
   walletAddress: string;
-  role: 'USER' | 'ADMIN';
+  role: string;
   piUid: string;
   piUsername: string | null;
   did: string | null;
