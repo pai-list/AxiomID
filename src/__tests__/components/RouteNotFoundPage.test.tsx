@@ -13,8 +13,8 @@ jest.mock("@/app/context/language-context", () => ({
 }));
 
 describe("RouteNotFoundPage", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it("should render English content when language is en", () => {
