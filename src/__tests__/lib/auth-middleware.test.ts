@@ -660,50 +660,26 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
 });
 
 // ---------------------------------------------------------------------------
-// requireAuth — role field selection (PR change: AuthenticatedUser now
-// includes a `role` field, and both Prisma lookups select it)
+// requireAuth — role field (PR change: `role` is now selected from the
+// database and included on the returned AuthenticatedUser).
 // ---------------------------------------------------------------------------
-describe('requireAuth — role field (PR change: user role selection)', () => {
+describe('requireAuth — role field (PR change)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockReset();
     clearAuthCache();
   });
 
-  it('requests the role field in the Prisma select for user lookup', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ uid: 'pi-role-select', username: 'roleselectuser' }),
-    });
-    mockPrisma.user.findUnique.mockResolvedValue({
-      id: 'user-role-select',
-      walletAddress: '0xrole',
-      role: 'USER',
-      piUid: 'pi-role-select',
-      piUsername: 'roleselectuser',
-      xp: 0,
-      tier: 'Visitor',
-    } as any);
-
-    const req = mockRequestWithHeader({ authorization: 'Bearer role-select-token' });
-    await requireAuth(req);
-
-    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({
-        select: expect.objectContaining({ role: true }),
-      })
-    );
-  });
-
-  it('propagates an ADMIN role returned from the database onto the authenticated user', async () => {
+  it('returns user with role "ADMIN" when the database record has role ADMIN', async () => {
     const mockUser = {
       id: 'user-admin-role',
       walletAddress: '0xadmin',
       role: 'ADMIN',
       piUid: 'pi-admin-role',
       piUsername: 'adminuser',
+      did: null,
       xp: 500,
-      tier: 'Elder',
+      tier: 'Citizen',
     };
 
     mockFetch.mockResolvedValue({
@@ -720,13 +696,14 @@ describe('requireAuth — role field (PR change: user role selection)', () => {
     expect(result.user?.role).toBe('ADMIN');
   });
 
-  it('propagates a USER role returned from the database onto the authenticated user', async () => {
+  it('returns user with role "USER" when the database record has role USER', async () => {
     const mockUser = {
       id: 'user-plain-role',
-      walletAddress: '0xplain',
+      walletAddress: '0xuser',
       role: 'USER',
       piUid: 'pi-plain-role',
       piUsername: 'plainuser',
+      did: null,
       xp: 10,
       tier: 'Visitor',
     };
@@ -745,31 +722,105 @@ describe('requireAuth — role field (PR change: user role selection)', () => {
     expect(result.user?.role).toBe('USER');
   });
 
-  it('keeps the role field intact for cached users on subsequent requests', async () => {
+  it('requests role: true in the Prisma select for the main user lookup', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-select-check', username: 'selectuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-select-check',
+      walletAddress: '0xselect',
+      role: 'USER',
+      piUid: 'pi-select-check',
+      piUsername: 'selectuser',
+      did: null,
+      xp: 0,
+      tier: 'Visitor',
+    } as any);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer select-check-token' });
+    await requireAuth(req);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { piUid: 'pi-select-check' },
+        select: expect.objectContaining({ role: true }),
+      })
+    );
+  });
+
+  it('retains the role field for cached users (cache preserves the full user record)', async () => {
     const mockUser = {
-      id: 'user-cached-role',
-      walletAddress: '0xcached',
+      id: 'user-cache-role',
+      walletAddress: '0xcacherole',
       role: 'ADMIN',
-      piUid: 'pi-cached-role',
-      piUsername: 'cacheduser',
+      piUid: 'pi-cache-role',
+      piUsername: 'cacheroleuser',
+      did: null,
       xp: 0,
       tier: 'Visitor',
     };
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ uid: 'pi-cached-role', username: 'cacheduser' }),
+      json: async () => ({ uid: 'pi-cache-role', username: 'cacheroleuser' }),
     });
     mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
 
-    const req = mockRequestWithHeader({ authorization: 'Bearer cached-role-token' });
+    const req = mockRequestWithHeader({ authorization: 'Bearer cache-role-token' });
 
     const result1 = await requireAuth(req);
     expect(result1.user?.role).toBe('ADMIN');
 
-    // Second call should hit the cache, but role must still be present
+    // Second call is served from cache; role must still be present.
     const result2 = await requireAuth(req);
     expect(result2.user?.role).toBe('ADMIN');
     expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('sandbox bypass path selects role: true and returns the sandbox user with its role', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    const originalDevToken = process.env.SANDBOX_DEV_TOKEN;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+    process.env.SANDBOX_DEV_TOKEN = 'sandbox-dev-token-role-check';
+
+    try {
+      const sandboxUser = {
+        id: 'sandbox-user-id',
+        walletAddress: '0xsandbox',
+        role: 'ADMIN',
+        piUid: 'sandbox-developer',
+        piUsername: 'sandboxdev',
+        did: null,
+        xp: 0,
+        tier: 'Visitor',
+      };
+      mockPrisma.user.findUnique.mockResolvedValue(sandboxUser as any);
+
+      const req = mockRequestWithHeader({ authorization: 'Bearer sandbox-dev-token-role-check' });
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeNull();
+      expect(result.user).toEqual(sandboxUser);
+      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { piUid: 'sandbox-developer' },
+          select: expect.objectContaining({ role: true }),
+        })
+      );
+      // Sandbox bypass must short-circuit before the Pi API is ever called.
+      expect(mockFetch).not.toHaveBeenCalled();
+    } finally {
+      if (originalBypass === undefined) {
+        delete process.env.SANDBOX_AUTH_BYPASS;
+      } else {
+        process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      }
+      if (originalDevToken === undefined) {
+        delete process.env.SANDBOX_DEV_TOKEN;
+      } else {
+        process.env.SANDBOX_DEV_TOKEN = originalDevToken;
+      }
+    }
   });
 });
