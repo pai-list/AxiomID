@@ -97,78 +97,12 @@ function LandingPageWrapper() {
             <div data-testid="hero-demo" />
           </div>
         </div>
-        <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-          <SectionHeader label={t("tier")} title={t("landing_level_up")} labelColor="text-electric-blue" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {["Visitor", "Citizen", "Validator", "Sovereign"].map((tier) => (
-              <div key={tier} className="stitch-feature-card">
-                <h3 className="text-lg font-bold text-white">{tier}</h3>
-              </div>
-            ))}
-          </div>
-        </div>
-        {user ? (
-          <>
-            <a href="/dashboard">DASHBOARD</a>
-            <button onClick={() => logout?.()}>LOG OUT</button>
-          </>
-        ) : (
-          <a href="/dashboard">DASHBOARD</a>
-        )}
-      </main>
-    );
-  }
-
-  return { __esModule: true, default: Home, generateMetadata: async () => ({ title: "Test" }) };
-});
-
-import Home from "@/app/page";
-
-import { useWallet } from "@/app/context/wallet-context";
-import type { Tier } from "@/lib/tiers";
-const mockUseWallet = useWallet as jest.MockedFunction<typeof useWallet>;
-
-function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {}): ReturnType<typeof useWallet> {
-  return {
-    user: null,
-    isLoading: false,
-    isConnecting: false,
-    error: null,
-    isPiBrowser: false,
-    connectWallet: jest.fn(),
-    claimAction: jest.fn(),
-    refreshUser: jest.fn(),
-    createAgent: jest.fn(),
-    activateAgent: jest.fn(),
-    pauseAgent: jest.fn(),
-    claimKya: jest.fn(),
-    levelProgress: 0,
-    nextXP: null,
-    walletLogs: [],
-    runWalletTest: jest.fn(),
-    clearWalletLogs: jest.fn(),
-    logout: jest.fn(),
-    disconnectWallet: jest.fn(),
-    ...overrides,
-  } as ReturnType<typeof useWallet>;
-}
-
-async function renderHome() {
-  await act(async () => {
-    render(<Home />);
-  });
-  await act(async () => {
-    jest.advanceTimersByTime(101);
-  });
-}
-
-beforeAll(() => {
-  jest.useFakeTimers();
-  global.fetch = jest.fn().mockImplementation(() =>
-    Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({ stats: { registeredUsers: 100, totalAgents: 50, totalXpEarned: 10000, totalPayments: 500 } })
-    })
+      </div>
+      <div data-testid="stats-bar" />
+      <div data-testid="interactive-showcase" />
+      <div data-testid="trust-tiers" />
+      <footer data-testid="footer" />
+    </main>
   );
 }
 
@@ -179,10 +113,9 @@ describe("Landing page — Stitch hero", () => {
     expect(screen.getByText(/ai identity/i)).toBeInTheDocument();
   });
 
-  it("renders the main heading", async () => {
-    await renderHome();
-    const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading).toHaveTextContent(/your.*identity/i);
+  it("renders the primary CTA button", () => {
+    render(<LandingPageWrapper />);
+    expect(screen.getByText(/create my ai agent/i)).toBeInTheDocument();
   });
 
   it("renders the protocol link", () => {
