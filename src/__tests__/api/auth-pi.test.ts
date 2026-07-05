@@ -109,7 +109,7 @@ describe('POST /api/auth/pi', () => {
       piUsername: 'updated',
       xp: 100,
       tier: 'Citizen',
-      did: 'did:axiom:axiomid.app:pi:updated',
+      did: 'did:axiom:pi:updated',
       didMethod: 'did:axiom',
       kycStatus: 'VERIFIED',
       agent: { name: 'My Agent' },
@@ -126,10 +126,10 @@ describe('POST /api/auth/pi', () => {
 
     expect(res.status).toBe(200);
     expect(data.userId).toBe('existing-user');
-    expect(data.did).toBe('did:axiom:axiomid.app:pi:updated');
+    expect(data.did).toBe('did:axiom:pi:updated');
     expect(mockPrisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-      did: 'did:axiom:axiomid.app:pi:updated',
+      did: 'did:axiom:pi:updated',
         didMethod: 'did:axiom',
       }),
     }));
@@ -166,7 +166,7 @@ describe('POST /api/auth/pi', () => {
         walletAddress: 'pi:secure-pi-uid',
         stellarAddress: officialStellarAddress,
         piUid: 'secure-pi-uid',
-        did: 'did:axiom:axiomid.app:pi:secureuser',
+        did: 'did:axiom:pi:secureuser',
       }),
     }));
     expect(data.walletAddress).toBe('pi:secure-pi-uid');
