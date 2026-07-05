@@ -10,5 +10,5 @@ if command -v npx &> /dev/null; then
     npx cloc . --exclude-dir=node_modules,.git,.next,build,dist,.vercel,.superpowers,coverage
 else
     echo "npx not found. Falling back to find+wc..."
-    find . -type d \( -name node_modules -o -name .git -o -name .next -o -name build -o -name dist -o -name coverage -o -name .vercel -o -name .superpowers \) -prune -o -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.css" -o -name "*.json" -o -name "*.md" -print | xargs wc -l
+    find . -type d \( -name node_modules -o -name .git -o -name .next -o -name build -o -name dist -o -name coverage -o -name .vercel -o -name .superpowers \) -prune -o -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.css" -o -name "*.json" -o -name "*.md" \) -exec wc -l {} +
 fi
