@@ -52,10 +52,24 @@ export function generateEntryId(): string {
 // ─── Store Operations ────────────────────────────────────────────────────────
 
 const DEFAULT_MAX_ENTRIES = 200;
+const GENESIS_HASH = "0000000000000000000000000000000000000000000000000000000000000000";
+
+/**
+ * Rebuilds the hash chain for a list of entries after eviction.
+ * Each entry's previousHash and hash are recomputed to maintain chain integrity.
+ */
+function rehashChain(entries: StoredEntry[]): StoredEntry[] {
+  return entries.map((entry, i) => {
+    const prevHash = i === 0 ? GENESIS_HASH : entries[i - 1].hash;
+    const newHash = hashChain({ content: entry.content, pinned: entry.pinned, metadata: entry.metadata }, prevHash);
+    return { ...entry, previousHash: prevHash, hash: newHash };
+  });
+}
 
 /**
  * Appends a validated entry to the memory store with hash-chain integrity.
  * Evicts oldest non-pinned entries if the store exceeds maxEntries.
+ * After eviction, the chain is rehashed to maintain integrity.
  */
 export function appendToMemory(
   entry: MemoryEntry,
@@ -64,7 +78,7 @@ export function appendToMemory(
 ): { store: StoredEntry[]; entry: StoredEntry } {
   const previousHash = store.length > 0
     ? store[store.length - 1].hash
-    : "0000000000000000000000000000000000000000000000000000000000000000";
+    : GENESIS_HASH;
 
   const hash = hashChain(entry, previousHash);
   const id = generateEntryId();
@@ -96,7 +110,9 @@ export function appendToMemory(
       return false;
     });
 
-    return { store: filtered, entry: storedEntry };
+    // Rehash chain after eviction to maintain integrity
+    const rehashed = rehashChain(filtered);
+    return { store: rehashed, entry: rehashed[rehashed.length - 1] };
   }
 
   return { store: newStore, entry: storedEntry };

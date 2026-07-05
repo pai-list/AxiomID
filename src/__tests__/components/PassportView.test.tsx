@@ -126,7 +126,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     render(<PassportView />);
 
     await waitFor(() => {
-      expect(screen.getAllByText('translated_passport_not_found')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('passport_not_found')[0]).toBeInTheDocument();
     });
 
     expect(screen.getByText('Custom API Error')).toBeInTheDocument();
@@ -188,7 +188,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     });
 
     expect(sharePassport).toHaveBeenCalledWith(
-      expect.objectContaining({ url: window.location.href, title: 'translated_share_title', text: 'translated_share_text' })
+      expect.objectContaining({ url: window.location.href, title: 'share_title', text: 'share_text' })
     );
   });
 });

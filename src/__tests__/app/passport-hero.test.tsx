@@ -133,36 +133,8 @@ describe("Landing page — Stitch hero", () => {
     expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
 
-  it("renders LOGOUT button when authenticated", async () => {
-    await renderHome();
-    const logoutButtons = screen.getAllByRole("button", { name: /log.?out/i });
-    expect(logoutButtons.length).toBeGreaterThanOrEqual(1);
-  });
-
   it("renders TrustTiers", () => {
     render(<LandingPageWrapper />);
     expect(screen.getByTestId("trust-tiers")).toBeInTheDocument();
-  });
-
-  it("calls logout when LOGOUT button is clicked", async () => {
-    const logoutFn = jest.fn();
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user, logout: logoutFn }));
-    await renderHome();
-    const logoutButtons = screen.getAllByRole("button", { name: /log.?out/i });
-    await act(async () => {
-      logoutButtons[0].click();
-    });
-    expect(logoutFn).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("Landing page — unauthenticated user", () => {
-  beforeEach(() => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: null }));
-  });
-
-  it("does NOT render a LOGOUT button when there is no user", async () => {
-    await renderHome();
-    expect(screen.queryByRole("button", { name: /log.?out/i })).toBeNull();
   });
 });

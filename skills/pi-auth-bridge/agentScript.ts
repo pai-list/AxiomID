@@ -51,9 +51,15 @@ export async function verifyPiAccessToken(
   if (!validation.valid) return null;
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout for Pi Browser
+
     const response = await fetch(`${piApiBase}/v2/me`, {
       headers: { Authorization: `Key ${token}` },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     if (!response.ok) return null;
 

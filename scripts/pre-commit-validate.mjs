@@ -14,7 +14,7 @@
  *   TrustChain: every commit a clean record.
  */
 
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import path from "path";
 
@@ -56,6 +56,15 @@ function runSafe(cmd, timeout = 60000) {
   }
 }
 
+function runSafeArray(args, timeout = 60000) {
+  try {
+    const out = execFileSync("npx", args, { cwd: ROOT, stdio: "pipe", timeout }).toString().trim();
+    return { ok: true, out };
+  } catch (e) {
+    return { ok: false, out: (e.stdout?.toString() || "") + (e.stderr?.toString() || "") + (e.message || "") };
+  }
+}
+
 function stagedFiles(pattern = "") {
   const cmd = pattern
     ? `git diff --cached --name-only --diff-filter=ACMR -- ${pattern}`
@@ -76,10 +85,11 @@ console.log(`${BOLD}── CHECK ───────────────�
 
 let issues = 0;
 
-// 1. Lint staged files
+// 1. Lint staged files — execFileSync with argv array (no shell injection)
 const tsFiles = stagedFiles("*.{ts,tsx,js,jsx,mjs}");
 if (tsFiles.length) {
-  const { ok, out } = runSafe("npx eslint --fix --report-unused-disable-directives --max-warnings 0 " + tsFiles.join(" "));
+  const args = ["eslint", "--fix", "--report-unused-disable-directives", "--max-warnings", "0", ...tsFiles];
+  const { ok, out } = runSafeArray(args);
   if (ok) {
     pass("Lint", `${tsFiles.length} file(s) clean`);
   } else {
@@ -145,12 +155,14 @@ console.log(`\n${BOLD}── REVIEW ──────────────�
 const diff = runSafe("git diff --cached 2>&1").out;
 
 if (diff) {
-  // Secrets (BLOCK)
+  // Secrets (BLOCK) — catch known patterns AND generic high-entropy assignments
   const secretPatterns = [
     /(?:sk|pk)_(?:test|live|prod)_[A-Za-z0-9]{10,}/,
     /BEGIN (?:RSA |EC )?PRIVATE KEY/,
     /ghp_[A-Za-z0-9]{36}/,
-    /(?:NPM_TOKEN|AUTH_TOKEN|API_KEY|PI_API_KEY)\s*[=:]\s*['"]?[A-Za-z0-9]{10,}['"]?/,
+    /(?:NPM_TOKEN|AUTH_TOKEN|API_KEY|PI_API_KEY|SOVEREIGN_KEY_SALT|PI_TOKEN_ENCRYPTION_KEY)\s*[=:]\s*['"]?[A-Za-z0-9]{10,}['"]?/,
+    // Generic: any KEY/SECRET/TOKEN/PASSWORD assignment with a long value
+    /(?:KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL)\s*[=:]\s*['"][A-Za-z0-9+/=_-]{20,}['"]/i,
   ];
   for (const pat of secretPatterns) {
     const hits = diff.match(new RegExp(`^\\+.*${pat.source}`, "gm"));
