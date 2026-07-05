@@ -46,7 +46,7 @@ const stepVariants = {
     x: direction < 0 ? 300 : -300,
     opacity: 0,
     scale: 0.95,
-    transition: { duration: 0.5 }
+    transition: { ease: [0.16, 1, 0.3, 1] as const, duration: 0.5 }
   }),
 };
 
