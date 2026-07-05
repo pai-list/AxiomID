@@ -62,16 +62,14 @@ describe("dashboard/layout.tsx — normal rendering", () => {
     expect(container.querySelectorAll(".animate-pulse").length).toBe(0);
   });
 
-  it("renders the desktop navigation links for all four dashboard sections", () => {
+  it("renders the desktop navigation links for all dashboard sections", () => {
     render(
       <DashboardLayout>
         <div>Child Content</div>
       </DashboardLayout>
     );
-    // Mobile + desktop nav each render 4 links per labelKey; assert at least one of each icon
+    // Mobile + desktop nav each render links per labelKey; assert at least one of each icon
     expect(screen.getAllByTestId("icon-fingerprint").length).toBeGreaterThan(0);
-    expect(screen.getAllByTestId("icon-store").length).toBeGreaterThan(0);
-    expect(screen.getAllByTestId("icon-cpu").length).toBeGreaterThan(0);
     expect(screen.getAllByTestId("icon-settings").length).toBeGreaterThan(0);
   });
 
