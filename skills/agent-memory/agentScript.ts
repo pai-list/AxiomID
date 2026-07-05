@@ -118,6 +118,14 @@ export function queryMemory(
  * Returns the index of the first broken link, or -1 if chain is valid.
  */
 export function verifyChain(store: StoredEntry[]): number {
+  if (store.length === 0) return -1;
+  const firstExpected = hashChain(
+    { content: store[0].content, pinned: store[0].pinned, metadata: store[0].metadata },
+    "0000000000000000000000000000000000000000000000000000000000000000"
+  );
+  if (store[0].hash !== firstExpected) {
+    return 0;
+  }
   for (let i = 1; i < store.length; i++) {
     const expected = hashChain(
       { content: store[i].content, pinned: store[i].pinned, metadata: store[i].metadata },
@@ -128,4 +136,5 @@ export function verifyChain(store: StoredEntry[]): number {
     }
   }
   return -1;
+}
 }
