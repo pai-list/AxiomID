@@ -240,6 +240,107 @@ describe('POST /api/auth/pi', () => {
     expect(data.error).toMatch(/timed out/i);
   });
 
+  it('uses the Pi API username instead of the client-supplied username (PR change)', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-uid-999', username: 'verified-from-pi' }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create = mockCreateReturnsArgs('user-999');
+
+    const req = mockRequest({
+      accessToken: 'valid-token',
+      uid: 'pi-uid-999',
+      username: 'client-supplied-name',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        piUsername: 'verified-from-pi',
+        did: 'did:axiom:pi:verified-from-pi',
+      }),
+    }));
+    expect(data.piUsername).toBe('verified-from-pi');
+  });
+
+  it('falls back to the client-supplied username when the Pi API response omits username (PR change)', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-uid-888' }), // no username field
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create = mockCreateReturnsArgs('user-888');
+
+    const req = mockRequest({
+      accessToken: 'valid-token',
+      uid: 'pi-uid-888',
+      username: 'client-fallback-name',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        piUsername: 'client-fallback-name',
+        did: 'did:axiom:pi:client-fallback-name',
+      }),
+    }));
+    expect(data.piUsername).toBe('client-fallback-name');
+  });
+
+  it('updates an existing user piUsername with the Pi API verified username (PR change)', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'existing-uid-2', username: 'renamed-on-pi' }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'existing-user-2',
+      piUid: 'existing-uid-2',
+      did: 'did:axiom:pi:renamed-on-pi',
+      didMethod: 'did:axiom',
+    } as any);
+
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'existing-user-2',
+      walletAddress: 'pi:existing-uid-2',
+      stellarAddress: null,
+      piUid: 'existing-uid-2',
+      piUsername: 'renamed-on-pi',
+      xp: 0,
+      tier: 'Visitor',
+      did: 'did:axiom:pi:renamed-on-pi',
+      didMethod: 'did:axiom',
+      kycStatus: 'NONE',
+      agent: null,
+    } as any);
+
+    const req = mockRequest({
+      accessToken: 'new-token',
+      uid: 'existing-uid-2',
+      username: 'stale-client-name',
+    });
+
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        piUsername: 'renamed-on-pi',
+      }),
+    }));
+    expect(data.piUsername).toBe('renamed-on-pi');
+  });
+
   it('calls Pi API with AbortSignal (10s) — PR change from 5s', async () => {
     // Spy on AbortSignal.timeout to verify 10000ms is passed
     const timeoutSpy = jest.spyOn(AbortSignal, 'timeout');

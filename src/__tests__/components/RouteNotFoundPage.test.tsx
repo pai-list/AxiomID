@@ -54,4 +54,14 @@ describe("RouteNotFoundPage", () => {
 
     expect(screen.getByText("🔍")).toBeInTheDocument();
   });
+
+  it("should fall back to Arabic content for any non-English language code", () => {
+    (useLanguage as jest.Mock).mockReturnValue({ language: "fr" });
+
+    render(<RouteNotFoundPage />);
+
+    // The component only special-cases "en"; anything else falls back to Arabic.
+    expect(screen.getByText("الصفحة غير موجودة")).toBeInTheDocument();
+    expect(screen.queryByText("Page Not Found")).toBeNull();
+  });
 });

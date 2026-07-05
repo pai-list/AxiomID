@@ -298,3 +298,32 @@ describe("Header — handleConnect (PR change: boolean return check)", () => {
     expect(connectWallet).toHaveBeenCalledTimes(1);
   });
 });
+
+// ─── PR change: header inline style (92% opacity bg + text-primary color) ────
+describe("Header — inline theme styling (PR change: opacity 92%, text-primary color)", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseWallet.mockReturnValue(makeCtx());
+    mockLanguage("en");
+  });
+
+  it("sets the header text color to var(--text-primary)", () => {
+    render(<Header />);
+    const header = screen.getByRole("banner");
+    expect(header).toHaveStyle({ color: "var(--text-primary)" });
+  });
+
+  it("sets the header background to a 92% color-mix (was 90%)", () => {
+    render(<Header />);
+    const header = screen.getByRole("banner");
+    expect(header.style.background).toBe(
+      "color-mix(in srgb, var(--bg-deep) 92%, transparent)"
+    );
+  });
+
+  it("sets the header border color to var(--card-border)", () => {
+    render(<Header />);
+    const header = screen.getByRole("banner");
+    expect(header).toHaveStyle({ borderColor: "var(--card-border)" });
+  });
+});

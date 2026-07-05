@@ -275,6 +275,68 @@ describe("middleware — well-known DID rewrite", () => {
   });
 });
 
+describe("middleware — legacy route redirects (PR change: /settings, /login, /register)", () => {
+  it("redirects /settings to /dashboard/settings", () => {
+    const req = makeRequest("https://axiomid.app/settings", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("https://axiomid.app/dashboard/settings");
+  });
+
+  it("redirects /login to /claim", () => {
+    const req = makeRequest("https://axiomid.app/login", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("https://axiomid.app/claim");
+  });
+
+  it("redirects /register to /claim", () => {
+    const req = makeRequest("https://axiomid.app/register", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("https://axiomid.app/claim");
+  });
+
+  it("applies CORS headers on the /settings redirect response", () => {
+    const req = makeRequest("https://axiomid.app/settings", {
+      headers: { host: "axiomid.app", origin: "https://axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("https://axiomid.app");
+  });
+
+  it("does not redirect unrelated paths like /settings-page", () => {
+    const req = makeRequest("https://axiomid.app/settings-page", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("does not redirect a nested path like /dashboard/login", () => {
+    const req = makeRequest("https://axiomid.app/dashboard/login", {
+      headers: { host: "axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("redirects /login even when arriving via a subdomain host", () => {
+    const req = makeRequest("https://alice.axiomid.app/login", {
+      headers: { host: "alice.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe("https://alice.axiomid.app/claim");
+  });
+});
+
 describe("middleware — invalid subdomain rejection", () => {
   it("returns 400 for subdomain with invalid characters", () => {
     const req = makeRequest("https://_invalid_.axiomid.app/profile", {

@@ -224,4 +224,18 @@ describe('GET /api/explorer', () => {
     expect(res.status).toBe(500);
     expect(data.code).toBe('INTERNAL_ERROR');
   });
+
+  it('sets a public Cache-Control header on success (PR change)', async () => {
+    const res = await GET(mockGetRequest());
+
+    expect(res.headers.get('Cache-Control')).toBe('public, s-maxage=60, stale-while-revalidate=300');
+  });
+
+  it('does not set a Cache-Control header when the request fails', async () => {
+    (mockPrisma.user.count as jest.Mock).mockRejectedValue(new Error('DB down'));
+
+    const res = await GET(mockGetRequest());
+
+    expect(res.headers.get('Cache-Control')).toBeNull();
+  });
 });

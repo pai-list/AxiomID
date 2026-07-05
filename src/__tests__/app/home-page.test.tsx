@@ -22,7 +22,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { headers } from "next/headers";
-import Home, { generateMetadata } from "@/app/page";
+import Home, { generateMetadata, revalidate } from "@/app/page";
 
 jest.mock("next/headers", () => ({
   headers: jest.fn(),
@@ -65,6 +65,12 @@ function mockAcceptLanguage(value: string | null) {
     get: (name: string) => (name === "accept-language" ? value : null),
   });
 }
+
+describe("revalidate — ISR cache config (PR change)", () => {
+  it("exports a revalidate value of 60 seconds", () => {
+    expect(revalidate).toBe(60);
+  });
+});
 
 describe("generateMetadata — language detection from accept-language header", () => {
   beforeEach(() => {

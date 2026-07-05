@@ -220,4 +220,18 @@ describe('GET /api/leaderboard', () => {
     expect(data.leaderboard[1].xp).toBe(800);
     expect(data.leaderboard[2].xp).toBe(100);
   });
+
+  it('sets a public Cache-Control header on success (PR change)', async () => {
+    const res = await GET(mockGetRequest());
+
+    expect(res.headers.get('Cache-Control')).toBe('public, s-maxage=30, stale-while-revalidate=60');
+  });
+
+  it('does not set a Cache-Control header when the request fails', async () => {
+    (mockPrisma.user.findMany as jest.Mock).mockRejectedValue(new Error('Connection refused'));
+
+    const res = await GET(mockGetRequest());
+
+    expect(res.headers.get('Cache-Control')).toBeNull();
+  });
 });
