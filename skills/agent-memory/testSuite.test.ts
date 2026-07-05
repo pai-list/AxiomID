@@ -45,6 +45,19 @@ describe("Agent Memory Skill", () => {
       const entry = validateEntry({ content: maxContent });
       expect(entry.content.length).toBe(10000);
     });
+
+    it("rejects a missing content field", () => {
+      expect(() => validateEntry({})).toThrow();
+    });
+
+    it("rejects non-string content", () => {
+      expect(() => validateEntry({ content: 12345 })).toThrow();
+    });
+
+    it("defaults pinned to false when omitted", () => {
+      const entry = validateEntry({ content: "no pinned field" });
+      expect(entry.pinned).toBe(false);
+    });
   });
 
   // ─── hashChain ────────────────────────────────────────────────────────
@@ -245,6 +258,15 @@ describe("Agent Memory Skill", () => {
       store[1].hash = "tampered-hash";
 
       expect(verifyChain(store)).toBe(1);
+    });
+
+    it("returns -1 for an empty store", () => {
+      expect(verifyChain([])).toBe(-1);
+    });
+
+    it("returns -1 for a single-entry store (no predecessor to compare)", () => {
+      const { entry } = appendToMemory({ content: "solo", pinned: false }, []);
+      expect(verifyChain([entry])).toBe(-1);
     });
   });
 });

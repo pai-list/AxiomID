@@ -143,3 +143,32 @@ describe("dashboard/layout.tsx — regression", () => {
     ).not.toThrow();
   });
 });
+
+describe("dashboard/layout.tsx — header integration", () => {
+  it("renders the theme and language toggles from the Header component", () => {
+    render(
+      <DashboardLayout>
+        <div>Child Content</div>
+      </DashboardLayout>
+    );
+    expect(screen.getByTestId("theme-toggle")).toBeInTheDocument();
+    expect(screen.getByTestId("language-toggle")).toBeInTheDocument();
+  });
+
+  it("highlights the dashboard link (not settings) in the mobile nav for the current pathname", () => {
+    const { container } = render(
+      <DashboardLayout>
+        <div>Child Content</div>
+      </DashboardLayout>
+    );
+
+    // The mobile bottom nav is the only nav with the "fixed" positioning class.
+    const mobileNav = container.querySelector("nav.fixed");
+    const dashboardLink = mobileNav?.querySelector('a[href="/dashboard"]');
+    const settingsLink = mobileNav?.querySelector('a[href="/dashboard/settings"]');
+
+    expect(dashboardLink).toHaveClass("text-neon-green");
+    expect(settingsLink).not.toHaveClass("text-neon-green");
+    expect(settingsLink).toHaveClass("text-faint");
+  });
+});
