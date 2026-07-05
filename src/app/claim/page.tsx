@@ -223,7 +223,7 @@ export default function ClaimPage() {
                <motion.div
                  className="h-full bg-gradient-to-r from-electric-blue via-blue-500 to-neon-green rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
                  animate={{ width: `${(currentStep / 3) * 100}%` }}
-                 transition={{ duration: 0.5 }}
+                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                />
              </div>
            </div>
