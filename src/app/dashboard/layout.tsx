@@ -7,7 +7,7 @@ import { ErrorBanner } from "@/components/ErrorBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useLanguage } from "../context/language-context";
 import type { Route } from "next";
-import { Fingerprint, Store, Settings, Cpu } from "lucide-react";
+import { Fingerprint, Settings } from "lucide-react";
 import { Header } from "@/components/dashboard/Header";
 
 interface NavItem {
@@ -18,8 +18,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", labelKey: "dashboard_title", icon: Fingerprint },
-  { href: "/dashboard/marketplace", labelKey: "marketplace", icon: Store },
-  { href: "/dashboard/sandbox", labelKey: "sandbox", icon: Cpu },
   { href: "/dashboard/settings", labelKey: "settings_page_title", icon: Settings },
 ];
 
