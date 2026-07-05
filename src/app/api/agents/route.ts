@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
-import { getClientIp } from "@/lib/ip";
 import { logger } from "@/lib/logger";
 import { requireAuth } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";

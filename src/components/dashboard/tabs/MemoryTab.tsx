@@ -9,7 +9,7 @@ import { useWallet } from "@/app/context/wallet-context";
  * Skills node list (fetched from /api/skills).
  */
 export function MemoryTab() {
-  const { user } = useWallet();
+  const { user: _user } = useWallet();
   const [skillNodes, setSkillNodes] = useState<Array<{ name: string; tier: string }>>([]);
   const [loading, setLoading] = useState(true);
 
