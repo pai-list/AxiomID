@@ -319,13 +319,13 @@ describe("middleware — invalid subdomain rejection", () => {
   });
 });
 
-describe("middleware — subdomain rewrite to /passport/<slug> (PR change: identity endpoint)", () => {
-  it("rewrites a valid subdomain request to /passport/<subdomain>", () => {
+describe("middleware — subdomain rewrite to /agent/<slug>", () => {
+  it("rewrites a valid subdomain request to /agent/<subdomain>", () => {
     const req = makeRequest("https://alice.axiomid.app/profile", {
       headers: { host: "alice.axiomid.app" },
     });
     const res = middleware(req);
-    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/alice");
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/agent/alice");
   });
 
   it("preserves the subdomain casing as-is in the rewritten path", () => {
@@ -333,7 +333,7 @@ describe("middleware — subdomain rewrite to /passport/<slug> (PR change: ident
       headers: { host: "AliceBob.axiomid.app" },
     });
     const res = middleware(req);
-    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/AliceBob");
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/agent/AliceBob");
   });
 
   it("does not rewrite subdomain requests targeting /api/ paths", () => {
@@ -394,6 +394,6 @@ describe("middleware — reserved subdomains (PR change: 'build' added to RESERV
     });
     const res = middleware(req);
     expect(res.status).not.toBe(404);
-    expect(res.headers.get("x-middleware-rewrite")).toContain("/passport/buildmaster");
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/agent/buildmaster");
   });
 });
