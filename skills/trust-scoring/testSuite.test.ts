@@ -28,6 +28,10 @@ describe("Trust Scoring Skill", () => {
     it("clamps over max to 100", () => {
       expect(normalizeStamps(15)).toBe(100);
     });
+
+    it("returns 0 when total is 0 (avoids division by zero)", () => {
+      expect(normalizeStamps(5, 0)).toBe(0);
+    });
   });
 
   // ─── normalizeXp ──────────────────────────────────────────────────────
@@ -128,6 +132,24 @@ describe("Trust Scoring Skill", () => {
           semanticTrust: 150,
         })
       ).toThrow();
+    });
+
+    it("uses full weighting mode when tenureDays is explicitly 0 (not omitted)", () => {
+      const result = computeTrustScore({ xp: 500, stampsClaimed: 5, tenureDays: 0 });
+      expect(result.components.tenureScore).toBe(0);
+      expect(result.components.semanticScore).toBe(50); // default fallback
+      expect(result.breakdown).not.toContain("legacy");
+    });
+
+    it("uses full weighting mode when semanticTrust is explicitly 0 (not omitted)", () => {
+      const result = computeTrustScore({
+        xp: 500,
+        stampsClaimed: 5,
+        semanticTrust: 0,
+      });
+      expect(result.components.semanticScore).toBe(0);
+      expect(result.components.tenureScore).toBe(0);
+      expect(result.breakdown).not.toContain("legacy");
     });
   });
 });

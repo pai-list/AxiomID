@@ -147,4 +147,20 @@ describe("Dashboard page — tab navigation", () => {
     expect(screen.getByRole("tab", { name: /memory/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /settings/i })).toBeInTheDocument();
   });
+
+  it("switching to a different tab deactivates the previously active tab", async () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: authenticatedUser }));
+    await act(async () => {
+      render(<Dashboard />);
+    });
+
+    await act(async () => {
+      screen.getByRole("tab", { name: /skills/i }).click();
+    });
+
+    const homeTab = screen.getByRole("tab", { name: /home/i });
+    const skillsTab = screen.getByRole("tab", { name: /skills/i });
+    expect(skillsTab).toHaveAttribute("aria-selected", "true");
+    expect(homeTab).toHaveAttribute("aria-selected", "false");
+  });
 });

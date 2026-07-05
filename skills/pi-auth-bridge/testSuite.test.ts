@@ -84,6 +84,43 @@ describe("Pi Auth Bridge Skill", () => {
       const user = await verifyPiAccessToken("");
       expect(user).toBeNull();
     });
+
+    it("returns null when the API response body is not valid JSON", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => {
+          throw new Error("invalid json");
+        },
+      });
+
+      const user = await verifyPiAccessToken("token-with-bad-body");
+      expect(user).toBeNull();
+    });
+
+    it("returns null when the API response does not match the PiUser schema", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ username: "missing-uid-field" }),
+      });
+
+      const user = await verifyPiAccessToken("token");
+      expect(user).toBeNull();
+    });
+
+    it("uses the provided piApiBase when calling the Pi API", async () => {
+      const fetchMock = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ uid: "pi-789" }),
+      });
+      global.fetch = fetchMock;
+
+      await verifyPiAccessToken("token", "https://custom.pi.example");
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://custom.pi.example/v2/me",
+        expect.objectContaining({ headers: { Authorization: "Key token" } })
+      );
+    });
   });
 
   // ─── createDidAssertion ───────────────────────────────────────────────
