@@ -45,7 +45,7 @@ function mockRequestWithHeader(headers: Record<string, string> = {}) {
       get: (name: string) => allHeaders[name.toLowerCase()] ?? null,
     },
     nextUrl: new URL("http://localhost/"),
-  } as any;
+  } as any; // ponytail: test mock — NextRequest-like object without full type
 }
 
 describe('hashToken (PR change: exported)', () => {
@@ -106,7 +106,7 @@ describe('clearAuthCache (PR change: selective invalidation)', () => {
       ok: true,
       json: async () => ({ uid: 'pi-selective', username: 'selectiveuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
 
@@ -144,7 +144,7 @@ describe('clearAuthCache (PR change: selective invalidation)', () => {
       ok: true,
       json: async () => ({ uid: 'pi-multi', username: 'multiuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const reqA = mockRequestWithHeader({ authorization: `Bearer ${tokenA}` });
     const reqB = mockRequestWithHeader({ authorization: `Bearer ${tokenB}` });
@@ -260,7 +260,7 @@ describe('requireAuth', () => {
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({ authorization: 'Bearer test-token-success' });
     const result = await requireAuth(req);
@@ -283,7 +283,7 @@ describe('requireAuth', () => {
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({ authorization: 'Bearer cache-test-token' });
 
@@ -311,7 +311,7 @@ describe('requireAuth', () => {
       piUsername: 'testuser',
       xp: 100,
       tier: 'Citizen',
-    } as any);
+    } as any); // ponytail: test mock — partial Prisma model
 
     const req1 = mockRequestWithHeader({ authorization: 'Bearer valid-token-1' });
     const result1 = await requireAuth(req1);
@@ -385,7 +385,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
       ok: true,
       json: async () => ({ uid: 'pi-revocation-test', username: 'revocationtestuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${validToken}` });
     const result = await requireAuth(req);
@@ -410,7 +410,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
       ok: true,
       json: async () => ({ uid: 'pi-cache-bypass', username: 'cachebypassuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
     const result1 = await requireAuth(req);
@@ -484,7 +484,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-1', username: 'pibrowseruser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer pi-browser-ua-token',
@@ -512,7 +512,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-2', username: 'minepiuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer minepi-ua-token',
@@ -540,7 +540,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-3', username: 'piappuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer piapp-ua-token',
@@ -572,7 +572,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         ok: true,
         json: async () => ({ uid: 'pi-sandbox-bypass', username: 'sandboxbypassuser' }),
       });
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
       // Chrome UA but SANDBOX_AUTH_BYPASS=true + localhost → isSandboxOrDev=true → Pi Browser check bypassed
       const req = mockRequestWithHeader({
@@ -634,7 +634,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-null-url', username: 'nullurluser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
 
     // Manually build a request with null nextUrl and a Pi Browser UA
     const req = {
@@ -648,7 +648,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         },
       },
       nextUrl: null,
-    } as any;
+    } as any; // ponytail: test mock — NextRequest-like object with null nextUrl
 
     // Should not throw even when nextUrl is null
     const result = await requireAuth(req);

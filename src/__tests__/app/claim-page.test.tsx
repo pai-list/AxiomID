@@ -83,15 +83,15 @@ function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {})
 }
 
 // A mock user with a walletAddress so step 1 canProceed() returns true
-const connectedUser = {
+const connectedUser: import("@/app/context/wallet-types").User = {
   id: "user-1",
   walletAddress: "GABC1234567890abcdef",
-  piUid: "pi-uid-123",
   piUsername: "testpioneer",
   xp: 100,
   tier: "Citizen",
   trustScore: 80,
   stamps: [],
+  actions: [],
   agent: null,
   createdAt: new Date().toISOString(),
 };
@@ -137,7 +137,7 @@ describe("ClaimPage — step 1 (initial state)", () => {
   });
 
   it("renders 'Connected' badge when user has a walletAddress", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     expect(screen.getByText("Connected")).toBeInTheDocument();
   });
@@ -149,7 +149,7 @@ describe("ClaimPage — step 1 (initial state)", () => {
   });
 
   it("'Continue' button is enabled when user has walletAddress", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     const continueBtn = screen.getByText("Continue");
     expect(continueBtn).not.toBeDisabled();
@@ -158,7 +158,7 @@ describe("ClaimPage — step 1 (initial state)", () => {
 
 describe("ClaimPage — step 2 (KYA verify)", () => {
   it("advances to step 2 when clicking Continue with a connected wallet", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
 
     fireEvent.click(screen.getByText("Continue"));
@@ -167,21 +167,21 @@ describe("ClaimPage — step 2 (KYA verify)", () => {
   });
 
   it("renders 'START VERIFICATION' button on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("START VERIFICATION")).toBeInTheDocument();
   });
 
   it("does NOT render 'Pi Testnet' on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.queryByText("Pi Testnet")).toBeNull();
   });
 
   it("'Continue' button is disabled before verification completes on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     // After advancing to step 2, Continue should be disabled (not verified yet)
@@ -198,7 +198,7 @@ describe("ClaimPage — step 3 (deploy — PR change: Pi Testnet)", () => {
    * 4. Click Continue → step 3
    */
   async function navigateToStep3() {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
 
     // Step 1 → Step 2
@@ -262,7 +262,7 @@ describe("ClaimPage — 'Pi Mainnet' never appears (global regression guard)", (
   });
 
   it("'Pi Mainnet' text is not present at step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.queryByText("Pi Mainnet")).toBeNull();
@@ -304,7 +304,7 @@ describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
 
   it("shows 'Connected' badge after handleConnect when user already has a wallet", async () => {
     const connectWallet = jest.fn().mockResolvedValue(true);
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any, connectWallet }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser, connectWallet }));
     render(<ClaimPage />);
 
     // user already has walletAddress so Connected shows from the start
@@ -315,21 +315,21 @@ describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
 // ─── PR change: handleVerify now calls POST /api/pi/kya/verify ────────────────
 describe("ClaimPage — handleVerify (real verification)", () => {
   it("shows 'Pi KYC' verification item on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("Pi KYC")).toBeInTheDocument();
   });
 
   it("shows 'Payment Proof' verification item on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("Payment Proof")).toBeInTheDocument();
   });
 
   it("shows 'Pi KYC' verification item on step 2", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("Pi KYC")).toBeInTheDocument();
@@ -345,7 +345,7 @@ describe("ClaimPage — handleVerify (real verification)", () => {
           computedTrustScore: 80,
         }),
     });
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
 
@@ -372,7 +372,7 @@ describe("ClaimPage — handleVerify (real verification)", () => {
           computedTrustScore: 80,
         }),
     });
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
 
@@ -387,7 +387,7 @@ describe("ClaimPage — handleVerify (real verification)", () => {
 
   it("does not complete verification when API fails", async () => {
     mockFetch.mockResolvedValueOnce({ ok: false });
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
 
@@ -402,7 +402,7 @@ describe("ClaimPage — handleVerify (real verification)", () => {
   });
 
   it("shows PENDING status before verification starts", () => {
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
     expect(screen.getAllByText("PENDING").length).toBe(2);
@@ -418,7 +418,7 @@ describe("ClaimPage — handleVerify (real verification)", () => {
           computedTrustScore: 80,
         }),
     });
-    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser as any }));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
     fireEvent.click(screen.getByText("Continue"));
 
