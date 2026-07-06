@@ -1718,6 +1718,13 @@ export function langevinTrustDynamics(
     timeStep = 0.1,
   } = options;
 
+  if (mass <= 0) {
+    throw new Error("mass must be positive");
+  }
+  if (timeStep <= 0) {
+    throw new Error("timeStep must be positive");
+  }
+
   // Random thermal noise (Gaussian)
   const u1 = Math.random();
   const u2 = Math.random();
