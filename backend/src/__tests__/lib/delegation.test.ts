@@ -12,8 +12,8 @@ jest.mock('../../lib/math-physics', () => ({
 
 describe('DelegationResolver', () => {
   let resolver: DelegationResolver;
-  let mockD1Helper: jest.Mocked<D1Helper>;
-  let mockDb: any;
+  let mockD1Helper: D1Helper;
+  let mockDb: { prepare: jest.Mock };
   let mockPrepare: jest.Mock;
   let mockBind: jest.Mock;
   let mockAll: jest.Mock;
