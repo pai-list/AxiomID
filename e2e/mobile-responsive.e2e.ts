@@ -177,7 +177,7 @@ test.describe("Mobile Responsive Design (iPhone 13 — 390x844)", () => {
           bodyStyle.marginBottom !== "0px"
         );
       });
-      expect(typeof hasSafeArea).toBe("boolean");
+      expect(hasSafeArea).toBe(true);
     });
   });
 
