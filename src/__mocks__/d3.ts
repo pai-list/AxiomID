@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const mockFn = () => jest.fn().mockReturnThis();
 
 export const forceSimulation = jest.fn().mockReturnValue({
