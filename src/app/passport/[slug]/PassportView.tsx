@@ -52,7 +52,7 @@ export function PassportView() {
         const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          throw new Error(data?.message || 'translated_passport_not_found');
+          throw new Error(data?.message || t('passport_not_found'));
         }
         const data = await res.json();
         setPassport(data);
