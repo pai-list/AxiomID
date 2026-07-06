@@ -112,7 +112,7 @@ test.describe("Mobile Responsive Design (iPhone 13 — 390x844)", () => {
 
       const glassCards = page.locator(".glass-card, .bento-card, [class*='backdrop-blur']");
       const count = await glassCards.count();
-      expect(count).toBeGreaterThanOrEqual(0);
+      expect(count).toBeGreaterThan(0);
 
       const hasBackdropFilter = await page.evaluate(() => {
         const els = document.querySelectorAll(".glass-card, .bento-card");
