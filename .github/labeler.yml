@@ -1,0 +1,24 @@
+backend:
+  - backend/**/*
+
+frontend:
+  - src/app/**/*
+  - src/components/**/*
+  - public/**/*
+
+config:
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - tailwind.config.ts
+  - next.config.ts
+  - .eslintrc.json
+  - eslint.config.mjs
+
+tests:
+  - src/__tests__/**/*
+  - jest.config.js
+  - jest.setup.js
+
+docs:
+  - "**/*.md"
