@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     });
 
     const walletAddress = `pi:${uid}`;
-    const piDid = createPiDid(verifiedUsername);
+    const piDid = createPiDid(verifiedUsername || uid || 'pi-user');
 
     let user;
     if (existingUser) {
