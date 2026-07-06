@@ -1,123 +1,44 @@
 <div align="center">
-  <img src="./public/axiomid-logo.svg" alt="AxiomID" width="720" />
+  <img src="./public/axiomid-banner.jpg" alt="AxiomID" width="100%" />
 </div>
 
 <h1 align="center">
-  AxiomID is the Human Authorization Protocol for AI agents and humans.
+  AxiomID gives humans sovereign control over their AI agents<br/>
+  using portable DIDs and Pi Network.
 </h1>
 
 <p align="center">
-  <em>Pi Browser auth, sovereign passports, verifiable identity, and agent governance in one experience.</em>
+  <em>The Human Authorization Protocol for AI Agents</em>
 </p>
 
 <p align="center">
   <a href="https://axiomid.app"><b>🌐 Live App</b></a> ·
   <a href="https://axiomid.app/passport/demo"><b>🛂 Demo Passport</b></a> ·
   <a href="https://axiomid.app/leaderboard"><b>📊 Leaderboard</b></a> ·
-  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>⭐ GitHub</b></a>
+  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>⭐ Star on GitHub</b></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
+  <a href="https://github.com/Moeabdelaziz007/AxiomID/releases"><img src="https://img.shields.io/github/v/release/Moeabdelaziz007/AxiomID?style=flat-square&color=blue" alt="Version" /></a>
+   <img src="https://img.shields.io/badge/tests-3073%20passing-brightgreen?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
-  <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
-  <img src="https://img.shields.io/badge/status-closed%20beta-orange?style=flat-square" alt="Closed Beta" />
+  <img src="https://img.shields.io/badge/status-beta-orange?style=flat-square" alt="Beta" />
+  <img src="https://img.shields.io/badge/works%20with-Pi%20Browser-8b5cf6?style=flat-square" alt="Pi Browser" />
+  <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
 </p>
 
 ---
 
-AxiomID is a Next.js application that combines Pi Network authentication, passport-style identity claims, and a lightweight governance layer for human-AI collaboration. The current MVP focuses on the core claim experience, public passport viewing, and the authenticated dashboard.
+> **⚠️ Beta Notice:** AxiomID is in active development. Features work in Pi Browser and modern browsers. Demo accounts are used during the closed beta phase. [Live status →](https://axiomid.app/status)
 
-## What is available now
+---
 
-- Pi Browser sign-in and callback handling
-- Demo and real identity claim flows
-- Public passport pages with trust and badge metadata
-- Authenticated dashboard with marketplace, settings, and sandbox playground
-- Explorer, leaderboard, docs, and service status views
-- API routes for auth, passport publishing, Pi payments, and health checks
+**Try it live:** [`axiomid.app/passport/demo`](https://axiomid.app/passport/demo) → See a real Sovereign passport with Trust Score, badges, and KYA verification. No wallet needed.
 
-## Main routes
+---
 
-| Route | Purpose |
-|:---|:---|
-| `/` | Landing experience and entry point |
-| `/claim` | Identity claim wizard |
-| `/passport/[slug]` | Public passport viewer |
-| `/dashboard` | Authenticated dashboard |
-| `/explorer` | Discover agents and identities |
-| `/leaderboard` | Ranked trust and activity view |
-| `/docs` | Product and API documentation |
-| `/status` | Service health and dependency status |
-
-## Tech stack
-
-- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS, Framer Motion
-- Backend: Vercel serverless routes and Cloudflare Worker integrations
-- Data: Prisma + PostgreSQL, plus D1/edge helpers for sync workflows
-- Identity: Pi Network SDK, signed agent metadata, and sovereign key utilities
-
-## Quick start
-
-```bash
-git clone https://github.com/Moeabdelaziz007/AxiomID.git
-cd AxiomID
-npm install
-```
-
-Create a local environment file before running the app:
-
-```bash
-cp .env.example .env.local
-```
-
-If that file does not exist in your environment, create one manually with the variables required by the app, including the database and Pi-related settings.
-
-```bash
-npx prisma generate
-npm run dev
-```
-
-Open http://localhost:3000.
-
-### Pi Browser local HTTPS
-
-The Pi SDK expects HTTPS in the browser. For local development, use portless:
-
-```bash
-npm install -g portless
-portless axiomid next dev
-```
-
-This will expose a secure local URL such as https://axiomid.localhost.
-
-## Verification and quality checks
-
-```bash
-npm run lint
-npm run type-check
-npm test
-```
-
-## Project structure
-
-- [src/app](src/app) — app routes, pages, and API handlers
-- [src/components](src/components) — shared UI components
-- [src/lib](src/lib) — auth, crypto, Pi SDK, validators, and utilities
-- [backend](backend) — Cloudflare Worker backend package
-- [prisma](prisma) — Prisma schema and migrations
-- [public](public) — PWA assets, icons, and public branding files
-
-## Contributing
-
-Please review [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. The project uses strict TypeScript settings and expects quality checks to pass locally.
-
-## License
-
-- Application code: Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [LICENSE](LICENSE).
-- SDK and crypto packages in this repository remain open for community use under their own licenses.
-
-## Legacy notes
+## Trust Score at a Glance
 
 Every identity on AxiomID has a **Trust Score** — an algorithmic reputation built from verified stamps and experience points (XP).
 

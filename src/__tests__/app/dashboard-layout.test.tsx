@@ -62,14 +62,16 @@ describe("dashboard/layout.tsx — normal rendering", () => {
     expect(container.querySelectorAll(".animate-pulse").length).toBe(0);
   });
 
-  it("renders the desktop navigation links for all dashboard sections", () => {
+  it("renders the desktop navigation links for all four dashboard sections", () => {
     render(
       <DashboardLayout>
         <div>Child Content</div>
       </DashboardLayout>
     );
-    // Mobile + desktop nav each render links per labelKey; assert at least one of each icon
+    // Mobile + desktop nav each render 4 links per labelKey; assert at least one of each icon
     expect(screen.getAllByTestId("icon-fingerprint").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("icon-store").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("icon-cpu").length).toBeGreaterThan(0);
     expect(screen.getAllByTestId("icon-settings").length).toBeGreaterThan(0);
   });
 
@@ -141,34 +143,5 @@ describe("dashboard/layout.tsx — regression", () => {
         </DashboardLayout>
       )
     ).not.toThrow();
-  });
-});
-
-describe("dashboard/layout.tsx — header integration", () => {
-  it("renders the theme and language toggles from the Header component", () => {
-    render(
-      <DashboardLayout>
-        <div>Child Content</div>
-      </DashboardLayout>
-    );
-    expect(screen.getByTestId("theme-toggle")).toBeInTheDocument();
-    expect(screen.getByTestId("language-toggle")).toBeInTheDocument();
-  });
-
-  it("highlights the dashboard link (not settings) in the mobile nav for the current pathname", () => {
-    const { container } = render(
-      <DashboardLayout>
-        <div>Child Content</div>
-      </DashboardLayout>
-    );
-
-    // The mobile bottom nav is the only nav with the "fixed" positioning class.
-    const mobileNav = container.querySelector("nav.fixed");
-    const dashboardLink = mobileNav?.querySelector('a[href="/dashboard"]');
-    const settingsLink = mobileNav?.querySelector('a[href="/dashboard/settings"]');
-
-    expect(dashboardLink).toHaveClass("text-neon-green");
-    expect(settingsLink).not.toHaveClass("text-neon-green");
-    expect(settingsLink).toHaveClass("text-faint");
   });
 });

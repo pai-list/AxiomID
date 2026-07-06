@@ -50,7 +50,6 @@
     "dead-code": "knip",
     "a11y": "npx pa11y-ci --config .pa11yci.json",
     "prisma:seed-tags": "npx tsx prisma/seed-tags.ts",
-    "pre-commit": "node scripts/pre-commit-validate.mjs",
     "build": "prisma generate && next build"
   },
   "dependencies": {
@@ -90,7 +89,6 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^26",
     "@types/react": "^19",

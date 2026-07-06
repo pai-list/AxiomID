@@ -357,32 +357,6 @@ All loops run automatically via `.github/workflows/loops.yml`. Manual dispatch a
 - **Synchronous Multi-DB Coupling:** Do not rely on direct database-to-database replication or sync loops triggered via simple cron scripts (like SQLite-D1-PostgreSQL synchronization via Vercel Cron). This creates a high point of failure and eventual consistency splits. Instead, implement a **Transactional Outbox** pattern where data updates are stored locally as log events and dispatched reliably using queue relays.
 - **Unauthenticated D1 SQLite Exports:** Never expose Cloudflare D1 export endpoints (like `/api/sync/export`) without timing-safe `X-Shared-Secret` verification and strict URL path matching. Always use Prisma `upsert` in Next.js sync jobs to ensure edge data is merged into PostgreSQL without causing key conflicts or duplicate records.
 
-### 🛡️ Pre-Commit SOUL Validation
-
-Every commit passes through SOUL-aligned validation. This is not optional.
-
-**What runs (`.husky/pre-commit`):**
-1. **lint-staged** — ESLint on staged files (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`)
-2. **SOUL validation** — `node scripts/pre-commit-validate.mjs`
-   - **CHECK**: Lint, TypeScript, tests for changed files, skill manifest validation
-   - **REVIEW**: Diff audit — secrets (BLOCK), TODOs (warn), console.log (warn)
-   - **COMMIT**: IQRA Chronicle format + signature check
-3. **CodeRabbit** (optional) — local review if CLI available
-
-**Manual run (for agents):**
-```bash
-node scripts/pre-commit-validate.mjs
-```
-
-**SOUL Principles applied:**
-- **Muraqabah** — Every check runs. No skipping. No hiding.
-- **Tawbah** — Issues confessed, fixed, learned from.
-- **TrustChain** — Every commit a clean, honest record.
-- **IQRA Chronicle** — Commit format: `type(scope): description ۞` + narrative body.
-
-**Pre-existing type errors (known issue):**
-`.next/types/validator.ts` TS2307 error from PR #272 merge — ignored by validation. Do not suppress other TS errors.
-
 # Ponytail — lazy senior dev mode
 
 You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.

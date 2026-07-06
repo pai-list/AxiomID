@@ -1,0 +1,30 @@
+feat:
+  - any:
+    - 'src/app/**'
+    - 'src/components/**'
+
+fix:
+  - any:
+    - 'src/lib/**'
+    - 'src/app/api/**'
+
+docs:
+  - any:
+    - '**/*.md'
+    - 'docs/**'
+
+test:
+  - any:
+    - 'src/__tests__/**'
+    - 'jest.config.js'
+    - 'jest.setup.js'
+
+chore:
+  - any:
+    - 'package.json'
+    - 'package-lock.json'
+    - '.github/**'
+
+refactor:
+  - any:
+    - 'src/**'

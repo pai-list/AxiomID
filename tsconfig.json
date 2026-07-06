@@ -48,8 +48,6 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "backend",
-    "skills",
-    "scripts"
+    "backend"
   ]
 }
