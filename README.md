@@ -415,3 +415,14 @@ Built with passion in Cairo, Egypt.
 <sub>Built with the belief that every human deserves a sovereign digital identity.</sub>
 
 </div>
+
+## 📚 Documentation Index
+
+Our documentation has been consolidated into the `docs/` directory for easier navigation and maintenance by humans and AI agents.
+
+* **[Architecture](docs/architecture/index.md)**: Zero-Cost architecture and core stack.
+* **[Security](docs/security/index.md)**: Security policies, practices, and audits.
+* **[Agents](docs/agents/index.md)**: Agent workflows, prompts, and reports.
+* **[Deployment](docs/deployment/index.md)**: Deployment guides for Vercel and Cloudflare.
+* **[Process & Contribution](docs/process/index.md)**: Branch strategy, contributing rules, and code of conduct.
+* **[Engineering Guidelines](docs/engineering/index.md)**: TypeScript, testing, Pi SDK rules, and style guide.
