@@ -17,6 +17,7 @@ jobs:
     steps:
     # ── Stage 1: Path-Based Area Labels ──────────
     - uses: actions/labeler@v4
+      continue-on-error: true
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
         sync-labels: true
@@ -164,7 +165,7 @@ jobs:
             'breaking change',
             'breaking-change',
             '⚠️',
-            '!:',     # conventional commits breaking: feat!: ...
+            '!:',
             'major version',
             'migration required',
             'backward incompatible',
