@@ -10,7 +10,7 @@ jest.mock('@/lib/logger', () => ({
 }));
 
 describe('PWA Badging Service', () => {
-  let originalNavigator: any;
+  let originalNavigator: typeof global.navigator;
 
   beforeEach(() => {
     // Save original navigator and create a mock for each test
