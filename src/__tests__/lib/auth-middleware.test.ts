@@ -45,7 +45,7 @@ function mockRequestWithHeader(headers: Record<string, string> = {}) {
       get: (name: string) => allHeaders[name.toLowerCase()] ?? null,
     },
     nextUrl: new URL("http://localhost/"),
-  } as any; // ponytail: test mock — NextRequest-like object without full type
+  } as unknown as NextRequest; // ponytail: test mock — NextRequest-like object without full type
 }
 
 describe('hashToken (PR change: exported)', () => {
