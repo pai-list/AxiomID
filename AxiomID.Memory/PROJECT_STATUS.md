@@ -40,7 +40,7 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 ### Phase 1: UMI Core ✅
 - Single Cognitive Contract for Memory Access
-- File adapter for Amrikyy.Memory files
+- File adapter for AxiomID.Memory files
 - Router, write, query, resolve services
 - 7 tests, all passing
 
