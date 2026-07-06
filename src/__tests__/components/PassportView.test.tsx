@@ -80,7 +80,7 @@ describe("PassportView — loading state", () => {
 
   it("renders a loading indicator while the fetch is pending", () => {
     render(<PassportView />);
-    expect(screen.getByText(/Loading Identity/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading_identity/i)).toBeInTheDocument();
   });
 
   it("does not render passport or error content while loading", () => {
@@ -159,14 +159,14 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "COMPLETED" }) });
     render(<PassportView />);
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
-    expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/preparing_your_ai/i)).not.toBeInTheDocument();
   });
 
-  it("treats jobStatus 'ACTIVE' as fully loaded (renders passport, not the building UI)", async () => {
+  it("does not show the preparing panel when jobStatus is ACTIVE", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "ACTIVE" }) });
-    render(<PassportView />);
-    await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
-    expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
+    await act(async () => { render(<PassportView />); });
+    await waitFor(() => expect(screen.queryByTestId("agent-passport")).toBeInTheDocument());
+    expect(screen.queryByText(/preparing_your_ai/i)).not.toBeInTheDocument();
   });
 
   it("renders CTA links pointing to /claim", async () => {
@@ -212,7 +212,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
       render(<PassportView />);
       await Promise.resolve();
     });
-    expect(screen.getByText(/Preparing your AI/i)).toBeInTheDocument();
+    expect(screen.getByText(/preparing_your_ai/i)).toBeInTheDocument();
   });
 
   it("displays the current jobStatus value in the building panel", async () => {
@@ -221,7 +221,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
       render(<PassportView />);
       await Promise.resolve();
     });
-    expect(screen.getByText(/Status: PROVISIONING/)).toBeInTheDocument();
+    expect(screen.getByText(/status: PROVISIONING/)).toBeInTheDocument();
   });
 
   it("does not render the AgentPassport while the job is still building", async () => {

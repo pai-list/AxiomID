@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
 
 /**
  * GET /api/agent/public?username=xxx — Public agent data endpoint.
@@ -8,6 +10,12 @@ import { logger } from "@/lib/logger";
  */
 export async function GET(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = await checkRateLimit(`agent-public:${ip}`, RATE_LIMITS.public);
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
 
