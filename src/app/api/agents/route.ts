@@ -30,10 +30,8 @@ export async function GET(request: NextRequest) {
         description: true,
         status: true,
         createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        updatedAt: true},
+      orderBy: { createdAt: "desc" }});
 
     return apiSuccess({ agents });
   } catch (error) {
