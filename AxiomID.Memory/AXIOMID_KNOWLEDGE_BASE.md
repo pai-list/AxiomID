@@ -945,7 +945,7 @@ auxiliary:
 - **Total**: 329 files changed, ~137K lines deleted — zero broken platform references remaining
 
 ### AI Team Workspace (Jules PR #4)
-- Merged Jules PR #4: Rebran AxiomID → AxiomID, created `ai-team/` directory
+- Merged Jules PR #4: Rebrand Amrikyy → AxiomID, created `ai-team/` directory
 - **6 agents**: Antigravity (leader), CodeRabbit (reviewer), Copilot (completions), OpenCode (refactoring), Stitch MCP/UI (design, replaced v0), v0→Stitch MCP
 - **Google AI Studio** merged into Antigravity as platform subsection (not standalone agent)
 - **Raptor Mini** replaced with `GPT-5.4 Mini` (registered model) in Copilot profile
