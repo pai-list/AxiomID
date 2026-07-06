@@ -2,8 +2,8 @@
  * Tests for src/app/dashboard/marketplace/error.tsx
  *
  * PR change: new route-level error boundary page for /dashboard/marketplace,
- * wrapping the shared RouteErrorPage component with a fixed "Marketplace Error"
- * title.
+ * wrapping the shared RouteErrorPage component with a fixed "Marketplace
+ * Error" title.
  */
 
 import React from "react";
@@ -52,7 +52,7 @@ describe("dashboard/marketplace/error.tsx — MarketplaceError page", () => {
 
   it("handles an error carrying a digest without crashing", () => {
     expect(() => {
-      render(<MarketplaceError error={makeError("digest error", "digest-789")} reset={jest.fn()} />);
+      render(<MarketplaceError error={makeError("digest error", "digest-def")} reset={jest.fn()} />);
     }).not.toThrow();
   });
 });

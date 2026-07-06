@@ -52,7 +52,7 @@ describe("dashboard/sandbox/error.tsx — SandboxError page", () => {
 
   it("handles an error carrying a digest without crashing", () => {
     expect(() => {
-      render(<SandboxError error={makeError("digest error", "digest-abc")} reset={jest.fn()} />);
+      render(<SandboxError error={makeError("digest error", "digest-def")} reset={jest.fn()} />);
     }).not.toThrow();
   });
 });

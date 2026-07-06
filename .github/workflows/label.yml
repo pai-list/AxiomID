@@ -1,22 +1,256 @@
-# This workflow will triage pull requests and apply a label based on the
-# paths that are modified in the pull request.
-#
-# To use this workflow, you will need to set up a .github/labeler.yml
-# file with configuration.  For more information, see:
-# https://github.com/actions/labeler
+# AxiomID Expert Auto-Labeler
+# Six-stage labeling: area → size → type → author → severity → status
+# Combines actions/labeler@v4 (path-based) with custom logic
+# Companion config: .github/labeler.yml
 
 name: Labeler
 on: [pull_request_target]
 
 jobs:
   label:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+      issues: write
 
     steps:
+    # ── Stage 1: Path-Based Area Labels ──────────
     - uses: actions/labeler@v4
+      continue-on-error: true
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        sync-labels: true
+
+    # ── Stage 2: Size Auto-Detection ────────────
+    - name: Auto-detect PR size
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: files } = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const totalChanges = files.reduce((sum, f) => sum + f.additions + f.deletions, 0);
+
+          // Remove any existing size labels
+          const currentLabels = (await github.rest.issues.listLabelsOnIssue({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })).data.map(l => l.name);
+
+          const sizeLabels = ['size:xs', 'size:s', 'size:m', 'size:l', 'size:xl'];
+          const existingSize = currentLabels.filter(l => sizeLabels.includes(l));
+          if (existingSize.length > 0) {
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              name: existingSize[0],
+            });
+          }
+
+          // Determine size
+          let sizeLabel;
+          if (totalChanges < 50) sizeLabel = 'size:xs';
+          else if (totalChanges <= 200) sizeLabel = 'size:s';
+          else if (totalChanges <= 500) sizeLabel = 'size:m';
+          else if (totalChanges <= 1000) sizeLabel = 'size:l';
+          else sizeLabel = 'size:xl';
+
+          await github.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            labels: [sizeLabel],
+          });
+
+          return totalChanges;
+
+    # ── Stage 3: Conventional Commit Type Detection ──
+    - name: Auto-detect conventional commit type
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const title = pr.data.title;
+          const labelsToAdd = [];
+          const currentLabels = (await github.rest.issues.listLabelsOnIssue({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })).data.map(l => l.name);
+
+          // Map conventional commit prefix to label
+          const typeMap = {
+            'feat': 'feat',
+            'fix': 'fix',
+            'docs': 'docs',
+            'refactor': 'refactor',
+            'test': 'test',
+            'chore': 'chore',
+            'perf': 'perf',
+            'ci': 'ci/cd',
+            'build': 'ci/cd',
+            'security': 'security',
+          };
+
+          const match = title.match(/^(\w+)[\(:]?/);
+          if (match) {
+            const prefix = match[1].toLowerCase();
+            const label = typeMap[prefix];
+            if (label && !currentLabels.includes(label)) {
+              labelsToAdd.push(label);
+            }
+          }
+
+          if (labelsToAdd.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: labelsToAdd,
+            });
+          }
+
+    # ── Stage 4: AI-Generated Author Detection ──
+    - name: Label AI-generated PRs
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const author = pr.data.user.login.toLowerCase();
+
+          // Known AI agent accounts
+          const aiAuthors = ['jules', 'jules-', 'coderabbit', 'dependabot', 'renovate'];
+          const isAiGenerated = aiAuthors.some(a => author.startsWith(a));
+
+          if (isAiGenerated) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['ai-generated'],
+            });
+          }
+
+    # ── Stage 5: Breaking Change Detection ───────
+    - name: Detect breaking changes
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const body = (pr.data.body || '').toLowerCase();
+          const title = pr.data.title.toLowerCase();
+
+          const breakingSignals = [
+            'breaking change',
+            'breaking-change',
+            '⚠️',
+            '!:',
+            'major version',
+            'migration required',
+            'backward incompatible',
+          ];
+
+          const isBreaking = breakingSignals.some(s => body.includes(s) || title.includes(s));
+
+          if (isBreaking) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['breaking-change'],
+            });
+          }
+
+    # ── Stage 6: Needs-Human-Approval for Critical Paths ──
+    - name: Flag critical paths for human review
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: files } = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const criticalPatterns = [
+            'src/lib/auth',
+            'src/middleware.ts',
+            'src/lib/errors.ts',
+            'src/lib/pi-sdk',
+            'src/app/api/oauth2',
+            'src/lib/rate-limiter',
+            'src/lib/revocation',
+            'prisma/schema.prisma',
+            'backend/src/lib/auth',
+            'packages/crypto',
+          ];
+
+          const touchesCritical = files.some(f =>
+            criticalPatterns.some(p => f.filename.includes(p))
+          );
+
+          if (touchesCritical) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-human-approval'],
+            });
+          }
+
+    # ── Stage 7: Merge Conflict Detection ────────
+    - name: Detect merge conflicts
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+          });
+
+          const currentLabels = (await github.rest.issues.listLabelsOnIssue({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })).data.map(l => l.name);
+
+          const hasConflict = pr.data.mergeable === false;
+          const hasNeedsRebase = currentLabels.includes('needs-rebase');
+
+          if (hasConflict && !hasNeedsRebase) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-rebase'],
+            });
+          } else if (!hasConflict && hasNeedsRebase) {
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              name: 'needs-rebase',
+            });
+          }

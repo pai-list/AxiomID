@@ -42,6 +42,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-middleware";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
+import { NextRequest } from "next/server";
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockRequireAuth = requireAuth as jest.Mock;
@@ -58,11 +59,11 @@ const mockUser = {
 };
 
 function mockPostRequest(body: unknown) {
-  return new Request("http://localhost/api/skills/test-skill/execute", {
+  return new NextRequest("http://localhost/api/skills/test-skill/execute", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: typeof body === "string" ? body : JSON.stringify(body),
-  }) as any;
+  });
 }
 
 function mockParams(slug: string) {
@@ -102,7 +103,7 @@ describe("POST /api/skills/[slug]/execute — authentication (PR change: require
   });
 
   it("returns 401 when the request is not authenticated", async () => {
-    const { apiError } = jest.requireActual("@/lib/errors") as any;
+    const { apiError } = jest.requireActual("@/lib/errors") as { apiError: (code: string, message: string) => { status: number; json: () => Promise<unknown> } };
     mockRequireAuth.mockResolvedValue({ error: apiError("UNAUTHORIZED", "Unauthorized"), user: null });
 
     const req = mockPostRequest({ success: true });
@@ -114,7 +115,7 @@ describe("POST /api/skills/[slug]/execute — authentication (PR change: require
   });
 
   it("does not check the rate limit when authentication fails", async () => {
-    const { apiError } = jest.requireActual("@/lib/errors") as any;
+    const { apiError } = jest.requireActual("@/lib/errors") as { apiError: (code: string, message: string) => { status: number; json: () => Promise<unknown> } };
     mockRequireAuth.mockResolvedValue({ error: apiError("UNAUTHORIZED", "Unauthorized"), user: null });
 
     const req = mockPostRequest({ success: true });
@@ -125,8 +126,8 @@ describe("POST /api/skills/[slug]/execute — authentication (PR change: require
 
   it("proceeds to rate limiting and business logic when authenticated", async () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as unknown as import("@prisma/client").Skill); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as unknown as import("@prisma/client").SkillExecution); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({ success: true });
     const res = await POST(req, mockParams("test-skill"));
@@ -156,8 +157,8 @@ describe("POST /api/skills/[slug]/execute — rate limiting", () => {
 
   it("uses RATE_LIMITS.authenticated config keyed by client IP", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 });
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({ success: true });
     await POST(req, mockParams("test-skill"));
@@ -182,7 +183,7 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: "not-json",
-    }) as any;
+    }) as any; // ponytail: test mock — intentionally malformed request body
 
     const res = await POST(req, mockParams("test-skill"));
     const data = await res.json();
@@ -203,8 +204,8 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
   });
 
   it("creates an execution record defaulting success to true when omitted", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({});
     const res = await POST(req, mockParams("test-skill"));
@@ -218,8 +219,8 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
   });
 
   it("records success:false when explicitly provided", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-2", success: false } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-2", success: false } as any); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({ success: false, errorMessage: "Timed out" });
     const res = await POST(req, mockParams("test-skill"));
@@ -232,8 +233,8 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
   });
 
   it("passes through durationMs, input, and output when provided", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-3", success: true } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-3", success: true } as any); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({
       success: true,
@@ -253,8 +254,8 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
   });
 
   it("ignores a non-numeric durationMs", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-4", success: true } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-4", success: true } as any); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({ success: true, durationMs: "not-a-number" });
     await POST(req, mockParams("test-skill"));
@@ -265,7 +266,7 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
   });
 
   it("returns 500 when the database write fails", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any);
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
     mockPrisma.skillExecution.create.mockRejectedValue(new Error("DB down"));
 
     const req = mockPostRequest({ success: true });
