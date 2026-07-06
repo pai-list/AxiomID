@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - name: Validate skill manifests
         run: npx tsx scripts/validate-skill-manifest.ts --changed
