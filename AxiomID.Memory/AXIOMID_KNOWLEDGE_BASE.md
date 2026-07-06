@@ -25,7 +25,7 @@ nav: HOME | SOUL | AXIOMID_KNOWLEDGE_BASE | codebase_map | progress_log
 | **Creator** | Mohamed Abdelaziz (@Moeabdelaziz007) |
 | **Origin** | Forked from AxiomID AxiomID Agent |
 | **Repository** | https://github.com/Moeabdelaziz007/AxiomID |
-| **Rebrand** | AxiomID → AxiomID (PR #1, May 2026) |
+| **Rebrand** | Amrikyy → AxiomID (PR #1, May 2026) |
 | **Home dir** | `~/.axiomid/` (also `~/.axiomid/` for legacy) |
 | **Config** | `~/.axiomid/config.yaml` |
 | **Secrets** | `~/.axiomid/.env` |
