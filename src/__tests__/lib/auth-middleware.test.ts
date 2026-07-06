@@ -648,7 +648,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         },
       },
       nextUrl: null,
-    } as any; // ponytail: test mock — NextRequest-like object with null nextUrl
+    } as unknown as NextRequest; // ponytail: test mock — NextRequest-like object with null nextUrl
 
     // Should not throw even when nextUrl is null
     const result = await requireAuth(req);
