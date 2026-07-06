@@ -372,10 +372,7 @@ stages:
 ### Simple Query
 ```bash
 # Find decisions about authentication
-grep -r "domains:.*authentication" Amrikyy.Memory/02_Decisions/
-
-# Find high-confidence lessons
-grep -r "confidence: 0.9" Amrikyy.Memory/03_Lessons/
+grep -r "domains:.*authentication" AxiomID.Memory/02_Decisions/\n\n# Find high-confidence lessons\ngrep -r "confidence: 0.9" AxiomID.Memory/03_Lessons/
 ```
 
 ### Complex Query
