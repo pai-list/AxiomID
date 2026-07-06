@@ -12,8 +12,8 @@ jest.mock('../../lib/math-physics', () => ({
 
 describe('DelegationResolver', () => {
   let resolver: DelegationResolver;
-  let mockD1Helper: D1Helper;
-  let mockDb: { prepare: jest.Mock };
+  let mockD1Helper: jest.Mocked<D1Helper>;
+  let mockDb: any;
   let mockPrepare: jest.Mock;
   let mockBind: jest.Mock;
   let mockAll: jest.Mock;
@@ -37,8 +37,8 @@ describe('DelegationResolver', () => {
     };
 
     mockD1Helper = {
-      db: mockDb as unknown as D1Database,
-    } as unknown as D1Helper;
+      db: mockDb,
+    } as any;
 
     resolver = new DelegationResolver(mockD1Helper);
   });
