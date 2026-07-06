@@ -59,8 +59,8 @@ export async function clearSovereignBadge(): Promise<void> {
 
   try {
     await navigator.clearAppBadge();
-    console.log('[PWA] App badge cleared.');
+    logger.info('[PWA] App badge cleared.');
   } catch (error) {
-    console.error('[PWA] Failed to clear app badge:', error);
+    logger.error('[PWA] Failed to clear app badge:', error);
   }
 }
