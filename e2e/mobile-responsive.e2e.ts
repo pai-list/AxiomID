@@ -116,7 +116,7 @@ test.describe("Mobile Responsive Design (iPhone 13 — 390x844)", () => {
 
       const hasBackdropFilter = await page.evaluate(() => {
         const els = document.querySelectorAll(".glass-card, .bento-card");
-        let supported = true;
+        let supported = false;
         els.forEach((el) => {
           const style = getComputedStyle(el);
           if (
