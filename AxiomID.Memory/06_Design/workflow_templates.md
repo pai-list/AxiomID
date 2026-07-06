@@ -694,7 +694,7 @@ fi
 #### Hourly Validation Check
 ```bash
 # Run hourly
-0 * * * * cd /Users/cryptojoker710/amrikyy && python Amrikyy.Memory/memory_pipeline.py run --mode validation --quiet 2>/dev/null
+0 * * * * cd /path/to/project && python AxiomID.Memory/memory_pipeline.py run --mode validation --quiet 2>/dev/null
 ```
 
 ### CI/CD Integration
