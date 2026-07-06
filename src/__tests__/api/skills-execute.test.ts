@@ -126,8 +126,8 @@ describe("POST /api/skills/[slug]/execute — authentication (PR change: require
 
   it("proceeds to rate limiting and business logic when authenticated", async () => {
     mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
-    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as unknown as import("@prisma/client").Skill); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as unknown as import("@prisma/client").SkillExecution); // ponytail: test mock — partial Prisma model
 
     const req = mockPostRequest({ success: true });
     const res = await POST(req, mockParams("test-skill"));
