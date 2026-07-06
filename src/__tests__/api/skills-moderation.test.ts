@@ -9,8 +9,8 @@ jest.mock("@/lib/auth-middleware", () => ({
   requireAuth: jest.fn(),
 }));
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
+jest.mock("@/lib/prisma", () => {
+  const mockPrisma = {
     skillModeration: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -20,8 +20,10 @@ jest.mock("@/lib/prisma", () => ({
     skill: {
       update: jest.fn(),
     },
-  },
-}));
+    $transaction: jest.fn(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
+  };
+  return { prisma: mockPrisma };
+});
 
 jest.mock("@/lib/rate-limiter", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 }),
