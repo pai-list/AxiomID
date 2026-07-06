@@ -10,9 +10,9 @@ import {
 } from '@/lib/pi-sdk';
 
 interface MutableGlobals {
-  window: any;
-  navigator: any;
-  document: any;
+  window: { Pi?: { authenticate: jest.Mock } };
+  navigator: Record<string, unknown>;
+  document: Record<string, unknown>;
 }
 
 const g = global as unknown as MutableGlobals;
