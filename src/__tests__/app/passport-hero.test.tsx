@@ -133,8 +133,18 @@ describe("Landing page — Stitch hero", () => {
     expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
 
+  it("renders StatsBar", () => {
+    render(<LandingPageWrapper />);
+    expect(screen.getByTestId("stats-bar")).toBeInTheDocument();
+  });
+
   it("renders TrustTiers", () => {
     render(<LandingPageWrapper />);
     expect(screen.getByTestId("trust-tiers")).toBeInTheDocument();
+  });
+
+  it("does NOT render a LOGOUT button (landing page)", () => {
+    render(<LandingPageWrapper />);
+    expect(screen.queryByRole("button", { name: /logout/i })).toBeNull();
   });
 });

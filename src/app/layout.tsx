@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     default: "AxiomID - The Human Authorization Protocol",
     template: "%s | AxiomID"
   },
-  description: "Prove human intent behind AI actions with decentralized identity verification. Built by Mohamed Abdelaziz.",
+  description: "Prove human intent behind AI actions with decentralized identity verification. Create your sovereign AI passport with Pi Network. Built by Mohamed Abdelaziz.",
   keywords: [
     "decentralized identity",
     "human verification",
@@ -48,7 +48,15 @@ export const metadata: Metadata = {
     "blockchain identity",
     "sybil resistance",
     "trust score",
-    "web3 identity"
+    "web3 identity",
+    "Pi Network",
+    "sovereign passport",
+    "DID",
+    "verifiable credentials",
+    "agent governance",
+    "AI identity",
+    "digital identity",
+    "self-sovereign identity"
   ],
   authors: [{ name: "Mohamed Abdelaziz", url: "https://github.com/Moeabdelaziz007" }],
   creator: "Mohamed Abdelaziz",
@@ -76,7 +84,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "AxiomID - The Human Authorization Protocol",
-    description: "Prove human intent behind AI actions with decentralized identity verification",
+    description: "Prove human intent behind AI actions with decentralized identity verification. Create your sovereign AI passport with Pi Network.",
     url: 'https://axiomid.app',
     siteName: 'AxiomID',
     images: [
@@ -84,7 +92,7 @@ export const metadata: Metadata = {
         url: '/axiomid-banner.jpg',
         width: 1200,
         height: 630,
-        alt: 'AxiomID - Human Authorization Protocol',
+        alt: 'AxiomID - Human Authorization Protocol for AI Agents',
       },
     ],
     locale: 'en_US',
@@ -93,7 +101,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "AxiomID - The Human Authorization Protocol",
-    description: "Prove human intent behind AI actions with decentralized identity verification",
+    description: "Prove human intent behind AI actions with decentralized identity verification. Create your sovereign AI passport with Pi Network.",
     images: ['/axiomid-banner.jpg'],
     creator: '@Moeabdelaziz007',
   },
@@ -173,7 +181,48 @@ export default function RootLayout({
              },
            }}
          />
-         <InstallPWA />
+          <InstallPWA />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "AxiomID",
+                "url": "https://axiomid.app",
+                "description": "Prove human intent behind AI actions with decentralized identity verification. Create your sovereign AI passport with Pi Network.",
+                "applicationCategory": "IdentityApplication",
+                "operatingSystem": "Web",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "USD"
+                },
+                "creator": {
+                  "@type": "Person",
+                  "name": "Mohamed Abdelaziz",
+                  "url": "https://github.com/Moeabdelaziz007"
+                },
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "AxiomID",
+                  "url": "https://axiomid.app"
+                },
+                "sameAs": [
+                  "https://github.com/Moeabdelaziz007/AxiomID",
+                  "https://minepi.com"
+                ],
+                "featureList": [
+                  "Decentralized Identity (DID)",
+                  "Sovereign Passports",
+                  "Trust Score Verification",
+                  "AI Agent Governance",
+                  "Pi Network Authentication",
+                  "Verifiable Credentials"
+                ]
+              })
+            }}
+          />
        </body>
      </html>
 

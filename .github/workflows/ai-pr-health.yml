@@ -10,10 +10,10 @@ permissions:
 
 jobs:
   pr-health:
-    name: AI PR Health Check
+    name: PR Hygiene Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -27,155 +27,104 @@ jobs:
             exit 0
           fi
           echo "$DIFF" > /tmp/pr.diff
-          FILE_COUNT=$(grep -c "^diff --git" /tmp/pr.diff || true)
-          ADDITIONS=$(grep -c '^+[^+]' /tmp/pr.diff || true)
-          DELETIONS=$(grep -c '^-[^-]' /tmp/pr.diff || true)
+          FILE_COUNT=$(grep -c "^diff --git" /tmp/pr.diff || echo "0")
           echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
-          echo "additions=$ADDITIONS" >> "$GITHUB_OUTPUT"
-          echo "deletions=$DELETIONS" >> "$GITHUB_OUTPUT"
-          echo "diff_lines=$(wc -l < /tmp/pr.diff | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "additions=$(grep -c '^+[^+]' /tmp/pr.diff || echo 0)" >> "$GITHUB_OUTPUT"
+          echo "deletions=$(grep -c '^-[^-]' /tmp/pr.diff || echo 0)" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: AI Health Analysis
+      # ── Hygiene Rule: Cross-boundary security touches ──
+      - name: Detect cross-boundary security touches
         if: steps.diff.outputs.file_count != '0'
         run: |
-          python3 << 'PYEOF'
-          import json, urllib.request, urllib.error, os, sys
-
-          GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-
-          if not GROQ_API_KEY:
-              print("⚠️  Skipping AI health check: GROQ_API_KEY not set")
-              sys.exit(0)
-
-          with open("/tmp/pr.diff") as f:
-              diff_content = f.read()
-
-          file_count = "${{ steps.diff.outputs.file_count }}"
-          additions = "${{ steps.diff.outputs.additions }}"
-          deletions = "${{ steps.diff.outputs.deletions }}"
-          total_changes = int(additions) + int(deletions)
-
-          if total_changes <= 10:
-              size_label = "size:XS"
-          elif total_changes <= 50:
-              size_label = "size:S"
-          elif total_changes <= 200:
-              size_label = "size:M"
-          elif total_changes <= 1000:
-              size_label = "size:L"
-          else:
-              size_label = "size:XL"
+          ALERTS=""
 
           # Security-sensitive paths
-          security_paths = ["auth", "crypto", "pi-sdk", "soul", "secret", "token", "key", "password"]
-          changed_files = []
-          for line in diff_content.split("\n"):
-              if line.startswith("+++ b/") or line.startswith("--- a/"):
-                  changed_files.append(line[6:])
+          SECURITY_PATHS="auth middleware crypto secret token key password soul"
 
-          security_files = [f for f in changed_files if any(p in f.lower() for p in security_paths)]
-          has_security = len(security_files) > 0
+          # Extract changed files
+          CHANGED_FILES=$(grep "^diff --git a/" /tmp/pr.diff | sed 's|diff --git a/||; s| b/.*||')
 
-          prompt = f"""Analyze this pull request for AxiomID repository. Return ONLY valid JSON.
+          # Classify files into security vs non-security
+          SECURITY_FILES=""
+          OTHER_FILES=""
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            IS_SEC=false
+            for path in $SECURITY_PATHS; do
+              if echo "$file" | grep -qi "$path"; then
+                IS_SEC=true
+                break
+              fi
+            done
+            if [ "$IS_SEC" = true ]; then
+              SECURITY_FILES="$SECURITY_FILES$file\n"
+            else
+              OTHER_FILES="$OTHER_FILES$file\n"
+            fi
+          done <<< "$CHANGED_FILES"
 
-          PR stats:
-          - Files changed: {file_count}
-          - Additions: {additions}
-          - Deletions: {deletions}
-          - Size label: {size_label}
+          SEC_COUNT=$(echo -e "$SECURITY_FILES" | grep -c . || echo 0)
+          OTHER_COUNT=$(echo -e "$OTHER_FILES" | grep -c . || echo 0)
 
-          Security-sensitive files detected: {security_files}
+          # Flag: security files changed alongside unrelated files
+          if [ "$SEC_COUNT" -gt 0 ] && [ "$OTHER_COUNT" -gt 3 ]; then
+            ALERTS="${ALERTS}cross_boundary=true\n"
+            ALERTS="${ALERTS}sec_files<<SECEOF\n$(echo -e "$SECURITY_FILES" | head -10)\nSECEOF\n"
+          fi
 
-          Changed files: {json.dumps(changed_files)}
+          # Flag: large PR (>500 lines changed)
+          TOTAL=$(( ${{ steps.diff.outputs.additions }} + ${{ steps.diff.outputs.deletions }} ))
+          if [ "$TOTAL" -gt 500 ]; then
+            ALERTS="${ALERTS}large_pr=true\n"
+          fi
 
-          Return this exact JSON structure:
-          {{
-            "summary": "Brief 1-line assessment of PR health",
-            "needs_rebase": false,
-            "needs_human_approval": {str(has_security).lower()},
-            "suggested_reviewers": ["@Moeabdelaziz007"],
-            "concerns": []
-          }}
-          """
+          # Flag: PR touches auth routes without test changes
+          AUTH_TOUCHED=$(echo "$CHANGED_FILES" | grep -c "^src/app/api/auth" || echo 0)
+          TEST_TOUCHED=$(echo "$CHANGED_FILES" | grep -c "^src/__tests__" || echo 0)
+          if [ "$AUTH_TOUCHED" -gt 0 ] && [ "$TEST_TOUCHED" -eq 0 ]; then
+            ALERTS="${ALERTS}auth_no_test=true\n"
+          fi
 
-          url = "https://api.groq.com/openai/v1/chat/completions"
-          headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-          payload = json.dumps({"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": prompt}], "max_tokens": 500, "temperature": 0.1}).encode()
+          if [ -n "$ALERTS" ]; then
+            echo -e "$ALERTS" > /tmp/hygiene-alerts.txt
+            echo "has_alerts=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_alerts=false" >> "$GITHUB_OUTPUT"
+          fi
 
-          try:
-              req = urllib.request.Request(url, data=payload, headers=headers)
-              resp = urllib.request.urlopen(req, timeout=30)
-              result = json.loads(resp.read())
-              text = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-
-              json_match = text[text.find("{"):text.rfind("}") + 1] if "{" in text else "{}"
-              analysis = json.loads(json_match)
-
-              analysis["size_label"] = size_label
-              analysis["has_security_files"] = has_security
-              analysis["changed_files"] = changed_files
-              analysis["security_files"] = security_files
-
-              with open("/tmp/ai-pr-health.json", "w") as f:
-                  json.dump(analysis, f, indent=2)
-
-              print(f"✅ PR health: {analysis.get('summary', 'ok')}")
-
-          except Exception as e:
-              print(f"❌ AI health check failed: {e}")
-              result = {"size_label": size_label, "summary": "AI health check unavailable", "needs_human_approval": has_security, "needs_rebase": False, "suggested_reviewers": ["@Moeabdelaziz007"], "concerns": [], "has_security_files": has_security}
-              with open("/tmp/ai-pr-health.json", "w") as f:
-                  json.dump(result, f)
-          PYEOF
-        env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-
-      - name: Apply Labels
-        if: hashFiles('/tmp/ai-pr-health.json') != ''
+      - name: Apply labels
+        if: steps.diff.outputs.file_count != '0'
         run: |
-          python3 << 'PYEOF'
-          import json, os
-          with open("/tmp/ai-pr-health.json") as f:
-              h = json.load(f)
+          LABELS=""
+          TOTAL=$(( ${{ steps.diff.outputs.additions }} + ${{ steps.diff.outputs.deletions }} ))
 
-          number = "${{ github.event.pull_request.number }}"
-          repo = "${{ github.repository }}"
+          # Size label
+          if [ "$TOTAL" -le 10 ]; then
+            LABELS="size:XS"
+          elif [ "$TOTAL" -le 50 ]; then
+            LABELS="size:S"
+          elif [ "$TOTAL" -le 200 ]; then
+            LABELS="size:M"
+          elif [ "$TOTAL" -le 1000 ]; then
+            LABELS="size:L"
+          else
+            LABELS="size:XL"
+          fi
 
-          labels = [h.get("size_label", "size:M")]
-          summary = h.get("summary", "PR health check complete")
+          if [ -f /tmp/hygiene-alerts.txt ]; then
+            if grep -q "cross_boundary=true" /tmp/hygiene-alerts.txt; then
+              LABELS="$LABELS needs-human-approval priority:high"
+            fi
+            if grep -q "auth_no_test=true" /tmp/hygiene-alerts.txt; then
+              LABELS="$LABELS needs-human-approval"
+            fi
+          fi
 
-          if h.get("needs_human_approval", False):
-              labels.append("needs-human-approval")
-          if h.get("has_security_files", False):
-              labels.append("priority:high")
-
-          label_str = " ".join(labels)
-          os.system(f'gh pr edit {number} --repo {repo} --add-label "{label_str}"')
-
-          concerns = h.get("concerns", [])
-          security_files = h.get("security_files", [])
-          reviewers = h.get("suggested_reviewers", ["@Moeabdelaziz007"])
-
-          body_parts = [f"## 🤖 AI PR Health Check\n", f"**{summary}**\n"]
-          body_parts.append(f"\n| Metric | Value |")
-          body_parts.append(f"|--------|-------|")
-          body_parts.append(f"| Size | {h.get('size_label', 'unknown')} |")
-          body_parts.append(f"| Needs Human Approval | {'✅ Yes' if h.get('needs_human_approval') else '❌ No'} |")
-          body_parts.append(f"| Security-Sensitive Files | {'⚠️ ' + ', '.join(security_files) if security_files else '✅ None'} |")
-          body_parts.append(f"| Suggested Reviewers | {', '.join(reviewers)} |")
-
-          if concerns:
-              body_parts.append(f"\n### ⚠️ Concerns\n")
-              for c in concerns:
-                  body_parts.append(f"- {c}")
-
-          body_parts.append("\n---\n*Automated by AxiomID AI PR Health Agent*")
-          body = "\n".join(body_parts)
-
-          os.system(f'gh pr comment {number} --repo {repo} --body "{body}"')
-          print(f"✅ PR #{number} health labels: {labels}")
-          PYEOF
+          if [ -n "$LABELS" ]; then
+            gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "$LABELS"
+            echo "✅ Applied labels: $LABELS"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

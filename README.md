@@ -354,3 +354,64 @@ git push origin feat/my-feature
 
 - **Application code:** Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [`LICENSE`](./LICENSE).
 - **`@axiomid/sdk`** and **`@axiomid/crypto`:** MIT licensed. Open for community use.
+
+---
+
+## Built By
+
+<div align="center">
+
+**AxiomID** is built by **Mohamed Abdelaziz** ([@Moeabdelaziz007](https://github.com/Moeabdelaziz007)).
+
+Built with passion in Cairo, Egypt.
+
+<a href="https://github.com/Moeabdelaziz007/AxiomID/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Moeabdelaziz007/AxiomID" alt="Contributors" />
+</a>
+
+</div>
+
+### Acknowledgments
+
+**Pi Network** — For the authentication SDK and the vision of a human-centered web. AxiomID uses the Pi Browser SDK for identity verification and agent deployment. Learn more at [minepi.com](https://minepi.com).
+
+<div align="center">
+
+<a href="https://minepi.com">
+  <img src="https://img.shields.io/badge/Built%20with-Pi%20Network-8b5cf6?style=for-the-badge&logo=pi&logoColor=white" alt="Built with Pi Network" />
+</a>
+<a href="https://vercel.com">
+  <img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deployed on Vercel" />
+</a>
+<a href="https://www.cloudflare.com">
+  <img src="https://img.shields.io/badge/Powered%20by-Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Powered by Cloudflare" />
+</a>
+<a href="https://github.com/vercel/next.js">
+  <img src="https://img.shields.io/badge/Built%20with-Next.js%2016-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Built with Next.js 16" />
+</a>
+
+</div>
+
+### Tech Credits
+
+| Technology | Purpose | License |
+|:---|:---|:---|
+| [Pi Network SDK](https://github.com/pi-apps/pi-sdk) | Browser authentication & payments | Pi Network TOS |
+| [Next.js](https://github.com/vercel/next.js) | React framework & SSR | MIT |
+| [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | Utility-first CSS | MIT |
+| [Framer Motion](https://github.com/framer/motion) | Animation library | MIT |
+| [Prisma](https://github.com/prisma/prisma) | Database ORM | Apache-2.0 |
+| [Cloudflare Workers](https://github.com/cloudflare/workers-sdk) | Edge compute & storage | Apache-2.0 |
+| [D3.js](https://github.com/d3/d3) | Neural mesh visualization | ISC |
+| [Zod](https://github.com/colinhacks/zod) | Schema validation | MIT |
+| [jose](https://github.com/panva/jose) | JWT & JOSE utilities | MIT |
+
+---
+
+<div align="center">
+
+**[axiomid.app](https://axiomid.app)** · **[Claim your identity →](https://axiomid.app/claim)**
+
+<sub>Built with the belief that every human deserves a sovereign digital identity.</sub>
+
+</div>
