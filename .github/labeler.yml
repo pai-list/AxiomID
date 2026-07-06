@@ -1,0 +1,14 @@
+# Add 'docs' label to any changes within 'docs' folder
+docs:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
+
+# Add 'engineering' label to any changes within 'Engineering' folder
+engineering:
+  - changed-files:
+    - any-glob-to-any-file: 'Engineering/**/*'
+
+# Add 'core' label to any changes within 'src' folder
+core:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
