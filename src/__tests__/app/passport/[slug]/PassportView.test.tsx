@@ -216,6 +216,20 @@ describe('PassportView', () => {
     expect(errorElements.length).toBeGreaterThan(0);
   });
 
+  it('renders an error state when a successful response body fails to parse as JSON', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.reject(new Error('Unexpected token')),
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Unexpected token')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('agent-passport')).not.toBeInTheDocument();
+  });
+
   it('uses generic fallback message if fetch error is not an Error instance', async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce('String error, not Error object');
 
