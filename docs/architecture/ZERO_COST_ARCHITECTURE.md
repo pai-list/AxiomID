@@ -1,8 +1,30 @@
 # Zero-Cost Architecture: Ghost.build + Vercel + Cloudflare
 
-## 🎯 Strategy: Platform Arbitrage
+## 🎯 Alignment with AxiomID
 
-Each platform has different free tier strengths. We exploit each for what it does best.
+This architecture is not generic; it is specifically designed to support the **AxiomID Sovereign Identity Protocol** under strict zero-cost and edge-execution constraints. The stack directly serves:
+
+1. **W3C DID Identity Layer**: Fast resolution and cryptographic verification distributed across Cloudflare Edge and Vercel Serverless.
+2. **Pi-Based Auth & Payments**: Handled client-side via the Pi Browser (Pi SDK) with server-side validation on Vercel to ensure state integrity.
+3. **Agent Passport Dashboard (IqraMesh, TrustHistoryGraph)**: Complex relationship mapping and event log queries are offloaded to Ghost.build (PostgreSQL), keeping frontend rendering lightweight.
+
+---
+
+## 🚫 Environment Constraints & Justifications
+
+Building for the Pi Network ecosystem imposes unique limitations. We chose this specific stack because it elegantly navigates these constraints while maintaining a $0 operating footprint.
+
+| Constraint Category | Limitation / Reality | Architectural Impact |
+| :--- | :--- | :--- |
+| **Pi Browser Environment** | WebKit-based, **no reliable Service Worker (SW) support**, runs in an iframe, no CSS `hover` interactions. | Strict reliance on Vercel SSG/ISR and Cloudflare Edge Caching instead of SW-based PWA caching. UI designed for touch targets (min 44px) and pure CSS/JS state instead of hover states. |
+| **Network & Latency** | Users often on mobile networks; Pi Testnet/Mainnet API calls can introduce high latency. | Aggressive CDN caching. API calls to Pi servers are strictly managed server-side to avoid client timeouts and masking latency via optimistic UI updates. |
+| **Zero-Cost Policy** | Absolute requirement: $0/month infrastructure cost until significant revenue is generated. | Exploit platform free tiers (Vercel Hobby, Cloudflare Free, Ghost.build Free). Architecture avoids any service requiring upfront credit card billing for core features. |
+
+---
+
+## 🧩 Strategy: Platform Arbitrage
+
+Each platform has different free tier strengths. We exploit each for what it does best, keeping within realistic limits:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -18,102 +40,40 @@ Each platform has different free tier strengths. We exploit each for what it doe
 │  │ Edge Funcs  │    │ D1 (SQLite) │    │ TimescaleDB │        │
 │  │ Cron Jobs   │    │ KV Store    │    │ 666MB free  │        │
 │  │ Analytics   │    │ R2 Storage  │    │             │        │
-│  │ Speed       │    │ CDN + WAF   │    │             │        │
-│  │ Insights    │    │ Vectorize   │    │             │        │
-│  │             │    │ AI Gateway  │    │             │        │
-│  │             │    │ Queues      │    │             │        │
-│  └─────────────┘    └─────────────┘    └─────────────┘        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
 ```
-
-## 📊 Free Tier Comparison
-
-| Service | Vercel Free | Cloudflare Free | Ghost.build Free |
-|---------|-------------|-----------------|------------------|
-| **Compute** | 100GB bandwidth | 100K req/day | Always-on DB |
-| **Storage** | 4.5MB payload | 10GB R2 + 1M ops | 666MB PostgreSQL |
-| **Database** | ❌ None | D1: 5GB SQLite | ✅ PostgreSQL |
-| **Functions** | 100K invocations | 10ms CPU time | N/A |
-| **CDN** | Global edge | Global edge + WAF | N/A |
-| **Analytics** | Web Analytics | Basic analytics | N/A |
-| **AI/ML** | AI SDK | 10K embeddings/day | N/A |
-
-## 🏗️ Optimal Workload Distribution
 
 ### **Vercel Handles:**
-```yaml
-Frontend:
-  - Next.js SSR/SSG pages
-  - Static assets (JS, CSS, images)
-  - ISR (Incremental Static Regeneration)
-
-Serverless Functions:
-  - API routes (lightweight)
-  - Auth callbacks
-  - Webhook handlers
-  - Cron jobs (1/day on Hobby)
-
-Analytics:
-  - Web Analytics (privacy-friendly)
-  - Speed Insights (Core Web Vitals)
-```
+- **Frontend App**: Next.js 16 / React 19 UI rendering.
+- **Serverless Functions**: Lightweight API routes, Auth callbacks, webhook handlers.
+- **Limits to Respect**: 100GB bandwidth, 1 daily cron job on the Hobby tier.
 
 ### **Cloudflare Handles:**
-```yaml
-Backend API:
-  - Worker: axiomid-backend
-  - Heavy compute (not on Vercel)
-  - Long-running tasks (>30s)
-
-Edge Storage:
-  - D1: Session data, caching (SQLite)
-  - KV: Feature flags, config (global)
-  - R2: File uploads, avatars (S3-compatible)
-
-Intelligence:
-  - Vectorize: Semantic search (embeddings)
-  - AI Gateway: LLM routing (free 100K logs)
-  - Workers AI: Embeddings (10K/day free)
-
-Queue System:
-  - Harvest Queue: Background jobs
-  - Event processing
-  - Async tasks
-
-Security:
-  - CDN: Global caching
-  - WAF: Bot protection
-  - DDoS: Automatic mitigation
-```
+- **Backend Edge Compute**: Cloudflare Workers for heavy compute or long-running tasks.
+- **Edge Storage**: D1 for session data, KV for global feature flags, R2 for static assets (avatars).
+- **Security**: CDN global caching, WAF (bot protection), DDoS mitigation.
+- **Limits to Respect**: 100K requests/day on the free tier.
 
 ### **Ghost.build Handles:**
-```yaml
-Primary Database:
-  - Users table (PostgreSQL)
-  - Agents, Stamps, Payments
-  - All relational data
-  - ACID transactions
-  - Complex queries
+- **Primary Database**: PostgreSQL for users, agents, stamps, payments, and all relational data requiring ACID transactions.
+- **AI Agent Integration**: Native MCP (Model Context Protocol) support for direct agent database access.
+- **Limits to Respect**: 666MB storage limit.
 
-TimescaleDB Features:
-  - Time-series for agent logs
-  - Hypertables for metrics
-  - Continuous aggregates
-  - Compression for old data
+---
 
-MCP (Model Context Protocol):
-  - Native AI agent integration
-  - Direct database access for AI agents
-  - Structured data queries
-  - No custom API needed
+## 🚀 Comparative Stack & Future Paths
 
-Fast Forking:
-  - Clone database in seconds
-  - Perfect for testing/development
-  - Isolated sandboxes for AI agents
-  - Zero-cost staging environments
-```
+While this stack is highly optimized for current constraints, it is designed with future migration in mind. If we outgrow the free tiers (e.g., exceeding 100K req/day or 666MB DB), we have clear fallback paths:
+
+1. **Vercel + Postgres SaaS (e.g., Neon or Supabase)**:
+   - *Why*: If Ghost.build changes pricing or we need advanced branching (Neon) or built-in real-time/BaaS features (Supabase).
+   - *Migration*: Since we use standard PostgreSQL and Prisma ORM, moving to Neon or Supabase requires zero application logic rewrites—only connection string updates.
+2. **Cloudflare-Only Stack (Pages + D1)**:
+   - *Why*: If we need to escape Vercel's compute limits entirely and fully embrace Edge SQLite (D1).
+   - *Migration*: Moving Next.js to Cloudflare Pages requires edge-compatible routing adjustments and migrating relational data from Postgres to D1.
+
+*Reference: This approach aligns with modern [Zero-Cost Architecture principles](https://leerob.io/blog/backend-architecture) which emphasize modularity and vendor decoupling at the data access layer.*
+
+---
 
 ## 🔗 Data Flow Architecture
 
@@ -142,146 +102,30 @@ Fast Forking:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 💡 Cost Optimization Tricks
+## 📈 Monthly Cost Breakdown (Current State)
 
-### 1. **Edge Caching (Cloudflare)**
-```javascript
-// Cache API responses at edge
-caching: {
-  tier: 'full',
-  cacheEverything: true,
-  cacheTtl: 300 // 5 minutes
-}
-```
-
-### 2. **Static Generation (Vercel)**
-```javascript
-// Pre-render pages at build time
-export const revalidate = 3600; // Revalidate every hour
-```
-
-### 3. **Connection Pooling (Ghost.build)**
-```javascript
-// Use connection pooler for serverless
-DATABASE_URL="postgresql://...?pgbouncer=true"
-```
-
-### 4. **KV Caching (Cloudflare)**
-```javascript
-// Cache expensive queries
-await KV.put(`user:${userId}`, userData, { expirationTtl: 3600 });
-```
-
-### 5. **R2 for Static Assets**
-```javascript
-// Move images to R2 (free egress)
-const imageUrl = `https://pub-${accountId}.r2.dev/avatars/${userId}.jpg`;
-```
-
-## 📈 Monthly Cost Breakdown
-
-| Service | Cost | Notes |
-|---------|------|-------|
+| Service | Cost | Constraints & Limits |
+|---------|------|----------------------|
 | Vercel Hobby | $0 | 100GB bandwidth |
-| Cloudflare Free | $0 | 100K req/day |
-| Ghost.build Free | $0 | 666MB PostgreSQL |
-| **Total** | **$0** | Fully functional app |
+| Cloudflare Free | $0 | 100K req/day limit |
+| Ghost.build Free | $0 | 666MB PostgreSQL storage |
+| **Total** | **$0** | **Viable for early adoption & MVP phase** |
 
-## 🚀 Deployment Checklist
+> **Note (SOUL Check):** This architecture provides a fully functional application for $0/month *only* within the bounds of these free tiers. Once user adoption scales significantly, paid tiers or self-hosted alternatives will be necessary.
 
-### Vercel
-- [ ] Connect GitHub repo
-- [ ] Set environment variables
-- [ ] Enable Web Analytics
-- [ ] Enable Speed Insights
-- [ ] Configure cron (daily)
-
-### Cloudflare
-- [ ] Create Worker (axiomid-backend)
-- [ ] Create D1 database
-- [ ] Create KV namespace
-- [ ] Create R2 bucket
-- [ ] Create Vectorize index
-- [ ] Create AI Gateway
-- [ ] Set secrets (API keys)
-
-### Ghost.build
-- [x] Database created (axiomid-db)
-- [x] Schema deployed
-- [ ] Enable connection pooling
-- [ ] Set up backups
-
-## 🔐 Security Layers
-
-```
-┌─────────────────────────────────────────┐
-│  Layer 1: Cloudflare WAF + DDoS         │
-├─────────────────────────────────────────┤
-│  Layer 2: Vercel Edge Auth              │
-├─────────────────────────────────────────┤
-│  Layer 3: Cloudflare Worker Auth        │
-├─────────────────────────────────────────┤
-│  Layer 4: Ghost.build Row-Level Security│
-└─────────────────────────────────────────┘
-```
+---
 
 ## 🤖 AI Agent Integration (MCP)
 
 Ghost.build's native MCP support enables direct AI agent database access:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    AI AGENT ARCHITECTURE                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
-│  │  AI AGENT   │    │   MCP       │    │ GHOST.BUILD │        │
-│  │  (Claude,   │◄──►│   SERVER    │◄──►│ PostgreSQL  │        │
-│  │   Gemini)   │    │             │    │             │        │
-│  └─────────────┘    └─────────────┘    └─────────────┘        │
-│         │                                        │              │
-│         │                                        │              │
-│         ▼                                        ▼              │
-│  ┌─────────────┐                        ┌─────────────┐        │
-│  │  Fast Fork  │                        │  MCP Tools  │        │
-│  │  (Testing)  │                        │  (Queries)  │        │
-│  └─────────────┘                        └─────────────┘        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
 ### MCP Capabilities:
-- **Direct Queries**: AI agents query database without custom API
-- **Schema Awareness**: Agents understand table structure
-- **Real-time Data**: Live access to user/agent data
-- **Secure**: Row-level security enforced
+- **Direct Queries**: AI agents query the database without custom API development.
+- **Schema Awareness**: Agents understand table structure dynamically.
+- **Secure**: Row-level security enforced at the database level.
 
 ### Fast Forking Use Cases:
 ```bash
-# Create test database in seconds
+# Create test database in seconds (perfect for Agent sandboxes)
 ghost fork axiomid-db --name test-agents
-
-# Perfect for:
-# - AI agent testing
-# - Development sandboxes
-# - Performance testing
-# - Data migration testing
 ```
-
-## 📊 Monitoring Stack
-
-| Metric | Tool | Cost |
-|--------|------|------|
-| Uptime | Cloudflare Health Checks | Free |
-| Performance | Vercel Speed Insights | Free |
-| Analytics | Vercel Web Analytics | Free |
-| Logs | Cloudflare Workers Logs | Free |
-| Errors | Sentry (free tier) | Free |
-
-## 🎯 Summary
-
-**Ghost.build** = Primary database (PostgreSQL, ACID, relational)
-**Vercel** = Frontend + light API + analytics
-**Cloudflare** = Heavy compute + edge storage + CDN + security
-
-**Result**: Production-grade app for $0/month

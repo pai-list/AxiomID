@@ -14,4 +14,4 @@ This document serves as the canonical source for rules regarding Pi Network inte
 - **Rule:** When creating mock auth requests in tests, provide a Pi Browser `User-Agent` header to prevent immediate rejection.
 
 ## 4. End-to-End Testing (Sandbox)
-- **Reference:** See the testing guidelines in [testing.md](./testing.md).
+- **Reference:** See the full E2E testing guide in [PI_SANDBOX_TESTING.md](../PI_SANDBOX_TESTING.md) and [PI_E2E_TESTING.md](../PI_E2E_TESTING.md).
