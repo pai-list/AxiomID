@@ -30,7 +30,7 @@ export class AxiomSDK {
   private readonly apiKey?: string;
 
   constructor(config: AxiomSDKConfig) {
-    this.baseUrl = (config.baseUrl ?? DEFAULT_URLS[config.network]).replace(/\/+$/, "");
+    this.baseUrl = (config.baseUrl ?? DEFAULT_URLS[config.network]).replace(/\/{1,}$/, "");
     this.apiKey = config.apiKey;
   }
 
