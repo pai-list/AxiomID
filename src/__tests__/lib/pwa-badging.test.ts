@@ -53,6 +53,14 @@ describe('PWA Badging Service', () => {
     });
   };
 
+  it('uses default currentCount of 0 if not provided', async () => {
+    const { setAppBadgeMock } = mockNavigatorWithBadging();
+    const result = await setSovereignBadge('XP_GAIN');
+
+    expect(result).toBe(1);
+    expect(setAppBadgeMock).toHaveBeenCalledWith(1);
+  });
+
   describe('setSovereignBadge', () => {
     it('returns currentCount when App Badging API is not supported', async () => {
       mockNavigatorWithoutBadging();
@@ -103,15 +111,6 @@ describe('PWA Badging Service', () => {
       expect(logger.error).toHaveBeenCalledWith('[PWA] Failed to set app badge:', expect.any(Error));
     });
   });
-
-
-    it('uses default currentCount of 0 if not provided', async () => {
-      const { setAppBadgeMock } = mockNavigatorWithBadging();
-      const result = await setSovereignBadge('XP_GAIN');
-
-      expect(result).toBe(1);
-      expect(setAppBadgeMock).toHaveBeenCalledWith(1);
-    });
 
   describe('clearSovereignBadge', () => {
     it('returns silently when App Badging API is not supported', async () => {
