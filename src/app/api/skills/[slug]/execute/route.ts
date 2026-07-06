@@ -21,11 +21,11 @@ export async function POST(
   }
 
   
-  
   const authResult = await requireAuth(request);
   if (authResult.error) {
     return authResult.error;
   }
+  const { user } = authResult;
 
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`skill-execute:${ip}`, RATE_LIMITS.authenticated);
@@ -57,6 +57,7 @@ export async function POST(
     const execution = await prisma.skillExecution.create({
       data: {
         skillId: skill.id,
+        agentId: user.id,
         success: success !== false,
         input: input ?? undefined,
         output: output ?? undefined,

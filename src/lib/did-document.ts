@@ -1,6 +1,51 @@
 import { z } from "zod";
+import crypto from "crypto";
 
 const DID_CONTEXT = "https://www.w3.org/ns/did/v1";
+
+// Ed25519 multicodec prefix: 0xed01 (2 bytes)
+const ED25519_MULTICODEC_PREFIX = Buffer.from([0xed, 0x01]);
+
+// Base58btc alphabet (Bitcoin)
+const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+/**
+ * Minimal base58 encoding (no external deps — Ponytail).
+ */
+function base58Encode(buffer: Buffer): string {
+  if (buffer.length === 0) return "";
+  let num = BigInt(`0x${buffer.toString("hex")}`);
+  let result = "";
+  while (num > BigInt(0)) {
+    const remainder = Number(num % BigInt(58));
+    num = num / BigInt(58);
+    result = BASE58_ALPHABET[remainder] + result;
+  }
+  // Handle leading zeros
+  for (const byte of buffer) {
+    if (byte === 0) result = "1" + result;
+    else break;
+  }
+  return result;
+}
+
+/**
+ * Converts a PEM-encoded Ed25519 public key to multibase (z + base58btc + multicodec).
+ * ponytail: minimal impl, no new deps.
+ */
+export function pemToMultibase(pem: string): string {
+  const lines = pem.replace(/\r?\n/g, "").split("");
+  const b64 = lines
+    .join("")
+    .replace("-----BEGIN PUBLIC KEY-----", "")
+    .replace("-----END PUBLIC KEY-----", "");
+  const der = Buffer.from(b64, "base64");
+
+  // SPKI: last 32 bytes of the DER encoding are the raw Ed25519 public key
+  const rawKey = der.subarray(der.length - 32);
+  const multicodecKey = Buffer.concat([ED25519_MULTICODEC_PREFIX, rawKey]);
+  return "z" + base58Encode(multicodecKey);
+}
 
 export const DidDocumentSchema = z.object({
   "@context": z.array(z.string()),

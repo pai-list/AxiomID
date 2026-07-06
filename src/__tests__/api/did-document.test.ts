@@ -18,6 +18,7 @@ jest.mock("@/lib/did-document", () => ({
     id: "did:axiom:issuer",
     verificationMethod: [],
   })),
+  pemToMultibase: jest.fn((pem: string) => `mb-${pem}`),
 }));
 
 jest.mock("@/lib/did-resolver", () => ({
@@ -45,7 +46,7 @@ jest.mock("@/lib/logger", () => ({
 
 import { GET } from "@/app/api/did-document/route";
 import { resolveDid } from "@/lib/did-resolver";
-import { buildDidDocument } from "@/lib/did-document";
+import { buildDidDocument, pemToMultibase } from "@/lib/did-document";
 import { deriveUserRootKey } from "@/lib/sovereign-keys";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
@@ -57,6 +58,7 @@ const mockDeriveUserRootKey = deriveUserRootKey as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockGetClientIp = getClientIp as jest.Mock;
 const mockLoggerError = logger.error as jest.Mock;
+const mockPemToMultibase = pemToMultibase as jest.Mock;
 
 function mockGetRequest(params: Record<string, string> = {}) {
   const url = new URL("http://localhost/api/did-document");
@@ -129,6 +131,7 @@ describe("GET /api/did-document — DID resolution", () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 59, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
     process.env.ISSUER_PUBLIC_KEY = "test-public-key";
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "test-pem", privateKey: "test-priv" });
   });
 
   it("returns 404 when DID is not found", async () => {
@@ -213,6 +216,31 @@ describe("GET /api/did-document — issuer DID fallback", () => {
 
     expect(mockDeriveUserRootKey).not.toHaveBeenCalled();
   });
+
+  it("converts the issuer public key via pemToMultibase before building the document (PR change)", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "issuer-pem-key";
+
+    const req = mockGetRequest();
+    await GET(req);
+
+    expect(mockPemToMultibase).toHaveBeenCalledWith("issuer-pem-key");
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:issuer", "mb-issuer-pem-key");
+  });
+
+  it("returns 500 and does not leak the raw PEM when pemToMultibase throws for the issuer key", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "test-public-key";
+    mockPemToMultibase.mockImplementationOnce(() => {
+      throw new Error("bad key format");
+    });
+
+    const req = mockGetRequest();
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("Failed to generate DID document");
+    expect(mockBuildDidDocument).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /api/did-document — sovereign key derivation for resolved users (PR change)", () => {
@@ -247,17 +275,18 @@ describe("GET /api/did-document — sovereign key derivation for resolved users 
     expect(mockDeriveUserRootKey).toHaveBeenCalledWith("user-2");
   });
 
-  it("passes the derived public key into buildDidDocument", async () => {
+  it("passes the derived public key into buildDidDocument (via pemToMultibase)", async () => {
     mockResolveDid.mockResolvedValue({ id: "user-3", did: "did:axiom:pi:carol", piUid: "pi-uid-carol" });
     mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-carol-pub", privateKey: "pem-carol-priv" });
 
     const req = mockGetRequest({ did: "did:axiom:pi:carol" });
     await GET(req);
 
-    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:pi:carol", "pem-carol-pub");
+    expect(mockPemToMultibase).toHaveBeenCalledWith("pem-carol-pub");
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:pi:carol", "mb-pem-carol-pub");
   });
 
-  it("still returns 200 with the DID document when key derivation throws", async () => {
+  it("returns 500 when key derivation throws (mandatory key)", async () => {
     mockResolveDid.mockResolvedValue({ id: "user-4", did: "did:axiom:pi:dave", piUid: "pi-uid-dave" });
     mockDeriveUserRootKey.mockImplementation(() => {
       throw new Error("SOVEREIGN_KEY_SALT is not configured");
@@ -267,11 +296,28 @@ describe("GET /api/did-document — sovereign key derivation for resolved users 
     const res = await GET(req);
     const data = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(data.id).toBe("did:axiom:pi:dave");
+    expect(res.status).toBe(500);
+    expect(data.error).toContain("Could not derive public key");
+    expect(mockBuildDidDocument).not.toHaveBeenCalled();
   });
 
-  it("logs an error and omits the public key when key derivation throws", async () => {
+  it("returns 500 when pemToMultibase itself throws for a resolved user's key", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-6", did: "did:axiom:pi:frank", piUid: "pi-uid-frank" });
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-frank-pub", privateKey: "pem-frank-priv" });
+    mockPemToMultibase.mockImplementationOnce(() => {
+      throw new Error("invalid PEM");
+    });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:frank" });
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toContain("Could not derive public key");
+    expect(mockLoggerError).toHaveBeenCalledWith("[DID-DOC] Key derivation failed", expect.any(Error));
+  });
+
+  it("logs an error when key derivation throws", async () => {
     mockResolveDid.mockResolvedValue({ id: "user-5", did: "did:axiom:pi:erin", piUid: "pi-uid-erin" });
     mockDeriveUserRootKey.mockImplementation(() => {
       throw new Error("boom");
@@ -281,6 +327,5 @@ describe("GET /api/did-document — sovereign key derivation for resolved users 
     await GET(req);
 
     expect(mockLoggerError).toHaveBeenCalledWith("[DID-DOC] Key derivation failed", expect.any(Error));
-    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:pi:erin", undefined);
   });
 });

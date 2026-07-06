@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { createIssuerDid } from "@/lib/did";
 import { deriveUserRootKey } from "@/lib/sovereign-keys";
-import { buildDidDocument } from "@/lib/did-document";
+import { buildDidDocument, pemToMultibase } from "@/lib/did-document";
 import { resolveDid } from "@/lib/did-resolver";
 import { DidDocumentQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
@@ -40,28 +40,33 @@ export async function GET(request: NextRequest) {
       }
 
       
-      let publicKeyPem: string | undefined;
+      let publicKeyMultibase: string | undefined;
       try {
          const keys = deriveUserRootKey(user.piUid || user.id);
-         publicKeyPem = keys.publicKey;
+         publicKeyMultibase = pemToMultibase(keys.publicKey);
       } catch (err) {
          logger.error("[DID-DOC] Key derivation failed", err);
       }
       
-      const doc = buildDidDocument(user.did, publicKeyPem);
+      if (!publicKeyMultibase) {
+        return apiError("INTERNAL_ERROR", "Could not derive public key for DID document");
+      }
+
+      const doc = buildDidDocument(user.did, publicKeyMultibase);
       return apiSuccess(doc, 200, {
         "Content-Type": "application/did+ld+json",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
       });
     }
 
-    const publicKeyPem = process.env.ISSUER_PUBLIC_KEY;
-    if (!publicKeyPem) {
+    const issuerPublicKeyPem = process.env.ISSUER_PUBLIC_KEY;
+    if (!issuerPublicKeyPem) {
       return apiError("INTERNAL_ERROR", "ISSUER_PUBLIC_KEY not configured");
     }
 
     const issuerDid = createIssuerDid();
-    const doc = buildDidDocument(issuerDid, publicKeyPem);
+    const issuerPublicKeyMultibase = pemToMultibase(issuerPublicKeyPem);
+    const doc = buildDidDocument(issuerDid, issuerPublicKeyMultibase);
     return apiSuccess(doc, 200, {
       "Content-Type": "application/did+ld+json",
       "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
