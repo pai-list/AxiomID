@@ -23,7 +23,7 @@ linked_notes: [HOME, SOUL, axiomid_supreme_rules]
 | Rules | `axiomid_supreme_rules.md` | القواعد السيادية — DRY, TrustChain, المراقبة |
 | Topology | `topology.md` | توبولوجيا الذاكرة 369 |
 | Progress | `progress_log.md` | سجل التقدم المستمر — يُحدَّث مع كل جلسة |
-| Rebrand | `حالة_إعادة_التسمية.md` | تقرير تحول AxiomID → AxiomID |
+| Rebrand | `حالة_إعادة_التسمية.md` | تقرير تحول Amrikyy → AxiomID |
 | Schema | `_SCHEMA.md` | **(هذا الملف)** — قواعد الـ vault |
 | Arabic notes | `*.md` | ملفات بالعربية للتوثيق المحلي |
 
