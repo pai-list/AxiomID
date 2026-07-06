@@ -6,7 +6,7 @@ export function makeUser(overrides: Partial<User> = {}): User {
     walletAddress: "pi:user-test",
     xp: 100,
     tier: "Citizen",
-    trustScore: 60,
+    trustScore: 0,
     createdAt: new Date().toISOString(),
     actions: [],
     stamps: [],

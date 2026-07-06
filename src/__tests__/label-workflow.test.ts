@@ -135,7 +135,7 @@ describe("label.yml — permissions (least privilege)", () => {
       .slice(permissionsIndex + 1)
       .filter((l) => /^\s{6}[a-z-]+:\s*(read|write|none)\s*$/.test(l));
     const scopes = permissionLines.map((l) => l.trim().split(":")[0]);
-    expect(scopes.sort()).toEqual(["contents", "pull-requests"]);
+    expect(scopes.sort()).toEqual(["contents", "issues", "pull-requests"]);
   });
 });
 

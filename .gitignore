@@ -66,6 +66,9 @@ memory.graph.json
 scratchpad/
 .jolli/
 
+# generated test reports
+e2e-results.json
+
 # Patch/merge artifacts
 *.orig
 *.rej

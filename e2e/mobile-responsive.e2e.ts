@@ -102,6 +102,7 @@ test.describe("Mobile Responsive Design (iPhone 13 — 390x844)", () => {
       if (violations.length > 0) {
         console.warn("Small touch targets:", violations);
       }
+      expect(violations).toHaveLength(0);
     });
   });
 
@@ -238,6 +239,7 @@ test.describe("Mobile Responsive Design (iPhone 13 — 390x844)", () => {
       if (tinyFonts.length > 0) {
         console.warn("Tiny font elements:", tinyFonts);
       }
+      expect(tinyFonts).toHaveLength(0);
     });
   });
 
