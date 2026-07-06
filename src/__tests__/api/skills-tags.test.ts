@@ -295,7 +295,7 @@ describe("PUT /api/skills/[slug]/tags — auth and validation", () => {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: "not-json",
-    }) as any; // ponytail: test mock — intentionally malformed request body
+    }) as unknown as NextRequest; // ponytail: test mock — intentionally malformed request body
     const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
     const data = await res.json();
 
