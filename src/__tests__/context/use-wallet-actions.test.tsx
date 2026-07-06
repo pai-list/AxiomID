@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useWalletActions } from "@/app/context/use-wallet-actions";
 import { runWalletTest } from "@/lib/pi-sdk";
-import { User } from "@/app/context/wallet-types";
+import { makeUser } from "@/__tests__/helpers/wallet-test-helpers";
 
 jest.mock("@/lib/pi-sdk", () => {
   const actual = jest.requireActual("@/lib/pi-sdk");
@@ -13,20 +13,6 @@ jest.mock("@/lib/pi-sdk", () => {
 });
 
 const mockRunWalletTest = runWalletTest as jest.MockedFunction<typeof runWalletTest>;
-
-function makeUser(overrides: Partial<User> = {}): User {
-  return {
-    id: "user-test",
-    walletAddress: "pi:user-test",
-    xp: 100,
-    tier: "Citizen",
-    trustScore: 60,
-    createdAt: new Date().toISOString(),
-    actions: [],
-    stamps: [],
-    ...overrides,
-  };
-}
 
 describe("useWalletActions — pushLog", () => {
   it("appends a timestamped message to wallet logs", () => {
