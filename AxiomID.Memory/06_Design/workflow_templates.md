@@ -466,7 +466,7 @@ stages:
 ## Agent Training Checklist
 
 ### Knowledge Base
-- [ ] Read AMRIKYY_KNOWLEDGE_BASE.md
+- [ ] Read AXIOMID_KNOWLEDGE_BASE.md
 - [ ] Review DEC-XXX decisions
 - [ ] Study LESSON-XXX lessons
 - [ ] Understand FAIL-XXX failures
