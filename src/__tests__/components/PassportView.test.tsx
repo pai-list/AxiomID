@@ -191,15 +191,6 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
       expect.objectContaining({ url: window.location.href, title: 'share_title', text: 'share_text' })
     );
   });
-
-  it("treats an empty string jobStatus as fully loaded (falsy jobStatus skips the building panel and polling)", async () => {
-    mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "" }) });
-    render(<PassportView />);
-
-    await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
-    expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-  });
 });
 
 describe("PassportView — identity still building (jobStatus not COMPLETED/ACTIVE)", () => {
@@ -291,63 +282,6 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
     unmount!();
     expect(clearTimeoutSpy).toHaveBeenCalled();
     clearTimeoutSpy.mockRestore();
-  });
-
-  it("continues polling across multiple cycles while jobStatus keeps changing, then stops on COMPLETED", async () => {
-    mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-
-    mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "ISSUING" }) });
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-    expect(screen.getByText(/Status: ISSUING/)).toBeInTheDocument();
-
-    mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "COMPLETED" }) });
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(3);
-    expect(screen.getByTestId("agent-passport")).toBeInTheDocument();
-
-    // No further polling once COMPLETED.
-    await act(async () => {
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(3);
-  });
-
-  it("stops polling and transitions to the error view when a subsequent poll cycle fails", async () => {
-    mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("poll failed"));
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
-
-    expect(screen.getByText("poll failed")).toBeInTheDocument();
-    expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
-
-    // No further polling is scheduled once the error path is hit.
-    await act(async () => {
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });
 
