@@ -13,6 +13,7 @@ const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvw
  * Minimal base58 encoding (no external deps — Ponytail).
  */
 function base58Encode(buffer: Buffer): string {
+  if (buffer.length === 0) return "";
   let num = BigInt(`0x${buffer.toString("hex")}`);
   let result = "";
   while (num > BigInt(0)) {
