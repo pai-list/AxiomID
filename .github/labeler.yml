@@ -1,0 +1,37 @@
+"area:frontend":
+  - "src/app/**/*.tsx"
+  - "src/components/**/*.tsx"
+  - "src/styles/**/*"
+
+"area:backend":
+  - "src/app/api/**/*.ts"
+  - "src/lib/**/*.ts"
+
+"area:auth":
+  - "src/lib/auth/**/*"
+  - "src/app/api/auth/**/*"
+
+"area:trust-engine":
+  - "src/lib/trust/**/*"
+  - "src/app/api/trust/**/*"
+
+"area:marketplace":
+  - "src/lib/marketplace/**/*"
+  - "src/app/api/marketplace/**/*"
+  - "src/app/dashboard/marketplace/**/*"
+
+"area:docs":
+  - "**/*.md"
+  - "docs/**/*"
+
+"area:testing":
+  - "src/__tests__/**/*"
+  - "jest.config.js"
+  - "jest.setup.js"
+
+"area:deps":
+  - "package.json"
+  - "package-lock.json"
+
+"area:i18n":
+  - "src/locales/**/*"

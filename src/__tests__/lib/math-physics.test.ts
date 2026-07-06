@@ -1546,14 +1546,14 @@ describe("minCutTrustBottleneck (PR sync)", () => {
 describe("langevinTrustDynamics (PR sync)", () => {
   it("returns newTrust in [0, 1]", () => {
     for (let i = 0; i < 20; i++) {
-      const { newTrust } = langevinTrustDynamics(0.5, 0.1);
+      const { newTrust } = langevinTrustDynamics({ currentTrust: 0.5, externalForce: 0.1 });
       expect(newTrust).toBeGreaterThanOrEqual(0);
       expect(newTrust).toBeLessThanOrEqual(1);
     }
   });
 
   it("returns a velocity value", () => {
-    const { velocity } = langevinTrustDynamics(0.5, 0.1);
+    const { velocity } = langevinTrustDynamics({ currentTrust: 0.5, externalForce: 0.1 });
     expect(typeof velocity).toBe("number");
     expect(isFinite(velocity)).toBe(true);
   });
@@ -1564,7 +1564,7 @@ describe("langevinTrustDynamics (PR sync)", () => {
     const N = 50;
     for (let i = 0; i < N; i++) {
       const before = trust;
-      const result = langevinTrustDynamics(trust, 0.5, 0.1, 0.001, 1, 0.1);
+      const result = langevinTrustDynamics({ currentTrust: trust, externalForce: 0.5, damping: 0.1, noiseStrength: 0.001, mass: 1, timeStep: 0.1 });
       trust = result.newTrust;
       if (trust > before) totalIncrease++;
     }

@@ -52,7 +52,7 @@ export function PassportView() {
         const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          throw new Error(data?.message || t('passport_not_found'));
+          throw new Error(data?.message || 'translated_passport_not_found');
         }
         const data = await res.json();
         setPassport(data);
@@ -102,9 +102,14 @@ export function PassportView() {
       );
   }
 
+  if (!passport && !error && !loading) {
+    return null;
+  }
+
   return (
     <>
       {error ? (
+
         <div className="text-center max-w-md mx-auto">
           <div className="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6 border border-red-500/20">
             <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
