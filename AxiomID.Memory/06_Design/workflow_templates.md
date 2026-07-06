@@ -324,7 +324,7 @@ stages:
 
 ### Automated
 - [ ] Run pipeline: `python memory_pipeline.py run`
-- [ ] Check logs: `Amrikyy.Memory/memory_pipeline/logs/`
+- [ ] Check logs: `AxiomID.Memory/memory_pipeline/logs/`
 - [ ] Verify outputs in respective directories
 
 ### Manual Review
