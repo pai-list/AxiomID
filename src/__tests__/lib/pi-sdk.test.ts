@@ -10,9 +10,9 @@ import {
 } from '@/lib/pi-sdk';
 
 interface MutableGlobals {
-  window: any;
-  navigator: any;
-  document: any;
+  window: unknown;
+  navigator: unknown;
+  document: unknown;
 }
 
 const g = global as unknown as MutableGlobals;
