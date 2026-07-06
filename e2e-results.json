@@ -1,0 +1,1769 @@
+{
+  "config": {
+    "argv": [
+      "/usr/local/Cellar/node@22/22.22.3/bin/node",
+      "/Users/cryptojoker710/AxiomID/node_modules/.bin/playwright",
+      "test",
+      "--list",
+      "e2e/explorer.e2e.ts",
+      "e2e/leaderboard.e2e.ts",
+      "e2e/did-resolution.e2e.ts"
+    ],
+    "configFile": "/Users/cryptojoker710/AxiomID/playwright.config.ts",
+    "rootDir": "/Users/cryptojoker710/AxiomID/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/cryptojoker710/AxiomID/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "desktop-chrome",
+        "name": "desktop-chrome",
+        "testDir": "/Users/cryptojoker710/AxiomID/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/cryptojoker710/AxiomID/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "/Users/cryptojoker710/AxiomID/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.e2e.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3000,
+      "reuseExistingServer": true,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "did-resolution.e2e.ts",
+      "file": "did-resolution.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "DID Document Endpoint",
+          "file": "did-resolution.e2e.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "GET /.well-known/did.json returns valid DID document",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-011e088f307e8375c728",
+              "file": "did-resolution.e2e.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "Content-Type is application/did+ld+json or application/json",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-d9000335e8cfde7722e5",
+              "file": "did-resolution.e2e.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "DID document contains id, verificationMethod, authentication",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-efaa9388e39f231aec48",
+              "file": "did-resolution.e2e.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "verificationMethod has Ed25519VerificationKey2020 type",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-998195614eed09556b88",
+              "file": "did-resolution.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "DID document includes service endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-8ff4d17a32327643e0e2",
+              "file": "did-resolution.e2e.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "DID document includes alsoKnownAs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-790eaef17a866e9ea813",
+              "file": "did-resolution.e2e.ts",
+              "line": 59,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on DID document",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-278f73817bb91bc35a4a",
+              "file": "did-resolution.e2e.ts",
+              "line": 67,
+              "column": 7
+            },
+            {
+              "title": "error when ISSUER_PUBLIC_KEY not configured",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-9390a86444db61fa0e63",
+              "file": "did-resolution.e2e.ts",
+              "line": 74,
+              "column": 7
+            },
+            {
+              "title": "no sensitive info leaked in error responses",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-859fd2047b2b10c43527",
+              "file": "did-resolution.e2e.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "GET /.well-known/did.json returns valid DID document",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-8d0d3437720523217260",
+              "file": "did-resolution.e2e.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "Content-Type is application/did+ld+json or application/json",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-5848fe39de8528c647ce",
+              "file": "did-resolution.e2e.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "DID document contains id, verificationMethod, authentication",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-3784842882bd85594bc6",
+              "file": "did-resolution.e2e.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "verificationMethod has Ed25519VerificationKey2020 type",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-16bd49f7301296914287",
+              "file": "did-resolution.e2e.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "DID document includes service endpoints",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-b3ac68d7a71695aaee44",
+              "file": "did-resolution.e2e.ts",
+              "line": 45,
+              "column": 7
+            },
+            {
+              "title": "DID document includes alsoKnownAs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-ebee7d0504eac655772c",
+              "file": "did-resolution.e2e.ts",
+              "line": 59,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on DID document",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-11eb2beb0ba2e30997c6",
+              "file": "did-resolution.e2e.ts",
+              "line": 67,
+              "column": 7
+            },
+            {
+              "title": "error when ISSUER_PUBLIC_KEY not configured",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-b2d58b2b265148d99294",
+              "file": "did-resolution.e2e.ts",
+              "line": 74,
+              "column": 7
+            },
+            {
+              "title": "no sensitive info leaked in error responses",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-1099a2ca2fd5fae093d2",
+              "file": "did-resolution.e2e.ts",
+              "line": 89,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "JWKS Endpoint",
+          "file": "did-resolution.e2e.ts",
+          "line": 101,
+          "column": 6,
+          "specs": [
+            {
+              "title": "GET /.well-known/jwks.json returns valid JWKS",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-fa7eb31d6c6d95569d97",
+              "file": "did-resolution.e2e.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "JWKS keys have required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-72d22a95a2ba05ad36d6",
+              "file": "did-resolution.e2e.ts",
+              "line": 111,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on JWKS",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-a0998fdb8045a5ca2895",
+              "file": "did-resolution.e2e.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "GET /.well-known/jwks.json returns valid JWKS",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-187cdc9e94a3a802c866",
+              "file": "did-resolution.e2e.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "JWKS keys have required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-150c656b0e70a1014310",
+              "file": "did-resolution.e2e.ts",
+              "line": 111,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on JWKS",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-3fbcdcf7cace4514439e",
+              "file": "did-resolution.e2e.ts",
+              "line": 124,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "OAuth Authorization Server Metadata",
+          "file": "did-resolution.e2e.ts",
+          "line": 132,
+          "column": 6,
+          "specs": [
+            {
+              "title": "GET /.well-known/oauth-authorization-server returns valid config",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-756e07b41afb0122cb2e",
+              "file": "did-resolution.e2e.ts",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes supported grant types",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-525089c615132b3973ea",
+              "file": "did-resolution.e2e.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes supported scopes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-4c316bc8b7aa0022aef5",
+              "file": "did-resolution.e2e.ts",
+              "line": 153,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes agent_auth config",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-838d0e57d3adb5d45a91",
+              "file": "did-resolution.e2e.ts",
+              "line": 163,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on OAuth metadata",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-e2173c3abfe20e68516c",
+              "file": "did-resolution.e2e.ts",
+              "line": 174,
+              "column": 7
+            },
+            {
+              "title": "GET /.well-known/oauth-authorization-server returns valid config",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-0c5e83e23212226b5dbc",
+              "file": "did-resolution.e2e.ts",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes supported grant types",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-f7923f91db48521f6c7e",
+              "file": "did-resolution.e2e.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes supported scopes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-a9b2cf14383f042623c4",
+              "file": "did-resolution.e2e.ts",
+              "line": 153,
+              "column": 7
+            },
+            {
+              "title": "OAuth metadata includes agent_auth config",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-b4040030e73afd1d32d8",
+              "file": "did-resolution.e2e.ts",
+              "line": 163,
+              "column": 7
+            },
+            {
+              "title": "cache headers present on OAuth metadata",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "33401355de59db34b82a-5735b9e647e42c7a8aa0",
+              "file": "did-resolution.e2e.ts",
+              "line": 174,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "explorer.e2e.ts",
+      "file": "explorer.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Explorer Page",
+          "file": "explorer.e2e.ts",
+          "line": 75,
+          "column": 6,
+          "specs": [
+            {
+              "title": "page renders with hero banner",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-cf89acaf99e134bc4a8b",
+              "file": "explorer.e2e.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "SVG node graph renders when data is loaded",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-335c37de48c355bd3d5e",
+              "file": "explorer.e2e.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "ledger table renders with recent payments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-05d41cc9adb54a9ed47d",
+              "file": "explorer.e2e.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "tier distribution section renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-f21415c99e176c084fe1",
+              "file": "explorer.e2e.ts",
+              "line": 105,
+              "column": 7
+            },
+            {
+              "title": "loading skeleton shows while data loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-407e2cb5aadc5282e0f7",
+              "file": "explorer.e2e.ts",
+              "line": 116,
+              "column": 7
+            },
+            {
+              "title": "empty state when no data (zero users)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-823f0bf8f7250d82527c",
+              "file": "explorer.e2e.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "responsive at 375px mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-684ae724463d51854c46",
+              "file": "explorer.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "no console errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-4608ba553389de128c1f",
+              "file": "explorer.e2e.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "no raw translation keys visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-ed0f6bd6d3a981733ff9",
+              "file": "explorer.e2e.ts",
+              "line": 152,
+              "column": 7
+            },
+            {
+              "title": "stats row displays all four stat cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-eed04ce57da46842aef4",
+              "file": "explorer.e2e.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "error state shows retry button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-e2e9298df1b28378a1bf",
+              "file": "explorer.e2e.ts",
+              "line": 168,
+              "column": 7
+            },
+            {
+              "title": "page renders with hero banner",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-490e261cd94eddc5ca95",
+              "file": "explorer.e2e.ts",
+              "line": 76,
+              "column": 7
+            },
+            {
+              "title": "SVG node graph renders when data is loaded",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-38a6133027a2526af3bd",
+              "file": "explorer.e2e.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "ledger table renders with recent payments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-fe45e27c9947e18a5ad2",
+              "file": "explorer.e2e.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "tier distribution section renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-48339bbe44c30e15800a",
+              "file": "explorer.e2e.ts",
+              "line": 105,
+              "column": 7
+            },
+            {
+              "title": "loading skeleton shows while data loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-4a7f0b6e13edff87e24b",
+              "file": "explorer.e2e.ts",
+              "line": 116,
+              "column": 7
+            },
+            {
+              "title": "empty state when no data (zero users)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-0cfc3f9ded21f1e18cc8",
+              "file": "explorer.e2e.ts",
+              "line": 124,
+              "column": 7
+            },
+            {
+              "title": "responsive at 375px mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-b5d9e33e4a344ab7b711",
+              "file": "explorer.e2e.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "no console errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-efccba0250aadfe97e2a",
+              "file": "explorer.e2e.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "no raw translation keys visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-42fdbaf63247dc6e78ac",
+              "file": "explorer.e2e.ts",
+              "line": 152,
+              "column": 7
+            },
+            {
+              "title": "stats row displays all four stat cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-9e8fb6db88f101e50a19",
+              "file": "explorer.e2e.ts",
+              "line": 159,
+              "column": 7
+            },
+            {
+              "title": "error state shows retry button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45605a897a98b36243f5-fd4f915e645a7e433d4f",
+              "file": "explorer.e2e.ts",
+              "line": 168,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "leaderboard.e2e.ts",
+      "file": "leaderboard.e2e.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Leaderboard Page",
+          "file": "leaderboard.e2e.ts",
+          "line": 26,
+          "column": 6,
+          "specs": [
+            {
+              "title": "table renders with columns (Pioneer, Tier, Stamps, Trust, XP)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-97ff2d4b38d74f49dcb4",
+              "file": "leaderboard.e2e.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "pagination works via Show More button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-c5d4c854cd6b8bbafd07",
+              "file": "leaderboard.e2e.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "wallet address truncation works for users without piUsername",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-bc2dcdb7b2477d629ae1",
+              "file": "leaderboard.e2e.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "zero state shows motivational copy when empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-7c7ad2ec173486fe23ee",
+              "file": "leaderboard.e2e.ts",
+              "line": 75,
+              "column": 7
+            },
+            {
+              "title": "responsive at 375px mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-c8e245d95471663e7e17",
+              "file": "leaderboard.e2e.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "no console errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-26e3cff0e663b256c43d",
+              "file": "leaderboard.e2e.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "no raw translation keys visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-3edf2067cfaed9c14d42",
+              "file": "leaderboard.e2e.ts",
+              "line": 103,
+              "column": 7
+            },
+            {
+              "title": "search filters users by username",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-1d5ecc7411519f9eb0df",
+              "file": "leaderboard.e2e.ts",
+              "line": 110,
+              "column": 7
+            },
+            {
+              "title": "tier filter tabs work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-b33b4f10a5da2bb3e720",
+              "file": "leaderboard.e2e.ts",
+              "line": 123,
+              "column": 7
+            },
+            {
+              "title": "top three cards render for first 3 users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-544c865590032a9829af",
+              "file": "leaderboard.e2e.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "loading skeleton shows while data loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-0b817b24ce75b0cbe29e",
+              "file": "leaderboard.e2e.ts",
+              "line": 149,
+              "column": 7
+            },
+            {
+              "title": "footer renders on leaderboard page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "desktop-chrome",
+                  "projectName": "desktop-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-e0e34243343db549b308",
+              "file": "leaderboard.e2e.ts",
+              "line": 156,
+              "column": 7
+            },
+            {
+              "title": "table renders with columns (Pioneer, Tier, Stamps, Trust, XP)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-95dcedf4a3aef76e5cda",
+              "file": "leaderboard.e2e.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "pagination works via Show More button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-c14a7c35381c784e1974",
+              "file": "leaderboard.e2e.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "wallet address truncation works for users without piUsername",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-160d4c4fdac0066016e5",
+              "file": "leaderboard.e2e.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "zero state shows motivational copy when empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-f5b3018d5e7a8d612439",
+              "file": "leaderboard.e2e.ts",
+              "line": 75,
+              "column": 7
+            },
+            {
+              "title": "responsive at 375px mobile viewport",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-3e8e90da4c819e512fed",
+              "file": "leaderboard.e2e.ts",
+              "line": 86,
+              "column": 7
+            },
+            {
+              "title": "no console errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-9425a92a7776992cff45",
+              "file": "leaderboard.e2e.ts",
+              "line": 95,
+              "column": 7
+            },
+            {
+              "title": "no raw translation keys visible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-e789e2c852ef54eabae8",
+              "file": "leaderboard.e2e.ts",
+              "line": 103,
+              "column": 7
+            },
+            {
+              "title": "search filters users by username",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-e3f4f9266929243ba21f",
+              "file": "leaderboard.e2e.ts",
+              "line": 110,
+              "column": 7
+            },
+            {
+              "title": "tier filter tabs work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-39ea9bbd8b1ecfae3ab0",
+              "file": "leaderboard.e2e.ts",
+              "line": 123,
+              "column": 7
+            },
+            {
+              "title": "top three cards render for first 3 users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-a98a8c3b4d7828d59bd2",
+              "file": "leaderboard.e2e.ts",
+              "line": 139,
+              "column": 7
+            },
+            {
+              "title": "loading skeleton shows while data loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-bd7770567592c84626a7",
+              "file": "leaderboard.e2e.ts",
+              "line": 149,
+              "column": 7
+            },
+            {
+              "title": "footer renders on leaderboard page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82aeb03730c2b3e585da-074ad98ea9e6202784d9",
+              "file": "leaderboard.e2e.ts",
+              "line": 156,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-07-06T09:42:19.479Z",
+    "duration": 2914.7440000000006,
+    "expected": 0,
+    "skipped": 80,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

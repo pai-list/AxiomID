@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { useWalletAgent } from "@/app/context/use-wallet-agent";
-import { makeUser } from "@/__tests__/helpers/wallet-test-helpers";
+import { makeUser } from "@/test-helpers/wallet-test-helpers";
 
 describe("useWalletAgent — createAgent", () => {
   let mockFetch: jest.Mock;

@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useWalletActions } from "@/app/context/use-wallet-actions";
 import { runWalletTest } from "@/lib/pi-sdk";
-import { makeUser } from "@/__tests__/helpers/wallet-test-helpers";
+import { makeUser } from "@/test-helpers/wallet-test-helpers";
 
 jest.mock("@/lib/pi-sdk", () => {
   const actual = jest.requireActual("@/lib/pi-sdk");
