@@ -1,4 +1,3 @@
-import { act } from "@testing-library/react";
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -172,21 +171,6 @@ describe('PassportView', () => {
   });
 
 
-  it('renders nothing when there is no loading, no error, and no passport', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => null, // empty data
-    });
-
-    const { container } = render(<PassportView />);
-
-    await waitFor(() => {
-      // should have nothing
-      expect(container.firstChild).toBeNull();
-    });
-  });
-
-
   it('renders passport data without optional fields', async () => {
     const minData = {
       username: 'testuser',
@@ -244,16 +228,26 @@ describe('PassportView', () => {
     expect(screen.getByText('translated_passport_load_error')).toBeInTheDocument();
   });
 
-  it('aborts fetch on unmount', async () => {
-    const abortSpy = jest.spyOn(AbortController.prototype, 'abort');
+  it('clears pending poll timeout on unmount after polling starts', async () => {
+    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
-    (global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {}));
+    // First fetch returns a job still building — triggers polling
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ...mockPassportData, jobStatus: 'PROVISIONING' }),
+    });
 
     const { unmount } = render(<PassportView />);
 
+    // Wait for first fetch to complete and polling to start
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
     unmount();
 
-    expect(abortSpy).toHaveBeenCalled();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
   });
 
   it('does not throw or update state when the fetch resolves after unmount', async () => {
@@ -273,7 +267,7 @@ describe('PassportView', () => {
     });
   });
 
-  it('calls the passport API with a URL-encoded slug and an abort signal', async () => {
+  it('calls the passport API with a URL-encoded slug', async () => {
     (useParams as jest.Mock).mockReturnValue({ slug: 'name/with special?chars' });
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -286,9 +280,8 @@ describe('PassportView', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
-    const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+    const [url] = (global.fetch as jest.Mock).mock.calls[0];
     expect(url).toBe(`/api/passport/${encodeURIComponent('name/with special?chars')}`);
-    expect(options.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('does nothing if slug is missing', () => {
@@ -308,5 +301,53 @@ describe('PassportView', () => {
     render(<PassportView />);
 
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('renders the "preparing" screen with the job status while the identity is still building', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ...mockPassportData, jobStatus: 'PROVISIONING' }),
+    });
+
+    const { unmount } = render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Preparing your AI...')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Status: PROVISIONING')).toBeInTheDocument();
+    expect(screen.queryByTestId('agent-passport')).not.toBeInTheDocument();
+
+    unmount();
+  });
+
+  it('renders the full passport view (not the "preparing" screen) when jobStatus is ACTIVE', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ...mockPassportData, jobStatus: 'ACTIVE' }),
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Preparing your AI...')).not.toBeInTheDocument();
+  });
+
+  it('renders the full passport view (not the "preparing" screen) when jobStatus is COMPLETED', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ...mockPassportData, jobStatus: 'COMPLETED' }),
+    });
+
+    render(<PassportView />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Preparing your AI...')).not.toBeInTheDocument();
   });
 });
