@@ -58,9 +58,16 @@ export async function mockUnauthenticatedUser(page: Page) {
 export async function mockPiSDK(page: Page, opts?: { isPiBrowser?: boolean }) {
   const isPiBrowser = opts?.isPiBrowser ?? true;
   await page.addInitScript((piBrowser) => {
-    // ponytail: Playwright context has no Pi SDK types — global assignment requires any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).Pi = {
+    type MockPi = {
+      init: () => void;
+      authenticate: () => Promise<{ user: { uid: string; username: string }; accessToken: string }>;
+      createPayment: () => Promise<{ identifier: string }>;
+      nativeFeature: {
+        openShareDialog: () => Promise<Record<string, unknown>>;
+        openConsentDialog: () => Promise<{ accepted: boolean }>;
+      };
+    };
+    (window as unknown as { Pi: MockPi }).Pi = {
       init: () => {},
       authenticate: () => Promise.resolve({ user: { uid: "pi-uid-123", username: "piuser" }, accessToken: "token" }),
       createPayment: () => Promise.resolve({ identifier: "pay-123" }),
