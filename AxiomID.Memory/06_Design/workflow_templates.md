@@ -688,7 +688,7 @@ fi
 #### Daily Full Pipeline
 ```bash
 # Run daily at 3 AM
-0 3 * * * cd /Users/cryptojoker710/amrikyy && python Amrikyy.Memory/memory_pipeline.py run --mode full --quiet 2>/dev/null
+0 3 * * * cd /path/to/project && python AxiomID.Memory/memory_pipeline.py run --mode full --quiet 2>/dev/null
 ```
 
 #### Hourly Validation Check
