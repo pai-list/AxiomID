@@ -37,8 +37,8 @@ describe('DelegationResolver', () => {
     };
 
     mockD1Helper = {
-      db: mockDb,
-    } as any;
+      db: mockDb as unknown as D1Database,
+    } as unknown as D1Helper;
 
     resolver = new DelegationResolver(mockD1Helper);
   });
