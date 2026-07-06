@@ -216,6 +216,31 @@ describe("GET /api/did-document — issuer DID fallback", () => {
 
     expect(mockDeriveUserRootKey).not.toHaveBeenCalled();
   });
+
+  it("converts the issuer public key via pemToMultibase before building the document (PR change)", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "issuer-pem-key";
+
+    const req = mockGetRequest();
+    await GET(req);
+
+    expect(mockPemToMultibase).toHaveBeenCalledWith("issuer-pem-key");
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:issuer", "mb-issuer-pem-key");
+  });
+
+  it("returns 500 and does not leak the raw PEM when pemToMultibase throws for the issuer key", async () => {
+    process.env.ISSUER_PUBLIC_KEY = "test-public-key";
+    mockPemToMultibase.mockImplementationOnce(() => {
+      throw new Error("bad key format");
+    });
+
+    const req = mockGetRequest();
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("Failed to generate DID document");
+    expect(mockBuildDidDocument).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /api/did-document — sovereign key derivation for resolved users (PR change)", () => {
@@ -273,6 +298,23 @@ describe("GET /api/did-document — sovereign key derivation for resolved users 
 
     expect(res.status).toBe(500);
     expect(data.error).toContain("Could not derive public key");
+    expect(mockBuildDidDocument).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when pemToMultibase itself throws for a resolved user's key", async () => {
+    mockResolveDid.mockResolvedValue({ id: "user-6", did: "did:axiom:pi:frank", piUid: "pi-uid-frank" });
+    mockDeriveUserRootKey.mockReturnValue({ publicKey: "pem-frank-pub", privateKey: "pem-frank-priv" });
+    mockPemToMultibase.mockImplementationOnce(() => {
+      throw new Error("invalid PEM");
+    });
+
+    const req = mockGetRequest({ did: "did:axiom:pi:frank" });
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.error).toContain("Could not derive public key");
+    expect(mockLoggerError).toHaveBeenCalledWith("[DID-DOC] Key derivation failed", expect.any(Error));
   });
 
   it("logs an error when key derivation throws", async () => {

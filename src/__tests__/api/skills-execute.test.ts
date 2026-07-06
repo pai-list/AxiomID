@@ -135,6 +135,20 @@ describe("POST /api/skills/[slug]/execute — authentication (PR change: require
     expect(mockCheckRateLimit).toHaveBeenCalled();
     expect(res.status).toBe(201);
   });
+
+  it("binds agentId to whichever user requireAuth resolves (PR change)", async () => {
+    const otherUser = { ...mockUser, id: "user-2" };
+    mockRequireAuth.mockResolvedValue({ error: null, user: otherUser });
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPostRequest({ success: true });
+    await POST(req, mockParams("test-skill"));
+
+    expect(mockPrisma.skillExecution.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ agentId: "user-2" }),
+    });
+  });
 });
 
 describe("POST /api/skills/[slug]/execute — rate limiting", () => {
@@ -216,6 +230,30 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
       data: expect.objectContaining({ skillId: "skill-1", success: true }),
     });
     expect(data.success).toBe(true);
+  });
+
+  it("records the authenticated user's id as agentId on the execution (PR change)", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPostRequest({ success: true });
+    await POST(req, mockParams("test-skill"));
+
+    expect(mockPrisma.skillExecution.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ agentId: mockUser.id }),
+    });
+  });
+
+  it("uses the agentId of the authenticated user, ignoring any agentId in the request body", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-1", success: true } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPostRequest({ success: true, agentId: "attacker-supplied-id" });
+    await POST(req, mockParams("test-skill"));
+
+    expect(mockPrisma.skillExecution.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ agentId: mockUser.id }),
+    });
   });
 
   it("records success:false when explicitly provided", async () => {
