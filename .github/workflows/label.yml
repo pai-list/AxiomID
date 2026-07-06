@@ -24,7 +24,7 @@ jobs:
 
     # ── Stage 2: Size Auto-Detection ────────────
     - name: Auto-detect PR size
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const { data: files } = await github.rest.pulls.listFiles({
@@ -72,7 +72,7 @@ jobs:
 
     # ── Stage 3: Conventional Commit Type Detection ──
     - name: Auto-detect conventional commit type
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const pr = await github.rest.pulls.get({
@@ -123,7 +123,7 @@ jobs:
 
     # ── Stage 4: AI-Generated Author Detection ──
     - name: Label AI-generated PRs
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const pr = await github.rest.pulls.get({
@@ -149,7 +149,7 @@ jobs:
 
     # ── Stage 5: Breaking Change Detection ───────
     - name: Detect breaking changes
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const pr = await github.rest.pulls.get({
@@ -184,7 +184,7 @@ jobs:
 
     # ── Stage 6: Needs-Human-Approval for Critical Paths ──
     - name: Flag critical paths for human review
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const { data: files } = await github.rest.pulls.listFiles({
@@ -221,7 +221,7 @@ jobs:
 
     # ── Stage 7: Merge Conflict Detection ────────
     - name: Detect merge conflicts
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       with:
         script: |
           const pr = await github.rest.pulls.get({
