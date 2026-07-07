@@ -59,7 +59,7 @@ Nav: [[HOME]] | [[SOUL]] | [[topology]] | [[turboquant]] | [[rust_go_brainstormi
 
 ## 🎯 دمج المفهوم في معمارية ذاكرة AxiomID (Adaptive Memory Quantization)
 
-بما أن مشروع **AxiomID** يمتلك قاعدة كود ضخمة تصل لـ **1.5M LOC**، تم استلهام فلسفة TurboQuant لتطبيقها كـ **تكميم دلالي للذاكرة المعرفية (Semantic Memory Quantization)**:
+بما أن مشروع **AxiomID** يمتلك قاعدة كود تبلغ حوالي **66K سطر TypeScript**، تم استلهام فلسفة TurboQuant لتطبيقها كـ **تكميم دلالي للذاكرة المعرفية (Semantic Memory Quantization)**:
 
 ### 1. الضغط الدلالي للمسارات (Semantic Trajectory Compaction)
 * بدلاً من الاحتفاظ بكافة النصوص التفصيلية للمحادثات السابقة (والتي تستهلك سياق النموذج بسرعة)، يقوم العميل بتطبيق "التكميم الدلالي" لتلخيص وضغط المحادثات إلى مفاهيم قطبية وعقد معرفية مركزية (Polarized Semantic Nodes) تُخزن كروابط ويكي في Obsidian.

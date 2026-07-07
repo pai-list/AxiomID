@@ -22,7 +22,7 @@ Nav: [[HOME]] | [[SOUL]] | [[topology]] | [[vercel_labs_inspiration]] | [[rust_g
 * **المستودع المستلهم**: `claude-managed-agents-starter`
 * **المفهوم**: استخدام **Vercel Workflow SDK** والـ Neon Postgres لإدارة دورات حياة العملاء البرمجيين طويلة الأمد عبر durable server-side polling وتجنب استهلاك موارد المتصفح بـ WebSockets مستمرة.
 * **التطبيق في AxiomID**:
-  - دمج آلية الاستعلام الدوري الذكي (Polling Client) في واجهة Next.js التابعة لـ **Axiomid**، حيث يتم تخزين حالة التفكير والمهام في قاعدة البيانات (SQLite / Supabase)، ويقوم العميل بتحديثها تدريجياً. هذا يسمح لـ AxiomID بالعمل في الخلفية لأيام دون الحاجة لإبقاء نافذة المتصفح مفتوحة.
+  - دمج آلية الاستعلام الدوري الذكي (Polling Client) في واجهة Next.js التابعة لـ **AxiomID**، حيث يتم تخزين حالة التفكير والمهام في قاعدة البيانات (SQLite / Supabase)، ويقوم العميل بتحديثها تدريجياً. هذا يسمح لـ AxiomID بالعمل في الخلفية لأيام دون الحاجة لإبقاء نافذة المتصفح مفتوحة.
 
 ### 2. البث التدفقي البصري (Streaming UI & PPR)
 * **المستودع المستلهم**: `streaming-demo` & `partial-fallbacks`

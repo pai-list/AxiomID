@@ -1,7 +1,7 @@
 # AxiomID — Project Status & Knowledge Base
 
 > **The single source of truth for the AxiomID project.**
-> Updated: 2026-07-06 | Version: 0.2.0
+> Updated: 2026-07-07 | Version: 0.1.2
 
 ---
 
@@ -17,49 +17,29 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.2.0 |
-| **Test Suites** | 168 passing |
-| **Tests** | 3,272 passing |
-| **API Routes** | 24+ |
-| **Frontend Pages** | 13 public, 3 dashboard |
+| **Version** | 0.1.2 |
+| **Test Files** | 168 |
+| **Test Cases** | ~2,800+ (`it()` + `test()` blocks) |
+| **Test Lines** | ~38,900 |
+| **E2E Files** | 14 (Playwright) |
+| **E2E Lines** | ~2,400 |
+| **API Route Dirs** | 27 |
+| **Prisma Models** | 25 |
 | **Tech Stack** | Next.js 16, React 19, Prisma 6, Tailwind 4, Framer Motion 12 |
 | **Database** | PostgreSQL (Prisma) + D1 (edge) + Vectorize (semantic) |
 | **Auth** | Pi Network SDK + Ed25519 sovereign keys |
 | **CI/CD** | GitHub Actions → Vercel |
-| **Open PRs** | 2 (#292 MVP bugs, #293 CI fixes) |
+| **Open PRs** | 3 (#292 MVP bugs, #293 CI fixes, #296 knowledge base) |
 | **Open Issues** | 6 (#153, #221-#225) |
 
 ---
 
 ## 3. What's Done
 
-### Phase 0: Cognitive Stabilization ✅
-- Fixed 6 critical bugs before building UMI
-- Enum unification (3 conflicting enums → single `vocab.py`)
-- Parser unification (4 independent parsers → single `SharedMDParser`)
-
-### Phase 1: UMI Core ✅
-- Single Cognitive Contract for Memory Access
-- File adapter for AxiomID.Memory files
-- Router, write, query, resolve services
-- 7 tests, all passing
-
-### Phase 2: CUK Core ✅
-- Memory Pipeline (event-sourced)
-- Append-only ledger, truth graph, conflict resolver
-
-### Phase 3: CIFA ✅
-- Cognitive Integrity Firewall Agent
-- Truth invariants on all memory operations
-
-### Phase 4A-C: Hard Gate + Dumb Executor + Truth Lens ✅
-- Write operations through UMI router
-- Simple append for writes, complex logic in query path
-- CIFA enforces truth invariants
 
 ### PR #288: Expert Auto-Labeler ✅
-- 7-stage PR labeling pipeline
-- Path-based, size-based, security-aware labeling
+- 7-stage PR labeling pipeline (path, size, security, AI, test, docs, dependency)
+- Merged to main
 
 ### PR #290: P0 Security Fixes ✅
 - `agentId` populated on SkillExecution records
@@ -68,23 +48,35 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 - `passportUrl` saved to DB after IPFS publish
 
 ### PR #291: Dependabot + Code Scanning ✅
-- 14 of 19 vulnerabilities resolved
+- 14 of 19 vulnerabilities resolved via `npm audit fix`
 - ReDoS fix in ast-scanner.ts
-- Code scanning false positives triaged
+- Code scanning false positives triaged (8 documented)
 
-### PR #292: MVP Bugs (7 items) 🔄
+### PR #292: MVP Bugs (7 items) 🔄 OPEN
 - Bug 1: `.animate-slide-up` CSS class added
-- Bug 2: KYC boolean check fixed
+- Bug 2: KYC boolean check fixed (`=== "VERIFIED"`)
 - Bug 3: PassportView i18n (7 hardcoded strings → `t()`)
 - Bug 4: Polling cancelled flag (memory leak fix)
-- Bug 5: DeployStep valid HTML (Link/button)
+- Bug 5: DeployStep valid HTML (Link styled as button)
 - Bug 6: Rate limiting on public agent API
 - Bug 7: `role="tabpanel"` for accessibility
 
-### PR #293: CI Fixes ✅
-- Version reconcile (0.1.2 → 0.2.0)
-- npm-publish `--provenance` flag (OIDC, no OTP)
-- skill-quality `npm ci --ignore-scripts`
+### PR #293: CI Fixes 🔄 OPEN
+- npm-publish `--provenance` flag (OIDC, no OTP required)
+- skill-quality `npm ci --ignore-scripts` (keeps integrity, skips native builds)
+
+### PR #296: Knowledge Base + README 🔄 OPEN
+- Amrikyy.Memory moved → AxiomID.Memory
+- 24MB of dead weight deleted (old Python code, generated data, runtime state)
+- AXIOMID_KNOWLEDGE_BASE.md deleted (968 lines — old Python agent OS)
+- CODEBASE_WIKI.md deleted (112 lines — old Python agent OS)
+- PROJECT_STATUS.md created as single source of truth
+- README test count updated (3073 → actual)
+
+### Vault Audit ✅
+- 12 entirely old Amrikyy Python files deleted
+- 7 partially correct files updated
+- 4 mostly fine files verified
 
 ---
 
@@ -92,24 +84,22 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 | Task | Status | Branch |
 |------|--------|--------|
-| Phase 6: README Fix (8 discrepancies) | In Progress | `fix/readme-phase6` |
-| Phase 7: E2E Execution | Pending | — |
-| Phase 9: Issue Backlog | Pending | — |
+| E2E Test Execution | Pending | `fix/phase6-knowledge-base` |
+| Issue Backlog Triage | Pending | — |
 
 ---
 
 ## 5. What's Planned
 
 ### Near-term
-- **Phase 7:** E2E test execution (build-first approach)
-- **Phase 9:** Issue backlog triage (#221-#225, #153)
-- **README:** Fix test counts, versions, routes, trust tiers
+- **E2E Execution:** Run full Playwright suite (14 files, 156+ tests)
+- **Issue Backlog:** Triage #221-#225, #153
 
 ### Medium-term
+- **Zod Validation:** Add to `/api/agent/public` (CodeRabbit request)
+- **Retry-After Header:** Add to 429 responses (CodeRabbit request)
 - **Observability:** Metrics, tracing, logging
 - **Performance:** Benchmark write throughput, query latency
-- **Integration:** Connect to AxiomID for real-world usage
-- **Documentation:** API docs, architecture diagrams
 
 ### Long-term
 - **IQRA:** Deploy Cloudflare D1 + Vectorize (already seeded)
@@ -120,9 +110,9 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 ## 6. Architecture
 
-### Route Inventory (24+)
+### Route Inventory (27 API dirs)
 
-**Public (13):**
+**Public:**
 - `/` Landing
 - `/claim` Identity claim wizard
 - `/passport/[slug]` Public passport viewer
@@ -130,38 +120,35 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 - `/leaderboard` Ranked trust view
 - `/docs` Documentation
 - `/status` Service health
-- `/api/agent/public` Public agent info
+- `/dashboard` Main dashboard (Identity, Marketplace, Settings tabs)
+
+**API Routes (27 dirs):**
+- `/api/admin` Admin operations
+- `/api/agent` Agent CRUD
+- `/api/agents` Agent listing
+- `/api/auth` Pi authentication + wallet connect
+- `/api/credential-status` Credential status
+- `/api/daily-review` Daily review
 - `/api/did-document` DID resolution
-- `/api/health` Health check
-- `/api/openapi.json` API spec
-- `/api/passport/[slug]` Passport data
-- `/api/status` Service status
-
-**Authenticated (2):**
-- `/api/auth/pi` Pi token verification
-- `/api/auth/connect` Wallet connect
-
-**Dashboard (3 tabs, not routes):**
-- `/dashboard` Main dashboard
-  - Identity tab
-  - Marketplace tab
-  - Settings tab
-
-**API Routes (16+):**
-- `/api/skills/[slug]/execute` Skill execution
-- `/api/admin/skills/[id]` Admin moderation
-- `/api/pi/payment/approve` Payment approval
-- `/api/pi/payment/complete` Payment completion
-- `/api/sync` Data sync
-- `/api/sync/export` D1 export
-- `/api/user/status` User profile
-- `/api/action/claim` XP claims
-- `/api/monitor` System monitoring
-- `/api/leaderboard` Leaderboard data
+- `/api/emulate` Local emulators
 - `/api/explorer` Explorer data
-- `/api/truth` Truth RAG queries
-- `/api/skills` Skills listing
-- `/api/skills/tags` Skill tags
+- `/api/health` Health check
+- `/api/leaderboard` Leaderboard data
+- `/api/og` OG image generation
+- `/api/passport` Passport data
+- `/api/pi` Pi payment + KYC
+- `/api/presence` Agent presence
+- `/api/sandbox` Secure sandbox execution (NDJSON streaming)
+- `/api/skills` Skill marketplace
+- `/api/social` Social features
+- `/api/stamp` Stamp operations
+- `/api/status` Service status
+- `/api/stellar` Stellar anchoring
+- `/api/sync` Data sync
+- `/api/telegram` Telegram webhook
+- `/api/upload` File upload
+- `/api/user` User profile
+- `/api/vault` Vault operations
 
 ### Key Files
 
@@ -175,21 +162,38 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 | `src/lib/errors.ts` | API error responses |
 | `src/lib/validators.ts` | Zod input schemas |
 | `src/lib/pi-sdk.ts` | Pi SDK loader + sandbox detection |
-| `schema.prisma` | Database schema |
-| `prisma/seed.ts` | Database seeding |
+| `src/lib/math-physics.ts` | Math/physics engine (2,068 lines) |
+| `prisma/schema.prisma` | Database schema |
 
-### Database Models
+### Database Models (25)
 
 | Model | Purpose |
 |-------|---------|
 | `User` | User accounts (piUid, tier, xp, level, passportUrl) |
-| `Agent` / `UserAgent` | AI agents (status, mode, publicKey, permissions) |
-| `Skill` | Marketplace skills |
-| `SkillExecution` | Skill run history (agentId, input, output) |
+| `UserAgent` | AI agents (status, mode, publicKey, permissions) |
 | `PiPayment` | Payment records |
-| `UserAction` | XP claims (compound unique) |
-| `Wallet` | Connected wallets |
-| `LedgerEntry` | XP ledger |
+| `Action` | User actions |
+| `XpLedger` | XP ledger |
+| `AgentLog` | Agent activity logs |
+| `Stamp` | Identity stamps |
+| `Skill` | Marketplace skills |
+| `SkillInstallation` | Skill installs |
+| `SkillExecution` | Skill run history |
+| `SkillPipeline` | Skill pipelines |
+| `SkillPipelineStep` | Pipeline steps |
+| `SkillReview` | Skill reviews |
+| `SkillTag` | Skill tags |
+| `SkillTagRelation` | Tag-skill relations |
+| `SkillVersion` | Skill versions |
+| `SkillModeration` | Admin moderation |
+| `DelegatedTrust` | Trust delegation |
+| `EphemeralDid` | Ephemeral DIDs |
+| `SelfReviewLog` | Self-review audit |
+| `HarvestResult` | Harvest results |
+| `AgentPresence` | Agent presence status |
+| `Claim` | Identity claims |
+| `Stake` | Staking records |
+| `SlashingEvent` | Slashing events |
 
 ---
 
@@ -236,11 +240,11 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 - **Unit tests:** `src/__tests__/` — validators, auth, rate limiter, etc.
 - **Integration tests:** `src/__tests__/api/` — route handlers
 - **Component tests:** `src/__tests__/components/` — React components
-- **E2E tests:** `e2e/` — Playwright (13 files, 156+ tests, 0 executed yet)
+- **E2E tests:** `e2e/` — Playwright (14 files, 156+ tests)
 
 ### Running Tests
 ```bash
-npm test              # Full suite (3,272 tests)
+npm test              # Full Jest suite
 npm run lint          # ESLint
 npm run type-check    # TypeScript
 npx playwright test   # E2E (requires build first)
@@ -303,15 +307,15 @@ npx playwright test   # E2E (requires build first)
 |------|---------|
 | `PROJECT_STATUS.md` | This file — canonical project state |
 | `SOUL.md` | Identity & ethical code (bilingual) |
-| `axiomid_supreme_rules.md` | Sovereign rules & governance |
 | `security_architecture.md` | Threat model & attack surface |
-| `axiomid_backend.md` | Backend API reference |
 | `repo_dna.md` | Codebase patterns & conventions |
-| `codebase_map.md` | Architecture diagrams |
 | `framework_design.md` | DID & passport framework |
-| `topology.md` | Semantic memory topology |
 | `HOME.md` | Navigation hub |
 | `_SCHEMA.md` | Vault conventions |
+| `vercel_labs_inspiration.md` | Vercel Labs patterns |
+| `turboquant.md` | Research: KV cache quantization |
+| `rust_go_brainstorming.md` | Research: Rust/Go migration |
+| `simulation_and_selfplay.md` | Research: self-play simulation |
 
 ---
 

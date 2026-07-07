@@ -12,7 +12,7 @@
 AxiomID/
 ├── src/
 │   ├── app/              # Next.js App Router (routes + pages)
-│   │   ├── api/          # API route handlers (24+)
+│   │   ├── api/          # API route handlers (27 dirs)
 │   │   ├── dashboard/    # Authenticated dashboard (tabs, not routes)
 │   │   ├── passport/     # Public passport viewer
 │   │   └── ...           # Other pages
@@ -45,7 +45,6 @@ AxiomID/
 | TypeScript | Playwright | E2E testing |
 | TypeScript | Jest | Unit & integration testing |
 | TypeScript | Cloudflare Workers | Edge compute |
-| Python | — | Memory pipeline (Cognitive OS) |
 
 ---
 
@@ -173,57 +172,37 @@ describe("Feature", () => {
 
 ---
 
-## 6. Database Schema (Key Models)
+## 6. Database Schema (25 Models)
 
-```prisma
-model User {
-  id          String   @id @default(cuid())
-  piUid       String   @unique
-  username    String?
-  tier        String   @default("VISITOR")
-  xp          Int      @default(0)
-  level       Int      @default(1)
-  passportUrl String?
-  agent       Agent?
-  ledger      LedgerEntry[]
-  actions     UserAction[]
-  wallets     Wallet[]
-  createdAt   DateTime @default(now())
-}
+See `prisma/schema.prisma` for full schema. Key models:
 
-model Agent {
-  id            String   @id @default(cuid())
-  publicId      String   @unique
-  name          String
-  status        String   @default("INACTIVE")
-  mode          String   @default("SUPERVISED")
-  publicKey     String
-  permissions   String?
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
-}
-
-model Skill {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  description String?
-  status      String   @default("PENDING")
-  executions  SkillExecution[]
-}
-
-model SkillExecution {
-  id        String   @id @default(cuid())
-  agentId   String?
-  skillId   String
-  skill     Skill    @relation(fields: [skillId], references: [id])
-  input     Json?
-  output    Json?
-  status    String
-  createdAt DateTime @default(now())
-}
-```
+| Model | Purpose |
+|-------|---------|
+| `User` | User accounts (piUid, tier, xp, level, passportUrl) |
+| `UserAgent` | AI agents (status, mode, publicKey, permissions) |
+| `PiPayment` | Payment records |
+| `Action` | User actions |
+| `XpLedger` | XP ledger |
+| `AgentLog` | Agent activity logs |
+| `Stamp` | Identity stamps |
+| `Skill` | Marketplace skills |
+| `SkillInstallation` | Skill installs |
+| `SkillExecution` | Skill run history |
+| `SkillPipeline` | Skill pipelines |
+| `SkillPipelineStep` | Pipeline steps |
+| `SkillReview` | Skill reviews |
+| `SkillTag` | Skill tags |
+| `SkillTagRelation` | Tag-skill relations |
+| `SkillVersion` | Skill versions |
+| `SkillModeration` | Admin moderation |
+| `DelegatedTrust` | Trust delegation |
+| `EphemeralDid` | Ephemeral DIDs |
+| `SelfReviewLog` | Self-review audit |
+| `HarvestResult` | Harvest results |
+| `AgentPresence` | Agent presence status |
+| `Claim` | Identity claims |
+| `Stake` | Staking records |
+| `SlashingEvent` | Slashing events |
 
 ---
 
@@ -259,7 +238,7 @@ model SkillExecution {
 
 ### Running Tests
 ```bash
-npm test              # Full suite (3,272 tests, 168 suites)
+npm test              # Full suite (~2,800+ tests, 168 suites)
 npm run lint          # ESLint (0 errors, 0 warnings)
 npm run type-check    # TypeScript (tsc --noEmit)
 npx playwright test   # E2E (requires npm run build first)

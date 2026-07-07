@@ -1,14 +1,7 @@
----
-name: security-architecture
-description: Unified threat model and security architecture for AxiomID backend
-tier: Tier 1 (Source of Truth)
-last_updated: 2026-05-31
-status: Active
----
-
-# AxiomID Security Architecture — Unified Threat Model
+# Security Architecture — Unified Threat Model
 
 > All API routes, attack surfaces, mitigations, and security invariants.
+> Updated: 2026-07-07
 
 ---
 
@@ -21,6 +14,7 @@ status: Active
 5. **CORS isolation** — subdomains cannot call each other's APIs
 6. **Rate limiting on all public endpoints** — prevents abuse
 7. **Prisma transactions for atomic operations** — no partial writes
+8. **No `as any` in new code** — strict TypeScript
 
 ---
 
@@ -65,6 +59,13 @@ status: Active
 | POST /api/auth/connect | Replay attack | State token expires after 5 min |
 | POST /api/auth/connect | Cross-chain confusion | Chain type validated |
 
+### 2.6 Public Agent API
+
+| Route | Attack | Mitigation |
+|---|---|---|
+| GET /api/agent/public | Enumeration | Rate limit (30/min anonymous) |
+| GET /api/agent/public | Data leakage | Only returns public profile |
+
 ---
 
 ## 3. Rate Limiting Strategy
@@ -85,20 +86,12 @@ status: Active
 
 ## 4. CORS Architecture
 
-### Phase 1 (Current)
+### Current
 ```
 axiomid.app → Allow
 axiomid.vercel.app → Allow (preview)
 sandbox.minepi.com → Allow (dev)
 localhost:3000 → Allow (dev)
-```
-
-### Phase 4 (Future — Subdomain Isolation)
-```
-agent-a.axiomid.app → /api/agent/a/* ONLY
-agent-b.axiomid.app → /api/agent/b/* ONLY
-Cross-subdomain API calls → 403 FORBIDDEN
-WebSocket: wss://*.axiomid.app ONLY
 ```
 
 ---
@@ -125,7 +118,7 @@ WebSocket: wss://*.axiomid.app ONLY
 ### Prisma Transactions Used For
 1. **XP claim + user update + tier upgrade** — atomic
 2. **Payment completion + XP reward** — atomic
-3. **Agent activation + permission update** — atomic (Phase 3)
+3. **Skill execution + agent log** — atomic
 
 ### Idempotency
 - `user_action_unique` prevents duplicate XP claims
@@ -134,28 +127,7 @@ WebSocket: wss://*.axiomid.app ONLY
 
 ---
 
-## 7. Future Security Enhancements (Phase 3+)
-
-### Circuit Breaker (Phase 3)
-- Drawdown limit: -20% of agent balance
-- Consecutive failures: 3 → pause agent
-- Heartbeat timeout: 60s → pause agent
-- Daily spend limit: configurable per agent
-
-### WebSocket Security (Phase 3)
-- Context ID + sequence number for state recovery
-- 30-minute expiry for inactive connections
-- Max 100 messages per context
-- Replay protection via sequence validation
-
-### Subdomain Isolation (Phase 4)
-- Per-subdomain CORS headers
-- Cross-agent API call blocking
-- CSP expansion for `*.axiomid.app`
-
----
-
-## 8. Incident Response
+## 7. Incident Response
 
 ### If Token Compromised
 1. User revokes via Pi Browser
@@ -166,8 +138,3 @@ WebSocket: wss://*.axiomid.app ONLY
 1. Prisma transaction prevents duplicate
 2. `piPaymentId @unique` constraint
 3. Log incident for manual review
-
-### If Agent Goes Rogue
-1. Circuit breaker trips → agent paused
-2. User notified via WebSocket
-3. Agent permissions revoked automatically

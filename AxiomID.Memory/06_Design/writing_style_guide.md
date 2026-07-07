@@ -6,25 +6,25 @@
 ## Core Principles
 
 ### 1. Precision Over Speed
-```
+```text
 ❌ "The auth system handles login"
 ✅ "AxiomID authenticates agents via JWT tokens with RS256 signing"
 ```
 
 ### 2. Evidence Over Opinion
-```
+```text
 ❌ "Performance is good"
 ✅ "P95 latency: 45ms, throughput: 1200 req/s"
 ```
 
 ### 3. Action Over Description
-```
+```text
 ❌ "This file contains configuration"
 ✅ "Edit this file to change pipeline behavior"
 ```
 
 ### 4. Context Over Isolation
-```
+```text
 ❌ "Use bcrypt for hashing"
 ✅ "Use bcrypt (cost factor 12) for API keys, scrypt for passwords"
 ```
@@ -507,7 +507,7 @@ TypeError: Cannot read property 'id' of undefined
 
 ### Context
 - **Request:** POST /api/agent
-- **User Agent:** Amrikyy-Agent/1.0
+- **User Agent:** AxiomID-Agent/1.0
 - **Timestamp:** 2026-06-03T00:00:00Z
 
 ### Investigation

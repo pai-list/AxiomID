@@ -4,7 +4,7 @@ status: evergreen
 tier: tier-0
 last_updated: 2026-05-29
 ai_summary: "Full schema and conventions for the AxiomID.Memory Obsidian vault. Defines frontmatter fields, note tiers, linking conventions, and AI navigation protocol."
-linked_notes: [HOME, SOUL, axiomid_supreme_rules]
+linked_notes: [HOME, SOUL, PROJECT_STATUS]
 ---
 
 # _SCHEMA — AxiomID.Memory Vault Conventions
@@ -20,10 +20,8 @@ linked_notes: [HOME, SOUL, axiomid_supreme_rules]
 |-------|------|---------|
 | Root index | `HOME.md` | Map of Content — يبدأ منه الإنسان والوكيل |
 | Soul | `SOUL.md` | الهوية الأخلاقية — دستور الروح |
-| Rules | `axiomid_supreme_rules.md` | القواعد السيادية — DRY, TrustChain, المراقبة |
-| Topology | `topology.md` | توبولوجيا الذاكرة 369 |
+| Rules | `PROJECT_STATUS.md` | حالة المشروع — المصدر الأساسي |
 | Progress | `progress_log.md` | سجل التقدم المستمر — يُحدَّث مع كل جلسة |
-| Rebrand | `حالة_إعادة_التسمية.md` | تقرير تحول Amrikyy → AxiomID |
 | Schema | `_SCHEMA.md` | **(هذا الملف)** — قواعد الـ vault |
 | Arabic notes | `*.md` | ملفات بالعربية للتوثيق المحلي |
 
@@ -58,7 +56,7 @@ linked_notes: [file1, file2]    # OPTIONAL. روابط مباشرة لملفات
 |------|---------|-------|
 | `tier-0` | Index — الملاحة والمراجع | `HOME.md`, `_SCHEMA.md` |
 | `tier-1` | Living — يتغير باستمرار | `progress_log.md` |
-| `tier-2` | Reference — ثابت أو شبه ثابت | `SOUL.md`, `topology.md` |
+| `tier-2` | Reference — ثابت أو شبه ثابت | `SOUL.md`, `framework_design.md` |
 
 ---
 
@@ -123,10 +121,9 @@ linked_notes: [note1, note2]
 ### Link priority
 
 1. `[[SOUL]]` — المرجع الأخلاقي الأعلى
-2. `[[axiomid_supreme_rules]]` — القواعد السيادية
-3. `[[topology]]` — فهم كيفية تنظيم المعرفة
-4. `[[HOME]]` — العودة للملاحة
-5. `[[progress_log]]` — أين نحن الآن
+2. `[[PROJECT_STATUS]]` — حالة المشروع
+3. `[[HOME]]` — العودة للملاحة
+4. `[[progress_log]]` — أين نحن الآن
 
 ---
 
@@ -160,9 +157,9 @@ linked_notes: [note1, note2]
 | Convention | Example |
 |------------|---------|
 | Arabic for local docs | `المشاكل_والإصلاحات.md` |
-| English for core | `SOUL.md`, `HOME.md`, `topology.md` |
+| English for core | `SOUL.md`, `HOME.md`, `PROJECT_STATUS.md` |
 | Leading underscore for meta | `_SCHEMA.md` |
-| snake_case for English | `axiomid_supreme_rules.md` |
+| snake_case for English | `repo_dna.md` |
 
 ---
 
