@@ -29,12 +29,14 @@ describe('computeTrustScore', () => {
       { type: 'mining_streak', xp: 50, timestamp: now },
       { type: 'validator_service', xp: 200, timestamp: now },
     ];
-    const score = computeTrustScore(allActions, false, now);
-    // Score should be at or near 100 when all actions are completed
-    // The exact value depends on MAX_TRUST_SCORE which includes all action weights
-    expect(score).toBeGreaterThanOrEqual(85);
-    expect(score).toBeLessThanOrEqual(100);
-  });
+    const completeActions = [
+      ...allActions,
+      { type: 'spend_request_created', xp: 0, timestamp: now },
+      { type: 'spend_request_approved', xp: 5, timestamp: now },
+      { type: 'spend_request_paid', xp: 20, timestamp: now },
+    ];
+    const score = computeTrustScore(completeActions, false, now);
+    expect(score).toBe(100);
 
   it('returns higher score with stellar anchor bonus', () => {
     const actions = [
