@@ -237,7 +237,7 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
                   <button
                     onClick={() => handleApprove(req)}
                     disabled={actionLoading === req.id}
-                    className="flex-1 px-3 py-1.5 text-xs font-mono bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 disabled:opacity-50"
+                    className="flex-1 px-3 py-1.5 text-xs font-mono bg-emerald-500/20 text-emerald-400 rounded hover:bg-emerald-500/30 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none transition-all disabled:opacity-50"
                   >
                     {payingId === req.id
                       ? "Paying via Pi..."
@@ -248,11 +248,10 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
                   <button
                     onClick={() => setRejectingId(req.id)}
                     disabled={actionLoading === req.id}
-                    className="px-3 py-1.5 text-xs font-mono bg-zinc-800 text-zinc-400 rounded hover:bg-zinc-700 disabled:opacity-50"
+                    className="px-3 py-1.5 text-xs font-mono bg-zinc-800 text-zinc-400 rounded hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:outline-none transition-all disabled:opacity-50"
                   >
                     Reject
                   </button>
-                </div>
               )}
             </div>
           ))}
