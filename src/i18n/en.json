@@ -558,5 +558,11 @@
   "tier_advanced_tool": "Advanced Tool",
   "tier_advanced_infrastructure": "Infra",
   "tier_pro": "Pro",
-  "tier_sovereign": "Sovereign"
+  "tier_sovereign": "Sovereign",
+  "loading_identity": "Loading your sovereign identity...",
+  "preparing_your_ai": "Preparing Your AI Agent",
+  "reserving_domain": "Reserving your domain",
+  "provisioning_identity": "Provisioning identity",
+  "generating_did": "Generating DID",
+  "issuing_passport": "Issuing passport"
 }

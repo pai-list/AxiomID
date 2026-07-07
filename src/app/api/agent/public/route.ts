@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
+import { getClientIp } from "@/lib/ip";
+
+const PublicAgentQuerySchema = z.object({
+  username: z.string().min(1, "Username required").max(63).regex(/^[a-zA-Z0-9_-]+$/, "Invalid username format"),
+});
 
 /**
  * GET /api/agent/public?username=xxx — Public agent data endpoint.
@@ -8,16 +15,18 @@ import { logger } from "@/lib/logger";
  */
 export async function GET(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = await checkRateLimit(`agent-public:${ip}`, RATE_LIMITS.public);
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": "60" } });
+    }
+
     const { searchParams } = new URL(request.url);
-    const username = searchParams.get("username");
-
-    if (!username || typeof username !== "string") {
-      return NextResponse.json({ error: "Username required" }, { status: 400 });
+    const parsed = PublicAgentQuerySchema.safeParse({ username: searchParams.get("username") });
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
-
-    if (username.length > 63 || !/^[a-zA-Z0-9_-]+$/.test(username)) {
-      return NextResponse.json({ error: "Invalid username format" }, { status: 400 });
-    }
+    const { username } = parsed.data;
 
     const { prisma } = await import("@/lib/prisma");
     const user = await prisma.user.findFirst({
