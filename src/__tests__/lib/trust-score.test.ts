@@ -3,6 +3,7 @@
  */
 
 import { computeTrustScore } from '@/lib/trust-score';
+import { MAX_TRUST_SCORE } from '@/lib/actions';
 
 describe('computeTrustScore', () => {
   const now = new Date();
@@ -28,7 +29,14 @@ describe('computeTrustScore', () => {
       { type: 'mining_streak', xp: 50, timestamp: now },
       { type: 'validator_service', xp: 200, timestamp: now },
     ];
-    expect(computeTrustScore(allActions, false, now)).toBe(100);
+    const completeActions = [
+      ...allActions,
+      { type: 'spend_request_created', xp: 0, timestamp: now },
+      { type: 'spend_request_approved', xp: 5, timestamp: now },
+      { type: 'spend_request_paid', xp: 20, timestamp: now },
+    ];
+    const score = computeTrustScore(completeActions, false, now);
+    expect(score).toBe(100);
   });
 
   it('returns higher score with stellar anchor bonus', () => {

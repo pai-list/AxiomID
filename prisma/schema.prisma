@@ -80,6 +80,9 @@ model User {
   stakes         Stake[]
   slashingEvents SlashingEvent[]
 
+  // Spend Requests
+  spendRequests SpendRequest[]
+
   // Metadata
   metadata   String?   @db.Text // JSON: arbitrary user metadata (max ~10KB)
   lastActive DateTime?
@@ -126,6 +129,9 @@ model UserAgent {
 
   // Skills (installed)
   installedSkills SkillInstallation[]
+
+  // Spend Requests
+  spendRequests SpendRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -306,7 +312,7 @@ model Skill {
 
   // ── SOUL Protocol ──
   soulPrinciple SoulPrinciple? // optional — which principle this skill serves
-  chainable    Boolean     @default(false) // can this skill be part of a pipeline?
+  chainable     Boolean        @default(false) // can this skill be part of a pipeline?
 
   // ── Analytics ──
   installCount Int   @default(0)
@@ -346,16 +352,16 @@ model SkillInstallation {
 }
 
 model SkillExecution {
-  id          String   @id @default(uuid())
-  skillId     String
-  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  agentId     String?  // nullable for anonymous executions
-  input       Json?    // execution input parameters
-  output      Json?    // execution output/result
-  success     Boolean  @default(true)
-  durationMs  Int?     // execution time in milliseconds
-  errorMessage String? @db.Text
-  executedAt  DateTime @default(now())
+  id           String   @id @default(uuid())
+  skillId      String
+  skill        Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  agentId      String? // nullable for anonymous executions
+  input        Json? // execution input parameters
+  output       Json? // execution output/result
+  success      Boolean  @default(true)
+  durationMs   Int? // execution time in milliseconds
+  errorMessage String?  @db.Text
+  executedAt   DateTime @default(now())
 
   @@index([skillId])
   @@index([executedAt])
@@ -363,27 +369,27 @@ model SkillExecution {
 }
 
 model SkillPipeline {
-  id          String   @id @default(uuid())
-  name        String   @db.VarChar(200)
-  description String?  @db.VarChar(1000)
+  id          String              @id @default(uuid())
+  name        String              @db.VarChar(200)
+  description String?             @db.VarChar(1000)
   authorId    String?
-  author      User?    @relation(fields: [authorId], references: [id])
-  isActive    Boolean  @default(true)
+  author      User?               @relation(fields: [authorId], references: [id])
+  isActive    Boolean             @default(true)
   steps       SkillPipelineStep[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@index([authorId])
 }
 
 model SkillPipelineStep {
-  id         String  @id @default(uuid())
+  id         String        @id @default(uuid())
   pipelineId String
   pipeline   SkillPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
   skillId    String
-  skill      Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  stepOrder  Int     // execution order (0-indexed)
-  config     Json?   // step-specific configuration
+  skill      Skill         @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  stepOrder  Int // execution order (0-indexed)
+  config     Json? // step-specific configuration
 
   @@unique([pipelineId, stepOrder])
   @@index([pipelineId])
@@ -573,12 +579,12 @@ model Claim {
 // ─────────────────────────────────────────────
 
 model Stake {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount     Decimal  @db.Decimal(20, 8)
-  status     String   @default("staked") // staked | unstaked
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(20, 8)
+  status    String   @default("staked") // staked | unstaked
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }
@@ -594,3 +600,29 @@ model SlashingEvent {
   @@index([userId])
 }
 
+// ─────────────────────────────────────────────
+// AGENTIC PAYMENTS (Spend Request)
+// ─────────────────────────────────────────────
+
+model SpendRequest {
+  id              String    @id @default(uuid())
+  agentId         String
+  agent           UserAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Decimal   @db.Decimal(20, 8)
+  currency        String    @default("PI")
+  description     String    @db.VarChar(500)
+  context         String    @db.Text
+  items           Json? // [{ name, unit_amount, quantity }]
+  status          String    @default("pending") // pending | approved | rejected | expired | completed
+  rejectionReason String?   @db.VarChar(500)
+  paymentId       String?   @unique // links to PiPayment.paymentId
+  txid            String?
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([status])
+}
