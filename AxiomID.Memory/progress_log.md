@@ -98,4 +98,18 @@
 
 ---
 
+---
+
+## 2026-07-07 — Spend Request Design (Agentic Pi Payments)
+
+- Stripe Link CLI deep research + pattern match to Pi SDK
+- SpendRequest Prisma model designed (1 table, paymentId @unique link to PiPayment)
+- 6-section spec written to `docs/superpowers/specs/2026-07-07-axiomid-spend-request-design.md`
+- SSE streaming agent notification pattern (polling-based, no pub/sub)
+- 3 Featured Agents confirmed for MVP: axiomid-wallet, axiomid-passport, axiomid-iqra
+- Marketplace deferred to Phase 2 (cold-start avoidance, security)
+- 2 AxiomID Memory notes updated (06_Design + this log)
+
+---
+
 *This log records actual completed work only. No planned or aspirational items.*
