@@ -235,7 +235,7 @@ export default function LeaderboardPage() {
           <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
             <div className="p-4 border-b border-white/5 bg-white/[0.01] flex justify-between items-center text-[10px] font-mono text-zinc-500">
               <span>{language === "en" ? "PIONEER REGISTRY" : "سجل رواد البروتوكول"}</span>
-              <span>{tableUsers.length} FOUND</span>
+              <span>{tableUsers.length} {language === "en" ? "FOUND" : "وجد"}</span>
             </div>
             
             <div className="overflow-x-auto no-scrollbar">
@@ -243,12 +243,12 @@ export default function LeaderboardPage() {
                 <thead>
                   <tr className="border-b border-white/5 text-[10px] text-zinc-500 bg-white/[0.005]">
                     <th className="py-3 px-4 text-center w-12">#</th>
-                    <th className="py-3 px-4">PIONEER</th>
-                    <th className="py-3 px-4 text-center">TIER</th>
-                    <th className="py-3 px-4 text-center">STAMPS</th>
-                    <th className="py-3 px-4 text-center">TRUST</th>
+                    <th className="py-3 px-4">{language === "en" ? "PIONEER" : "الرائد"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TIER" : "الطبقة"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "STAMPS" : "الختم"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TRUST" : "الثقة"}</th>
                     <th className="py-3 px-4 text-right">XP</th>
-                    <th className="py-3 px-4 text-right sr-only">ACTION</th>
+                    <th className="py-3 px-4 text-right sr-only">{language === "en" ? "ACTION" : "الإجراء"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">

@@ -246,7 +246,7 @@ export default function ExplorerPage() {
                 {/* Tier Distribution Bento */}
                 <div className="bento-card p-5">
                   <h3 className="text-xs font-bold font-mono text-zinc-400 uppercase tracking-widest mb-4">
-                    Identity Tier Distribution
+                    {language === "en" ? "Identity Tier Distribution" : "توزيع طبقات الهوية"}
                   </h3>
                   <div className="space-y-3">
                     {[
@@ -275,7 +275,7 @@ export default function ExplorerPage() {
                 {/* Recent Payments Ledger */}
                 <div className="bento-card p-5">
                   <h3 className="text-xs font-bold font-mono text-zinc-400 uppercase tracking-widest mb-4">
-                    Recent Payments Ledger
+                    {language === "en" ? "Recent Payments Ledger" : "سجل المدفوعات الأخيرة"}
                   </h3>
                   {data.recentPayments.length > 0 ? (
                     <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
@@ -302,7 +302,7 @@ export default function ExplorerPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-xs font-mono text-zinc-600">
-                      No payments found on ledger
+                      {language === "en" ? "No payments found on ledger" : "لم يتم العثور على مدفوعات في السجل"}
                     </div>
                   )}
                 </div>
