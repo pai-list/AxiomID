@@ -326,10 +326,10 @@ describe('PassportView', () => {
     const { unmount } = render(<PassportView />);
 
     await waitFor(() => {
-      expect(screen.getByText('translated_preparing_your_ai')).toBeInTheDocument();
+      expect(screen.getByText('Preparing your AI...')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('translated_status: PROVISIONING')).toBeInTheDocument();
+    expect(screen.getByText('Status: PROVISIONING')).toBeInTheDocument();
     expect(screen.queryByTestId('agent-passport')).not.toBeInTheDocument();
 
     unmount();
@@ -347,7 +347,7 @@ describe('PassportView', () => {
       expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('translated_preparing_your_ai')).not.toBeInTheDocument();
+    expect(screen.queryByText('Preparing your AI...')).not.toBeInTheDocument();
   });
 
   it('renders the full passport view (not the "preparing" screen) when jobStatus is COMPLETED', async () => {
@@ -362,6 +362,6 @@ describe('PassportView', () => {
       expect(screen.getByTestId('agent-passport')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('translated_preparing_your_ai')).not.toBeInTheDocument();
+    expect(screen.queryByText('Preparing your AI...')).not.toBeInTheDocument();
   });
 });

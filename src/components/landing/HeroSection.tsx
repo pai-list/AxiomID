@@ -21,20 +21,21 @@ export default function HeroSection({ t }: HeroSectionProps) {
           <div className="space-y-2">
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
               <span className="block animate-slide-up" style={{ animationDelay: "0.1s" }}>
-                {t("landing_hero_line1")}
+                Create your
               </span>
               <span
                 className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up"
                 style={{ animationDelay: "0.2s" }}
               >
-                {t("landing_hero_line2")}
+                AI Identity
               </span>
             </h1>
             <p
               className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4"
               style={{ animationDelay: "0.3s" }}
             >
-              {t("landing_hero_desc")}
+              Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign
+              W3C DID, Passport, and live endpoint.
             </p>
           </div>
 
@@ -47,7 +48,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
               className="btn-primary py-4 px-8 text-sm sm:text-base group relative overflow-hidden w-full sm:w-auto font-mono tracking-wider shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {t("landing_hero_cta_primary")}
+                Create My AI Agent
                 <svg
                   className="w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
@@ -63,7 +64,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
               className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-3"
             >
               <Shield className="w-4 h-4 opacity-50" />
-              {t("landing_hero_cta_secondary")}
+              Explore the Protocol
             </a>
           </div>
 
@@ -73,12 +74,12 @@ export default function HeroSection({ t }: HeroSectionProps) {
           >
             <div className="flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-electric-blue" />
-              <span className="tracking-wider">{t("landing_hero_badge_did")}</span>
+              <span className="tracking-wider">W3C DID</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-zinc-700" />
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-axiom-purple" />
-              <span className="tracking-wider">{t("landing_hero_badge_permissions")}</span>
+              <span className="tracking-wider">Zero Permissions</span>
             </div>
           </div>
         </div>

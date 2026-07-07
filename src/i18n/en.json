@@ -558,21 +558,5 @@
   "tier_advanced_tool": "Advanced Tool",
   "tier_advanced_infrastructure": "Infra",
   "tier_pro": "Pro",
-  "tier_sovereign": "Sovereign",
-  "loading_identity": "Loading your sovereign identity...",
-  "preparing_your_ai": "Preparing Your AI Agent",
-  "reserving_domain": "Reserving your domain",
-  "provisioning_identity": "Provisioning identity",
-  "generating_did": "Generating DID",
-  "issuing_passport": "Issuing passport",
-  "landing_hero_line1": "Create your",
-  "landing_hero_line2": "AI Identity",
-  "landing_hero_desc": "Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign W3C DID, Passport, and live endpoint.",
-  "landing_hero_cta_primary": "Create My AI Agent",
-  "landing_hero_cta_secondary": "Explore the Protocol",
-  "landing_hero_badge_did": "W3C DID",
-  "landing_hero_badge_permissions": "Zero Permissions",
-  "landing_badge_did": "W3C DID Standard",
-  "landing_badge_zkp": "ZKP Privacy Ready",
-  "landing_badge_pi": "Pi Network Compatible"
+  "tier_sovereign": "Sovereign"
 }

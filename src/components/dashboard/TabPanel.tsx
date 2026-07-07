@@ -15,7 +15,6 @@ export function TabPanel({ children, id, activeTab }: TabPanelProps) {
       {activeTab === id && (
         <motion.div
           key={id}
-          role="tabpanel"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
