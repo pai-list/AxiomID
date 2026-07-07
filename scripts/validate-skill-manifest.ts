@@ -23,7 +23,7 @@ async function main() {
   const skills: { name: string; slug: string; manifestMd: string }[] = [];
 
   if (mode === 'changed') {
-    const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1').toString().trim();
+    const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || git diff --name-only HEAD 2>/dev/null || echo ""').toString().trim();
     const changedFiles = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
 
     for (const file of changedFiles) {
