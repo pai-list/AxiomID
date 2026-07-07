@@ -58,15 +58,19 @@ export async function PATCH(
     if (spendRequest.userId !== auth.user.id) {
       return apiError('FORBIDDEN', 'Spend request does not belong to authenticated user');
     }
-    if (spendRequest.status !== 'pending') {
-      return apiError('CONFLICT', `Spend request is already ${spendRequest.status}`);
+
+    // State machine: pending → approved/rejected, approved → completed
+    if (status === 'completed') {
+      if (spendRequest.status !== 'approved') {
+        return apiError('CONFLICT', 'Spend request must be approved before completion');
+      }
+    } else {
+      if (spendRequest.status !== 'pending') {
+        return apiError('CONFLICT', `Spend request is already ${spendRequest.status}`);
+      }
     }
-    // Allow "completed" from "approved" status (after Pi payment)
-    if (status === 'completed' && spendRequest.status as string !== 'approved') {
-      return apiError('CONFLICT', 'Spend request must be approved before completion');
-    }
+
     if (new Date() > spendRequest.expiresAt) {
-      // Auto-expire if past expiry
       await prisma.spendRequest.update({ where: { id }, data: { status: 'expired' } });
       return apiError('NOT_FOUND', 'Spend request has expired');
     }
@@ -123,7 +127,7 @@ export async function PATCH(
       id: updated.id,
       status: updated.status,
       rejectionReason: updated.rejectionReason,
-      updatedAt: updated.createdAt,
+      createdAt: updated.createdAt,
     });
   } catch (error) {
     logger.error('[SPEND-REQUEST] Action error:', error);

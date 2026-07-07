@@ -21,8 +21,9 @@ export const SpendRequestIdSchema = z.object({
 });
 
 export const SpendRequestActionSchema = z.object({
-  action: z.enum(['approved', 'rejected']),
+  status: z.enum(['approved', 'rejected', 'completed']),
   rejectionReason: z.string().max(500).optional(),
+  paymentId: z.string().optional(),
 });
 ```
 
