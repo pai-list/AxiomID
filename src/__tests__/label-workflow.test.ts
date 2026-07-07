@@ -4,7 +4,7 @@
  * Structural tests for .github/workflows/label.yml.
  *
  * This workflow triages pull requests and applies labels based on the paths
- * modified, using actions/labeler@v6. It runs on `pull_request_target`,
+ * modified, using actions/labeler@v4. It runs on `pull_request_target`,
  * which executes with access to repository secrets even for PRs opened from
  * forks — so its permissions and trusted-action version must stay tightly
  * scoped. These tests lock in that configuration and guard against silent,
@@ -145,7 +145,7 @@ describe("label.yml — permissions (least privilege)", () => {
 
 describe("label.yml — labeler step", () => {
   it("uses the actions/labeler action", () => {
-    expect(content).toMatch(/uses:\s*actions\/labeler@v6/);
+    expect(content).toMatch(/uses:\s*actions\/labeler@v4/);
   });
 
   it("pins the labeler action to a specific major version (not @main or @latest)", () => {

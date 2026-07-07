@@ -1,8 +1,16 @@
 import { Fingerprint, Shield, Zap } from "lucide-react";
-import SectionHeader from "./SectionHeader";
 
 interface FeaturesSectionProps {
   t: (key: string) => string;
+}
+
+export function SectionHeader({ label, title, labelColor }: { label: string; title: string; labelColor: string }) {
+  return (
+    <div className="text-center mb-10 sm:mb-12">
+      <span className={`text-[10px] font-mono ${labelColor} tracking-widest uppercase`}>{label}</span>
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface mt-2">{title}</h2>
+    </div>
+  );
 }
 
 export default function FeaturesSection({ t }: FeaturesSectionProps) {
@@ -21,21 +29,21 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
             title: t("landing_step1_title"),
             desc: t("landing_step1_desc"),
             icon: <Fingerprint className="w-6 h-6 text-electric-blue" />,
-            badge: t("landing_badge_did"),
+            badge: "W3C DID Standard",
           },
           {
             step: "02",
             title: t("landing_step2_title"),
             desc: t("landing_step2_desc"),
             icon: <Shield className="w-6 h-6 text-axiom-purple" />,
-            badge: t("landing_badge_zkp"),
+            badge: "ZKP Privacy Ready",
           },
           {
             step: "03",
             title: t("landing_step3_title"),
             desc: t("landing_step3_desc"),
             icon: <Zap className="w-6 h-6 text-emerald-400" />,
-            badge: t("landing_badge_pi"),
+            badge: "Pi Network Compatible",
           },
         ].map((item) => (
           <div key={item.step} className="stitch-feature-card flex flex-col gap-4 cursor-default group relative z-10">
