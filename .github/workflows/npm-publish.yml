@@ -29,11 +29,11 @@ jobs:
         run: cd packages/sdk && npm run build
 
       - name: Publish @axiomid/crypto
-        run: cd packages/crypto && npm publish --access public
+        run: cd packages/crypto && npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @axiomid/sdk
-        run: cd packages/sdk && npm publish --access public
+        run: cd packages/sdk && npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
