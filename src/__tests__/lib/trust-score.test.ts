@@ -37,6 +37,7 @@ describe('computeTrustScore', () => {
     ];
     const score = computeTrustScore(completeActions, false, now);
     expect(score).toBe(100);
+  });
 
   it('returns higher score with stellar anchor bonus', () => {
     const actions = [

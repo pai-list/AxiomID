@@ -63,7 +63,6 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
   }, []);
 
   useEffect(() => {
-    fetchRequests();
     const interval = setInterval(() => {
       fetchRequests();
     }, 10_000);
@@ -253,6 +252,7 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
                   >
                     Reject
                   </button>
+                </div>
               )}
             </div>
           ))}

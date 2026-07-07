@@ -6,8 +6,6 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
-import { ACTIONS } from '@/lib/actions';
-import { calculateActionHash, GENESIS_HASH } from '@/lib/trust-chain';
 
 export const maxDuration = 30;
 
