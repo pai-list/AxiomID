@@ -1,5 +1,4 @@
 import { z } from "zod";
-import crypto from "crypto";
 
 const DID_CONTEXT = "https://www.w3.org/ns/did/v1";
 
