@@ -404,3 +404,77 @@ Rules:
 - Deletion over addition. Boring over clever. Fewest files possible.
 - Mark intentional simplifications with a `ponytail:` comment.
 - Not lazy about: input validation at trust boundaries, error handling that prevents data loss, security, accessibility.
+
+---
+
+# CodeRabbit Learning Patterns
+
+> Validated patterns from CodeRabbit reviews. Enforce on every PR.
+
+### 1. Zod Validation for API Route Params + Body (CRITICAL)
+
+For Next.js API route handlers in `src/app/api/**/route.ts`, validate route `params` and request body with Zod schemas. Never use manual `if` checks or `body as {...}` type assertions at trust boundaries.
+
+```typescript
+// src/lib/validators.ts — define schemas
+export const IdParamSchema = z.object({ id: z.string().uuid() });
+export const ActionSchema = z.object({ action: z.enum(['approved', 'rejected']) });
+
+// route.ts — use them
+const { id } = IdParamSchema.parse(params);
+const body = ActionSchema.parse(await req.json());
+```
+
+### 2. Retry-After Header on 429 Responses
+
+When returning 429, include `Retry-After` header with seconds until retry. Use `resetAt` from `checkRateLimit`.
+
+```typescript
+const retryAfter = Math.max(0, Math.ceil((rateLimit.resetAt - Date.now()) / 1000));
+return NextResponse.json(
+  { error: "Too many requests" },
+  { status: 429, headers: { "Retry-After": String(retryAfter) } },
+);
+```
+
+### 3. Browser Timer Types (No Double-Casting)
+
+In browser client components, use `ReturnType<typeof setTimeout>` instead of `NodeJS.Timeout`. Never double-cast.
+
+```typescript
+// Correct
+let pollTimeout: ReturnType<typeof setTimeout>;
+pollTimeout = setTimeout(fetchPassport, 3000);
+
+// Wrong
+let pollTimeout: NodeJS.Timeout;
+pollTimeout = setTimeout(fetchPassport, 3000) as unknown as NodeJS.Timeout;
+```
+
+### 4. i18n Completeness Check
+
+When adding UI text, always verify matching keys exist in BOTH `src/i18n/en.json` AND `src/i18n/ar.json`. Missing keys cause raw key rendering for Arabic users.
+
+### 5. Focus-Visible on Interactive Elements
+
+All interactive elements (links, buttons) must have explicit `focus-visible` styling. Don't rely on browser default outline.
+
+```tsx
+<Link className="... focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue">
+```
+
+### 6. ARIA Tabpanel Association
+
+`role="tabpanel"` must pair with `aria-labelledby` referencing the controlling tab's `id`. Thread tab identifiers through props.
+
+```tsx
+<div role="tabpanel" aria-labelledby={`tab-${tabId}`} id={`panel-${tabId}`}>
+```
+
+### 7. Verify Imports After Component Extraction
+
+After extracting components into separate files, verify all imports point to the correct module. Don't import from re-export modules unless they actually export the symbol.
+
+### 8. Wire ALL Strings Through t() in Localized Components
+
+When adding localization to a component, wire ALL user-visible strings through `t(...)`, not just some. Mixed-language text breaks UX.
