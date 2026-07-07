@@ -558,11 +558,5 @@
   "tier_advanced_tool": "أداة متقدمة",
   "tier_advanced_infrastructure": "بنية تحتية",
   "tier_pro": "محترف",
-  "tier_sovereign": "سيادي",
-  "loading_identity": "جاري تحميل هويتك السيادية...",
-  "preparing_your_ai": "جاري تحضير وكيلك الذكي",
-  "reserving_domain": "حجز نطاقك",
-  "provisioning_identity": "تجهيز الهوية",
-  "generating_did": "إنشاء معرّف الهوية الموزع",
-  "issuing_passport": "إصدار جواز السفر"
+  "tier_sovereign": "سيادي"
 }

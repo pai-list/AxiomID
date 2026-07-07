@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+
 const DID_CONTEXT = "https://www.w3.org/ns/did/v1";
 
 // Ed25519 multicodec prefix: 0xed01 (2 bytes)

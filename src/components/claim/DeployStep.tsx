@@ -124,9 +124,15 @@ export function DeployStep({
             </p>
           </div>
 
-          <Link href="/dashboard" className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-all hover:scale-[1.03] active:scale-[0.97]">
+          <Link href="/dashboard">
+            <motion.button
+              whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+              whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
+              className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow"
+            >
               {t("ENTER DASHBOARD", "الدخول إلى لوحة التحكم")}
               <ChevronRight className="w-5 h-5" />
+            </motion.button>
           </Link>
 
           {/* What happens next? */}

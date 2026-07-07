@@ -40,8 +40,8 @@ export function IdentityTab({ user, claimAction, claimKya, connectWallet }: Iden
                 tier: user.tier,
                 xp: user.xp,
                 trustScore: user.trustScore,
-                kyaStatus: user.kycStatus === "VERIFIED" ? "verified" : "pending",
-                kycStatus: user.kycStatus === "VERIFIED" ? "verified" : "pending",
+                kyaStatus: user.kycStatus ? "verified" : "pending",
+                kycStatus: user.kycStatus ? "verified" : "pending",
               }}
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl flex items-center justify-center pointer-events-none">

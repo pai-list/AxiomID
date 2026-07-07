@@ -1,14 +1,15 @@
 import { Metadata } from "next";
-import { Fingerprint, Shield, Zap } from "lucide-react";
 import { getTranslation } from "@/i18n";
 import { headers } from "next/headers";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import HeroDemo from "@/components/HeroDemo";
 import TrustTiers from "@/components/TrustTiers";
 import StatsBar from "@/components/StatsBar";
 import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
+
+import HeroSection from "@/components/landing/HeroSection";
+import FeaturesSection, { SectionHeader } from "@/components/landing/FeaturesSection";
 
 export const revalidate = 60;
 
@@ -32,156 +33,40 @@ export default async function Home() {
 
   return (
     <>
-    <main className="flex min-h-screen flex-col items-center bg-grid relative overflow-hidden" id="main-content">
-      {/* Dynamic Background Effects */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] spotlight-primary rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] spotlight-accent rounded-full pointer-events-none" />
-      <div className="scanline" />
+      <main className="flex min-h-screen flex-col items-center bg-grid relative overflow-hidden" id="main-content">
+        {/* Dynamic Background Effects */}
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] spotlight-primary rounded-full pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] spotlight-accent rounded-full pointer-events-none" />
+        <div className="scanline" />
 
-      <Header />
+        <Header />
 
-      {/* Hero Section */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 z-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
-          {/* Left: Copy & CTA */}
-          <div className="md:col-span-7 space-y-6 sm:space-y-8 animate-fade-in text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">{t("landing_pi_badge")}</span>
-            </div>
+        <HeroSection t={t} />
 
-            <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
-                <span className="block animate-slide-up" style={{ animationDelay: "0.1s" }}>Create your</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up" style={{ animationDelay: "0.2s" }}>
-                  AI Identity
-                </span>
-              </h1>
-              <p className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4" style={{ animationDelay: "0.3s" }}>
-                Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign W3C DID, Passport, and live endpoint.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 animate-slide-up justify-center md:justify-start" style={{ animationDelay: "0.4s" }}>
-              <a href="/claim" className="btn-primary py-4 px-8 text-sm sm:text-base group relative overflow-hidden w-full sm:w-auto font-mono tracking-wider shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all">
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Create My AI Agent
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
-              </a>
-              <a href="/docs" className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-3">
-                <Shield className="w-4 h-4 opacity-50" />
-                Explore the Protocol
-              </a>
-            </div>
-
-            <div className="flex items-center justify-center md:justify-start gap-4 pt-6 animate-slide-up text-[10px] font-mono text-zinc-500" style={{ animationDelay: "0.5s" }}>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-electric-blue" />
-                <span className="tracking-wider">W3C DID</span>
-              </div>
-              <div className="w-1 h-1 rounded-full bg-zinc-700" />
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-axiom-purple" />
-                <span className="tracking-wider">Zero Permissions</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Animated Demo */}
-          <div className="md:col-span-5 flex items-center justify-center">
-            <div className="w-full max-w-sm relative animate-[fade-in-up_0.6s_ease-out_0.3s_both]">
-              <div className="absolute -inset-8 bg-gradient-to-tr from-emerald-500/15 via-electric-blue/15 to-axiom-purple/15 rounded-[48px] blur-3xl opacity-50 animate-pulse pointer-events-none" style={{ animationDuration: "6s" }} />
-              <div className="absolute -inset-4 bg-gradient-to-tr from-emerald-500/5 via-electric-blue/5 to-axiom-purple/5 rounded-[32px] blur-xl opacity-40 pointer-events-none" />
-              <HeroDemo />
-            </div>
-          </div>
+        {/* Stats */}
+        <div className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 mb-4 z-10">
+          <StatsBar />
         </div>
-      </div>
 
-      {/* Stats */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 mt-12 sm:mt-16 mb-4 z-10">
-        <StatsBar />
-      </div>
-
-      {/* Interactive Showcase Section */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-        <InteractiveShowcase />
-      </div>
-
-      {/* Features Section */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-        <SectionHeader
-          label={t("landing_how_it_works")}
-          title={t("landing_three_steps")}
-          labelColor="text-electric-blue"
-        />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-          <div className="hidden md:block absolute top-24 start-[15%] end-[15%] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0" />
-          {[
-            {
-              step: "01",
-              title: t("landing_step1_title"),
-              desc: t("landing_step1_desc"),
-              icon: <Fingerprint className="w-6 h-6 text-electric-blue" />,
-              badge: "W3C DID Standard",
-            },
-            {
-              step: "02",
-              title: t("landing_step2_title"),
-              desc: t("landing_step2_desc"),
-              icon: <Shield className="w-6 h-6 text-axiom-purple" />,
-              badge: "ZKP Privacy Ready",
-            },
-            {
-              step: "03",
-              title: t("landing_step3_title"),
-              desc: t("landing_step3_desc"),
-              icon: <Zap className="w-6 h-6 text-emerald-400" />,
-              badge: "Pi Network Compatible",
-            },
-          ].map((item) => (
-            <div key={item.step} className="stitch-feature-card flex flex-col gap-4 cursor-default group relative z-10">
-              <div className="absolute top-4 end-4 text-3xl font-mono font-bold text-white/5 group-hover:text-electric-blue/5 transition-colors">{item.step}</div>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:border-electric-blue/20 transition-all duration-300">
-                {item.icon}
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white group-hover:text-electric-blue transition-colors duration-300">{item.title}</h3>
-              </div>
-              <p className="text-sm leading-relaxed text-zinc-400">{item.desc}</p>
-              <div className="mt-auto pt-4 border-t border-white/5 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-electric-blue animate-pulse" />
-                <span className="text-[11px] font-mono text-zinc-400">{item.badge}</span>
-              </div>
-            </div>
-          ))}
+        {/* Interactive Showcase Section */}
+        <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
+          <InteractiveShowcase />
         </div>
-      </div>
 
-      {/* Trust Tiers */}
-      <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
-        <SectionHeader
-          label={t("tier")}
-          title={t("landing_level_up")}
-          labelColor="text-electric-blue"
-        />
-        <TrustTiers />
-      </div>
+        <FeaturesSection t={t} />
 
-      <Footer />
-    </main>
+        {/* Trust Tiers */}
+        <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
+          <SectionHeader
+            label={t("tier")}
+            title={t("landing_level_up")}
+            labelColor="text-electric-blue"
+          />
+          <TrustTiers />
+        </div>
+
+        <Footer />
+      </main>
     </>
-  );
-}
-
-function SectionHeader({ label, title, labelColor }: { label: string; title: string; labelColor: string }) {
-  return (
-    <div className="text-center mb-10 sm:mb-12">
-      <span className={`text-[10px] font-mono ${labelColor} tracking-widest uppercase`}>{label}</span>
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-surface mt-2">{title}</h2>
-    </div>
   );
 }
