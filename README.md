@@ -322,7 +322,7 @@ portless axiomid next dev
 | **AI** | Workers AI — Llama 3.1 8B · BGE-small-en-v1.5 |
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
-| **CI/CD** | GitHub Actions → Vercel · 3073 tests, 134 suites |
+| **CI/CD** | GitHub Actions → Vercel · 3272 tests, 168 suites |
 
 ---
 
