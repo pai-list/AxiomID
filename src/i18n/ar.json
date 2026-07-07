@@ -564,5 +564,15 @@
   "reserving_domain": "حجز نطاقك",
   "provisioning_identity": "تجهيز الهوية",
   "generating_did": "إنشاء معرّف الهوية الموزع",
-  "issuing_passport": "إصدار جواز السفر"
+  "issuing_passport": "إصدار جواز السفر",
+  "landing_hero_line1": "أنشئ",
+  "landing_hero_line2": "هويتك الرقمية",
+  "landing_hero_desc": "أنشئ هوية مشفرة لوكائلك الذكية. انقر مرة واحدة لنشر معرّف الهوية الموزع sovereign W3C، وجواز السفر، ونقطة نهاية مباشرة.",
+  "landing_hero_cta_primary": "أنشئ وكيلك الذكي",
+  "landing_hero_cta_secondary": "استكشف البروتوكول",
+  "landing_hero_badge_did": "W3C DID",
+  "landing_hero_badge_permissions": "بدون أذونات",
+  "landing_badge_did": "معيار W3C DID",
+  "landing_badge_zkp": "جاهز للخصوصية ZKP",
+  "landing_badge_pi": "متوافق مع Pi Network"
 }
