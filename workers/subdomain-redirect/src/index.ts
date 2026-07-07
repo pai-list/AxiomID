@@ -1,0 +1,35 @@
+/**
+ * Cloudflare Worker: Vanity Subdomain → Passport Redirect
+ *
+ * Routes *.axiomid.app to axiomid.app/passport/[subdomain]
+ * Example: amrikyy.axiomid.app → axiomid.app/passport/amrikyy
+ *
+ * Ponytail: No new UI needed — the passport viewer already exists.
+ * This worker is just DNS routing.
+ */
+
+const PASSPORT_BASE = 'https://axiomid.app/passport';
+const VALID_SUBDOMAIN = /^[a-z0-9][a-z0-9-]{2,29}$/;
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const hostname = url.hostname;
+
+    // Extract subdomain: amrikyy.axiomid.app → amrikyy
+    const parts = hostname.split('.');
+    if (parts.length !== 3 || parts[1] !== 'axiomid' || parts[2] !== 'app') {
+      return new Response('Not found', { status: 404 });
+    }
+
+    const subdomain = parts[0];
+
+    // Validate subdomain format
+    if (!VALID_SUBDOMAIN.test(subdomain)) {
+      return new Response('Invalid subdomain', { status: 400 });
+    }
+
+    // 301 redirect to passport page
+    return Response.redirect(`${PASSPORT_BASE}/${subdomain}`, 301);
+  },
+};

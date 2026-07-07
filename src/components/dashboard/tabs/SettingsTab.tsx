@@ -1,18 +1,65 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@/app/context/wallet-context";
-import { Shield, User, Zap, AtSign } from "lucide-react";
+import { Shield, User, Zap, AtSign, Globe, Copy, Check } from "lucide-react";
 
 /**
  * Settings tab — thin wrapper linking to existing /dashboard/settings page.
- * Shows user info and quick links. No duplication of the 679-line settings page.
+ * Shows user info, vanity URL, and quick links.
  */
 export function SettingsTab() {
   const { user } = useWallet();
+  const [copied, setCopied] = useState(false);
+
+  const vanityUrl = user?.piUsername
+    ? `https://${user.piUsername}.axiomid.app`
+    : null;
+
+  const handleCopy = async () => {
+    if (!vanityUrl) return;
+    await navigator.clipboard.writeText(vanityUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="space-y-5">
+      {/* Vanity URL */}
+      {vanityUrl && (
+        <div className="bento-card p-5">
+          <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
+            Your Vanity URL
+          </h3>
+          <div className="flex items-center gap-3">
+            <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
+            <a
+              href={vanityUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-mono text-emerald-400 hover:underline truncate"
+            >
+              {vanityUrl}
+            </a>
+            <button
+              onClick={handleCopy}
+              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors"
+              title="Copy URL"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-zinc-500" />
+              )}
+            </button>
+          </div>
+          <p className="text-[10px] text-zinc-500 mt-2">
+            Share this URL to show your passport and trust score.
+          </p>
+        </div>
+      )}
+
       {/* User info summary */}
       <div className="bento-card p-5">
         <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">

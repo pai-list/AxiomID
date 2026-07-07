@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Shield, Bot, Zap, Clock, ExternalLink } from "lucide-react";
 import { PiBrowserGuard, PiBrowserBanner } from "@/components/PiBrowserGuard";
 import { DevModeBanner } from "@/components/DevModeBanner";
+import { useLanguage } from "@/app/context/language-context";
 
 interface AgentData {
   username: string;
@@ -27,6 +28,8 @@ interface AgentData {
  */
 export default function AgentPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
+  const { language } = useLanguage();
+  const t = (en: string, ar: string) => (language === "en" ? en : ar);
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,12 +49,12 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          setError(err instanceof Error ? err.message : "Failed to load agent");
+          setError(err instanceof Error ? err.message : t("Failed to load agent", "فشل تحميل الوكيل"));
           setLoading(false);
         }
       });
     return () => controller.abort();
-  }, [username]);
+  }, [username, language]);
 
   if (loading) {
     return (
@@ -77,12 +80,12 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
         <DevModeBanner />
         <main className="min-h-screen bg-grid flex items-center justify-center">
           <div className="bento-card p-8 text-center max-w-md">
-            <h1 className="text-xl font-bold text-white mb-2">Agent Not Found</h1>
+            <h1 className="text-xl font-bold text-white mb-2">{t("Agent Not Found", "الوكيل غير موجود")}</h1>
             <p className="text-sm text-zinc-400 mb-4">
-              No agent found for <span className="font-mono text-axiom-purple">@{username}</span>
+              {t("No agent found for", "لم يتم العثور على وكيل لـ")} <span className="font-mono text-axiom-purple">@{username}</span>
             </p>
             <Link href="/" className="text-xs font-mono text-axiom-purple hover:text-axiom-purple/80">
-              ← Back to AxiomID
+              ← {t("Back to AxiomID", "العودة إلى AxiomID")}
             </Link>
           </div>
         </main>
@@ -110,7 +113,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
                 <p className="text-xs text-zinc-400">
                   {agent.tier} · {agent.xp} XP
                   {agent.verified && (
-                    <span className="ml-2 text-emerald-400">✓ Verified</span>
+                    <span className="ml-2 text-emerald-400">✓ {t("Verified", "موثق")}</span>
                   )}
                 </p>
               </div>
@@ -120,14 +123,14 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
               <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
                 <div className="flex items-center gap-2 mb-1">
                   <Shield className="w-3.5 h-3.5 text-neon-green" />
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">Tier</span>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{t("Tier", "الطبقة")}</span>
                 </div>
                 <span className="text-lg font-bold text-white font-mono">{agent.tier}</span>
               </div>
               <div className="p-3 rounded-xl border border-white/5 bg-white/[0.02]">
                 <div className="flex items-center gap-2 mb-1">
                   <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">Experience</span>
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase">{t("Experience", "الخبرة")}</span>
                 </div>
                 <span className="text-lg font-bold text-white font-mono">{agent.xp} XP</span>
               </div>
@@ -138,7 +141,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
           {agent.agent && (
             <div className="bento-card p-5 mb-6">
               <h2 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
-                Autonomous Agent
+                {t("Autonomous Agent", "الوكيل الذاتي")}
               </h2>
               <div className="flex items-center justify-between">
                 <div>
@@ -163,9 +166,9 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
 
           {/* Quick links */}
           <div className="bento-card p-5">
-            <h2 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
-              Links
-            </h2>
+              <h2 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
+                {t("Links", "الروابط")}
+              </h2>
             <div className="space-y-2">
               {agent.did && (
                 <a
@@ -175,7 +178,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-                  <span className="text-xs font-mono text-zinc-300">DID Document</span>
+                  <span className="text-xs font-mono text-zinc-300">{t("DID Document", "مستند DID")}</span>
                 </a>
               )}
               <Link
@@ -183,21 +186,21 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-                <span className="text-xs font-mono text-zinc-300">Full Passport</span>
+                <span className="text-xs font-mono text-zinc-300">{t("Full Passport", "الجواز الكامل")}</span>
               </Link>
               <Link
                 href="/"
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-                <span className="text-xs font-mono text-zinc-300">AxiomID Home</span>
+                <span className="text-xs font-mono text-zinc-300">{t("AxiomID Home", "الرئيسية")}</span>
               </Link>
             </div>
           </div>
 
           {/* Footer */}
           <p className="text-center text-[10px] font-mono text-zinc-600 mt-8">
-            {daysActive} days on AxiomID · {agent.tier} tier
+            {daysActive} {t("days on AxiomID", "يوم على AxiomID")} · {agent.tier} {t("tier", "طبقة")}
           </p>
         </div>
       </main>
