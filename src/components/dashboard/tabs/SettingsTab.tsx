@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useWallet } from "@/app/context/wallet-context";
 import { Shield, User, Zap, AtSign, Globe, Copy, Check } from "lucide-react";
