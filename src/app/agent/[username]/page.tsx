@@ -28,8 +28,7 @@ interface AgentData {
  */
 export default function AgentPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = use(params);
-  const { language } = useLanguage();
-  const t = (en: string, ar: string) => (language === "en" ? en : ar);
+  const { t } = useLanguage();
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
