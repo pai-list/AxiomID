@@ -6,6 +6,7 @@ import { checkPiBrowser, determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { User, getStoredWallet, getLocalStorageItem, removeLocalStorageItem, mapApiUser } from "./wallet-types";
 import { setSovereignBadge } from "@/lib/pwa-badging";
+import { enableDiagnostics } from "@/lib/diagnostics/interceptor";
 
 export type { User } from "./wallet-types";
 import { useWalletAuth } from "./use-wallet-auth";
@@ -139,6 +140,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         window.addEventListener("load", registerSW);
       }
     }
+
+    // Enable diagnostics for error capture (Step 10 debugging)
+    enableDiagnostics();
 
     return () => window.removeEventListener("unhandledrejection", handleUnhandledRejection);
   }, []);
