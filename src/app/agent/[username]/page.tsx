@@ -54,7 +54,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
         }
       });
     return () => controller.abort();
-  }, [username, language]);
+  }, [username]);
 
   if (loading) {
     return (
