@@ -38,13 +38,13 @@ export function SettingsTab() {
               href={vanityUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-mono text-emerald-400 hover:underline truncate"
+              className="text-sm font-mono text-emerald-400 hover:underline truncate focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:outline-none rounded px-1"
             >
               {vanityUrl}
             </a>
             <button
               onClick={handleCopy}
-              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors"
+              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:outline-none"
               title="Copy URL"
             >
               {copied ? (
