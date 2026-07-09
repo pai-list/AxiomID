@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { determineSandboxMode } from "@/lib/pi-sdk";
+import { determineSandboxMode, checkPiBrowser } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 import {
@@ -94,7 +94,11 @@ export default function ClaimPage() {
 
   const handleConnect = async () => {
     setConnectError(null);
-    if (!isPiBrowser && !determineSandboxMode()) {
+    // ponytail: Real-time Pi Browser check — isPiBrowser from context may lag
+    // behind actual SDK availability (polling interval). Check window.Pi
+    // directly to catch the case where SDK loaded but state hasn't updated yet.
+    const actuallyInPiBrowser = isPiBrowser || (typeof window !== "undefined" && !!window.Pi) || checkPiBrowser();
+    if (!actuallyInPiBrowser && !determineSandboxMode()) {
       setShowBrowserModal(true);
       return;
     }
