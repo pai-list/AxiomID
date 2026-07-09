@@ -13,6 +13,12 @@ export function SettingsTab() {
   const { user } = useWallet();
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   const vanityUrl = user?.piUsername
     ? `https://${user.piUsername}.axiomid.app`
     : null;
@@ -21,7 +27,6 @@ export function SettingsTab() {
     if (!vanityUrl) return;
     await navigator.clipboard.writeText(vanityUrl);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -38,14 +43,14 @@ export function SettingsTab() {
               href={vanityUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-mono text-emerald-400 hover:underline truncate focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:outline-none rounded px-1"
+              className="text-sm font-mono text-emerald-400 hover:underline truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 rounded px-1"
             >
               {vanityUrl}
             </a>
             <button
               onClick={handleCopy}
-              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:ring-2 focus-visible:ring-emerald-400/50 focus-visible:outline-none"
-              title="Copy URL"
+              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+              aria-label={copied ? "Copied" : "Copy URL"}
             >
               {copied ? (
                 <Check className="w-3.5 h-3.5 text-emerald-400" />

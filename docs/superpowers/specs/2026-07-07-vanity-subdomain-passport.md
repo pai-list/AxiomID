@@ -14,7 +14,7 @@ Route `*.axiomid.app` subdomains to the existing passport page. No new UI needed
 
 ## Architecture
 
-```
+```text
 User visits: amrikyy.axiomid.app
      ↓
 Cloudflare DNS: *.axiomid.app → CNAME axiomid.app
@@ -56,7 +56,7 @@ export default {
 
 ### 2. DNS Configuration
 
-```
+```text
 *.axiomid.app  CNAME  axiomid.app
 ```
 

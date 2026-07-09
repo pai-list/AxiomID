@@ -48,11 +48,12 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          setError(err instanceof Error ? err.message : t("Failed to load agent", "فشل تحميل الوكيل"));
+          setError(t("Failed to load agent", "فشل تحميل الوكيل"));
           setLoading(false);
         }
       });
     return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- agent data is language-independent; t only needed at call time
   }, [username]);
 
   if (loading) {
