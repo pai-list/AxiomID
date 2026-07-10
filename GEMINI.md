@@ -8,77 +8,75 @@ AxiomID is the Human Authorization Protocol for AI Agents — implementing W3C D
 
 ## Architecture
 
-- **Frontend:** Next.js 14 App Router, TypeScript, deployed on Vercel
-- **Backend:** Cloudflare Workers (D1 SQLite, KV, R2), Hono framework
-- **Auth:** W3C DIDs + Verifiable Credentials + NextAuth
-- **Trust Score:** `XP * 0.7 + stamps * 0.3`, clamped 0–100. Default is **0**, never hardcode another value.
-- **Soul System:** 5 gates — Muraqabah, Ethical, Sab'iyyah, Tawbah, Self-Review (Barakah gate was removed)
+- **Frontend:** Next.js 16 App Router, TypeScript, deployed on Vercel
+- **Backend:** Next.js API routes (Vercel Functions), Cloudflare Workers (D1, Vectorize)
+- **Auth:** Pi Network SDK authentication + W3C Verifiable Credentials
+- **Trust Score:** `XP * 0.5 + stamps * 0.2 + tenure * 0.1 + semantic * 0.2`, clamped 0–100. Default is **0**, never hardcode another value.
+- **Soul System:** Muraqabah, Tawbah, Tasbih Triplet, Sab'iyyah Cycle, Barakah Milestones
 - **Commit format:** `type(scope): description ۞` (IQRA Chronicle format)
 
 ## Key Engineering Rules (from AGENTS.md)
 
-- No `any` types in TypeScript. No `eslint-disable` comments.
-- No `setTimeout` in API routes — use `waitUntil` for async background work.
+- No `as any` casts in TypeScript. Use `unknown` for external data boundaries.
+- Pi SDK is browser-only — gate all calls behind `typeof window !== 'undefined'`.
+- Dynamic sandbox detection via `determineSandboxMode()` — never hardcode `sandbox: true/false`.
 - All Next.js API routes must have: `requireAuth`, Zod validation, rate limiting, `logger.error()` in catch blocks.
-- All Cloudflare D1 queries must be parameterized — no string interpolation.
-- `X-Shared-Secret` header required for Worker-to-Worker auth (timing-safe comparison).
-- KV cache TTL must be explicit. CORS headers required on all Worker routes.
-- AI calls (soul gates) must have a 5000ms timeout.
-- Telegram notification errors must be caught and not crash the soul loop.
+- Bilingual translation helper: `const t = (en, ar) => (language === "en" ? en : ar)`.
+- Use standard Jest matchers only (no `.toBeFinite()`).
+- Clamp negative zero: `result === 0 ? 0 : result`.
+- PWA: network-first for documents, stale-while-revalidate for assets, never cache API routes.
 - Prisma migrations must not cause data loss. New columns need indexes if queried frequently.
-- `src/app/api/daily-review/` CRON endpoints must return 503 if `CRON_SECRET` is not set.
 - Client components need `"use client"` directive. Framer Motion spring easing: `[0.16, 1, 0.3, 1]`.
 - Tests: no skipped tests, test count must never decrease, mocks must be cleaned up.
 
 ## Directory Structure
 
 ```
-src/app/         - Next.js App Router pages and API routes
-src/lib/soul/    - Soul system (5-gate ethical loop)
-src/lib/trust.ts - Trust score calculation
-src/components/  - React UI components
-backend/src/     - Cloudflare Workers (Hono)
-prisma/          - Prisma schema and migrations
-packages/        - Shared packages / MCP server
-docs/            - Architecture docs, specs, plans
-.github/         - CI/CD workflows
+src/app/          - Next.js App Router pages and API routes
+src/lib/          - Core libraries (pi-sdk, errors, validators, diagnostics)
+src/components/   - React UI components
+prisma/           - Prisma schema and migrations
+packages/         - Shared packages (@axiomid/crypto, @axiomid/sdk)
+docs/             - Architecture docs, engineering guides, specs
+.github/          - CI/CD workflows
 ```
+
+## Test Suite
+
+- **Framework:** Jest (not Vitest)
+- **Test count:** 3272+ tests across 168 suites
+- **Run:** `npm test` (Jest with `--runInBand --forceExit`)
+- **Type-check:** `npm run type-check` (tsc --noEmit)
+- **Lint:** `npm run lint` (ESLint flat config, zero warnings policy)
 
 ## Security Checklist for Reviews
 
 1. Auth bypass — missing `requireAuth` on protected routes
-2. SQL injection — non-parameterized D1 queries
+2. Zod validation — all API route params and body must be validated
 3. Secret leakage — hardcoded keys, or secrets in `NEXT_PUBLIC_*`
-4. Trust score integrity — formula must be `XP*0.7 + stamps*0.3`, clamped 0-100
+4. Pi SDK browser-only — no Pi imports in Server Components or API routes
 5. CRON endpoint auth — must validate `CRON_SECRET` before executing
 6. Timing attacks — use timing-safe comparison for secrets
-7. KV cache poisoning — validate data before caching
-8. Rate limiting — all public API endpoints must be rate-limited
+7. Rate limiting — all public API endpoints must be rate-limited
+8. Trust score integrity — formula must be `XP * 0.5 + stamps * 0.2 + tenure * 0.1 + semantic * 0.2`, clamped 0-100
 
-## Gemini CLI Usage Examples
+## CLI Usage Examples
 
 ```bash
 # Security review of changed files
-gemini -p "Review the following diff for security issues per the AxiomID security checklist in GEMINI.md"
+opencode -p "Review the following diff for security issues per the AxiomID security checklist in GEMINI.md"
 
 # Generate tests for a module
-gemini -p "Generate comprehensive Vitest unit tests for src/lib/trust.ts covering edge cases"
+opencode -p "Generate comprehensive Jest unit tests for src/lib/trust.ts covering edge cases"
 
 # Documentation generation
-gemini -p "Generate JSDoc comments for all exported functions in the provided file"
+opencode -p "Generate JSDoc comments for all exported functions in the provided file"
 
 # Architecture analysis
-gemini -p "Analyze this PR diff against the AxiomID engineering rules in GEMINI.md and list violations"
+opencode -p "Analyze this PR diff against the AxiomID engineering rules in GEMINI.md and list violations"
 ```
 
-## Active Issues (v0.1.2)
+## Metrics
 
-- MCP Bootstrap Agent Startup Flow
-- VS Code / Cursor Extension for AxiomID
-- MCP Server Tools + IDE Integration
-
-## Metrics Targets
-
-- Code acceptance rate: >60%
-- Human review rate for PRs: <20%
-- Auto-rolled-back deploys: <2%
+- **Tests:** 3272+ passing across 168 suites
+- **Branches:** 8 active (main + 7 feature/PR branches)

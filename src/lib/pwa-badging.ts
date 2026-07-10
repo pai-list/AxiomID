@@ -1,10 +1,9 @@
+import { logger } from '@/lib/logger';
+
 /**
- * PWA App Badging Service
  * Provides a clean wrapper around the browser's App Badging API to show 
  * notifications on the home screen icon.
  */
-
-import { logger } from '@/lib/logger';
 
 export type BadgeEvent = 'XP_GAIN' | 'NEW_STAMP' | 'AGENT_READY';
 
@@ -59,8 +58,7 @@ export async function clearSovereignBadge(): Promise<void> {
 
   try {
     await navigator.clearAppBadge();
-    console.log('[PWA] App badge cleared.');
   } catch (error) {
-    console.error('[PWA] Failed to clear app badge:', error);
+    logger.error('[PWA] Failed to clear app badge:', error);
   }
 }

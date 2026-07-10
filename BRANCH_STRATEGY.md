@@ -1,28 +1,28 @@
 # AxiomID Branch Strategy
 
-> Established: 2026-06-22
-> Baseline: main @ 0cd5bbc — 0 TS errors, 94 suites / 1168 tests passing
+> Updated: 2026-07-10
+> Baseline: main — 0 TS errors, 168 suites / 3272 tests passing
 
-## Branches
+## Current Branches
 
-| Branch | Tier | Scope | Merge Order |
-|:---|:---:|:---|:---:|
-| `feat/security-tier1` | **T1** | Sandbox bypass fix, Redis token cache, build-time env guard | 1st |
-| `feat/a11y-pwa-tier2` | **T2** | WCAG contrast fixes, heading hierarchy, accessible names, PWA manifest/theme, header redesign | 2nd |
-| `feat/vault-revocation` | **T3** | Stake/SlashingEvent models, revocation endpoint, Pi Payment stub | 3rd |
-| `feat/zk-csdselective` | **T4** | snarkjs/circom ZK circuits, CSD-JWT selective disclosure, multi-issuer verification | 4th |
+| Branch | Purpose | Status |
+|:---|:---|:---:|
+| `main` | Production-ready, auto-deployed to Vercel | Active |
+| `feat/vanity-subdomain` (PR #299) | `*.axiomid.app` subdomain routing + Settings UI | Open |
+| `feat/iqra-d3-mesh` (PR #300) | D3.js neural mesh, trust graph, MemoryTab | Open |
+| `feat/marketplace-aix-adoption` (PR #301) | AIX adoption phases 3-6 (SOUL, x402) | Open |
+| `feat/marketplace-enhancements` (PR #302) | Onboarding fix, strict TS cleanup | Open |
+| `feat/did-json-well-known` (PR #303) | `/.well-known/did.json` route | Open |
+| `fix/d3-mock-lint` (PR #304) | Test helpers refactor, delete dead tests | Open |
+| `chore/codebase-cleanup` (current) | Dead code removal, doc updates, hygiene | In progress |
 
 ## Workflow
 
-1. Each branch is created from `main` (independent, not stacked)
-2. Work on `feat/security-tier1` first (security before anything)
-3. Merge to `main` after CI passes + review
-4. Then proceed to Tier 2, etc.
-5. Rebase onto `main` before each merge if other branches merged in between
+1. All feature branches created from `main`
+2. Rebase onto `main` before merging
+3. Merge after CI passes + review (no force-merges)
+4. All branches kept for at least one release cycle
 
-## Merge Order Rationale
+## Merge Order
 
-- **Security first** — sandbox bypass + env var leak are exploitable NOW
-- **UI/UX second** — accessibility + PWA are user-facing, lower risk
-- **Schema third** — requires design decisions, testable independently
-- **ZK last** — highest complexity, depends on schema being stable
+#304 (hygiene, lowest risk) → #303 (DID, isolated) → #302 (marketplace fixes) → #299 (vanity subdomain) → #301 (AIX) → #300 (IQRA, largest blast radius)
