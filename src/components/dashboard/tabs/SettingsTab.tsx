@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useWallet } from "@/app/context/wallet-context";
-import { Shield, User, Zap, AtSign, Globe, Copy, Check } from "lucide-react";
+import { Shield, User, Zap, AtSign, Globe, Copy, Check, Share2 } from "lucide-react";
+import { sharePassport } from "@/lib/pi-native-features";
 
 /**
  * Settings tab — thin wrapper linking to existing /dashboard/settings page.
@@ -37,6 +38,15 @@ export function SettingsTab() {
     setCopied(true);
   };
 
+  const handleShare = async () => {
+    if (!vanityUrl) return;
+    await sharePassport({
+      title: "AxiomID Vanity URL",
+      text: `Check out my AxiomID profile at ${vanityUrl}`,
+      url: vanityUrl,
+    });
+  };
+
   return (
     <div className="space-y-5">
       {/* Vanity URL */}
@@ -55,17 +65,26 @@ export function SettingsTab() {
             >
               {vanityUrl}
             </a>
-            <button
-              onClick={handleCopy}
-              className="ml-auto p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
-              aria-label={copied ? "Copied" : "Copy URL"}
-            >
-              {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 text-zinc-500" />
-              )}
-            </button>
+            <div className="ml-auto flex items-center gap-1">
+              <button
+                onClick={handleShare}
+                className="p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+                aria-label="Share vanity URL"
+              >
+                <Share2 className="w-3.5 h-3.5 text-zinc-500" />
+              </button>
+              <button
+                onClick={handleCopy}
+                className="p-1.5 rounded hover:bg-white/[0.05] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+                aria-label={copied ? "Copied" : "Copy URL"}
+              >
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                )}
+              </button>
+            </div>
           </div>
           <p className="text-[10px] text-zinc-500 mt-2">
             Share this URL to show your passport and trust score.
