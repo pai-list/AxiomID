@@ -11,7 +11,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
         {/* Left: Copy & CTA */}
         <div className="md:col-span-7 space-y-6 sm:space-y-8 animate-fade-in text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-hover border-border mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">
               {t("landing_pi_badge")}
@@ -19,7 +19,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-surface leading-[1.1]">
               <span className="block animate-slide-up" style={{ animationDelay: "0.1s" }}>
                 Create your
               </span>
@@ -31,7 +31,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
               </span>
             </h1>
             <p
-              className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4"
+              className="text-sm sm:text-base md:text-lg text-faint max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4"
               style={{ animationDelay: "0.3s" }}
             >
               Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign
@@ -61,7 +61,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
             </a>
             <a
               href="/docs"
-              className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors flex items-center gap-2 px-4 py-3"
+              className="text-xs sm:text-sm font-mono text-faint hover:text-surface transition-colors flex items-center gap-2 px-4 py-3"
             >
               <Shield className="w-4 h-4 opacity-50" />
               Explore the Protocol
@@ -69,7 +69,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
           </div>
 
           <div
-            className="flex items-center justify-center md:justify-start gap-4 pt-6 animate-slide-up text-[10px] font-mono text-zinc-500"
+            className="flex items-center justify-center md:justify-start gap-4 pt-6 animate-slide-up text-[10px] font-mono text-subtle"
             style={{ animationDelay: "0.5s" }}
           >
             <div className="flex items-center gap-1.5">
