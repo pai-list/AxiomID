@@ -64,7 +64,7 @@ export default function InstallPWA() {
             </div>
             <button
               onClick={handleInstallClick}
-              className="px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--color-surface)] text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors"
+              className="px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--color-surface)] text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
             >
               Install
             </button>
