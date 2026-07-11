@@ -52,19 +52,19 @@ export default function InstallPWA() {
           exit={{ opacity: 0, y: 20, scale: 0.9 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4"
         >
-          <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-3 rounded-2xl flex items-center justify-between shadow-2xl ring-1 ring-electric-blue/20">
+          <div className="bg-surface-deep/60 backdrop-blur-xl border border-border p-3 rounded-2xl flex items-center justify-between shadow-2xl ring-1 ring-electric-blue/20">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-electric-blue/20 rounded-lg">
                 <Sparkles className="w-4 h-4 text-electric-blue" />
               </div>
               <div>
-                <p className="text-xs font-medium text-white">Install AxiomID</p>
-                <p className="text-[10px] text-white/40 font-mono">Sovereign Experience</p>
+                <p className="text-xs font-medium text-surface">Install AxiomID</p>
+                <p className="text-[10px] text-surface/40 font-mono">Sovereign Experience</p>
               </div>
             </div>
             <button
               onClick={handleInstallClick}
-              className="px-3 py-1.5 bg-white text-black text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors"
+              className="px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--color-surface)] text-[11px] font-bold rounded-lg hover:bg-electric-blue hover:text-white transition-colors"
             >
               Install
             </button>

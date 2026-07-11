@@ -90,11 +90,11 @@ export default function LeaderboardPage() {
       {/* Hero Banner */}
       <div className="max-w-4xl mx-auto px-4 mt-6 relative z-10 text-center">
         <span className="stitch-badge">GLOBAL STANDINGS</span>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white mt-3 flex items-center justify-center gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-surface mt-3 flex items-center justify-center gap-2">
           <Trophy className="w-6 h-6 text-amber-400" />
           {language === "en" ? "Sovereign Leaderboard" : "لوحة الصدارة العامة"}
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-faint mt-1 max-w-xl mx-auto leading-relaxed">
           Pioneers sorted by global Experience Points (XP) earned from social verifications, transaction validation activity, and oracle stamp binding.
         </p>
       </div>
@@ -130,7 +130,7 @@ export default function LeaderboardPage() {
       {error && !loading && (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
           <div className="glass-card p-12 text-center">
-            <p className="text-sm text-red-400 mb-4">{errorMsg}</p>
+            <p className="text-sm text-danger mb-4">{errorMsg}</p>
             <button onClick={() => { setError(null); setLoading(true); setRetryCount(c => c + 1); }} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>
@@ -152,11 +152,11 @@ export default function LeaderboardPage() {
             ))}
           </div>
           {/* Table skeleton */}
-          <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
-            <div className="p-4 border-b border-white/5 bg-white/[0.01]">
+          <div className="bento-card overflow-hidden border border-border bg-surface-deep/80">
+            <div className="p-4 border-b border-border bg-surface-muted/30">
               <div className="h-2 w-40 bg-white/5 rounded" />
             </div>
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-border/50">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="flex items-center py-3 px-4 gap-4">
                   <div className="w-8 h-2 bg-white/5 rounded" />
@@ -177,8 +177,8 @@ export default function LeaderboardPage() {
             <div className="w-16 h-16 rounded-2xl glass-card flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
               <Trophy className="w-8 h-8 text-amber-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">{language === "en" ? "Be the First Sovereign" : "كن السيادي الأول"}</h2>
-            <p className="text-sm text-zinc-400 max-w-md mx-auto mb-6">
+            <h2 className="text-xl font-bold text-surface mb-2">{language === "en" ? "Be the First Sovereign" : "كن السيادي الأول"}</h2>
+            <p className="text-sm text-faint max-w-md mx-auto mb-6">
               {language === "en" 
                 ? "The leaderboard is empty. Connect your wallet and start earning XP to claim the #1 spot and become the first Sovereign."
                 : "لوحة الصدارة فارغة. اربط محفظتك وابدأ في كسب نقاط الخبرة لاحتلال المرتبة الأولى وتصبح السيادي الأول."}
@@ -207,13 +207,13 @@ export default function LeaderboardPage() {
 
           {/* Search bar */}
           <div className="relative max-w-md mx-auto">
-            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5" />
+            <Search className="w-4 h-4 text-subtle absolute left-3.5 top-3.5" />
             <input
               type="text"
               placeholder={language === "en" ? "Search handle or address..." : "ابحث عن اسم مستخدم أو عنوان..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full glass-card border border-white/[0.06] rounded-xl py-3 pl-10 pr-4 text-xs text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-electric-blue/30 transition-colors"
+              className="w-full glass-card border border-border rounded-xl py-3 pl-10 pr-4 text-xs text-surface font-mono placeholder:text-subtle focus:outline-none focus:border-electric-blue/30 transition-colors"
             />
           </div>
 
@@ -226,7 +226,7 @@ export default function LeaderboardPage() {
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all ${
                   tierFilter === TIER_FILTERS_EN[i]
                     ? "bg-electric-blue/20 text-electric-blue border border-electric-blue/30"
-                    : "text-zinc-500 border border-white/[0.04] hover:border-white/[0.08] hover:text-zinc-300"
+                    : "text-subtle border border-border hover:border-border hover:text-surface"
                 }`}
               >
                 {tier}
@@ -235,8 +235,8 @@ export default function LeaderboardPage() {
           </div>
 
           {/* Remaining Ranks Table */}
-          <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
-            <div className="p-4 border-b border-white/5 bg-white/[0.01] flex justify-between items-center text-[10px] font-mono text-zinc-500">
+          <div className="bento-card overflow-hidden border border-border bg-surface-deep/80">
+            <div className="p-4 border-b border-border bg-surface-muted/30 flex justify-between items-center text-[10px] font-mono text-subtle">
               <span>{language === "en" ? "PIONEER REGISTRY" : "سجل رواد البروتوكول"}</span>
               <span>{tableUsers.length} {language === "en" ? "FOUND" : "وجد"}</span>
             </div>
@@ -244,7 +244,7 @@ export default function LeaderboardPage() {
             <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left font-mono text-xs select-none">
                 <thead>
-                  <tr className="border-b border-white/5 text-[10px] text-zinc-500 bg-white/[0.005]">
+                  <tr className="border-b border-border text-[10px] text-subtle bg-surface-muted/20">
                     <th className="py-3 px-4 text-center w-12">#</th>
                     <th className="py-3 px-4">{language === "en" ? "PIONEER" : "الرائد"}</th>
                     <th className="py-3 px-4 text-center">{language === "en" ? "TIER" : "الطبقة"}</th>
@@ -254,23 +254,23 @@ export default function LeaderboardPage() {
                     <th className="py-3 px-4 text-right sr-only">{language === "en" ? "ACTION" : "الإجراء"}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-[var(--card-border)]">
                   {tableUsers.map((user) => {
                     const tierColor = getTierColor(user.tier as Tier);
                     const borderColor = tierColor;
                     return (
-                      <tr key={user.id} className="group relative hover:bg-white/[0.02] transition-all hover:scale-[1.005] hover:shadow-[0_2px_12px_rgba(0,0,0,0.2)]" style={{ borderLeft: `3px solid ${borderColor}` }}>
-                        <td className="py-3 px-4 text-center font-bold text-zinc-400">
+                      <tr key={user.id} className="group relative hover:bg-surface-hover transition-all hover:scale-[1.005] hover:shadow-[0_2px_12px_rgba(0,0,0,0.2)]" style={{ borderLeft: `3px solid ${borderColor}` }}>
+                        <td className="py-3 px-4 text-center font-bold text-faint">
                           {user.rank}
                         </td>
                         <td className="py-3 px-4">
                           <Link 
                             href={`/passport/${user.piUsername || user.walletAddress}`} 
-                            className="text-white hover:text-electric-blue transition-colors font-bold"
+                            className="text-surface hover:text-electric-blue transition-colors font-bold"
                           >
                             @{user.piUsername || `${user.walletAddress.slice(0, 8)}...${user.walletAddress.slice(-6)}`}
                           </Link>
-                          <span className="text-[9px] text-zinc-500 block truncate max-w-[200px] mt-0.5">
+                          <span className="text-[9px] text-subtle block truncate max-w-[200px] mt-0.5">
                             {user.id}
                           </span>
                         </td>
@@ -282,7 +282,7 @@ export default function LeaderboardPage() {
                             {user.tier}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-zinc-300">
+                        <td className="py-3 px-4 text-center font-bold text-surface">
                           {user.stampsCount}
                         </td>
                         <td className="py-3 px-4 text-center font-bold text-emerald-400">
@@ -304,7 +304,7 @@ export default function LeaderboardPage() {
                   })}
                   {tableUsers.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="py-10 text-center text-zinc-600 text-xs">
+                      <td colSpan={7} className="py-10 text-center text-subtle text-xs">
                         {language === "ar" ? "لا يوجد روّاد مطابقون للبحث" : "No pioneers matched query search."}
                       </td>
                     </tr>
@@ -315,10 +315,10 @@ export default function LeaderboardPage() {
 
             {/* Load More */}
             {hasMore && (
-              <div className="p-4 border-t border-white/5 flex justify-center">
+              <div className="p-4 border-t border-border flex justify-center">
                 <button
                   onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-mono text-zinc-400 border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-mono text-faint border border-border hover:bg-surface-hover hover:border-border transition-all"
                 >
                   {language === "ar" ? "عرض 20 المزيد" : "Show 20 more"}
                   <ChevronDown className="w-3.5 h-3.5" />

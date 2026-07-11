@@ -17,7 +17,8 @@ export default function OfflinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#10131a] text-white flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
+      style={{ background: "var(--bg-deep)", color: "var(--text-primary)" }}>
       {/* Background Glows */}
       <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-electric-blue/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-neon-green/10 rounded-full blur-[120px]" />
@@ -30,7 +31,7 @@ export default function OfflinePage() {
         <div className="mb-8 flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 bg-electric-blue/20 rounded-full blur-xl animate-pulse" />
-            <div className="relative p-6 bg-black/40 border border-white/10 rounded-full backdrop-blur-xl">
+            <div className="relative p-6 bg-surface-deep/40 border border-border rounded-full backdrop-blur-xl">
               <WifiOff className="w-12 h-12 text-electric-blue" />
             </div>
           </div>
@@ -50,7 +51,7 @@ export default function OfflinePage() {
         <div className="flex flex-col gap-4">
           <button
             onClick={handleRetry}
-            className="group relative px-6 py-3 bg-white text-black font-bold rounded-xl overflow-hidden transition-all hover:scale-105 active:scale-95"
+            className="group relative px-6 py-3 bg-[var(--bg-elevated)] text-[var(--color-surface)] font-bold rounded-xl overflow-hidden transition-all hover:scale-105 active:scale-95"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-electric-blue to-neon-green opacity-0 group-hover:opacity-100 transition-opacity" />
             <span className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white">

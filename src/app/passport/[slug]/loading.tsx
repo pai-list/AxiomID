@@ -2,7 +2,7 @@ export default function PassportLoading() {
   return (
     <main className="min-h-screen bg-grid flex flex-col items-center">
       <div className="scanline" />
-      <div className="w-full border-b border-white/5 px-6 py-4">
+      <div className="w-full border-b border-border px-6 py-4">
         <div className="max-w-2xl mx-auto">
           <div className="h-4 bg-white/5 rounded w-24" />
         </div>

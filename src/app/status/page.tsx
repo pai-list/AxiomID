@@ -31,7 +31,7 @@ interface NetworkStats {
 const STATUS_COLORS: Record<string, string> = {
   ONLINE: "text-neon-green",
   DEGRADED: "text-amber-400",
-  OFFLINE: "text-red-400",
+  OFFLINE: "text-danger",
 };
 
 const STATUS_BG: Record<string, string> = {
@@ -146,7 +146,7 @@ export default function StatusPage() {
                 <span className="text-3xl font-bold font-mono text-neon-green relative z-10">
                   {stats.registeredAgents.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_active_onchain")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2 relative z-10">{t("status_active_onchain")}</span>
               </div>
               <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-electric-blue/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -154,7 +154,7 @@ export default function StatusPage() {
                 <span className="text-3xl font-bold font-mono text-electric-blue relative z-10">
                   {stats.totalTransactions.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_pi_payments")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2 relative z-10">{t("status_pi_payments")}</span>
               </div>
               <div className="glass-card p-6 text-center flex flex-col items-center justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-axiom-purple/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -174,9 +174,9 @@ export default function StatusPage() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span className="absolute text-sm font-bold font-mono text-white">{stats.averageTrustScore ?? "—"}%</span>
+                  <span className="absolute text-sm font-bold font-mono text-surface">{stats.averageTrustScore ?? "—"}%</span>
                 </div>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_network_safety")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2">{t("status_network_safety")}</span>
               </div>
               <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-neon-green/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -184,7 +184,7 @@ export default function StatusPage() {
                 <span className="text-3xl font-bold font-mono text-neon-green relative z-10">
                   {stats.activeAgents.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_executing_loops")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2 relative z-10">{t("status_executing_loops")}</span>
               </div>
               <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-electric-blue/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -192,7 +192,7 @@ export default function StatusPage() {
                 <span className="text-3xl font-bold font-mono text-electric-blue relative z-10">
                   {stats.totalXpEarned.toLocaleString()}
                 </span>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2 relative z-10">{t("status_accumulated")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2 relative z-10">{t("status_accumulated")}</span>
               </div>
               <div className="glass-card p-6 text-center flex flex-col items-center justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-axiom-purple/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -212,9 +212,9 @@ export default function StatusPage() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span className="absolute text-sm font-bold font-mono text-white">{stats.verificationRate ?? "—"}%</span>
+                  <span className="absolute text-sm font-bold font-mono text-surface">{stats.verificationRate ?? "—"}%</span>
                 </div>
-                <span className="text-[9px] font-mono text-zinc-500 mt-2">{t("status_kyc_index")}</span>
+                <span className="text-[9px] font-mono text-subtle mt-2">{t("status_kyc_index")}</span>
               </div>
             </div>
 
@@ -223,15 +223,15 @@ export default function StatusPage() {
               <div className="glass-card p-6 md:col-span-3">
                 <h3 className="text-sm font-bold text-surface font-mono mb-4">{t("status_protocol_details")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] font-mono">
-                  <div className="flex justify-between p-2 border-b border-white/5">
+                  <div className="flex justify-between p-2 border-b border-border">
                     <span className="text-faint">{t("status_network")}</span>
                     <span className="text-surface">{network}</span>
                   </div>
-                  <div className="flex justify-between p-2 border-b border-white/5">
+                  <div className="flex justify-between p-2 border-b border-border">
                     <span className="text-faint">{t("status_version")}</span>
                     <span className="text-surface">{version}</span>
                   </div>
-                  <div className="flex justify-between p-2 border-b border-white/5">
+                  <div className="flex justify-between p-2 border-b border-border">
                     <span className="text-faint">{t("status_refreshed")}</span>
                     <span className="text-neon-green">{timeSince}{t("status_ago")}</span>
                   </div>
@@ -261,7 +261,7 @@ export default function StatusPage() {
                           {service.status}
                         </span>
                       </div>
-                      <div className="text-[10px] font-mono text-zinc-500">
+                      <div className="text-[10px] font-mono text-subtle">
                         {service.latencyMs > 0 ? `${service.latencyMs}ms` : "—"}
                       </div>
                     </div>
@@ -276,7 +276,7 @@ export default function StatusPage() {
               <p className="text-xs text-subtle mb-4">
                 {t("status_manifest_desc")}
               </p>
-              <div className="bg-black/80 border border-white/5 rounded-xl p-4 font-mono text-[11px]">
+              <div className="bg-surface-muted/30 border border-border rounded-xl p-4 font-mono text-[11px]">
                 <span className="text-faint">{t("status_get")}</span>{" "}
                 <span className="text-neon-green">https://axiomid.app/api/passport/</span>
                 <span className="text-electric-blue">{"<piUsername>"}</span>

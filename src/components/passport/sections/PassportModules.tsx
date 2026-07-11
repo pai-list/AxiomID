@@ -31,10 +31,10 @@ export function PassportModules({ activeModules }: PassportModulesProps) {
               <span className="text-[7px] text-neon-green bg-neon-green/10 px-1 rounded">ON</span>
             </div>
           ) : (
-            <div key={slot.key} className="relative rounded-lg p-2 border border-dashed border-gray-600 bg-black/40 flex flex-col items-center justify-center gap-1 opacity-60">
+            <div key={slot.key} className="relative rounded-lg p-2 border border-dashed border-border bg-surface-deep/40 flex flex-col items-center justify-center gap-1 opacity-60">
               <span className="text-faint text-xs"><Eye className="w-3 h-3" /></span>
               <span className="text-[8px] text-subtle">{slot.label}</span>
-              <span className="text-[7px] text-faint bg-gray-800 px-1 rounded">SLOT</span>
+              <span className="text-[7px] text-faint bg-surface-muted/30 px-1 rounded">SLOT</span>
             </div>
           );
         })}

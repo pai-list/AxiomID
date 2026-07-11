@@ -70,25 +70,26 @@ export default function DiagnosticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#10131a] text-white p-4 sm:p-8">
+    <div className="min-h-screen p-4 sm:p-8"
+      style={{ background: "var(--bg-deep)", color: "var(--text-primary)" }}>
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Diagnostics</h1>
-            <p className="text-gray-400 text-sm mt-1">Real-time error capture for Step 10 testing</p>
+            <p className="text-subtle text-sm mt-1">Real-time error capture for Step 10 testing</p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={`px-3 py-1.5 rounded text-sm font-medium transition ${
-                autoRefresh ? "bg-emerald-600 hover:bg-emerald-700" : "bg-gray-700 hover:bg-gray-600"
+                autoRefresh ? "bg-emerald-600 hover:bg-emerald-700" : "bg-surface-muted hover:bg-surface-hover"
               }`}
             >
               {autoRefresh ? "Auto: ON" : "Auto: OFF"}
             </button>
             <button
               onClick={fetchLogs}
-              className="px-3 py-1.5 rounded text-sm font-medium bg-gray-700 hover:bg-gray-600 transition"
+              className="px-3 py-1.5 rounded text-sm font-medium bg-surface-muted hover:bg-surface-hover transition"
             >
               Refresh
             </button>
@@ -102,9 +103,9 @@ export default function DiagnosticsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-gray-400">Loading...</div>
+          <div className="text-center py-20 text-subtle">Loading...</div>
         ) : entries.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
+          <div className="text-center py-20 text-subtle">
             <p className="text-lg mb-2">No errors captured yet</p>
             <p className="text-sm">Open Pi Browser → go to your app → try Step 10</p>
             <p className="text-sm mt-1">Errors will appear here in real-time</p>
@@ -119,7 +120,7 @@ export default function DiagnosticsPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-black/30">
+                      <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-surface-deep/30">
                         {sourceIcon(entry.source)}
                       </span>
                       <span className="text-xs opacity-60">
@@ -147,9 +148,9 @@ export default function DiagnosticsPage() {
           </div>
         )}
 
-        <div className="mt-8 p-4 bg-gray-900 rounded-lg border border-gray-800">
+        <div className="mt-8 p-4 bg-surface-deep rounded-lg border border-border">
           <h2 className="text-sm font-bold mb-2">How to use</h2>
-          <ol className="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+          <ol className="text-xs text-subtle space-y-1 list-decimal list-inside">
             <li>Open this page in your browser: <code className="text-emerald-400">/diagnostics</code></li>
             <li>Keep this tab open (auto-refreshes every 3s)</li>
             <li>In Pi Browser, go to your app and try Step 10</li>

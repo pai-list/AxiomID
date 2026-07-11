@@ -50,7 +50,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
           {t("nav_terms")}
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-electric-blue transition-all group-hover:w-full" />
         </Link>
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-500">
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-muted/30 border border-border text-subtle">
           <div className="w-1 h-1 rounded-full bg-neon-green animate-pulse" />
           <span className="text-[9px] uppercase tracking-tighter">v{process.env.NEXT_PUBLIC_APP_VERSION || "0.1.2"}</span>
         </div>

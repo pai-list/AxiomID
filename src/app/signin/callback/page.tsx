@@ -97,16 +97,17 @@ export default function PiSignInCallbackPage() {
 
   if (status === "error") {
     return (
-      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black p-4 text-white">
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden p-4"
+        style={{ background: "var(--bg-deep)", color: "var(--text-primary)" }}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,120,255,0.08)_0%,_transparent_60%)]" />
-        <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 text-center shadow-2xl shadow-black/40 backdrop-blur-xl">
-          <h1 className="mb-4 font-sans text-2xl font-bold">
+        <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface-muted/10 p-8 text-center shadow-2xl shadow-black/40 backdrop-blur-xl">
+          <h1 className="mb-4 font-sans text-2xl font-bold text-surface">
             {t("Sign-in failed", "فشل تسجيل الدخول")}
           </h1>
-          <p className="mb-6 font-mono text-sm text-red-400">{error}</p>
+          <p className="mb-6 font-mono text-sm text-danger">{error}</p>
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-gradient-to-r from-electric-blue to-blue-600 px-6 py-3 font-sans font-semibold text-white shadow-lg shadow-electric-blue/10 transition-shadow hover:shadow-electric-blue/20"
+            className="inline-flex items-center justify-center rounded-xl border border-border bg-gradient-to-r from-electric-blue to-blue-600 px-6 py-3 font-sans font-semibold text-surface shadow-lg shadow-electric-blue/10 transition-shadow hover:shadow-electric-blue/20"
           >
             {t("Try again", "حاول مرة أخرى")}
           </Link>
@@ -116,11 +117,12 @@ export default function PiSignInCallbackPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black text-white">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden"
+      style={{ background: "var(--bg-deep)", color: "var(--text-primary)" }}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,120,255,0.08)_0%,_transparent_60%)]" />
       <div className="relative z-10 text-center">
         <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-electric-blue border-t-transparent" />
-        <p className="font-sans text-lg text-white/70">
+        <p className="font-sans text-lg text-surface/70">
           {t("Completing sign-in...", "جارٍ إكمال تسجيل الدخول...")}
         </p>
       </div>

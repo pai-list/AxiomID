@@ -34,7 +34,8 @@ export default function SovereignSplash() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
-          className="fixed inset-0 z-[9999] bg-[#10131a] flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden"
+          style={{ background: "var(--bg-deep)" }}
         >
           {/* Background ambient glow */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-electric-blue/10 via-transparent to-transparent" />
@@ -53,7 +54,7 @@ export default function SovereignSplash() {
                 className="absolute inset-0 border-2 border-dashed border-electric-blue/30 rounded-full"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="p-4 bg-black/40 border border-white/10 rounded-full backdrop-blur-xl">
+                <div className="p-4 bg-surface-deep/40 border border-border rounded-full backdrop-blur-xl">
                   <ShieldCheck className="w-10 h-10 text-electric-blue" />
                 </div>
               </div>
@@ -63,7 +64,7 @@ export default function SovereignSplash() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-xl font-mono text-white/80 tracking-widest"
+              className="text-xl font-mono text-surface/80 tracking-widest"
             >
               AXIOM<span className="text-electric-blue">ID</span>
             </motion.h2>
@@ -72,7 +73,7 @@ export default function SovereignSplash() {
               initial={{ opacity: 0 }}
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="mt-4 text-[10px] font-mono text-white/30 uppercase tracking-tighter"
+              className="mt-4 text-[10px] font-mono text-surface/30 uppercase tracking-tighter"
             >
               Initializing Sovereign Identity...
             </motion.div>

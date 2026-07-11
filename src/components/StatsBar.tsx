@@ -86,17 +86,17 @@ export default function StatsBar() {
 
   return (
     <div
-      className="grid grid-cols-3 gap-4 p-5 sm:p-6 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm transition-all duration-500"
+      className="grid grid-cols-3 gap-4 p-5 sm:p-6 rounded-2xl border border-border bg-surface-muted/10 backdrop-blur-sm transition-all duration-500"
       style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(8px)" }}
     >
       {items.map((item) => (
-        <div key={item.label} className="text-center p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
+        <div key={item.label} className="text-center p-3 rounded-xl hover:bg-surface-hover transition-colors">
           <div className="flex items-center gap-2 mb-2 justify-center">
             <item.icon className={`w-3.5 h-3.5 ${item.color === 'electric-blue' ? 'text-electric-blue' : item.color}`} />
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{item.label}</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-subtle">{item.label}</span>
           </div>
           {item.value !== null ? (
-            <p className="text-2xl md:text-3xl font-bold font-mono text-zinc-100">
+            <p className="text-2xl md:text-3xl font-bold font-mono text-surface">
               {item.value}{item.suffix}
             </p>
           ) : (

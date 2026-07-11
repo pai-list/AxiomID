@@ -23,13 +23,13 @@ export default function CodeBlock({ code, language = "json" }: CodeBlockProps) {
   };
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-white/5 bg-[#10131a] my-4 font-mono text-[11px] leading-relaxed">
+    <div className="relative rounded-xl overflow-hidden border border-border bg-surface-deep my-4 font-mono text-[11px] leading-relaxed">
       {/* Top Bar */}
-      <div className="flex justify-between items-center px-4 py-2 border-b border-white/5 bg-white/[0.02] text-zinc-500 text-[10px]">
+      <div className="flex justify-between items-center px-4 py-2 border-b border-border bg-surface-muted/20 text-subtle text-[10px]">
         <span>{language.toUpperCase()}</span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 hover:text-white transition-colors py-1 px-2 rounded hover:bg-white/5"
+          className="flex items-center gap-1 hover:text-surface transition-colors py-1 px-2 rounded hover:bg-surface-hover"
         >
           {copied ? (
             <>
@@ -46,7 +46,7 @@ export default function CodeBlock({ code, language = "json" }: CodeBlockProps) {
       </div>
 
       {/* Code Area */}
-      <pre className="p-4 overflow-x-auto text-zinc-300 select-all no-scrollbar">
+      <pre className="p-4 overflow-x-auto text-surface select-all no-scrollbar">
         <code>{code.trim()}</code>
       </pre>
     </div>

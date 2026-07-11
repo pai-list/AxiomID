@@ -86,7 +86,7 @@ export default function TrustTiers() {
           <div
             key={tier.key}
             role="listitem"
-            className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
+            className="group relative rounded-2xl border border-border bg-surface-muted/10 p-5 transition-all duration-300 hover:border-border hover:bg-surface-hover cursor-pointer text-left"
             style={{
               borderColor: isExpanded ? `${tier.color}30` : undefined,
               boxShadow: isExpanded ? `0 0 20px ${tier.color}08` : undefined,
@@ -110,15 +110,15 @@ export default function TrustTiers() {
                 <span className="font-bold text-lg font-mono">{tier.letter}</span>
               </div>
 
-              <h3 className="text-sm font-bold text-white mb-1">{t(tier.nameEn, tier.nameAr)}</h3>
+              <h3 className="text-sm font-bold text-surface mb-1">{t(tier.nameEn, tier.nameAr)}</h3>
               <span className="text-[11px] font-mono block mb-2" style={{ color: tier.color }}>
                 {tier.xp} XP
               </span>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">{t(tier.descEn, tier.descAr)}</p>
+              <p className="text-[11px] text-faint leading-relaxed">{t(tier.descEn, tier.descAr)}</p>
 
               <div className="mt-3 flex justify-center">
                 <ChevronDown
-                  className="w-4 h-4 text-zinc-400 transition-transform duration-300"
+                  className="w-4 h-4 text-faint transition-transform duration-300"
                   style={{ transform: isExpanded ? "rotate(180deg)" : undefined }}
                 />
               </div>
@@ -127,12 +127,12 @@ export default function TrustTiers() {
             {isExpanded && (
               <div
                 id={`tier-perks-${tier.key}`}
-                className="mt-3 pt-3 border-t border-white/[0.06] space-y-1.5"
+                className="mt-3 pt-3 border-t border-border space-y-1.5"
                 role="region"
                 aria-label={`${t(tier.nameEn, tier.nameAr)} perks`}
               >
                 {(language === "en" ? tier.perksEn : tier.perksAr).map((perk) => (
-                  <div key={perk} className="flex items-center gap-2 text-[10px] font-mono text-zinc-400">
+                  <div key={perk} className="flex items-center gap-2 text-[10px] font-mono text-faint">
                     <span className="w-1 h-1 rounded-full" style={{ backgroundColor: tier.color }} />
                     {perk}
                   </div>

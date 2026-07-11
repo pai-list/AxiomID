@@ -56,8 +56,8 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
           <Link href="/" className="group">
             <AxiomLogo />
           </Link>
-          <div className="w-px h-6 bg-white/10 hidden sm:block" />
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
+          <div className="w-px h-6 bg-[var(--card-border)] hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-surface-muted/30 border border-border">
             <svg viewBox="0 0 100 100" className="w-4 h-4" fill="currentColor">
               <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3"/>
               <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>
@@ -112,7 +112,7 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
                 </div>
               )}
               {connectError && (
-                <div className="absolute top-full right-0 mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-mono max-w-[250px] z-50">
+                <div className="absolute top-full right-0 mt-2 px-3 py-2 rounded-lg bg-danger/10 border border-danger/20 text-danger text-[10px] font-mono max-w-[250px] z-50">
                   {connectError}
                 </div>
               )}
