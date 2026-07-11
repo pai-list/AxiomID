@@ -452,7 +452,13 @@ As the first step, the agent writes a brief plan:
 
 Template at `task.md`. Write this BEFORE touching any code.
 
-**Wait for human approval before proceeding.** Exactly like `task.md` protocol.
+**Two mandatory questions** the agent MUST ask before any execution:
+
+> **Q1:** "What is the worst thing that can happen if we execute this plan as-is? How would you reduce the probability?"
+>
+> **Q2:** "What specifically do you need my approval on before starting execution?"
+
+**Wait for human approval before proceeding.** Exactly like `task.md` protocol. The human must answer both Q1 and Q2 before the agent touches any code.
 
 ## Phase 2: Execute
 
@@ -472,12 +478,26 @@ Template at `task.md`. Write this BEFORE touching any code.
 
 ## Phase 4: Report
 
-Send a professional report containing:
-- What changed (file-level summary)
-- CI status + links (Vercel, GitHub Actions, CodeQL)
-- CodeRabbit/Gemini findings — what was fixed, what remains (if anything)
-- Verification results (lint, tests, type-check, build)
-- Recommendation: "Ready for human review" or "Needs X before review"
+Use this template exactly. No general opinions — only data and links.
+
+```
+## Executive Summary
+_One paragraph. What was the goal? Done or not?_
+
+## Status Table (PRs)
+| PR | Title | Vercel | CI | CodeQL | CodeRabbit | Gemini | Ready? |
+|----|-------|--------|----|--------|------------|--------|--------|
+| #X | ...   | ✅/❌  | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
+
+## Detailed Notes
+_For each important PR, list:_
+- _What changed (file-level)_
+- _What was fixed from reviews_
+- _What remains open (if anything)_
+
+## Recommended Next Actions
+- _Concrete steps. Bullet points. No filler._
+```
 
 ## Phase 5: Human Decision
 
