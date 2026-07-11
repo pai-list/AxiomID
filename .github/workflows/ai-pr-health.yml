@@ -122,6 +122,11 @@ jobs:
             fi
           fi
 
+          # Ensure non-standard labels exist before applying
+          for label_ensure in "priority:high"; do
+            gh label create "$label_ensure" --force 2>/dev/null || true
+          done
+
           if [ -n "$LABELS" ]; then
             if gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "$LABELS" 2>/dev/null; then
               echo "✅ Applied labels: $LABELS"
