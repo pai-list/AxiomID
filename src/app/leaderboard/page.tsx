@@ -37,6 +37,7 @@ export default function LeaderboardPage() {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const errorMsg = error ? (language === "ar" ? "فشل تحميل لوحة الصدارة" : "Failed to load leaderboard") : null;
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("All");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -129,7 +130,7 @@ export default function LeaderboardPage() {
       {error && !loading && (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
           <div className="glass-card p-12 text-center">
-            <p className="text-sm text-red-400 mb-4">{error}</p>
+            <p className="text-sm text-red-400 mb-4">{errorMsg}</p>
             <button onClick={() => { setError(null); setLoading(true); setRetryCount(c => c + 1); }} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>

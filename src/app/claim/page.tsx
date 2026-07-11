@@ -71,6 +71,7 @@ export default function ClaimPage() {
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const closeBrowserModal = () => { setCopied(false); setShowBrowserModal(false); };
 
   const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, piAccessToken } = useWallet();
   const { language } = useLanguage();
@@ -403,7 +404,7 @@ export default function ClaimPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => { setCopied(false); setShowBrowserModal(false); }}
+              onClick={closeBrowserModal}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
             {/* Content Container */}
@@ -462,7 +463,7 @@ export default function ClaimPage() {
                   </div>
 
                   <button
-                    onClick={() => setShowBrowserModal(false)}
+                    onClick={closeBrowserModal}
                     className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-colors"
                   >
                     {t("Got it", "فهمت")}
