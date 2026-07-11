@@ -51,7 +51,7 @@ export default function OfflinePage() {
         <div className="flex flex-col gap-4">
           <button
             onClick={handleRetry}
-            className="group relative px-6 py-3 bg-[var(--bg-elevated)] text-[var(--color-surface)] font-bold rounded-xl overflow-hidden transition-all hover:scale-105 active:scale-95"
+            className="group relative px-6 py-3 bg-[var(--bg-elevated)] text-[var(--color-surface)] font-bold rounded-xl overflow-hidden transition-all hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-electric-blue to-neon-green opacity-0 group-hover:opacity-100 transition-opacity" />
             <span className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white">
