@@ -475,6 +475,11 @@ Template at `task.md`. Write this BEFORE touching any code.
 - Let CodeRabbit + Gemini + CI review.
 - Collect ALL feedback and fix in small batches (repeat Phase 2 per batch).
 - No approval until ALL machine reviews are clean or explicitly acknowledged as WON'T FIX.
+- **WON'T FIX documentation:** Every CodeRabbit or Gemini finding marked as WON'T FIX MUST be documented in the Phase 4 report with:
+  - The exact finding
+  - The reason (design decision, AGENTS.md rule, intentional limitation)
+  - The source (AGENTS.md rule number, architecture decision, explicit prior approval)
+  - The agent MUST NOT reverse a WON'T FIX decision without a new explicit decision from you.
 
 ## Phase 4: Report
 
