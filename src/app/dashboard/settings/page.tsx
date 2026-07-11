@@ -265,7 +265,7 @@ export default function SettingsPage() {
     <>
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Back link */}
-        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-mono text-white/40 hover:text-white/70 transition-colors mb-6">
+        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-mono text-faint hover:text-surface transition-colors mb-6">
           <ArrowLeft className="w-3 h-3" />
           {t('settings_dashboard_link')}
         </Link>
@@ -279,8 +279,8 @@ export default function SettingsPage() {
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-electric-blue to-neon-green flex items-center justify-center text-black font-mono font-bold text-lg mb-3">
                   {userInitials}
                 </div>
-                <p className="font-mono text-xs text-white/60 text-center truncate max-w-full">{user.piUsername || "Pioneer"}</p>
-                <p className="font-mono text-[10px] text-white/30 mt-0.5">{tier.toUpperCase()} TIER</p>
+                <p className="font-mono text-xs text-subtle text-center truncate max-w-full">{user.piUsername || "Pioneer"}</p>
+                <p className="font-mono text-[10px] text-faint mt-0.5">{tier.toUpperCase()} TIER</p>
               </div>
 
               {SIDEBAR_TABS.map((tab) => {
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                     className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-mono text-xs whitespace-nowrap transition-all ${
                       isActive
                         ? "bg-white/[0.08] text-white border border-white/10"
-                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.03] border border-transparent"
+                        : "text-faint hover:text-surface hover:bg-surface-hover border border-transparent"
                     }`}
                   >
                     <TabIcon className={`w-4 h-4 ${isActive ? "text-neon-green" : ""}`} />
@@ -402,14 +402,14 @@ export default function SettingsPage() {
                   <div className="flex-1 space-y-3 w-full">
                     <div className="flex justify-between items-end">
                       <div>
-                        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider block">{t('current_tier')}</span>
+                        <span className="text-[9px] font-mono text-faint uppercase tracking-wider block">{t('current_tier')}</span>
                         <p className="text-xl font-black tracking-wider text-white">{tier.toUpperCase()}</p>
                       </div>
                       <div className="text-end text-[10px] font-mono text-zinc-400">
                         {xp >= 1000 ? t('settings_max_level') : `${(range.max - xp).toLocaleString()} ${t('settings_xp_needed')}`}
                       </div>
                     </div>
-                    <div className="flex justify-between text-[10px] font-mono text-zinc-600 border-t border-white/5 pt-2">
+                    <div className="flex justify-between text-[10px] font-mono text-subtle border-t border-border pt-2">
                       <span>{range.min.toLocaleString()} XP</span>
                       <span>{range.max.toLocaleString()} XP</span>
                     </div>
@@ -454,8 +454,8 @@ export default function SettingsPage() {
                           )}
                         </div>
                         <div className="mt-4">
-                          <h4 className="text-xs font-bold text-white font-mono">{label}</h4>
-                          <p className="text-[10px] text-zinc-500 mt-0.5 font-mono">{t('settings_xp_reward')} +{platformXp} XP</p>
+                  <h4 className="text-xs font-bold text-surface font-mono">{label}</h4>
+                  <p className="text-[10px] text-subtle mt-0.5 font-mono">{t('settings_xp_reward')} +{platformXp} XP</p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                           {connected ? (
@@ -552,8 +552,8 @@ export default function SettingsPage() {
                   <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_danger_desc')}</p>
                   <div className="space-y-3">
                     {PLATFORMS.filter(({ id }) => isPlatformConnected(id)).map(({ id, label }) => (
-                      <div key={id} className="flex items-center justify-between py-3 px-4 rounded-xl border border-white/5 bg-white/[0.02]">
-                        <span className="font-mono text-xs text-white/60">{label}</span>
+                      <div key={id} className="flex items-center justify-between py-3 px-4 rounded-xl border border-border bg-white/[0.02]">
+                        <span className="font-mono text-xs text-subtle">{label}</span>
                         <button
                           onClick={() => openDisconnectModal(id)}
                           className="text-[10px] font-mono text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg border border-red-500/20 hover:bg-red-500/10 transition-colors"

@@ -128,8 +128,8 @@ export default function Dashboard() {
                       <Zap className="w-6 h-6 text-electric-blue animate-pulse" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white">{t("connect_wallet")}</h3>
-                      <p className="text-xs text-zinc-400 mt-1">{t("settings_wallet_prompt")}</p>
+                      <h3 className="text-base font-bold text-surface">{t("connect_wallet")}</h3>
+                      <p className="text-xs text-faint mt-1">{t("settings_wallet_prompt")}</p>
                     </div>
                   </div>
                   <div className="pt-2">
@@ -150,9 +150,9 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="bento-card p-5 border border-white/5 bg-white/[0.01]">
-                <h4 className="text-xs font-bold font-mono text-zinc-400 uppercase tracking-widest mb-2">{t("showcase_title")}</h4>
-                <p className="text-xs text-zinc-500 leading-relaxed">{t("showcase_desc")}</p>
+              <div className="bento-card p-5 border border-border bg-white/[0.01]">
+                <h4 className="text-xs font-bold font-mono text-faint uppercase tracking-widest mb-2">{t("showcase_title")}</h4>
+                <p className="text-xs text-subtle leading-relaxed">{t("showcase_desc")}</p>
               </div>
             </div>
             <div className="md:col-span-5 flex justify-center relative">

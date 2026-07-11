@@ -178,7 +178,7 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
                   onChange={(e) => updateSection(field.key, e.target.value)}
                   placeholder={field.placeholder}
                   rows={field.key === "operationalFlow" || field.key === "failureModes" ? 4 : 2}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-surface font-mono focus:outline-none focus:border-neon-green/40 resize-none placeholder:text-white/20"
+                  className="w-full bg-black/40 border border-border rounded-lg px-3 py-2 text-[10px] text-surface font-mono focus:outline-none focus:border-neon-green/40 resize-none placeholder:text-faint"
                 />
               </div>
             ))}
@@ -250,7 +250,7 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
+            <div className="p-3 rounded-lg bg-danger-10 text-danger text-xs font-mono">
               {error}
             </div>
           )}

@@ -32,7 +32,7 @@ export function MemoryTab() {
     <div className="space-y-5">
       {/* IQRA Neural Mesh */}
       <div className="bento-card p-5">
-        <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
+        <h3 className="text-xs uppercase tracking-wider font-semibold text-faint mb-3">
           IQRA Neural Mesh
         </h3>
         <IqraMesh width={560} height={360} />
@@ -43,7 +43,7 @@ export function MemoryTab() {
 
       {/* Dynamic skill nodes */}
       <div className="bento-card p-5">
-        <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-4">
+        <h3 className="text-xs uppercase tracking-wider font-semibold text-faint mb-4">
           Skill Nodes
         </h3>
         {loading ? (
@@ -53,13 +53,13 @@ export function MemoryTab() {
             ))}
           </div>
         ) : skillNodes.length === 0 ? (
-          <p className="text-xs font-mono text-zinc-500 text-center py-2">No skills installed</p>
+          <p className="text-xs font-mono text-subtle text-center py-2">No skills installed</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {skillNodes.map((skill, i) => (
               <span
                 key={i}
-                className="px-2 py-1 rounded-md text-[10px] font-mono border border-white/5 bg-white/[0.02] text-zinc-400"
+                className="px-2 py-1 rounded-md text-[10px] font-mono border border-border text-faint"
               >
                 {skill.name}
               </span>

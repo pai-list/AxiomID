@@ -150,17 +150,17 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
   if (loading) {
     return (
       <div className="bento-card p-5">
-        <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
+        <h3 className="text-xs uppercase tracking-wider font-semibold text-faint mb-3">
           Pending Spend Requests
         </h3>
-        <p className="text-xs font-mono text-zinc-500 text-center py-4">Loading...</p>
+        <p className="text-xs font-mono text-subtle text-center py-4">Loading...</p>
       </div>
     );
   }
 
   return (
     <div className="bento-card p-5">
-      <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
+      <h3 className="text-xs uppercase tracking-wider font-semibold text-faint mb-3">
         Pending Spend Requests
         {requests.length > 0 && (
           <span className="ml-2 px-1.5 py-0.5 text-[10px] font-mono bg-amber-500/20 text-amber-400 rounded">
@@ -170,11 +170,11 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
       </h3>
 
       {error && (
-        <p className="text-xs font-mono text-red-400 mb-3">{error}</p>
+        <p className="text-xs font-mono text-danger mb-3">{error}</p>
       )}
 
       {requests.length === 0 ? (
-        <p className="text-xs font-mono text-zinc-500 text-center py-4">
+        <p className="text-xs font-mono text-subtle text-center py-4">
           No pending requests
         </p>
       ) : (
@@ -221,7 +221,7 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
                   <button
                     onClick={() => handleReject(req.id)}
                     disabled={actionLoading === req.id}
-                    className="px-2 py-1 text-[10px] font-mono bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 disabled:opacity-50"
+                    className="px-2 py-1 text-[10px] font-mono bg-red-500/20 text-danger rounded hover:bg-red-500/30 disabled:opacity-50"
                   >
                     Confirm
                   </button>

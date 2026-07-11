@@ -216,8 +216,8 @@ export function IqraMesh({ width = 600, height = 400 }: IqraMeshProps) {
       {/* Tooltip */}
       {hoveredNode && (
         <div className="absolute bottom-3 left-3 right-3 p-3 rounded-lg border border-white/10 bg-black/80 backdrop-blur-sm pointer-events-none">
-          <p className="text-xs font-mono text-white font-semibold">{getNodeById(hoveredNode)?.label}</p>
-          <p className="text-[10px] font-mono text-zinc-400 mt-1">{getNodeById(hoveredNode)?.description}</p>
+          <p className="text-xs font-mono text-surface font-semibold">{getNodeById(hoveredNode)?.label}</p>
+          <p className="text-[10px] font-mono text-faint mt-1">{getNodeById(hoveredNode)?.description}</p>
         </div>
       )}
 
@@ -226,10 +226,10 @@ export function IqraMesh({ width = 600, height = 400 }: IqraMeshProps) {
         <div className="absolute top-3 right-3 p-3 rounded-lg border border-white/10 bg-black/80 backdrop-blur-sm max-w-[200px]">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedNodeData.color }} />
-            <span className="text-xs font-mono text-white font-semibold">{selectedNodeData.label}</span>
+            <span className="text-xs font-mono text-surface font-semibold">{selectedNodeData.label}</span>
           </div>
-          <p className="text-[10px] font-mono text-zinc-400">{selectedNodeData.description}</p>
-          <p className="text-[9px] font-mono text-zinc-500 mt-1 capitalize">{selectedNodeData.group}</p>
+          <p className="text-[10px] font-mono text-faint">{selectedNodeData.description}</p>
+          <p className="text-[9px] font-mono text-subtle mt-1 capitalize">{selectedNodeData.group}</p>
         </div>
       )}
 
@@ -238,7 +238,7 @@ export function IqraMesh({ width = 600, height = 400 }: IqraMeshProps) {
         {(["core", "process", "output"] as const).map((group) => (
           <div key={group} className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: group === "core" ? "#22c55e" : group === "process" ? "#3b82f6" : "#f59e0b" }} />
-            <span className="text-[8px] font-mono text-zinc-500 capitalize">{group}</span>
+            <span className="text-[8px] font-mono text-subtle capitalize">{group}</span>
           </div>
         ))}
       </div>
