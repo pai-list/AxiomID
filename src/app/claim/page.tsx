@@ -266,7 +266,7 @@ export default function ClaimPage() {
                     ) : (
                       <StepIcon
                         className={`w-5 h-5 ${
-                          isActive ? "text-electric-blue" : "                  text-faint"
+                          isActive ? "text-electric-blue" : "text-faint"
                         }`}
                       />
                     )}
