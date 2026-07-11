@@ -142,6 +142,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
           {agent.agent && (
             <div className="bento-card p-5 mb-6">
               <h2 className="text-xs uppercase tracking-wider font-semibold text-faint mb-3">
+                {t("Autonomous Agent", "الوكيل الذاتي")}
               </h2>
               <div className="flex items-center justify-between">
                 <div>

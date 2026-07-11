@@ -214,6 +214,7 @@ export default function OnboardingPage() {
                 {step === 3 && (
                   <div key="step-3-details" className="space-y-4 animate-fadeInUp">
                     <p className="text-xs text-subtle font-mono">
+                      {t("onboarding_seal_desc")}
                     </p>
                     <div className="flex items-center gap-2 text-amber-400 text-xs font-mono bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
                       <ShieldCheck className="w-4 h-4 animate-pulse" />
