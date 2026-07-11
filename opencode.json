@@ -1,0 +1,143 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "build",
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "permission": {
+    "edit": "ask",
+    "bash": "ask"
+  },
+  "formatter": {
+    "prettier": {
+      "disabled": false
+    },
+    "eslint": {
+      "disabled": true
+    }
+  },
+  "lsp": true,
+  "snapshot": true,
+  "autoupdate": "notify",
+  "agent": {
+    "iqra-reviewer": {
+      "description": "Reviews code against AxiomID iQra Sovereign Standard — security, types, Pi SDK rules, i18n, design system",
+      "model": "anthropic/claude-sonnet-4-5",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      },
+      "prompt": "You are an iQra code reviewer for AxiomID. Check against: Muraqabah (honesty), strict TypeScript (no `as any`), Pi SDK browser-only guard, dynamic sandbox detection, Zod validation at boundaries, i18n completeness (EN+AR), glassmorphism design system, no console.log in API routes, bilingual translation helper pattern, floating-point negative-zero clamping, standard Jest matchers only, Nostics static `fix` constraint, PWA network-first for docs, Stale-While-Revalidate for assets only. Report issues by severity (critical/blocker/major/minor/nit)."
+    },
+    "iqra-implementer": {
+      "description": "Implements features following the iQra standard — TDD, Ponytail, bilingual, strict TS",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "You implement features following AxiomID's iQra covenant. Start with Tafakkur (read existing patterns), apply Ponytail Ladder (fewest dependencies, least code), write strict TypeScript with no `as any`, gate Pi SDK behind `typeof window !== 'undefined'`, wire all strings through bilingual t() helper, use Zod validation at API boundaries, follow design system colors (OLED Black, Electric Blue, Neon Emerald, Axiom Purple, Amber). Mark simplifications with `// ponytail:` comments."
+    },
+    "branding-agent": {
+      "description": "Manages AxiomID brand assets — logos, social previews, banners, color consistency",
+      "model": "anthropic/claude-haiku-4-5",
+      "tools": {
+        "bash": true,
+        "write": true,
+        "edit": true
+      },
+      "prompt": "You manage AxiomID branding assets. Brand colors: OLED Black #10131a, Dark Graphite #12131A, Amber/Gold #E3A548, Neon Emerald #22c55e, Electric Blue #3b82f6, Axiom Purple #6366f1. Logos are in public/branding/ with SVG sources and PNG renders. GitHub, Facebook, LinkedIn banners in public/branding/. Always verify color hex matches brand spec."
+    }
+  },
+  "command": {
+    "test": {
+      "description": "Run full test suite",
+      "template": "Run the full AxiomID test suite with:\n1. `npm test -- --coverage`\n2. Report pass/fail summary\n3. If failures: show failing test names and error messages\n4. If coverage < 80% on any file, flag it",
+      "agent": "build",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "lint": {
+      "description": "Run lint + typecheck",
+      "template": "Run:\n1. `npm run lint` — report any warnings/errors\n2. `npm run typecheck` — report any TypeScript errors\n3. If both pass: confirm clean\n4. If errors: show the first 5, suggest fixes",
+      "agent": "build",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "build": {
+      "description": "Full build check",
+      "template": "Run `npm run build` and report:\n1. Build success/failure\n2. Any warnings or errors\n3. Output size summary if available",
+      "agent": "build",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "review": {
+      "description": "iQra code review of staged changes",
+      "template": "Review staged git changes against AxiomID iQra standard:\n1. Run `git diff --cached`\n2. Review for: security issues, Pi SDK rules, i18n completeness, strict TS, design system compliance\n3. Report by severity: CRITICAL (block merge), MAJOR (fix before push), MINOR (nice to have)\n4. If clean: confirm \"iQra review: PASSED\"",
+      "agent": "iqra-reviewer",
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "docs": {
+      "description": "Update AxiomID.Memory with session notes",
+      "template": "Update AxiomID.Memory with:\n1. Read existing AxiomID.Memory/progress_log.md\n2. Note what was accomplished this session (features, fixes, decisions)\n3. Note what's blocked or next\n4. Write updated entry with ISO 8601 timestamp",
+      "agent": "build",
+      "model": "anthropic/claude-haiku-4-5"
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": false,
+    "reserved": 10000
+  },
+  "mcp": {
+    "github": {
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "type": "local",
+      "enabled": true
+    },
+    "vercel": {
+      "command": [
+        "sh",
+        "-c",
+        "npx -y vercel-mcp 'VERCEL_API_KEY=$VERCEL_ACCESS_TOKEN'"
+      ],
+      "env": {
+        "VERCEL_ACCESS_TOKEN": "${VERCEL_ACCESS_TOKEN}"
+      },
+      "type": "local",
+      "enabled": true
+    },
+    "cloudflare": {
+      "type": "remote",
+      "url": "https://mcp.cloudflare.com/mcp",
+      "enabled": true,
+      "oauth": {}
+    },
+    "cloudflare-docs": {
+      "type": "remote",
+      "url": "https://docs.mcp.cloudflare.com/mcp",
+      "enabled": true
+    },
+    "cloudflare-bindings": {
+      "type": "remote",
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "enabled": true,
+      "oauth": {}
+    },
+    "cloudflare-builds": {
+      "type": "remote",
+      "url": "https://builds.mcp.cloudflare.com/mcp",
+      "enabled": true,
+      "oauth": {}
+    },
+    "cloudflare-observability": {
+      "type": "remote",
+      "url": "https://observability.mcp.cloudflare.com/mcp",
+      "enabled": true,
+      "oauth": {}
+    }
+  }
+}

@@ -1,4 +1,30 @@
 let enabled = false;
+let origFetch: typeof globalThis.fetch | null = null;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+let origPiAuth: Function | null = null;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+let origPiPay: Function | null = null;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+let origPiInit: Function | null = null;
+let piInterceptTimer: ReturnType<typeof setInterval> | null = null;
+
+const handleError = (event: ErrorEvent) => {
+  sendDiagnostic("error", "client", event.message, {
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack,
+  });
+};
+
+const handleRejection = (event: PromiseRejectionEvent) => {
+  const reason = event.reason;
+  sendDiagnostic("error", "client", `Unhandled Promise: ${reason}`, {
+    type: typeof reason,
+    message: reason?.message || String(reason),
+    stack: reason?.stack,
+  });
+};
 
 export function enableDiagnostics() {
   if (enabled) return;
@@ -6,33 +32,44 @@ export function enableDiagnostics() {
 
   if (typeof window === "undefined") return;
 
-  // Capture unhandled errors
-  window.addEventListener("error", (event) => {
-    sendDiagnostic("error", "client", event.message, {
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-      stack: event.error?.stack,
-    });
-  });
+  window.addEventListener("error", handleError);
+  window.addEventListener("unhandledrejection", handleRejection);
 
-  // Capture unhandled promise rejections
-  window.addEventListener("unhandledrejection", (event) => {
-    const reason = event.reason;
-    sendDiagnostic("error", "client", `Unhandled Promise: ${reason}`, {
-      type: typeof reason,
-      message: reason?.message || String(reason),
-      stack: reason?.stack,
-    });
-  });
-
-  // Intercept Pi SDK errors
   interceptPiSdk();
-
-  // Intercept fetch errors
   interceptFetch();
 
   console.log("[DIAG] Diagnostics enabled — errors will be captured");
+}
+
+export function disableDiagnostics() {
+  if (!enabled) return;
+  enabled = false;
+
+  if (typeof window === "undefined") return;
+
+  window.removeEventListener("error", handleError);
+  window.removeEventListener("unhandledrejection", handleRejection);
+
+  if (origFetch) {
+    window.fetch = origFetch;
+    origFetch = null;
+  }
+
+  if (window.Pi) {
+    if (origPiAuth) window.Pi.authenticate = origPiAuth as PiInstance["authenticate"];
+    if (origPiPay) window.Pi.createPayment = origPiPay as PiInstance["createPayment"];
+    if (origPiInit) window.Pi.init = origPiInit as PiInstance["init"];
+  }
+  origPiAuth = null;
+  origPiPay = null;
+  origPiInit = null;
+
+  if (piInterceptTimer) {
+    clearInterval(piInterceptTimer);
+    piInterceptTimer = null;
+  }
+
+  console.log("[DIAG] Diagnostics disabled — SDK wrappers restored");
 }
 
 function sendDiagnostic(
@@ -41,6 +78,7 @@ function sendDiagnostic(
   message: string,
   details?: Record<string, unknown>,
 ) {
+  if (!enabled) return;
   try {
     navigator.sendBeacon(
       "/api/diagnostics/capture",
@@ -55,18 +93,22 @@ function sendDiagnostic(
 }
 
 function interceptPiSdk() {
-  // Wait for Pi SDK to load
-  const checkPi = setInterval(() => {
+  piInterceptTimer = setInterval(() => {
     if (typeof window === "undefined" || !window.Pi) return;
-    clearInterval(checkPi);
+    if (piInterceptTimer) {
+      clearInterval(piInterceptTimer);
+      piInterceptTimer = null;
+    }
 
-    // Wrap Pi.authenticate
-    const origAuth = window.Pi.authenticate.bind(window.Pi);
-    window.Pi.authenticate = (...args: Parameters<typeof origAuth>) => {
+    origPiAuth = window.Pi.authenticate.bind(window.Pi);
+    origPiPay = window.Pi.createPayment.bind(window.Pi);
+    origPiInit = window.Pi.init.bind(window.Pi);
+
+    window.Pi.authenticate = ((...args: unknown[]) => {
       sendDiagnostic("info", "pi-sdk", "Pi.authenticate called", {
         scopes: args[0],
       });
-      return origAuth(...args).catch((err: unknown) => {
+      return (origPiAuth!(...args) as Promise<PiAuthResult>).catch((err: unknown) => {
         sendDiagnostic("error", "pi-sdk", `Pi.authenticate failed: ${err}`, {
           error: String(err),
           name: (err as Error)?.name,
@@ -74,26 +116,23 @@ function interceptPiSdk() {
         });
         throw err;
       });
-    };
+    }) as PiInstance["authenticate"];
 
-    // Wrap Pi.createPayment
-    const origPay = window.Pi.createPayment.bind(window.Pi);
-    window.Pi.createPayment = (...args: Parameters<typeof origPay>) => {
+    window.Pi.createPayment = ((...args: unknown[]) => {
+      const paymentData = args[0] as { amount?: number; memo?: string };
       sendDiagnostic("info", "pi-sdk", "Pi.createPayment called", {
-        amount: args[0]?.amount,
-        memo: args[0]?.memo,
+        amount: paymentData?.amount,
+        memo: paymentData?.memo,
       });
-      return origPay(...args);
-    };
+      return origPiPay!(...args);
+    }) as PiInstance["createPayment"];
 
-    // Wrap Pi.init
-    const origInit = window.Pi.init.bind(window.Pi);
-    window.Pi.init = (...args: Parameters<typeof origInit>) => {
+    window.Pi.init = ((...args: unknown[]) => {
       sendDiagnostic("info", "pi-sdk", "Pi.init called", {
         config: args[0],
       });
       try {
-        const result = origInit(...args);
+        const result = origPiInit!(...args);
         sendDiagnostic("info", "pi-sdk", "Pi.init succeeded");
         return result;
       } catch (err: unknown) {
@@ -102,7 +141,7 @@ function interceptPiSdk() {
         });
         throw err;
       }
-    };
+    }) as PiInstance["init"];
 
     sendDiagnostic("info", "pi-sdk", "Pi SDK intercepted", {
       sdkVersion: "2.0",
@@ -110,20 +149,23 @@ function interceptPiSdk() {
     });
   }, 200);
 
-  // Stop checking after 10s
-  setTimeout(() => clearInterval(checkPi), 10000);
+  setTimeout(() => {
+    if (piInterceptTimer) {
+      clearInterval(piInterceptTimer);
+      piInterceptTimer = null;
+    }
+  }, 10000);
 }
 
 function interceptFetch() {
-  const origFetch = window.fetch;
-  window.fetch = async (...args: Parameters<typeof origFetch>) => {
-    const url = typeof args[0] === "string" ? args[0] : args[0] instanceof URL ? args[0].toString() : args[0]?.url || "unknown";
+  origFetch = window.fetch.bind(window);
+  window.fetch = async (...args: Parameters<typeof globalThis.fetch>) => {
+    const url = typeof args[0] === "string" ? args[0] : args[0] instanceof URL ? args[0].toString() : (args[0] as Request)?.url || "unknown";
     const method = args[1]?.method || "GET";
 
     try {
-      const response = await origFetch(...args);
+      const response = await origFetch!(...args);
 
-      // Log failed API calls
       if (url.includes("/api/") && !response.ok) {
         const body = await response.clone().text().catch(() => "unreadable");
         sendDiagnostic("error", "api", `API ${method} ${url} → ${response.status}`, {

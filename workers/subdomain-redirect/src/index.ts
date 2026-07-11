@@ -23,6 +23,11 @@ const CORS_HEADERS: Record<string, string> = {
 
 const worker = {
   async fetch(request: Request): Promise<Response> {
+    return handleRequest(request);
+  },
+};
+
+async function handleRequest(request: Request): Promise<Response> {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
@@ -30,7 +35,6 @@ const worker = {
     const url = new URL(request.url);
     const hostname = url.hostname;
 
-    // Extract subdomain: amrikyy.axiomid.app → amrikyy
     const parts = hostname.split(".");
     if (parts.length !== 3 || parts[1] !== "axiomid" || parts[2] !== "app") {
       return new Response("Not found", { status: 404, headers: CORS_HEADERS });
@@ -38,7 +42,6 @@ const worker = {
 
     const subdomain = parts[0].toLowerCase();
 
-    // Prevent redirecting reserved subdomains to passport pages
     if (RESERVED_SUBDOMAINS.has(subdomain)) {
       return new Response(null, {
         status: 301,
@@ -46,17 +49,14 @@ const worker = {
       });
     }
 
-    // Validate subdomain format
     if (!VALID_SUBDOMAIN.test(subdomain)) {
       return new Response("Invalid subdomain", { status: 400, headers: CORS_HEADERS });
     }
 
-    // 301 redirect to passport page
     return new Response(null, {
       status: 301,
       headers: { Location: `${PASSPORT_BASE}/${subdomain}`, ...CORS_HEADERS },
     });
-  },
-};
+}
 
 export default worker;
