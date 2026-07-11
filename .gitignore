@@ -37,6 +37,8 @@ Desktop.ini
 # qoder/opencode
 .qoder/
 .opencode/
+opencode.json
+tui.json
 
 # gemini CLI (local tool config)
 .gemini/

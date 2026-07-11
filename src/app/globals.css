@@ -105,6 +105,28 @@ body {
   color: var(--text-muted);
 }
 
+/* ── Border utilities (theme-aware) ───────────────────── */
+.border-border { border-color: var(--card-border); }
+.border-border-hover { border-color: var(--card-border-hover); }
+
+/* ── Background utilities (theme-aware) ───────────────── */
+.bg-surface-hover { background: var(--bg-card-hover); }
+.bg-surface-deep { background: var(--bg-deep); }
+
+/* ── Text color utilities (theme-aware) ───────────────── */
+.text-primary-color { color: var(--color-primary); }
+.text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
+.text-accent { color: var(--axiom-purple); }
+
+/* ── Opacity utilities (theme-aware) ──────────────────── */
+.bg-primary-10 { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+.bg-primary-20 { background: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.border-primary-20 { border-color: color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.bg-danger-10 { background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
+.bg-warning-10 { background: color-mix(in srgb, var(--color-warning) 10%, transparent); }
+.border-warning-20 { border-color: color-mix(in srgb, var(--color-warning) 20%, transparent); }
+
 /* ── Accent Gradient ─────────────────────────────────── */
 .gradient-accent {
   background: linear-gradient(

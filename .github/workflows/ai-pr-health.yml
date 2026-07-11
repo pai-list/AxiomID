@@ -123,8 +123,11 @@ jobs:
           fi
 
           if [ -n "$LABELS" ]; then
-            gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "$LABELS"
-            echo "✅ Applied labels: $LABELS"
+            if gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-label "$LABELS" 2>/dev/null; then
+              echo "✅ Applied labels: $LABELS"
+            else
+              echo "⚠️  Could not apply some labels: $LABELS (may not exist in repo)"
+            fi
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

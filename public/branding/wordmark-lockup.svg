@@ -1,0 +1,19 @@
+<svg width="900" height="220" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AxiomID wordmark</title>
+<desc>AxiomID logomark next to the wordmark, dark graphite background with amber accent</desc>
+
+<rect width="900" height="220" fill="#12131A"/>
+
+<!-- logomark, scaled down and repositioned -->
+<g transform="translate(40, 34) scale(0.30)">
+<polygon points="256,120 354,177 354,335 256,392 158,335 158,177"
+  fill="none" stroke="#3A3D4E" stroke-width="4"/>
+<path d="M 196 258 L 238 302 L 330 196"
+  fill="none" stroke="#E3A548" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="354" cy="177" r="10" fill="#E3A548"/>
+</g>
+
+<text x="200" y="115" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" fill="#F2EFE6">Axiom<tspan fill="#E3A548">ID</tspan></text>
+<text x="202" y="152" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="400" letter-spacing="1.5" fill="#8B8D99">VERIFIABLE IDENTITY FOR THE AGENTIC WEB</text>
+
+</svg>
