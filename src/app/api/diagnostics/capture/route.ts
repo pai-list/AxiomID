@@ -3,6 +3,7 @@ import { captureDiagnostic } from "@/lib/diagnostics/capture";
 import { apiError, apiSuccess, rateLimitHeaders } from "@/lib/errors";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 const CaptureSchema = z.object({
@@ -24,7 +25,8 @@ export async function POST(req: NextRequest) {
   let body: unknown;
   try {
     body = await req.json();
-  } catch {
+  } catch (err) {
+    logger.error("[DIAG-CAPTURE] Invalid JSON body", err);
     return apiError("VALIDATION_ERROR", "Invalid JSON body");
   }
 
@@ -41,7 +43,8 @@ export async function POST(req: NextRequest) {
     });
 
     return apiSuccess({ ok: true, id: entry.id });
-  } catch {
+  } catch (err) {
+    logger.error("[DIAG-CAPTURE] Failed to capture diagnostic", err);
     return apiError("INTERNAL_ERROR", "Failed to capture diagnostic");
   }
 }
