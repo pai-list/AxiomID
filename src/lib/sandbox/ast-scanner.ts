@@ -6,7 +6,7 @@
 export function scanScript(code: string): { allowed: boolean; reason?: string } {
   // Strip comments: single-line and multi-line
 let clean = code
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\//g, " ")
     .replace(/\/\/[^\n]*/g, " ");
 
   // Strip string literals to prevent false positives inside comments/strings.

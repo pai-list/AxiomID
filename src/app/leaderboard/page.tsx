@@ -28,7 +28,8 @@ interface LeaderboardUser {
   createdAt: string;
 }
 
-const TIER_FILTERS = ["All", "Sovereign", "Validator", "Citizen", "Visitor"];
+const TIER_FILTERS_EN = ["All", "Sovereign", "Validator", "Citizen", "Visitor"];
+const TIER_FILTERS_AR = ["الكل", "سيادي", "مدقق", "مواطن", "زائر"];
 
 export default function LeaderboardPage() {
   const { language } = useLanguage();
@@ -36,9 +37,11 @@ export default function LeaderboardPage() {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const errorMsg = error ? (language === "ar" ? "فشل تحميل لوحة الصدارة" : "Failed to load leaderboard") : null;
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("All");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -61,7 +64,7 @@ export default function LeaderboardPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [retryCount]);
 
   const filteredUsers = users.filter((u) => {
     const q = search.toLowerCase();
@@ -127,8 +130,8 @@ export default function LeaderboardPage() {
       {error && !loading && (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
           <div className="glass-card p-12 text-center">
-            <p className="text-sm text-red-400 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
+            <p className="text-sm text-red-400 mb-4">{errorMsg}</p>
+            <button onClick={() => { setError(null); setLoading(true); setRetryCount(c => c + 1); }} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>
           </div>
@@ -216,12 +219,12 @@ export default function LeaderboardPage() {
 
           {/* Tier Filter Tabs */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            {TIER_FILTERS.map((tier) => (
+            {(language === "ar" ? TIER_FILTERS_AR : TIER_FILTERS_EN).map((tier, i) => (
               <button
-                key={tier}
-                onClick={() => setTierFilter(tier)}
+                key={TIER_FILTERS_EN[i]}
+                onClick={() => setTierFilter(TIER_FILTERS_EN[i])}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all ${
-                  tierFilter === tier
+                  tierFilter === TIER_FILTERS_EN[i]
                     ? "bg-electric-blue/20 text-electric-blue border border-electric-blue/30"
                     : "text-zinc-500 border border-white/[0.04] hover:border-white/[0.08] hover:text-zinc-300"
                 }`}
@@ -235,7 +238,7 @@ export default function LeaderboardPage() {
           <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
             <div className="p-4 border-b border-white/5 bg-white/[0.01] flex justify-between items-center text-[10px] font-mono text-zinc-500">
               <span>{language === "en" ? "PIONEER REGISTRY" : "سجل رواد البروتوكول"}</span>
-              <span>{tableUsers.length} FOUND</span>
+              <span>{tableUsers.length} {language === "en" ? "FOUND" : "وجد"}</span>
             </div>
             
             <div className="overflow-x-auto no-scrollbar">
@@ -243,12 +246,12 @@ export default function LeaderboardPage() {
                 <thead>
                   <tr className="border-b border-white/5 text-[10px] text-zinc-500 bg-white/[0.005]">
                     <th className="py-3 px-4 text-center w-12">#</th>
-                    <th className="py-3 px-4">PIONEER</th>
-                    <th className="py-3 px-4 text-center">TIER</th>
-                    <th className="py-3 px-4 text-center">STAMPS</th>
-                    <th className="py-3 px-4 text-center">TRUST</th>
+                    <th className="py-3 px-4">{language === "en" ? "PIONEER" : "الرائد"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TIER" : "الطبقة"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "STAMPS" : "الختم"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TRUST" : "الثقة"}</th>
                     <th className="py-3 px-4 text-right">XP</th>
-                    <th className="py-3 px-4 text-right sr-only">ACTION</th>
+                    <th className="py-3 px-4 text-right sr-only">{language === "en" ? "ACTION" : "الإجراء"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -302,7 +305,7 @@ export default function LeaderboardPage() {
                   {tableUsers.length === 0 && (
                     <tr>
                       <td colSpan={7} className="py-10 text-center text-zinc-600 text-xs">
-                        No pioneers matched query search.
+                        {language === "ar" ? "لا يوجد روّاد مطابقون للبحث" : "No pioneers matched query search."}
                       </td>
                     </tr>
                   )}

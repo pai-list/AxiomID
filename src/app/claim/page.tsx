@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { determineSandboxMode } from "@/lib/pi-sdk";
+import { determineSandboxMode, checkPiBrowser } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 import {
@@ -71,6 +71,7 @@ export default function ClaimPage() {
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const closeBrowserModal = () => { setCopied(false); setShowBrowserModal(false); };
 
   const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, piAccessToken } = useWallet();
   const { language } = useLanguage();
@@ -94,7 +95,11 @@ export default function ClaimPage() {
 
   const handleConnect = async () => {
     setConnectError(null);
-    if (!isPiBrowser && !determineSandboxMode()) {
+    // ponytail: Real-time Pi Browser check — isPiBrowser from context may lag
+    // behind actual SDK availability (polling interval). Check window.Pi
+    // directly to catch the case where SDK loaded but state hasn't updated yet.
+    const actuallyInPiBrowser = isPiBrowser || (typeof window !== "undefined" && !!window.Pi) || checkPiBrowser();
+    if (!actuallyInPiBrowser && !determineSandboxMode()) {
       setShowBrowserModal(true);
       return;
     }
@@ -399,7 +404,7 @@ export default function ClaimPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowBrowserModal(false)}
+              onClick={closeBrowserModal}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
             {/* Content Container */}
@@ -458,7 +463,7 @@ export default function ClaimPage() {
                   </div>
 
                   <button
-                    onClick={() => setShowBrowserModal(false)}
+                    onClick={closeBrowserModal}
                     className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-colors"
                   >
                     {t("Got it", "فهمت")}

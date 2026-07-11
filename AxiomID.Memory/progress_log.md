@@ -114,7 +114,7 @@
 
 ## 2026-07-07 — Spend Request Implementation (Sprint 1-6)
 
-- **PR #298** created: `feat(payments): Spend Request — agentic Pi payments pipeline`
+- **PR #298** created and merged: `feat(payments): Spend Request — agentic Pi payments pipeline`
 - Prisma schema: SpendRequest model with `paymentId @unique`, status enum, relations
 - API endpoints: POST create, GET list, PATCH approve/reject/complete, GET single
 - Dashboard UI: SpendRequestsPanel with polling, countdown, approve/reject + Pi SDK
@@ -122,6 +122,24 @@
 - SSE stream: `/api/spend-request/stream?agentId=X` with heartbeat + AbortController cleanup
 - Test results: 3272 passing (168 suites), lint clean, type-check clean
 - Formal spec + AxiomID.Memory design doc
+
+---
+
+## 2026-07-07 — Security Fixes + CodeRabbit Patterns + Vanity Subdomain
+
+- **PR #298** CodeRabbit critical findings fixed before merge:
+  - SSE endpoint: was unauthenticated data leak (anyone could query any agentId)
+  - PATCH route: state machine bug (pending→approved/rejected, approved→completed)
+  - Response bug: `createdAt` not `updatedAt` (model has no updatedAt field)
+- **CodeRabbit Learning Patterns** documented: 8 validated rules in AGENTS.md + `AxiomID.Memory/08_Engineering/`
+- **CI fix**: quality-gate shallow clone resilience (HEAD~1 fallback chain)
+- **README cleanup**: removed duplicates, added Spend Request + TrustChain + Upstash Redis, fixed test count
+- **Gemini's broken commits reviewed and reverted** (missing closing tags, unused imports, lint error)
+- **PR #299** created: vanity subdomain worker + Settings UI + i18n fixes
+  - Cloudflare Worker: `*.axiomid.app` → 301 redirect to `/passport/[subdomain]`
+  - Settings tab: "Your Vanity URL" section with copy button
+  - Agent profile: Arabic translations for all hardcoded strings
+- **Frontend audit** completed: 16 pages, 75 components, 57 API endpoints, 560 i18n keys
 
 ---
 

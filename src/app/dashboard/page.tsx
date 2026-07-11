@@ -11,6 +11,7 @@ import { AnimatePresence } from "framer-motion";
 import { TabPanel } from "@/components/dashboard/TabPanel";
 import { PiBrowserGuard, PiBrowserBanner } from "@/components/PiBrowserGuard";
 import { DevModeBanner } from "@/components/DevModeBanner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import nextDynamic from "next/dynamic";
 
 import { HomeTab } from "@/components/dashboard/tabs/HomeTab";
@@ -55,8 +56,12 @@ export default function Dashboard() {
   const shouldShowPiBrowserPrompt = !isPiBrowser;
 
   useEffect(() => {
-    const onboardingCompleted = localStorage.getItem("axiom_onboarding_completed");
-    if (onboardingCompleted !== "true") queueMicrotask(() => setShowOnboarding(true));
+    try {
+      const onboardingCompleted = localStorage.getItem("axiom_onboarding_completed");
+      if (onboardingCompleted !== "true") queueMicrotask(() => setShowOnboarding(true));
+    } catch {
+      queueMicrotask(() => setShowOnboarding(true));
+    }
   }, []);
 
   useEffect(() => {
@@ -92,6 +97,7 @@ export default function Dashboard() {
   const daysActive = useMemo(() => user ? Math.max(1, Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86400000)) : 0, [user]);
 
   return (
+    <ErrorBoundary>
     <PiBrowserGuard showSplash={false}>
       <PiBrowserBanner />
       <DevModeBanner />
@@ -155,7 +161,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      ) : user ? (
+      ) : (
         /* AUTHENTICATED VIEW */
         <>
           {/* TAB NAVIGATION */}
@@ -193,7 +199,7 @@ export default function Dashboard() {
             <SettingsTab />
           </TabPanel>
         </>
-      ) : null}
+      )}
 
       {/* TERMINAL OVERLAY — removed in PR 2 */}
       <AnimatePresence>
@@ -212,11 +218,12 @@ export default function Dashboard() {
             agentLoading={false} shouldShowPiBrowserPrompt={shouldShowPiBrowserPrompt}
             isConnecting={isConnecting} user={user} onConnect={connectWallet}
             onConnectDemo={connectDemo} onCreateAgent={handleCreateAgent}
-            onSkip={() => { localStorage.setItem("axiom_onboarding_completed", "true"); setShowOnboarding(false); }}
-            onComplete={() => { localStorage.setItem("axiom_onboarding_completed", "true"); setShowOnboarding(false); }}
+            onSkip={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
+            onComplete={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
             t={t} />
         )}
       </AnimatePresence>
     </PiBrowserGuard>
+    </ErrorBoundary>
   );
 }
