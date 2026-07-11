@@ -25,6 +25,14 @@ export function SettingsTab() {
 
   const handleCopy = async () => {
     if (!vanityUrl) return;
+    if (!navigator.clipboard) {
+      try {
+        await navigator.share({ url: vanityUrl });
+      } catch {
+        // share cancelled or unavailable
+      }
+      return;
+    }
     await navigator.clipboard.writeText(vanityUrl);
     setCopied(true);
   };
@@ -94,14 +102,14 @@ export function SettingsTab() {
         <div className="space-y-2">
           <Link
             href="/dashboard/settings"
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue"
           >
             <Shield className="w-4 h-4 text-zinc-500" />
             <span className="text-xs font-mono text-zinc-300">Full Settings →</span>
           </Link>
           <Link
             href="/dashboard/settings"
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue"
           >
             <Zap className="w-4 h-4 text-zinc-500" />
             <span className="text-xs font-mono text-zinc-300">XP Ledger →</span>

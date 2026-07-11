@@ -35,6 +35,7 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const tr = (en: string, ar: string) => (language === "en" ? en : ar);
     const controller = new AbortController();
     fetch(`/api/agent/public?username=${encodeURIComponent(username)}`, {
       signal: controller.signal,
@@ -49,13 +50,12 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          setError(t("Failed to load agent", "فشل تحميل الوكيل"));
+          setError(tr("Failed to load agent", "فشل تحميل الوكيل"));
           setLoading(false);
         }
       });
     return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- agent data is language-independent; t only needed at call time
-  }, [username]);
+  }, [username, language]);
 
   if (loading) {
     return (

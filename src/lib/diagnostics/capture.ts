@@ -20,7 +20,7 @@ export function captureDiagnostic(entry: Omit<DiagnosticEntry, "id" | "timestamp
   };
   entries.unshift(full);
   if (entries.length > MAX_ENTRIES) entries.pop();
-  console.error(`[DIAG] ${entry.level.toUpperCase()} [${entry.source}] ${entry.message}`, entry.details || "");
+  console.error("[DIAG] %s [%s] %s", entry.level.toUpperCase(), entry.source, entry.message, entry.details);
   return full;
 }
 
