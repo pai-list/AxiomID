@@ -11,6 +11,9 @@ function isPiSdkMessage(message: any): boolean {
   return false;
 }
 
+/**
+ * Routes Pi SDK messages from a sandboxed window to its parent while preserving other messages.
+ */
 export function patchPostMessageForSandbox(): void {
   const originalPostMessage = window.postMessage.bind(window);
 
