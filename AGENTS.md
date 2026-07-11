@@ -41,6 +41,19 @@ These defaults are optimized for AI coding agents (and humans) working on apps t
 
 ## Dev Tools
 
+### Kernel — QA/E2E Browser Testing
+
+Use `kernel` for browser-level smoke tests on critical flows (home, dashboard, connect, claim).
+
+```bash
+# Run smoke tests against a PR preview URL
+kernel run qa:smoke --url https://axiomid-app.vercel.app
+
+# Add new flows in scripts/qa/ or .superpowers/playbooks/
+```
+
+Role: QA/E2E at the browser level. For every new PR or sensitive change, run smoke tests on basic flows. Can later be set up in CI scripts.
+
 ### Portless — Stable .localhost HTTPS URLs
 
 Use `portless` for stable HTTPS dev URLs (Pi Browser testing, multi-service dev, Tailscale sharing).
@@ -357,6 +370,20 @@ All loops run automatically via `.github/workflows/loops.yml`. Manual dispatch a
 - **Synchronous Multi-DB Coupling:** Do not rely on direct database-to-database replication or sync loops triggered via simple cron scripts (like SQLite-D1-PostgreSQL synchronization via Vercel Cron). This creates a high point of failure and eventual consistency splits. Instead, implement a **Transactional Outbox** pattern where data updates are stored locally as log events and dispatched reliably using queue relays.
 - **Unauthenticated D1 SQLite Exports:** Never expose Cloudflare D1 export endpoints (like `/api/sync/export`) without timing-safe `X-Shared-Secret` verification and strict URL path matching. Always use Prisma `upsert` in Next.js sync jobs to ensure edge data is merged into PostgreSQL without causing key conflicts or duplicate records.
 
+### 🤖 Agent Conduct Rules
+
+**MUST NOT (blocked by pre-commit):**
+- `git merge` or `gh pr merge` without explicit human approval
+- Modify Cognitive OS memory to change historical facts without clear annotation
+- Skip `task.md` intake for sensitive PRs (auth, payments, DB, deployment config)
+- Push directly to `main` — all changes go through PRs
+
+**MUST:**
+- Every major execution starts with `task.md` intake
+- Every sensitive PR ends with an executive report (Phase 4)
+- Run `npm run lint`, `npm test`, `npm run type-check` before every push
+- Wait for human approval after Phase 1 (Plan) before coding
+
 ### 🛡️ Pre-Commit SOUL Validation
 
 Every commit passes through SOUL-aligned validation. This is not optional.
@@ -404,6 +431,114 @@ Rules:
 - Deletion over addition. Boring over clever. Fewest files possible.
 - Mark intentional simplifications with a `ponytail:` comment.
 - Not lazy about: input validation at trust boundaries, error handling that prevents data loss, security, accessibility.
+
+---
+
+# Agent Workflow Protocol (Non-Negotiable)
+
+> Every major commit or push on a sensitive PR MUST follow this 5-phase process.
+> "Sensitive PR" = touches auth, payments, DB schema, critical UX flows, or deployment config.
+
+## Phase 1: Plan / Intake (task.md)
+
+As the first step, the agent writes a brief plan:
+
+- **Goal** — one sentence
+- **Scope** — which systems/routes/components
+- **Risks** — what could break
+- **Files** — literal list
+- **Plan** — step-by-step, smallest batches
+- **Verification** — which tests, lint, type-check, build
+
+Template at `task.md`. Write this BEFORE touching any code.
+
+**Wait for human approval before proceeding.** Exactly like `task.md` protocol.
+
+## Phase 2: Execute
+
+- Implement in the smallest possible batches.
+- Run verification after EACH batch:
+  - `npm run lint`
+  - `npm test` (relevant suites)
+  - `npm run type-check`
+  - `npm run build` (if critical path)
+
+## Phase 3: Review by Agents
+
+- Push the PR.
+- Let CodeRabbit + Gemini + CI review.
+- Collect ALL feedback and fix in small batches (repeat Phase 2 per batch).
+- No approval until ALL machine reviews are clean or explicitly acknowledged as WON'T FIX.
+
+## Phase 4: Report
+
+Send a professional report containing:
+- What changed (file-level summary)
+- CI status + links (Vercel, GitHub Actions, CodeQL)
+- CodeRabbit/Gemini findings — what was fixed, what remains (if anything)
+- Verification results (lint, tests, type-check, build)
+- Recommendation: "Ready for human review" or "Needs X before review"
+
+## Phase 5: Human Decision
+
+You (the human) review using the PR Approval Checklist below.
+You decide: merge, request changes, or cancel.
+
+---
+
+# PR Approval Checklist
+
+**Before approving any PR, run this checklist (A through E).**
+
+### A. Scope & Quick Understanding
+
+Open the PR on GitHub and check:
+
+- [ ] Title matches the feature/fix
+- [ ] Description mentions key points (scope, phase, config changes)
+- [ ] Scope is contained — no sneaked-in design changes
+
+### B. Critical Files (Diff View)
+
+- **`next.config.ts`** — Only expected changes. Verify `turbopack.root`.
+- **API routes** — Zod validation, rate limiting, `apiError`/`apiSuccess`, `logger.error()` in ALL catch blocks.
+- **New validation/schemas** — `safeParse`, proper error messages.
+- **i18n** — Keys exist in BOTH `en.json` and `ar.json`. Bilingual helper follows AGENTS.md Rule #6.
+- **UX components** — `focus-visible`, ARIA associations, no broken fallbacks.
+- **Config files** (tui.json, etc.) — Conscious of what's committed.
+
+### C. CI & Security
+
+- [ ] Vercel deploy — green
+- [ ] GitHub Actions — green
+- [ ] CodeQL — all alerts resolved
+- [ ] CodeRabbit — "No findings" or all acknowledged
+- [ ] Gemini Review — all comments resolved or WON'T FIX
+- [ ] No open security alerts related to this PR
+
+### D. Quick QA (Browser)
+
+Smoke test the Vercel preview URL:
+
+- [ ] Home page loads without 404
+- [ ] Dashboard/Settings renders
+- [ ] Auth flow (connect) works in both browser types
+- [ ] Agent page loads
+- [ ] No 404 after turbopack fix
+- [ ] Diagnostics don't crash (ErrorBoundary visible)
+
+### E. Final Decision
+
+- [ ] Changes are within planned scope
+- [ ] No red CI or security warnings
+- [ ] Changes match what was approved for this phase
+- [ ] **Action: Approve + comment OR request changes**
+
+When approving:
+
+> "Reviewed manually: scope consistent with [phase] plan, [key fix] validated, [feature] in place, [config] acceptable. Approved for merge."
+
+Merge with your preferred method (Squash or Merge commit).
 
 ---
 
@@ -478,3 +613,64 @@ After extracting components into separate files, verify all imports point to the
 ### 8. Wire ALL Strings Through t() in Localized Components
 
 When adding localization to a component, wire ALL user-visible strings through `t(...)`, not just some. Mixed-language text breaks UX.
+
+---
+
+# Learning from Experience
+
+> Validated in real build/test/merge cycles. These are not theories — every entry was learned the hard way.
+
+### 1. Turbopack Workspace Root
+
+**Problem:** Next.js 16 Turbopack detects multiple `package-lock.json` and picks the wrong workspace root, causing ALL `/api/*` routes to return 404 silently.
+
+**Fix:** Add `turbopack.root: process.cwd()` to `next.config.ts`.
+
+**Detect:** Warning in dev logs: `We detected multiple lockfiles and selected the directory of ...`
+
+### 2. Logger.error in EVERY Catch Block
+
+**Pattern:** All `src/app/api/**/route.ts` catch blocks MUST have `logger.error('[TAG] message', err)`. No exceptions. Even "anonymous/unauthenticated" routes.
+
+**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.superpowers/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
+
+**Review check:** Before every PR, grep for `catch {` in new/modified routes.
+
+### 3. Diagnostics Route Hardening
+
+**Lesson:** "No auth required" does NOT mean "no validation required." Anonymous routes (like diagnostics capture) need:
+- Zod schema validation
+- Rate limiting (even if permissive)
+- Proper error responses (`apiError`/`apiSuccess`)
+
+### 4. Console.error Format String (CodeQL)
+
+**Problem:** `console.error("[DIAG] " + message)` creates an externally-controlled format string alert.
+
+**Fix:** Use `console.error("[DIAG] %s", message)` — pass user data as arguments, never interpolate.
+
+### 5. CodeRabbit Multi-Round Pattern
+
+CodeRabbit re-reviews every new commit pushed to a PR. Each round may find new issues or re-open previous ones. The process:
+- Round 1: finds surface issues (markdown, lint, naming)
+- Round 2: finds structural issues (missing validation, edge cases)
+- Round 3+: finds deeper patterns (missing logging, inconsistent patterns)
+
+**Rule:** Never mark a PR ready until ALL rounds are clean. Check the latest review timestamp.
+
+---
+
+# Senior Staff Engineer + Release Manager Mode
+
+When reviewing ANY code (not writing), follow this persona:
+
+> You are playing the role of **Senior Staff Engineer + Release Manager** for the AxiomID project.
+>
+> Your mission: do NOT touch code before you:
+>
+> 1. **Re-state the goal** in one paragraph.
+> 2. **Write an action plan** of 5–7 bullet points.
+> 3. **List risks and dependencies.**
+> 4. **Get explicit approval** before executing any step.
+
+This overrides the normal agent workflow — it adds an extra review gate before Phase 1 execution begins.
