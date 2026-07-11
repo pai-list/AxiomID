@@ -209,7 +209,7 @@ export default function ClaimPage() {
             <h1 className="text-4xl sm:text-5xl font-sans font-bold mb-3 bg-gradient-to-r from-white via-electric-blue to-neon-green bg-clip-text text-transparent">
               {t("Claim Your Identity", "احمل هويتك")}
             </h1>
-            <p className="text-white/50 font-sans text-sm">
+            <p className="text-subtle font-sans text-sm">
               {t(
                 "Your sovereign digital passport awaits",
                 "جواز سفرك الرقمي السيادي في انتظارك"
@@ -220,12 +220,12 @@ export default function ClaimPage() {
           {/* Stepper Progress */}
            <div className="mb-4">
              <div className="flex items-center justify-between mb-2">
-               <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
-                 {t("Step", "خطوة")} {currentStep}/3
-               </span>
-               <span className="text-[10px] font-mono text-white/40">
-                 {Math.round((currentStep / 3) * 100)}% {t("Complete", "مكتمل")}
-               </span>
+                <span className="text-[10px] font-mono text-faint uppercase tracking-widest">
+                  {t("Step", "خطوة")} {currentStep}/3
+                </span>
+                <span className="text-[10px] font-mono text-faint">
+                  {Math.round((currentStep / 3) * 100)}% {t("Complete", "مكتمل")}
+                </span>
              </div>
              <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden p-[1px] border border-white/5">
                <motion.div
@@ -266,7 +266,7 @@ export default function ClaimPage() {
                     ) : (
                       <StepIcon
                         className={`w-5 h-5 ${
-                          isActive ? "text-electric-blue" : "text-white/30"
+                          isActive ? "text-electric-blue" : "                  text-faint"
                         }`}
                       />
                     )}
@@ -301,7 +301,7 @@ export default function ClaimPage() {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="w-full"
               >
-                <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 sm:p-10 shadow-2xl shadow-black/40">
+                <div className="bg-surface-hover backdrop-blur-xl border border-border rounded-2xl p-8 sm:p-10 shadow-2xl shadow-black/40">
 
                   {/* Step 1: Connect */}
                   {currentStep === 1 && (
@@ -375,7 +375,7 @@ export default function ClaimPage() {
               <button
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center gap-2 font-sans text-sm text-white/40 hover:text-white/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 font-sans text-sm text-faint hover:text-surface transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-4 h-4" />
                 {t("Back", "رجوع")}
@@ -386,7 +386,7 @@ export default function ClaimPage() {
                 whileTap={canProceed() ? { scale: 0.97 } : {}}
                 onClick={nextStep}
                 disabled={!canProceed()}
-                className="flex items-center gap-2 font-mono text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white/[0.06] border border-white/[0.1] backdrop-blur-md text-white hover:bg-white/[0.1]"
+                className="flex items-center gap-2 font-mono text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-surface-hover border border-border backdrop-blur-md text-surface hover:bg-surface-hover"
               >
                 {t("Continue", "متابعة")}
                 <ChevronRight className="w-4 h-4" />
@@ -413,17 +413,17 @@ export default function ClaimPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
-              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/90 p-6 shadow-2xl backdrop-blur-xl"
+              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface-deep/90 p-6 shadow-2xl backdrop-blur-xl"
             >
               <div className="flex flex-col items-center text-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
                   <Globe className="w-6 h-6 animate-pulse" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-white font-sans">
+                  <h3 className="text-lg font-bold text-surface font-sans">
                     {t("Pi Browser Required", "يتطلب متصفح Pi")}
                   </h3>
-                  <p className="text-sm text-zinc-400 font-sans">
+                  <p className="text-sm text-faint font-sans">
                     {t(
                       "To authenticate with the sovereign key protocol, you must access this page from inside the official Pi Browser application.",
                       "للتوثيق بمستندات الهوية السيادية، يجب عليك زيارة هذه الصفحة من داخل تطبيق متصفح Pi الرسمي."
@@ -449,7 +449,7 @@ export default function ClaimPage() {
                           logger.error("Failed to copy link: ", err);
                         }
                       }}
-                      className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                      className="p-1.5 hover:bg-surface-hover rounded-lg text-faint hover:text-surface transition-colors"
                       title={t("Copy link", "نسخ الرابط")}
                     >
                       {copied ? (
@@ -464,7 +464,7 @@ export default function ClaimPage() {
 
                   <button
                     onClick={closeBrowserModal}
-                    className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-colors"
+                    className="w-full py-3 px-4 rounded-xl bg-surface-hover hover:bg-surface-hover text-surface font-semibold text-sm border border-border transition-colors"
                   >
                     {t("Got it", "فهمت")}
                   </button>

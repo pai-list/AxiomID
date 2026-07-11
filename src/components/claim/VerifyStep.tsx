@@ -32,7 +32,7 @@ export function VerifyStep({
       <h2 className="text-2xl font-sans font-bold mb-2">
         {t("Know Your Agent", "اعرف وكيلك")}
       </h2>
-      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
+      <p className="text-faint font-sans text-sm mb-8 max-w-sm mx-auto">
         {t(
           "Build your trust score through decentralized verification",
           "ابنِ نقاط ثقتك من خلال التحقق اللامركزي"
@@ -80,7 +80,7 @@ export function VerifyStep({
                        <div className="w-4 h-4 rounded-full border border-white/20" />
                      )}
                      <ItemIcon className={`w-4 h-4 transition-colors duration-500 ${item.status ? "text-neon-green" : "text-white/40"}`} />
-                     <span className={`font-mono text-sm transition-colors duration-500 ${item.status ? "text-white" : "text-white/70"}`}>
+                      <span className={`font-mono text-sm transition-colors duration-500 ${item.status ? "text-surface" : "text-subtle"}`}>
                        {item.label}
                      </span>
                    </div>
@@ -88,7 +88,7 @@ export function VerifyStep({
                      className={`font-mono text-xs transition-colors duration-500 ${
                        item.status
                          ? "text-neon-green font-bold"
-                         : "text-white/30"
+                          : "text-faint"
                      }`}
                    >
                      {item.status
@@ -148,7 +148,7 @@ export function VerifyStep({
               "اكتمل التحقق"
             )}
           </p>
-          <p className="font-mono text-xs text-white/40 mt-1">
+          <p className="font-mono text-xs text-faint mt-1">
             {t("Trust Score: ", "نقاط الثقة: ")}{verifiedTrustScore ?? user?.trustScore ?? 0}
           </p>
         </motion.div>
