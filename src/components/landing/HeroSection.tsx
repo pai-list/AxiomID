@@ -11,7 +11,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center">
         {/* Left: Copy & CTA */}
         <div className="md:col-span-7 space-y-6 sm:space-y-8 animate-fade-in text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-hover border-border mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-hover border border-border mx-auto md:mx-0 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">
               {t("landing_pi_badge")}

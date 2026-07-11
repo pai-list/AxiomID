@@ -21,7 +21,7 @@ export default function InteractiveShowcase() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-xs font-mono transition-all duration-300 ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-xs font-mono transition-all duration-300 focus-visible:ring-2 focus-visible:ring-electric-blue/60 focus-visible:outline-none ${
               activeTab === tab.id
                 ? 'bg-electric-blue text-black font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)]'
                 : 'bg-surface-hover text-faint border border-border hover:bg-surface-hover hover:text-surface'
@@ -34,7 +34,7 @@ export default function InteractiveShowcase() {
       </div>
 
       {/* Content Area */}
-      <div className="relative min-h-[400px] w-full rounded-3xl border border-border bg-white/[0.02] backdrop-blur-md p-6 sm:p-10 overflow-hidden">
+      <div className="relative min-h-[400px] w-full rounded-3xl border border-border bg-surface-muted/10 backdrop-blur-md p-6 sm:p-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-electric-blue/5 via-transparent to-axiom-purple/5 pointer-events-none" />
         
         <AnimatePresence mode="wait">
@@ -103,7 +103,7 @@ export default function InteractiveShowcase() {
                 <p className="text-sm text-faint font-mono leading-relaxed">
                   AxiomID utilizes Domain-Driven Design (DDD) to abstract complex infrastructure. Agent creation is handled by an <span className="text-electric-blue">Execution Engine</span> resolving Capability Packs into discrete Provider Adapters (Cloudflare, Pi SDK, Ghost.build).
                 </p>
-                <div className="bg-surface-deep rounded-xl p-4 border border-border font-mono text-[10px] sm:text-xs text-zinc-300 overflow-x-auto shadow-inner">
+                <div className="bg-surface-deep rounded-xl p-4 border border-border font-mono text-[10px] sm:text-xs text-subtle overflow-x-auto shadow-inner">
                   <pre className="text-emerald-400">await</pre> <span className="text-blue-400">engine</span>.<span className="text-yellow-200">execute</span>(jobId);<br/><br/>
                   <span className="text-subtle">{"// Event Sourced Transition Pipeline"}</span><br/>
                   <span className="text-surface">IdentityCreated</span> <span className="text-subtle">→</span> <span className="text-surface">DomainReserved</span> <span className="text-subtle">→</span> <br/>
@@ -141,21 +141,21 @@ export default function InteractiveShowcase() {
               className="w-full h-full flex flex-col md:flex-row items-center gap-8"
             >
               <div className="flex-1 flex justify-center">
-                  <div className="relative w-full max-w-xs aspect-square border border-border rounded-3xl bg-gradient-to-br from-white/[0.05] to-transparent p-6 flex flex-col justify-between group hover:border-axiom-purple/50 transition-colors">
+                  <div className="relative w-full max-w-xs aspect-square border border-border rounded-3xl bg-gradient-to-br from-surface-muted/20 to-transparent p-6 flex flex-col justify-between group hover:border-axiom-purple/50 transition-colors">
                     <div className="flex justify-between items-start">
                        <Shield className="w-8 h-8 text-axiom-purple" />
                        <div className="px-3 py-1 rounded-full bg-surface-hover text-[10px] font-mono font-bold text-surface border border-border">.IDENTITY</div>
                     </div>
                     <div>
-                       <div className="w-3/4 h-2 bg-white/10 rounded mb-2" />
-                       <div className="w-1/2 h-2 bg-white/10 rounded mb-6" />
+                       <div className="w-3/4 h-2 bg-surface-muted/30 rounded mb-2" />
+                       <div className="w-1/2 h-2 bg-surface-muted/30 rounded mb-6" />
                        <div className="flex gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-400" />
                           <span className="w-2 h-2 rounded-full bg-electric-blue" />
                           <span className="w-2 h-2 rounded-full bg-axiom-purple" />
                        </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface-muted/20 to-surface-muted/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
                  </div>
               </div>
               <div className="flex-1 space-y-4 text-center md:text-left">
@@ -163,7 +163,7 @@ export default function InteractiveShowcase() {
                 <p className="text-sm text-faint font-mono leading-relaxed">
                   AxiomID goes beyond a profile page by introducing the portable <span className="text-surface">passport.jsonld</span> format. 
                 </p>
-                <ul className="text-xs text-zinc-300 font-mono space-y-3 mt-4 text-left inline-block">
+                <ul className="text-xs text-subtle font-mono space-y-3 mt-4 text-left inline-block">
                   <li className="flex items-center gap-3"><Code2 className="w-4 h-4 text-electric-blue" /> Verifiable DID Credentials</li>
                   <li className="flex items-center gap-3"><Code2 className="w-4 h-4 text-emerald-400" /> Trust Score History</li>
                   <li className="flex items-center gap-3"><Code2 className="w-4 h-4 text-axiom-purple" /> Installed Capability Packs</li>

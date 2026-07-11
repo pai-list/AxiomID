@@ -73,7 +73,7 @@ export default function SovereignSplash() {
               initial={{ opacity: 0 }}
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="mt-4 text-[10px] font-mono text-surface/30 uppercase tracking-tighter"
+              className="mt-4 text-[10px] font-mono text-subtle uppercase tracking-tighter"
             >
               Initializing Sovereign Identity...
             </motion.div>

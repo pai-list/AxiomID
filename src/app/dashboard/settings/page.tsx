@@ -403,9 +403,9 @@ export default function SettingsPage() {
                     <div className="flex justify-between items-end">
                       <div>
                         <span className="text-[9px] font-mono text-faint uppercase tracking-wider block">{t('current_tier')}</span>
-                        <p className="text-xl font-black tracking-wider text-white">{tier.toUpperCase()}</p>
+                        <p className="text-xl font-black tracking-wider text-surface">{tier.toUpperCase()}</p>
                       </div>
-                      <div className="text-end text-[10px] font-mono text-zinc-400">
+                      <div className="text-end text-[10px] font-mono text-subtle">
                         {xp >= 1000 ? t('settings_max_level') : `${(range.max - xp).toLocaleString()} ${t('settings_xp_needed')}`}
                       </div>
                     </div>
@@ -552,7 +552,7 @@ export default function SettingsPage() {
                   <p className="text-xs mb-4 font-mono" style={{ color: 'var(--text-muted)' }}>{t('settings_danger_desc')}</p>
                   <div className="space-y-3">
                     {PLATFORMS.filter(({ id }) => isPlatformConnected(id)).map(({ id, label }) => (
-                      <div key={id} className="flex items-center justify-between py-3 px-4 rounded-xl border border-border bg-white/[0.02]">
+                      <div key={id} className="flex items-center justify-between py-3 px-4 rounded-xl border border-border bg-surface-muted/20">
                         <span className="font-mono text-xs text-subtle">{label}</span>
                         <button
                           onClick={() => openDisconnectModal(id)}

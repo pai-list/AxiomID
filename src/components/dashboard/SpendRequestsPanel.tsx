@@ -221,7 +221,7 @@ export function SpendRequestsPanel({ onApprove }: SpendRequestsPanelProps) {
                   <button
                     onClick={() => handleReject(req.id)}
                     disabled={actionLoading === req.id}
-                    className="px-2 py-1 text-[10px] font-mono bg-red-500/20 text-danger rounded hover:bg-red-500/30 disabled:opacity-50"
+                    className="px-2 py-1 text-[10px] font-mono bg-red-500/20 text-danger rounded hover:bg-red-500/30 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
                   >
                     Confirm
                   </button>

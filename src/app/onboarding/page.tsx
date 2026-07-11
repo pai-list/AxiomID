@@ -242,7 +242,7 @@ export default function OnboardingPage() {
 
               {/* Back navigation */}
               {step > 1 && step < 4 && (
-                <button onClick={handleBackStep} className="text-subtle hover:text-surface transition-colors text-[10px] font-mono mt-4 flex items-center gap-1">
+                <button onClick={handleBackStep} className="text-subtle hover:text-surface transition-colors text-[10px] font-mono mt-4 flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none">
                   {t("onboarding_back")}
                 </button>
               )}

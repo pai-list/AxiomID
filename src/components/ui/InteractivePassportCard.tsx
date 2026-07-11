@@ -307,6 +307,7 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           <button
             onClick={handleExportImage}
             disabled={isExporting}
+            aria-label={t("export_image") || "Export as Image"}
             className="p-2 bg-surface-muted/50 hover:bg-surface-hover rounded-full backdrop-blur-md border border-border transition-colors tooltip-trigger"
             title={t("export_image") || "Export as Image"}
           >
@@ -314,6 +315,7 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           </button>
           <button
             onClick={handleMintSBT}
+            aria-label={t("mint_sbt") || "Mint as SBT (Stellar)"}
             className="p-2 bg-surface-muted/50 hover:bg-surface-hover rounded-full backdrop-blur-md border border-border transition-colors tooltip-trigger"
             title={t("mint_sbt") || "Mint as SBT (Stellar)"}
           >
@@ -321,8 +323,9 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           </button>
           <button
             onClick={handleShare}
+            aria-label={t("share_passport") || "Share Passport"}
             className="p-2 bg-surface-muted/50 hover:bg-surface-hover rounded-full backdrop-blur-md border border-border transition-colors tooltip-trigger"
-            title={t("share_passport") || "Share"}
+            title={t("share_passport") || "Share Passport"}
           >
             <Share2 className="w-4 h-4 text-blue-400" />
           </button>

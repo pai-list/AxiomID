@@ -29,7 +29,7 @@ export default function CodeBlock({ code, language = "json" }: CodeBlockProps) {
         <span>{language.toUpperCase()}</span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 hover:text-surface transition-colors py-1 px-2 rounded hover:bg-surface-hover"
+          className="flex items-center gap-1 hover:text-surface transition-colors py-1 px-2 rounded hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-electric-blue/60 focus-visible:outline-none"
         >
           {copied ? (
             <>

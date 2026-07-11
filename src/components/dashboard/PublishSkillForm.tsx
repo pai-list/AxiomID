@@ -250,7 +250,7 @@ export function PublishSkillForm({ onPublished }: PublishSkillFormProps) {
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-danger-10 text-danger text-xs font-mono">
+            <div role="alert" className="p-3 rounded-lg bg-danger-10 text-danger text-xs font-mono">
               {error}
             </div>
           )}

@@ -37,7 +37,7 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_BG: Record<string, string> = {
   ONLINE: "bg-neon-green/10 border-neon-green/20",
   DEGRADED: "bg-amber-400/10 border-amber-400/20",
-  OFFLINE: "bg-red-400/10 border-red-400/20",
+  OFFLINE: "bg-danger/10 border-danger/20",
 };
 
 /**

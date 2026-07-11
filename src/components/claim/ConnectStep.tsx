@@ -74,7 +74,7 @@ export function ConnectStep({
       )}
 
       {!isPiBrowser && !walletConnected && !user?.walletAddress && (
-        <div className="mt-4 px-4 py-3 rounded-xl bg-warning-10 border-warning-20">
+        <div className="mt-4 px-4 py-3 rounded-xl bg-warning-10 border border-warning-20">
           <p className="text-warning font-mono text-xs font-bold mb-1">
             {t("Pi Browser Required", "يتطلب Pi Browser")}
           </p>
@@ -88,7 +88,7 @@ export function ConnectStep({
       )}
 
       {connectError && (
-        <div className="mt-4 px-4 py-3 rounded-xl bg-danger-10">
+        <div className="mt-4 px-4 py-3 rounded-xl bg-danger-10 border border-danger-20">
           <p className="text-danger font-mono text-xs">{connectError}</p>
         </div>
       )}

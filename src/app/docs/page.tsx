@@ -120,6 +120,7 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
             <Search className="w-3.5 h-3.5 text-subtle absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
+              aria-label={t("docs_search_placeholder")}
               placeholder={t("docs_search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -183,7 +184,7 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
                   { name: t("docs_stamp_agent_name"), xp: t("docs_stamp_agent_xp"), desc: t("docs_stamp_agent_desc"), color: "text-emerald-400" },
                   { name: t("docs_stamp_pow_name"), xp: t("docs_stamp_pow_xp"), desc: t("docs_stamp_pow_desc"), color: "text-zinc-400" },
                 ].map((stamp, i) => (
-                  <div key={i} className="flex justify-between items-start p-3 rounded-xl border border-border bg-white/[0.01] hover:bg-white/[0.02] transition-colors">
+                  <div key={i} className="flex justify-between items-start p-3 rounded-xl border border-border bg-surface-muted/10 hover:bg-surface-hover transition-colors">
                     <div className="flex-1 min-w-0">
                       <h4 className={`text-xs font-bold font-mono ${stamp.color}`}>{stamp.name}</h4>
                       <p className="text-[11px] text-subtle mt-1 leading-relaxed">{stamp.desc}</p>
@@ -227,10 +228,10 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
                   { name: t("docs_sdk_query_name"), desc: t("docs_sdk_query_desc"), install: "npm install @axiomid/sdk" },
                   { name: t("docs_sdk_crypto_name"), desc: t("docs_sdk_crypto_desc"), install: "npm install @axiomid/crypto" },
                 ].map((pkg, i) => (
-                  <div key={i} className="p-3 rounded-xl border border-border bg-white/[0.01]">
+                  <div key={i} className="p-3 rounded-xl border border-border bg-surface-muted/10">
                     <h4 className="text-xs font-bold font-mono text-electric-blue">{pkg.name}</h4>
                     <p className="text-[11px] text-subtle mt-1">{pkg.desc}</p>
-                    <code className="block mt-2 text-[10px] font-mono text-neon-green bg-black/40 px-2 py-1 rounded">{pkg.install}</code>
+                    <code className="block mt-2 text-[10px] font-mono text-neon-green bg-surface-deep px-2 py-1 rounded">{pkg.install}</code>
                   </div>
                 ))}
               </div>
@@ -347,7 +348,7 @@ const rootKey = deriveUserRootKey(piUid, process.env.SOVEREIGN_KEY_SALT);`} lang
               <p className="text-xs text-subtle mb-2">
                 {t("docs_api_openapi_desc")}
               </p>
-              <div className="bg-black/80 border border-border rounded-xl p-3 font-mono text-[11px]">
+              <div className="bg-surface-deep border border-border rounded-xl p-3 font-mono text-[11px]">
                 <span className="text-neon-green">GET</span>{" "}
                 <span className="text-white">https://axiomid.app/openapi.json</span>
               </div>

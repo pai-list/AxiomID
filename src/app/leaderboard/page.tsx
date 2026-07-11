@@ -154,7 +154,7 @@ export default function LeaderboardPage() {
           {/* Table skeleton */}
           <div className="bento-card overflow-hidden border border-border bg-surface-deep/80">
             <div className="p-4 border-b border-border bg-surface-muted/30">
-              <div className="h-2 w-40 bg-white/5 rounded" />
+              <div className="h-2 w-40 bg-surface-muted/30 rounded" />
             </div>
             <div className="divide-y divide-border/50">
               {[...Array(8)].map((_, i) => (
