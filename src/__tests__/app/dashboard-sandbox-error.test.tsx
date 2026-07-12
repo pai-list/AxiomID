@@ -50,9 +50,32 @@ describe("dashboard/sandbox/error.tsx — SandboxError page", () => {
     expect(loggerSpy).toHaveBeenCalledWith("Sandbox Error:", error);
   });
 
+  it("shows the fixed fallback message instead of the raw error message in production", () => {
+    const originalEnv = process.env.NODE_ENV;
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", writable: true });
+
+    render(<SandboxError error={makeError("internal sandbox detail")} reset={jest.fn()} />);
+
+    expect(screen.getByText("Something went wrong loading this page.")).toBeInTheDocument();
+    expect(screen.queryByText("internal sandbox detail")).not.toBeInTheDocument();
+
+    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, writable: true });
+  });
+
   it("handles an error carrying a digest without crashing", () => {
     expect(() => {
-      render(<SandboxError error={makeError("digest error", "digest-def")} reset={jest.fn()} />);
+      render(<SandboxError error={makeError("digest error", "digest-sbx-1")} reset={jest.fn()} />);
     }).not.toThrow();
+  });
+
+  it("calls reset only once per click even if clicked repeatedly is idempotent per click", () => {
+    const resetFn = jest.fn();
+    render(<SandboxError error={makeError("boom")} reset={resetFn} />);
+
+    const retryBtn = screen.getByRole("button", { name: /retry/i });
+    fireEvent.click(retryBtn);
+    fireEvent.click(retryBtn);
+
+    expect(resetFn).toHaveBeenCalledTimes(2);
   });
 });

@@ -427,4 +427,36 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
     expect(res.status).toBe(500);
     expect(data.code).toBe("INTERNAL_ERROR");
   });
+
+  it("skips a whitespace-only tag name and does not create or link it", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
+    mockPrisma.skillTag.findUnique.mockResolvedValue(null);
+    mockPrisma.skillTag.create.mockResolvedValue({ id: "t1", name: "AI", slug: "ai", description: null, color: null, createdAt: new Date() } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPutRequest({ tags: ["AI", "   "] });
+    const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.skillTag.create).toHaveBeenCalledTimes(1);
+    expect(data.tagCount).toBe(1);
+  });
+
+  it("strips non-alphanumeric characters when generating a slug from the tag name", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
+    mockPrisma.skillTag.findUnique.mockResolvedValue(null);
+    mockPrisma.skillTag.create.mockResolvedValue({ id: "t1", name: "C++", slug: "c", description: null, color: null, createdAt: new Date() } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPutRequest({ tags: ["C++"] });
+    const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
+
+    expect(res.status).toBe(200);
+    expect(mockPrisma.skillTag.create).toHaveBeenCalledWith({
+      data: { name: "C++", slug: "c" },
+    });
+  });
 });

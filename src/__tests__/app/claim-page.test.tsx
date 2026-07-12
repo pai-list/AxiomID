@@ -425,6 +425,20 @@ describe("ClaimPage — handleVerify (real verification)", () => {
     expect(screen.getByText("Continue")).toBeDisabled();
   });
 
+  it("does not crash and Continue stays disabled when the verify fetch rejects (network error)", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
+    render(<ClaimPage />);
+    fireEvent.click(screen.getByText("Continue"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("START VERIFICATION"));
+    });
+
+    expect(screen.queryByText("VERIFICATION COMPLETE")).toBeNull();
+    expect(screen.getByText("Continue")).toBeDisabled();
+  });
+
   it("shows PENDING status before verification starts", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);

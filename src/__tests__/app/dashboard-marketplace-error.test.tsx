@@ -50,9 +50,21 @@ describe("dashboard/marketplace/error.tsx — MarketplaceError page", () => {
     expect(loggerSpy).toHaveBeenCalledWith("Marketplace Error:", error);
   });
 
+  it("shows the fixed fallback message instead of the raw error message in production", () => {
+    const originalEnv = process.env.NODE_ENV;
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", writable: true });
+
+    render(<MarketplaceError error={makeError("internal marketplace detail")} reset={jest.fn()} />);
+
+    expect(screen.getByText("Something went wrong loading this page.")).toBeInTheDocument();
+    expect(screen.queryByText("internal marketplace detail")).not.toBeInTheDocument();
+
+    Object.defineProperty(process.env, "NODE_ENV", { value: originalEnv, writable: true });
+  });
+
   it("handles an error carrying a digest without crashing", () => {
     expect(() => {
-      render(<MarketplaceError error={makeError("digest error", "digest-def")} reset={jest.fn()} />);
+      render(<MarketplaceError error={makeError("digest error", "digest-mkt-1")} reset={jest.fn()} />);
     }).not.toThrow();
   });
 });

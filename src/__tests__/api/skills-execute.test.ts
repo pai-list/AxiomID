@@ -314,4 +314,28 @@ describe("POST /api/skills/[slug]/execute — body parsing and business logic", 
     expect(res.status).toBe(500);
     expect(data.code).toBe("INTERNAL_ERROR");
   });
+
+  it("treats any non-false success value as true (only literal false disables it)", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-5", success: true } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPostRequest({ success: null });
+    await POST(req, mockParams("test-skill"));
+
+    expect(mockPrisma.skillExecution.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ success: true }),
+    });
+  });
+
+  it("treats an empty errorMessage string as undefined", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "skill-1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skillExecution.create.mockResolvedValue({ id: "exec-6", success: true } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockPostRequest({ success: true, errorMessage: "" });
+    await POST(req, mockParams("test-skill"));
+
+    expect(mockPrisma.skillExecution.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ errorMessage: undefined }),
+    });
+  });
 });

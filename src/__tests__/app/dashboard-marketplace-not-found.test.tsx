@@ -1,9 +1,10 @@
 /**
  * Tests for src/app/dashboard/marketplace/not-found.tsx
  *
- * PR change: new route-level 404 page for /dashboard/marketplace. Uses
- * useLanguage() (globally mocked to language: "en" in jest.setup.js) to select
- * English/Arabic text via an inline t(en, ar) helper, and links back home.
+ * PR change: new route-level 404 page for /dashboard/marketplace. Renders
+ * the shared RouteNotFoundPage component, which uses useLanguage() (globally
+ * mocked to language: "en" in jest.setup.js) to select English/Arabic text
+ * via an inline t(en, ar) helper, and links back home.
  */
 
 import React from "react";
@@ -39,5 +40,9 @@ describe("dashboard/marketplace/not-found.tsx — MarketplaceNotFound page", () 
     render(<MarketplaceNotFound />);
     expect(screen.getAllByRole("heading")).toHaveLength(1);
     expect(screen.getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("does not throw when rendered", () => {
+    expect(() => render(<MarketplaceNotFound />)).not.toThrow();
   });
 });
