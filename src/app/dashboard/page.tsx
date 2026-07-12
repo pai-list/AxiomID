@@ -42,7 +42,7 @@ export default function Dashboard() {
   const {
     user, isLoading, connectWallet, isConnecting, levelProgress,
     walletLogs, clearWalletLogs, runWalletTest,
-    claimAction, createAgent, activateAgent, pauseAgent,
+    claimAction, createAgent,
     claimKya, isPiBrowser, connectDemo,
   } = useWallet();
 
