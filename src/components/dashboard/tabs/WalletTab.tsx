@@ -38,8 +38,8 @@ export function WalletTab() {
         <h3 className="text-xs uppercase tracking-wider font-semibold text-zinc-400 mb-3">
           Transaction History
         </h3>
-        <p className="text-xs font-mono text-zinc-500 text-center py-4">
-          Transaction history coming soon
+        <p className="text-xs text-zinc-500">
+          Transaction history will appear here once the API is available.
         </p>
       </div>
     </div>
