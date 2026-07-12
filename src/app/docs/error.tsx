@@ -1,20 +1,13 @@
 "use client";
 
-import { RouteErrorPage } from "@/components/RouteErrorPage";
+import { ErrorFallback } from "@/components/ui/ErrorFallback";
 
-export default function Error({
+export default function PageError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <RouteErrorPage
-      title="Docs Error"
-      fallbackMessage="Something went wrong loading this page."
-      error={error}
-      reset={reset}
-    />
-  );
+  return <ErrorFallback error={error} resetErrorBoundary={reset} />;
 }
