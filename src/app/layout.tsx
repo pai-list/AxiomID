@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import InstallPWA from "@/components/pwa/InstallPWA";
 import DynamicThemeColor from "@/components/pwa/DynamicThemeColor";
 import SovereignSplash from "@/components/pwa/SovereignSplash";
+import { Providers } from "./providers";
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -158,9 +159,11 @@ export default function RootLayout({
           <SandboxProvider>
             <WalletProvider>
 
-                <MotionConfig reducedMotion="user">
-                  {children}
-                </MotionConfig>
+                <Providers>
+                  <MotionConfig reducedMotion="user">
+                    {children}
+                  </MotionConfig>
+                </Providers>
               </WalletProvider>
             </SandboxProvider>
           </LanguageProvider>
