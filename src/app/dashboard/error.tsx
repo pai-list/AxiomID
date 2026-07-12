@@ -1,20 +1,13 @@
 "use client";
 
-import { RouteErrorPage } from "@/components/RouteErrorPage";
+import { ErrorFallback } from "@/components/ui/ErrorFallback";
 
-export default function DashboardError({
+export default function PageError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <RouteErrorPage
-      title="Dashboard Error"
-      fallbackMessage="Something went wrong loading the dashboard."
-      error={error}
-      reset={reset}
-    />
-  );
+  return <ErrorFallback error={error} resetErrorBoundary={reset} />;
 }
