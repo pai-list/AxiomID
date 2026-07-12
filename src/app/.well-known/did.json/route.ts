@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { createIssuerDid } from "@/lib/did";
 import { buildDidDocument } from "@/lib/did-document";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { apiError, apiSuccess } from "@/lib/errors";
@@ -40,25 +39,25 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const issuerDid = createIssuerDid();
-    const doc = buildDidDocument(issuerDid, publicKeyPem);
+    const did = "did:web:axiomid.app";
+    const doc = buildDidDocument(did, publicKeyPem);
 
     const enrichedDoc = {
       ...doc,
       alsoKnownAs: ["https://axiomid.app"],
       service: [
         {
-          id: `${issuerDid}#passport`,
+          id: `${did}#passport`,
           type: "AxiomPassport",
           serviceEndpoint: "https://axiomid.app/passport",
         },
         {
-          id: `${issuerDid}#agents`,
+          id: `${did}#agents`,
           type: "AgentCoordination",
           serviceEndpoint: "https://axiomid.app/dashboard",
         },
         {
-          id: `${issuerDid}#credential-status`,
+          id: `${did}#credential-status`,
           type: "CredentialStatus",
           serviceEndpoint: "https://axiomid.app/api/credential-status",
         },

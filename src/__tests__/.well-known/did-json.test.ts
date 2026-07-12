@@ -6,10 +6,6 @@
  * Serves the W3C DID Document for the AxiomID protocol root of trust.
  */
 
-jest.mock("@/lib/did", () => ({
-  createIssuerDid: jest.fn(() => "did:axiom:issuer"),
-}));
-
 jest.mock("@/lib/did-document", () => ({
   buildDidDocument: jest.fn((did: string, publicKey?: string) => ({
     "@context": ["https://www.w3.org/ns/did/v1"],
@@ -51,22 +47,18 @@ jest.mock("@/lib/logger", () => ({
 }));
 
 import { GET } from "@/app/.well-known/did.json/route";
-import { createIssuerDid } from "@/lib/did";
 import { buildDidDocument } from "@/lib/did-document";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { logger } from "@/lib/logger";
 
-const mockCreateIssuerDid = createIssuerDid as jest.Mock;
 const mockBuildDidDocument = buildDidDocument as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockGetClientIp = getClientIp as jest.Mock;
 const mockLoggerError = logger.error as jest.Mock;
 
 function mockGetRequest(): Request {
-  return new Request("http://localhost/.well-known/did.json", {
-    method: "GET",
-  }) as any;
+  return new Request("http://localhost/.well-known/did.json");
 }
 
 describe("GET /.well-known/did.json", () => {
@@ -93,13 +85,12 @@ describe("GET /.well-known/did.json", () => {
     expect(res.headers.get("Content-Type")).toContain("application/did+ld+json");
   });
 
-  it("returns issuer DID document with id: did:axiom:issuer", async () => {
+  it("returns issuer DID document with id: did:web:axiomid.app", async () => {
     const req = mockGetRequest();
     const res = await GET(req);
     const data = await res.json();
 
-    expect(data.id).toBe("did:axiom:issuer");
-    expect(mockCreateIssuerDid).toHaveBeenCalled();
+    expect(data.id).toBe("did:web:axiomid.app");
   });
 
   it("returns 500 when ISSUER_PUBLIC_KEY is missing", async () => {
@@ -121,7 +112,7 @@ describe("GET /.well-known/did.json", () => {
     expect(data["@context"]).toBeDefined();
     expect(Array.isArray(data["@context"])).toBe(true);
     expect(data["@context"]).toContain("https://www.w3.org/ns/did/v1");
-    expect(data.id).toBe("did:axiom:issuer");
+    expect(data.id).toBe("did:web:axiomid.app");
     expect(data.verificationMethod).toBeDefined();
     expect(Array.isArray(data.verificationMethod)).toBe(true);
     expect(data.verificationMethod[0].type).toBe(
@@ -206,7 +197,6 @@ describe("GET /.well-known/did.json — rate limiting enforcement", () => {
     const req = mockGetRequest();
     await GET(req);
 
-    expect(mockCreateIssuerDid).not.toHaveBeenCalled();
     expect(mockBuildDidDocument).not.toHaveBeenCalled();
   });
 });
@@ -248,15 +238,15 @@ describe("GET /.well-known/did.json — service and alsoKnownAs enrichment", () 
     );
 
     expect(byType.AxiomPassport).toMatchObject({
-      id: "did:axiom:issuer#passport",
+      id: "did:web:axiomid.app#passport",
       serviceEndpoint: "https://axiomid.app/passport",
     });
     expect(byType.AgentCoordination).toMatchObject({
-      id: "did:axiom:issuer#agents",
+      id: "did:web:axiomid.app#agents",
       serviceEndpoint: "https://axiomid.app/dashboard",
     });
     expect(byType.CredentialStatus).toMatchObject({
-      id: "did:axiom:issuer#credential-status",
+      id: "did:web:axiomid.app#credential-status",
       serviceEndpoint: "https://axiomid.app/api/credential-status",
     });
   });
@@ -283,7 +273,7 @@ describe("GET /.well-known/did.json — buildDidDocument invocation", () => {
     const req = mockGetRequest();
     await GET(req);
 
-    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:axiom:issuer", "pem-issuer-pub");
+    expect(mockBuildDidDocument).toHaveBeenCalledWith("did:web:axiomid.app", "pem-issuer-pub");
   });
 
   it("does not call buildDidDocument when ISSUER_PUBLIC_KEY is missing", async () => {
@@ -337,7 +327,6 @@ describe("GET /.well-known/did.json — ISSUER_PUBLIC_KEY edge cases", () => {
 
     expect(res.status).toBe(429);
     expect(data.code).toBe("RATE_LIMITED");
-    expect(mockCreateIssuerDid).not.toHaveBeenCalled();
   });
 });
 
@@ -375,17 +364,5 @@ describe("GET /.well-known/did.json — error handling", () => {
     );
   });
 
-  it("returns 500 and logs the error when createIssuerDid throws", async () => {
-    mockCreateIssuerDid.mockImplementation(() => {
-      throw new Error("issuer key unavailable");
-    });
 
-    const req = mockGetRequest();
-    const res = await GET(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(data.code).toBe("INTERNAL_ERROR");
-    expect(mockLoggerError).toHaveBeenCalled();
-  });
 });
