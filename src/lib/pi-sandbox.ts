@@ -20,7 +20,7 @@ export function patchPostMessageForSandbox(): void {
   window.postMessage = ((message: any, targetOrigin: string, ...args: any[]) => {
     // Only intercept Pi SDK messages — pass everything else through unchanged
     if (isPiSdkMessage(message) && window.parent && window.parent !== window) {
-      window.parent.postMessage(message, "https://app.minepi.com", args[0]);
+      window.parent.postMessage(message, "https://app.minepi.com");
     } else {
       originalPostMessage(message, targetOrigin, ...args);
     }
