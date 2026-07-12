@@ -96,16 +96,11 @@ After the existing utility classes (around end of `globals.css`), add:
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer {
-    animation: none;
-    opacity: 0.6;
-  }
-}
 ```
 
 - [ ] **Step 2: Add pulse-glow for AxiomID logo loading state**
+
+The combined `@media (prefers-reduced-motion: reduce)` for both `.skeleton-shimmer` and `.animate-pulse-glow` goes here — **one block, not two separate ones.**
 
 ```css
 @keyframes pulse-glow {
@@ -121,7 +116,7 @@ After the existing utility classes (around end of `globals.css`), add:
   .skeleton-shimmer,
   .animate-pulse-glow {
     animation: none;
-    opacity: 0.8;
+    opacity: 0.6;
   }
 }
 ```
