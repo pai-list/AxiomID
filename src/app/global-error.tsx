@@ -1,5 +1,6 @@
 "use client";
 
+import "./globals.css";
 import { ErrorFallback } from "@/components/ui/ErrorFallback";
 
 export default function GlobalError({
