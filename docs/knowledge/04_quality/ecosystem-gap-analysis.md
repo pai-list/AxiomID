@@ -166,9 +166,9 @@ For each ecosystem AxiomID integrates with or claims compatibility for, we trace
 
 | Ecosystem | Rating | Critical Gaps |
 |-----------|--------|---------------|
-| Pi Network | 7/10 | Pi Ads unimplemented, real device testing unconfirmed |
+| Pi Network | 8/10 | P8 DNS activation, Wallet deep links pending, no E2E test |
 | W3C Standards | 5/10 | DID update/deactivate, resolution endpoint, VC verification API |
-| Cloudflare | 4/10 | Deployment unverified, DO + Workflows aspirational |
+| Cloudflare | 5/10 | Deployment unverified, Workflows claim aspirational |
 | Vercel | 7/10 | Blob/Edge Config/AI Gateway underutilized |
 | Next.js | 9/10 | Partial Prerendering, OTEL optional |
 | MCP | 1/10 | No agent protocol, no discoverable MCP server |

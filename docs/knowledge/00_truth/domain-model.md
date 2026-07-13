@@ -51,7 +51,7 @@ A W3C-compliant decentralized identifier following the format `did:axiom:axiomid
 - **Owner**: framework_design.md, src/lib/did.ts
 - **Code Location**: `src/lib/did.ts:5-29`, `src/lib/did-document.ts:1-98`
 - **Dependencies**: Pi UID, Ed25519 public key
-- **Status**: IMPLEMENTED — DID creation, resolution, document generation all work
+- **Status**: PARTIALLY IMPLEMENTED — DID creation, resolution, document generation work. W3C compliance not audited, no update/deactivate (RTA-009).
 
 ---
 
@@ -61,7 +61,7 @@ A computed score (0-100) representing an identity's reputation, derived from XP,
 - **Owner**: src/lib/trust.ts, src/lib/actions.ts, src/lib/tiers.ts
 - **Code Location**: `src/lib/trust.ts:23-49`, `src/lib/actions.ts:10-28`
 - **Dependencies**: XP, Stamps, Tenure, Semantic Trust
-- **Status**: IMPLEMENTED — trust score calculation, XP ledger, tier system all working
+- **Status**: PARTIALLY IMPLEMENTED — core calculation works. Tenure and semantic components use mock data, no live pipeline (RTA-004, RTA-005).
 
 ---
 
@@ -372,3 +372,11 @@ Multi-tier request throttling using Leaky Bucket algorithm (physics-inspired).
 - **Code Location**: `src/lib/rate-limiter.ts:1-281`
 - **Dependencies**: Upstash Redis (prod), in-memory Map (dev)
 - **Status**: IMPLEMENTED — hybrid in-memory + Redis sliding window
+
+---
+
+## Audit Baseline
+- **Repository SHA:** c0b8557de41f9f53d94562cd56fa42d0c5aff357
+- **Branch:** feat/repository-truth-audit-execution
+- **Audit Date:** 2026-07-13
+- **Spec Version:** 3.0

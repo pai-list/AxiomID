@@ -285,3 +285,11 @@ Platform arbitrage strategy using free tiers: Vercel (frontend), Cloudflare (bac
 
 ### Zod
 TypeScript-first schema validation library. Used at all API trust boundaries. Schemas in `src/lib/validators.ts:1-365`.
+
+---
+
+## Audit Baseline
+- **Repository SHA:** c0b8557de41f9f53d94562cd56fa42d0c5aff357
+- **Branch:** feat/repository-truth-audit-execution
+- **Audit Date:** 2026-07-13
+- **Spec Version:** 3.0

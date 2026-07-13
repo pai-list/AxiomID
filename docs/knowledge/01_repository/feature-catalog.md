@@ -162,7 +162,8 @@ Last Verified: 2026-07-13
 ## Summary
 
 - **Total Features Cataloged:** 80
-- **✅ Active (fully implemented):** 75
+- **✅ Active (fully implemented):** 76
+- **✅ Seeded (vectors populated):** 1 (Verse Embedding)
 - **⚠️ Partial (model only / limited):** 3 (Ephemeral DIDs, Trust Chain, Delegated Trust)
 - **❌ Missing (documented but unimplemented):** 0
 - **🔮 Strategic (documented in strategy docs):** 0 (moved to separate tracking)

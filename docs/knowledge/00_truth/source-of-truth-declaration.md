@@ -173,3 +173,11 @@ To maintain SSoT integrity:
 3. **Stale file detection**: Weekly CI check for Memory files referencing non-existent code paths
 4. **Memory-to-code cross-reference**: Automated scan to detect undocumented code (>200 lines without Memory coverage)
 5. **Declared SSoT is PROJECT_STATUS.md** — all other files support it
+
+---
+
+## Audit Baseline
+- **Repository SHA:** c0b8557de41f9f53d94562cd56fa42d0c5aff357
+- **Branch:** feat/repository-truth-audit-execution
+- **Audit Date:** 2026-07-13
+- **Spec Version:** 3.0

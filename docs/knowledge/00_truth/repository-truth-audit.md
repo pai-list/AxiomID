@@ -56,7 +56,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** L
 - **Impact:** AI Agents, Security, Runtime
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -69,7 +69,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Pi Browser, Runtime, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -82,7 +82,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** Documentation, Pi Browser
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -95,7 +95,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** Developer Experience, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -108,7 +108,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** Developer Experience, Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -121,7 +121,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** AI Agents, Runtime
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** PR #298
 
@@ -134,7 +134,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** L
 - **Impact:** AI Agents, Compliance, Security
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -147,7 +147,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Production, AI Agents, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -160,7 +160,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Compliance, AI Agents
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -173,7 +173,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** Compliance, AI Agents
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -225,7 +225,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Compliance, Production, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -242,12 +242,12 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Status:** Verified
 - **Linked ADR:** —
 
-### RTA-016: 25 Prisma Models
+### RTA-016: 26 Prisma Models (count verification)
 - **Severity:** P3
 - **Confidence:** 98%
-- **Evidence:** prisma/schema.prisma shows exactly 25 models. Verified by counting model declarations.
+- **Evidence:** prisma/schema.prisma shows 26 models (previously miscounted as 25). Verified by re-counting model declarations.
 - **Owner:** Backend
-- **Recommended Fix:** N/A — verified true
+- **Recommended Fix:** N/A — verified true after recount
 - **Effort:** —
 - **Impact:** Documentation
 - **Found By:** Alpha
@@ -264,7 +264,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** Documentation, Developer Experience
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -277,7 +277,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** L
 - **Impact:** AI Agents, Investor Trust, Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -290,7 +290,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** Developer Experience, Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -303,7 +303,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Pi Browser, Runtime, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -329,7 +329,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** Production, Runtime, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -342,7 +342,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -355,7 +355,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** AI Agents, Runtime
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** PR #298
 
@@ -420,7 +420,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** AI Agents, Documentation, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** PR #296
 
@@ -433,7 +433,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** AI Agents, Documentation, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -446,7 +446,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** AI Agents, Documentation, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -459,7 +459,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** —
 - **Impact:** Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 
@@ -472,7 +472,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** AI Agents, Runtime, Compliance
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -485,7 +485,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** M
 - **Impact:** AI Agents, Compliance
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -498,7 +498,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** L
 - **Impact:** AI Agents, Compliance, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -524,7 +524,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** S
 - **Impact:** Developer Experience, Investor Trust
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Open
 - **Linked ADR:** —
 
@@ -537,7 +537,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** —
 - **Impact:** Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Deferred
 - **Linked ADR:** —
 
@@ -550,7 +550,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Effort:** XS
 - **Impact:** Documentation
 - **Found By:** Alpha
-- **Verified By:** Omega
+- **Verified By:** —
 - **Status:** Accepted
 - **Linked ADR:** —
 

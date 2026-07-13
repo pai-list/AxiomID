@@ -84,8 +84,8 @@ Every architecture decision found in code, documentation, and commit history.
 | Metric | Count |
 |---|---|
 | Total decisions indexed | 50 |
-| Still valid (✅) | 46 |
-| Partial/⚠️ | 4 |
+| Still valid (✅) | 45 |
+| Partial/⚠️ | 5 |
 | Invalid (❌) | 0 |
 | Decisions from git log | ~30 |
 | Decisions from code | ~20 |
