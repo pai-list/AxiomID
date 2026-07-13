@@ -4,7 +4,7 @@ import { ErrorBoundary as ReactErrorBoundary, type FallbackProps } from "react-e
 import { ErrorFallback } from "@/components/ui/ErrorFallback";
 
 function ErrorFallbackWrapper({ error, resetErrorBoundary }: FallbackProps) {
-  const safeError = error instanceof Error ? error : null;
+  const safeError = error instanceof Error ? error : new Error(String(error));
   return <ErrorFallback error={safeError} resetErrorBoundary={resetErrorBoundary} />;
 }
 
