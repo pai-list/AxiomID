@@ -11,10 +11,10 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LeaderboardPage from "@/app/leaderboard/page";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-);
+function TestWrapper({ children }: { children: React.ReactNode }) {
+  const [queryClient] = React.useState(() => new QueryClient({ defaultOptions: { queries: { retry: false } } }));
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
 
 // Mock Header and Footer
 jest.mock("@/components/Header", () => {
@@ -109,7 +109,7 @@ describe("LeaderboardPage — loading state", () => {
   it("shows loading skeleton initially", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     const { container } = render(<LeaderboardPage />, { wrapper: TestWrapper });
-    expect(container.querySelector(".animate-pulse")).not.toBeNull();
+    expect(container.querySelector('[data-testid="skeleton"]')).not.toBeNull();
   });
 
   it("renders GLOBAL STANDINGS badge", async () => {
