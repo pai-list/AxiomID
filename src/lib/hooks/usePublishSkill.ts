@@ -7,7 +7,7 @@ interface PublishSkillPayload {
 }
 
 async function publishSkill(payload: PublishSkillPayload): Promise<void> {
-  const res = await fetch("/api/skills/publish", {
+  const res = await fetch("/api/skills", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
