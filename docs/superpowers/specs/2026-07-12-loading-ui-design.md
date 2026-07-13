@@ -189,9 +189,10 @@ const mutation = useMutation({
   onMutate: async (id) => {
     await queryClient.cancelQueries({ queryKey: ["spend-requests"] });
     const previous = queryClient.getQueryData(["spend-requests"]);
-    queryClient.setQueryData(["spend-requests"], (old) =>
-      old.map((r) => (r.id === id ? { ...r, status: "approved" } : r))
-    );
+    queryClient.setQueryData(["spend-requests"], (old) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((r) => (r.id === id ? { ...r, status: "approved" } : r));
+    });
     return { previous };
   },
   onError: (err, id, context) => {

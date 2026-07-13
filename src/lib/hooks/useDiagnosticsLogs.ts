@@ -10,7 +10,8 @@ interface LogEntry {
 async function fetchDiagnosticsLogs(): Promise<LogEntry[]> {
   const res = await fetch("/api/diagnostics/logs");
   if (!res.ok) throw new Error("Failed to fetch diagnostics logs");
-  return res.json();
+  const data = await res.json();
+  return data.entries;
 }
 
 export function useDiagnosticsLogs() {

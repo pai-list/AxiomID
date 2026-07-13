@@ -13,9 +13,18 @@ async function fetchStatus(): Promise<StatusData> {
   if (!statusRes.ok || !healthRes.ok) {
     throw new Error("Failed to fetch status");
   }
-  const statusData = await statusRes.json();
-  const healthData = await healthRes.json();
-  return { ...statusData, ...healthData };
+  const statusData: unknown = await statusRes.json();
+  const healthData: unknown = await healthRes.json();
+
+  // Validate response shape
+  if (typeof statusData !== "object" || statusData === null) {
+    throw new Error("Invalid status response format");
+  }
+  if (typeof healthData !== "object" || healthData === null) {
+    throw new Error("Invalid health response format");
+  }
+
+  return { ...statusData, ...healthData } as StatusData;
 }
 
 export function useStatus() {

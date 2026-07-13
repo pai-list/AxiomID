@@ -128,7 +128,7 @@ The combined `@media (prefers-reduced-motion: reduce)` for both `.skeleton-shimm
 - [ ] **Step 3: Build check**
 
 ```bash
-npm run build 2>&1 | tail -5
+npm run build
 ```
 
 Expected: No errors.
@@ -519,7 +519,7 @@ export function StatusSkeleton() {
 - [ ] **Step 7: Verify all imports resolve**
 
 ```bash
-npx tsc --noEmit --pretty 2>&1 | head -20
+npx tsc --noEmit --pretty
 ```
 
 Expected: No errors (or only pre-existing ones from `.next/types/validator.ts`).
@@ -558,11 +558,12 @@ matching final layout dimensions for zero CLS."
 import { SkeletonLine, SkeletonCard } from "@/components/ui/skeleton";
 
 export function DocsSkeleton() {
+  const sidebarWidths = ["60%", "75%", "50%", "80%", "65%", "70%", "55%", "75%"];
   return (
     <div className="flex gap-6 p-6" role="status" aria-live="polite" aria-label="Loading docs">
       <div className="hidden md:flex flex-col gap-3 w-64">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <SkeletonLine key={i} width={`${40 + Math.random() * 40}%`} height="1rem" />
+        {sidebarWidths.map((width, i) => (
+          <SkeletonLine key={i} width={width} height="1rem" />
         ))}
       </div>
       <div className="flex-1 flex flex-col gap-4">
@@ -730,7 +731,7 @@ export function LandingSkeleton() {
 - [ ] **Step 8: Type check**
 
 ```bash
-npx tsc --noEmit --pretty 2>&1 | head -20
+npx tsc --noEmit --pretty
 ```
 
 Expected: No new errors.
@@ -892,7 +893,7 @@ import { Providers } from "./providers";
 - [ ] **Step 6: Build check**
 
 ```bash
-npm run build 2>&1 | tail -10
+npm run build
 ```
 
 Expected: Build succeeds.
@@ -947,9 +948,23 @@ async function fetchStatus(): Promise<StatusData> {
   if (!statusRes.ok || !healthRes.ok) {
     throw new Error("Failed to fetch status");
   }
-  const statusData = await statusRes.json();
-  const healthData = await healthRes.json();
+  const statusData: unknown = await statusRes.json();
+  const healthData: unknown = await healthRes.json();
+
+  // Validate response shape
+  if (!isStatusData(statusData) || !isHealthData(healthData)) {
+    throw new Error("Invalid status response format");
+  }
+
   return { ...statusData, ...healthData };
+}
+
+function isStatusData(data: unknown): data is Partial<StatusData> {
+  return typeof data === "object" && data !== null;
+}
+
+function isHealthData(data: unknown): data is Partial<StatusData> {
+  return typeof data === "object" && data !== null;
 }
 
 export function useStatus() {
@@ -1223,7 +1238,7 @@ export function useDiagnosticsLogs() {
 - [ ] **Step 10: Type check**
 
 ```bash
-npx tsc --noEmit --pretty 2>&1 | head -20
+npx tsc --noEmit --pretty
 ```
 
 Expected: No new errors.
@@ -1433,7 +1448,7 @@ export function useAuth() {
 - [ ] **Step 6: Type check**
 
 ```bash
-npx tsc --noEmit --pretty 2>&1 | head -20
+npx tsc --noEmit --pretty
 ```
 
 Expected: No new errors.
@@ -1541,8 +1556,7 @@ Specific steps per page:
 - [ ] **Step 12: Build + test**
 
 ```bash
-npm run build 2>&1 | tail -10
-npx jest 2>&1 | tail -5
+npm run build && npx jest
 ```
 
 Expected: Build succeeds, 53+ tests pass.
@@ -1714,8 +1728,7 @@ export default function GlobalError({
 - [ ] **Step 5: Build + test**
 
 ```bash
-npm run build 2>&1 | tail -10
-npx jest 2>&1 | tail -5
+npm run build && npx jest
 ```
 
 Expected: Build succeeds, tests pass.

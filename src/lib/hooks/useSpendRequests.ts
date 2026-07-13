@@ -9,10 +9,27 @@ interface SpendRequest {
 }
 
 async function fetchSpendRequests(): Promise<SpendRequest[]> {
-  const res = await fetch("/api/spend-request?status=pending");
+  const headers: Record<string, string> = {};
+  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch("/api/spend-request?status=pending", { headers });
   if (!res.ok) throw new Error("Failed to fetch spend requests");
-  const json = await res.json();
-  return json.requests ?? json;
+  const json: unknown = await res.json();
+
+  // Validate response shape
+  let requests: unknown;
+  if (typeof json === "object" && json !== null && "requests" in json) {
+    requests = (json as { requests: unknown }).requests;
+  } else {
+    requests = json;
+  }
+
+  if (!Array.isArray(requests)) {
+    throw new Error("Invalid spend requests response format");
+  }
+
+  return requests as SpendRequest[];
 }
 
 export function useSpendRequests() {

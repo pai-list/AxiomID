@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface SocialDisconnectPayload {
-  provider: string;
+  platform: string;
 }
 
 async function socialDisconnect(payload: SocialDisconnectPayload): Promise<void> {
