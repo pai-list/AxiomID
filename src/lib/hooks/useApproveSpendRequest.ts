@@ -9,10 +9,10 @@ interface SpendRequest {
 }
 
 async function approveSpendRequest(id: string): Promise<void> {
-  const res = await fetch("/api/spend-request/approve", {
+  const res = await fetch(`/api/spend-request/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
+    body: JSON.stringify({ action: "approved" }),
   });
   if (!res.ok) throw new Error("Failed to approve spend request");
 }
