@@ -445,7 +445,7 @@ When introducing significant architectural changes, new systems, or repository-w
 3. **Treat the merged specification as the Single Source of Truth (SSoT)** for the entire initiative.
 4. **Execute implementation in separate PRs**, each focused on a single logical change.
 5. **Keep specification PRs and implementation PRs separate** for clean review history, easier rollback, and accurate traceability.
-6. **If implementation requires changing the specification**, submit a dedicated specification update PR before or alongside the implementation that depends on it.
+6. **If implementation requires changing the specification**, submit a dedicated specification update PR and merge it before beginning the dependent implementation.
 
 **Rationale:** Large engineering organizations (Kubernetes, Next.js, Cloudflare, Vercel) separate design approval from implementation. This improves review quality, enables parallel development, reduces merge conflicts, and preserves a clear architectural decision history.
 
