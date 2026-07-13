@@ -46,24 +46,52 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 |:---|:---|
 | `/` | Landing experience and entry point |
 | `/claim` | Identity claim wizard |
+| `/onboarding` | Onboarding flow for new users |
 | `/passport/[slug]` | Public passport viewer |
 | `/dashboard` | Authenticated dashboard |
+| `/dashboard/settings` | User settings and VC viewer |
+| `/agent/[username]` | Public agent profile |
 | `/explorer` | Discover agents and identities |
 | `/leaderboard` | Ranked trust and activity view |
 | `/docs` | Product and API documentation |
 | `/status` | Service health and dependency status |
+| `/diagnostics` | Debug and diagnostic tools |
+| `/about` | About AxiomID |
+| `/privacy` | Privacy policy |
+| `/terms` | Terms of service |
+| `/offline` | Offline fallback page |
+| `/signin/callback` | Pi sign-in callback handler |
 
 ### API Routes
 
 | Endpoint | Purpose |
 |:---|:---|
-| `/api/auth/*` | Pi Browser authentication |
-| `/api/passport/*` | Passport CRUD and publishing |
-| `/api/payments/*` | Pi payment creation and completion |
-| `/api/spend-request` | Create and list spend requests |
-| `/api/spend-request/[id]` | Approve, reject, or complete spend requests |
-| `/api/spend-request/stream` | SSE stream for agent notifications |
+| `/api/auth/*` | Pi Browser authentication, connect, logout, state |
+| `/api/passport/*` | Passport CRUD, publishing, verification |
+| `/api/agent/*` | Agent identity, sign, activate, pause, manifest |
+| `/api/pi/*` | Pi payments (approve, complete), KYA claims, ad verification |
+| `/api/skills/*` | Skills marketplace (CRUD, search, install, execute, pay, review) |
+| `/api/spend-request` | Create, list, approve spend requests + SSE stream |
 | `/api/health` | Health check |
+| `/api/status` | Protocol metrics: users, agents, XP, payments |
+| `/api/explorer` | Live explorer data and stats |
+| `/api/leaderboard` | Top users ranked by XP |
+| `/api/diagnostics/*` | Error capture and logs |
+| `/api/sandbox/*` | Sandbox dev-token and code execution |
+| `/api/admin/*` | Admin skills moderation |
+| `/api/stamp/*` | Stamp claiming |
+| `/api/social/disconnect` | Social account disconnection |
+| `/api/sync` | Edge-to-PostgreSQL sync |
+| `/api/telegram` | Telegram bot integration |
+| `/api/stellar/anchor` | Stellar trust anchoring |
+| `/api/vault/stake` | Vault staking |
+| `/api/did-document` | DID document resolution |
+| `/api/credential-status` | Credential revocation check |
+| `/api/upload/presign` | Presigned upload URLs |
+| `/api/presence/heartbeat` | Presence heartbeat |
+| `/api/daily-review` | Daily review trigger |
+| `/api/user/status` | User status |
+| `/api/emulate/*` | Service emulation (dev) |
 
 ## Tech stack
 
@@ -73,10 +101,11 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 | **Backend** | Vercel Serverless · Cloudflare Workers |
 | **Database** | PostgreSQL (Prisma 6) · D1 (edge sync) · Vectorize (semantic search) |
 | **Cache** | Upstash Redis (rate limiting, session state) |
-| **AI** | Workers AI — Llama 3.1 8B · BGE-small-en-v1.5 |
+| **AI** | Workers AI — Llama 3.1 8B · BGE-base-en-v1.5 |
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
-| **CI/CD** | GitHub Actions → Vercel · 3272 tests, 168 suites |
+| **State/Cache** | TanStack Query v5 (client-side cache) |
+| **CI/CD** | GitHub Actions → Vercel · 3300+ tests |
 
 ## Quick start
 
@@ -116,7 +145,7 @@ npx wrangler deploy
 ```bash
 npm run lint       # 0 errors, 0 warnings
 npm run type-check # type check
-npm test           # 3272 tests, 168 suites
+npm test           # 3300+ tests (some page tests need QueryClientProvider wrapper)
 ```
 
 ## Project structure
@@ -148,6 +177,10 @@ AxiomID.Memory/    # Knowledge base and design docs
 
 Every identity on AxiomID has a **Trust Score** built from verified stamps and experience points (XP):
 
+**Basic** (when tenure/semantic data is unavailable):
+$$\text{Trust Score} = \text{XP Score} \times 0.7 + \text{Stamp Score} \times 0.3$$
+
+**Full** (with tenure and semantic trust data):
 $$\text{Trust Score} = \text{XP Score} \times 0.5 + \text{Stamp Score} \times 0.2 + \text{Tenure Score} \times 0.1 + \text{Semantic Trust} \times 0.2$$
 
 Trust decays over time (inactivity penalty) and is boosted by Stellar anchoring (+15%).

@@ -21,6 +21,10 @@
 - **Skeleton primitives destructure `style` and merge with component dimensions; spread caller `{...props}` BEFORE enforcing the contract props (`aria-hidden`, `data-testid`)** so callers cannot override the accessibility/dimension contract
 - **QueryClientProvider MUST be in a `"use client"` wrapper component** — layout.tsx is a Server Component, cannot pass non-serializable props
 - **`global-error.tsx` MUST render its own `<html>` and `<body>` tags** (Next.js requirement) — use ErrorFallback content inside a proper document shell
+- **Pi Browser detection in skeleton/error UI** — use `determineSandboxMode()` or `window.Pi` check to adapt loading states: Pi users get wallet-centric skeletons, regular browser users get onboarding-centric skeletons with smart intro copy
+- **Smart intro for non-Pi users** — OnboardingSkeleton must include CTA placeholders for "Install Pi Browser" / "Learn More" that resolve to actionable paths; landing page skeleton must detect browser type and pivot messaging
+- **Responsive skeletons** — mobile-first: skeleton layouts must collapse to single-column on small screens (below 640px) using existing Tailwind breakpoints
+- **Retry strategy for Pi mobile** — `staleTime: 30s` (conservative for mobile data), `retry: 2` (handles Pi SDK sandbox flakiness), `gcTime: 5min` (respects mobile memory) — already configured in Task 6
 
 ---
 
@@ -543,6 +547,7 @@ matching final layout dimensions for zero CLS."
 - Create: `src/components/skeletons/DiagnosticsSkeleton.tsx`
 - Create: `src/components/skeletons/SettingsSkeleton.tsx`
 - Create: `src/components/skeletons/LandingSkeleton.tsx`
+- Create: `src/components/skeletons/OnboardingSkeleton.tsx`
 
 - [ ] **Step 1: Create DocsSkeleton**
 
@@ -1458,7 +1463,20 @@ cache invalidation for real-time UI feedback."
 - Modify: `src/app/diagnostics/page.tsx`
 - Modify: `src/app/dashboard/settings/page.tsx`
 
-Each page follows this pattern:
+Each page follows this pattern — with Pi Browser detection for the landing/onboarding pages to pivot skeleton messaging:
+
+```tsx
+// Pi-aware skeleton toggle (for landing, onboarding, and auth pages)
+function usePiBrowser() {
+  const [isPi, setIsPi] = useState(false);
+  useEffect(() => {
+    setIsPi(typeof window !== "undefined" && "Pi" in window);
+  }, []);
+  return isPi;
+}
+```
+
+Standard page pattern:
 
 ```tsx
 // Before
@@ -1497,6 +1515,13 @@ export default function Page() {
   if (isLoading) return <StatusSkeleton />;
   return <Content data={data} />;
 }
+```
+
+**Landing and Onboarding pages** detect Pi Browser and pivot skeleton messaging:
+```tsx
+// During loading, if not Pi Browser, overlay a smart-intro badge:
+// "Trying AxiomID from a regular browser? Most features need Pi Network."
+// This keeps the skeleton clean while educating new users.
 ```
 
 Specific steps per page:

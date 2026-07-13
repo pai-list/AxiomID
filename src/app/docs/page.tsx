@@ -96,8 +96,8 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
     { method: "POST", path: "/api/agent/sign", desc: "Sign a payload with agent's sovereign keypair.", auth: "Yes" },
     { method: "POST", path: "/api/skills", desc: "Publish a new skill to the marketplace.", auth: "Yes" },
     { method: "GET", path: "/api/skills", desc: "Search marketplace skills with filters.", auth: "No" },
-    { method: "POST", path: "/api/oauth2/token", desc: "OAuth2 device flow token exchange.", auth: "No" },
-    { method: "POST", path: "/api/oauth2/revoke", desc: "Revoke an active OAuth2 token.", auth: "Yes" },
+    { method: "POST", path: "/api/oauth2/token", desc: "OAuth2 device flow token exchange (planned).", auth: "No" },
+    { method: "POST", path: "/api/oauth2/revoke", desc: "Revoke an active OAuth2 token (planned).", auth: "Yes" },
   ];
 
   return (
@@ -195,12 +195,15 @@ console.log("Public Key:", did.verificationMethod[0].publicKeyMultibase);`;
                 ))}
               </div>
 
-              <div className="mt-6 p-4 rounded-xl border border-electric-blue/20 bg-electric-blue/5">
+               <div className="mt-6 p-4 rounded-xl border border-electric-blue/20 bg-electric-blue/5">
                 <h4 className="text-xs font-bold font-mono text-electric-blue mb-2">
                   {t("docs_trust_formula_title")}
                 </h4>
                 <p className="text-[11px] text-zinc-400 font-mono">
                   Trust = (XP Score × 0.7) + (Stamp Score × 0.3)  →  0–100%
+                </p>
+                <p className="text-[10px] text-zinc-500 mt-2">
+                  Full (with tenure + semantic trust): XP × 0.5 + Stamp × 0.2 + Tenure × 0.1 + Semantic × 0.2
                 </p>
                 <p className="text-[10px] text-zinc-500 mt-1">
                   {t("docs_trust_formula_desc")}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { AgentPassport } from "@/components/AgentPassport";
 import { AgentQR } from "@/components/AgentQR";
@@ -9,6 +9,7 @@ import { useLanguage } from "../../context/language-context";
 import { sharePassport } from "@/lib/pi-native-features";
 import type { PassportStamp } from "@/components/passport/types";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { PassportSkeleton } from "@/components/skeletons/PassportSkeleton";
 
 interface PassportData {
   username: string;
@@ -30,9 +31,26 @@ interface PassportData {
 export function PassportView() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useLanguage();
-  const [passport, setPassport] = useState<PassportData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { data: passport, isLoading, error } = useQuery<PassportData>({
+    queryKey: ["passport", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || 'translated_passport_not_found');
+      }
+      return res.json();
+    },
+    enabled: !!slug,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data && data.jobStatus && data.jobStatus !== "COMPLETED" && data.jobStatus !== "ACTIVE") {
+        return 3000;
+      }
+      return false;
+    },
+  });
 
   const handleShare = async () => {
     await sharePassport({
@@ -42,47 +60,8 @@ export function PassportView() {
     });
   };
 
-  useEffect(() => {
-    if (!slug) return;
-
-    let pollInterval: NodeJS.Timeout;
-
-    const fetchPassport = async () => {
-      try {
-        const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.message || 'translated_passport_not_found');
-        }
-        const data = await res.json();
-        setPassport(data);
-        setLoading(false);
-
-        // If the identity is still being built, keep polling
-        if (data.jobStatus && data.jobStatus !== "COMPLETED" && data.jobStatus !== "ACTIVE") {
-           pollInterval = setTimeout(fetchPassport, 3000) as unknown as NodeJS.Timeout;
-        }
-
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t('passport_load_error'));
-        setLoading(false);
-      }
-    };
-
-    fetchPassport();
-
-    return () => {
-        if (pollInterval) clearTimeout(pollInterval);
-    };
-  }, [slug, t]);
-
-  if (loading) {
-     return (
-        <div className="w-full max-w-lg flex flex-col items-center justify-center min-h-[400px]">
-            <Loader2 className="w-10 h-10 text-electric-blue animate-spin mb-4" />
-            <p className="text-zinc-400 font-mono text-sm animate-pulse">Loading Identity...</p>
-        </div>
-     );
+  if (isLoading) {
+     return <PassportSkeleton />;
   }
 
   // Identity is still being built
@@ -102,7 +81,7 @@ export function PassportView() {
       );
   }
 
-  if (!passport && !error && !loading) {
+  if (!passport && !error && !isLoading) {
     return null;
   }
 
@@ -117,7 +96,7 @@ export function PassportView() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
-          <p className="text-subtle mb-8">{error}</p>
+          <p className="text-subtle mb-8">{error.message}</p>
           <Link href="/claim" className="btn-primary text-xs">
             {t('create_your_passport')}
           </Link>

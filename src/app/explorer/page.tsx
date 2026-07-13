@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLanguage } from "../context/language-context";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,6 +9,7 @@ import nextDynamic from "next/dynamic";
 const NetworkGraph = nextDynamic(() => import("@/components/ui/NetworkGraph"), { ssr: false });
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { Tier } from "@/lib/tiers";
+import { ExplorerSkeleton } from "@/components/skeletons/ExplorerSkeleton";
 
 export const dynamic = 'force-dynamic';
 
@@ -54,63 +55,16 @@ interface ExplorerData {
 
 export default function ExplorerPage() {
   const { t, language } = useLanguage();
-  const [data, setData] = useState<ExplorerData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-    const fetchData = async () => {
-      try {
-        setError(null);
-        const res = await fetch("/api/explorer");
-        if (!res.ok) throw new Error("Failed to fetch explorer datasets");
-        const json = await res.json();
-        if (active && json) {
-          setData(json);
-        }
-      } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Unable to fetch explorer data");
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    fetchData();
-
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const startPolling = () => {
-      if (interval === null) {
-        interval = setInterval(fetchData, 15000);
-      }
-    };
-    const stopPolling = () => {
-      if (interval !== null) {
-        clearInterval(interval);
-        interval = null;
-      }
-    };
-
-    // Only poll while the tab is visible to avoid wasteful background DB load.
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        fetchData();
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
-
-    if (document.visibilityState === "visible") {
-      startPolling();
-    }
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      active = false;
-      stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, []);
+  const { data, isLoading, error, refetch } = useQuery<ExplorerData>({
+    queryKey: ["explorer"],
+    queryFn: async () => {
+      const res = await fetch("/api/explorer");
+      if (!res.ok) throw new Error("Failed to fetch explorer datasets");
+      return res.json();
+    },
+    refetchInterval: 15000,
+  });
 
   return (
     <main className="min-h-screen bg-grid relative pb-20">
@@ -138,46 +92,9 @@ export default function ExplorerPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="space-y-6 mt-6 animate-pulse">
-            {/* Stats row skeleton */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bento-card p-5 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/5" />
-                  <div className="space-y-2">
-                    <div className="h-2 w-16 bg-white/5 rounded" />
-                    <div className="h-5 w-12 bg-white/5 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Main grid skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7 bento-card h-80" />
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bento-card p-5 space-y-3">
-                  <div className="h-3 w-40 bg-white/5 rounded" />
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="h-2 w-20 bg-white/5 rounded" />
-                      <div className="flex-1 h-2 bg-white/5 rounded" />
-                      <div className="h-2 w-8 bg-white/5 rounded" />
-                    </div>
-                  ))}
-                </div>
-                <div className="bento-card p-5 space-y-3">
-                  <div className="h-3 w-32 bg-white/5 rounded" />
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-white/5" />
-                      <div className="h-2 flex-1 bg-white/5 rounded" />
-                      <div className="h-2 w-16 bg-white/5 rounded" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        {isLoading ? (
+          <div className="mt-6">
+            <ExplorerSkeleton />
           </div>
         ) : error ? (
           <div className="text-center py-20 mt-10 bento-card">
@@ -185,9 +102,9 @@ export default function ExplorerPage() {
               <Zap className="w-7 h-7 text-red-400" />
             </div>
             <h3 className="text-sm font-bold text-white mb-1">Unable to Fetch Explorer Data</h3>
-            <p className="text-xs text-zinc-500 font-mono mb-4">{error}</p>
+            <p className="text-xs text-zinc-500 font-mono mb-4">{error.message}</p>
             <button
-              onClick={() => { setLoading(true); setError(null); fetch("/api/explorer").then(async (res) => { if (!res.ok) throw new Error("Failed"); const json = await res.json(); setData(json); }).catch((err) => setError(err.message)).finally(() => setLoading(false)); }}
+              onClick={() => refetch()}
               className="btn-primary px-4 py-2 text-xs font-mono"
             >
               RETRY

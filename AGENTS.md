@@ -295,17 +295,29 @@ src/
     dashboard/     ← Authenticated dashboard (marketplace, settings)
     dashboard/sandbox/ ← Developer sandbox playground
     passport/      ← Public passport viewer /passport/[slug]
-  components/      ← Shared UI components
-  components/dashboard/
-    TerminalOverlay.tsx ← Multi-pane TUI terminal (ring buffer + throttled render)
-  diagnostics/
-    catalog.ts     ← nostics error catalog (fix fields MUST be static strings)
+  components/
+    ui/            ← Primitive components (skeleton, ErrorFallback, CodeBlock, etc.)
+    skeletons/     ← Page-specific skeleton shells (14 pages)
+    claim/         ← Claim flow steps (ConnectStep, VerifyStep, DeployStep)
+    dashboard/     ← Dashboard widgets + tab panels
+      TerminalOverlay.tsx ← Multi-pane TUI terminal (ring buffer + throttled render)
+    landing/       ← Landing page sections (HeroSection, FeaturesSection, InteractiveShowcase)
+    passport/      ← Passport section components
+    pwa/           ← PWA components (InstallPWA, SovereignSplash, DynamicThemeColor)
   lib/
     errors.ts      ← apiError() + apiSuccess() + rateLimitHeaders()
     pi-sdk.ts      ← Pi SDK loader + determineSandboxMode() + authenticateWithTimeout()
+    hooks/         ← TanStack Query hooks (15 hooks: read + mutation)
+    query-client.ts ← TanStack Query client config
     registry.tsx   ← LinkItem registry with colorClass mapping
+  i18n/            ← Translation files (en.json, ar.json)
+  diagnostics/
+    catalog.ts     ← nostics error catalog (fix fields MUST be static strings)
   types/
     global.d.ts    ← Pi SDK type declarations (window.Pi unified here)
+packages/
+  crypto/          ← @axiomid/crypto (Ed25519 key derivation, signing, verification)
+  sdk/             ← @axiomid/sdk (public API client)
 ```
 
 ### 🔄 Continuous Improvement Loops

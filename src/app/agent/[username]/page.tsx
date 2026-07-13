@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Shield, Bot, Zap, Clock, ExternalLink } from "lucide-react";
 import { PiBrowserGuard, PiBrowserBanner } from "@/components/PiBrowserGuard";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { useLanguage } from "@/app/context/language-context";
+import { AgentSkeleton } from "@/components/skeletons/AgentSkeleton";
 
 interface AgentData {
   username: string;
@@ -30,45 +32,24 @@ export default function AgentPage({ params }: { params: Promise<{ username: stri
   const { username } = use(params);
   const { language } = useLanguage();
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
-  const [agent, setAgent] = useState<AgentData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const tr = (en: string, ar: string) => (language === "en" ? en : ar);
-    const controller = new AbortController();
-    fetch(`/api/agent/public?username=${encodeURIComponent(username)}`, {
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Agent not found");
-        return res.json();
-      })
-      .then((data) => {
-        setAgent(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (err.name !== "AbortError") {
-          setError(tr("Failed to load agent", "فشل تحميل الوكيل"));
-          setLoading(false);
-        }
-      });
-    return () => controller.abort();
-  }, [username, language]);
+  const { data: agent, isLoading, error } = useQuery<AgentData>({
+    queryKey: ["agent", username],
+    queryFn: async () => {
+      const res = await fetch(`/api/agent/public?username=${encodeURIComponent(username)}`);
+      if (!res.ok) throw new Error("Agent not found");
+      return res.json();
+    },
+    enabled: !!username,
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <PiBrowserGuard showSplash={false}>
         <PiBrowserBanner />
         <DevModeBanner />
         <main className="min-h-screen bg-grid flex items-center justify-center">
-          <div className="space-y-4 w-full max-w-md">
-            <div className="bento-card p-8">
-              <div className="h-6 bg-white/5 rounded animate-pulse mb-4" />
-              <div className="h-4 bg-white/5 rounded animate-pulse w-2/3" />
-            </div>
-          </div>
+          <AgentSkeleton />
         </main>
       </PiBrowserGuard>
     );
