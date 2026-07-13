@@ -189,7 +189,7 @@ The Repository Truth Audit is **substantially consistent**. All 6 conflicts foun
 
 The audit now uses the **RTA Finding Format** (v2.0):
 - 40 findings cataloged as RTA-001 through RTA-040
-- 8 P1 (Critical), 9 P2 (Medium), 23 P3 (Low), 12 Verified
+- 0 P0 (Catastrophic), 8 P1 (Critical), 9 P2 (Medium), 23 P3 (Low), 12 Verified
 - Each finding has: Unique ID, Severity (P0-P3), Confidence, Evidence, Owner, Recommended Fix, Effort, Impact, Found By, Verified By, Status, Linked ADR
 - Baseline recorded: commit c0b8557de, branch feat/repository-truth-audit-execution, spec v3.0
 - Finding lifecycle: Open → (Accepted | Rejected), Accepted → (Deferred | In Progress → Fixed → Verified → Closed), Deferred → Accepted

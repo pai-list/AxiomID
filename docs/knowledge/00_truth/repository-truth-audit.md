@@ -573,11 +573,12 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 
 | Severity | P-Level | Count | Details |
 |----------|---------|-------|---------|
+| **Catastrophic** | P0 | 0 | — |
 | **Critical** | P1 | 8 | RTA-001, RTA-008, RTA-018, RTA-022, RTA-029, RTA-030, RTA-031, RTA-033 |
 | **Medium** | P2 | 9 | RTA-002, RTA-006, RTA-007, RTA-014, RTA-020, RTA-024, RTA-034, RTA-035, RTA-037 |
 | **Low** | P3 | 23 | RTA-003, RTA-004, RTA-005, RTA-009, RTA-010, RTA-011, RTA-012, RTA-013, RTA-015, RTA-016, RTA-017, RTA-019, RTA-021, RTA-023, RTA-025, RTA-026, RTA-027, RTA-028, RTA-032, RTA-036, RTA-038, RTA-039, RTA-040 |
 
-**Total Claims Traced: 40 — 8 P1, 9 P2, 23 P3**
+**Total Claims Traced: 40 — 0 P0, 8 P1, 9 P2, 23 P3**
 
 **Active Broken Truths (Open/Accepted/Deferred): 28**
 **Verified (resolved): 12** — RTA-011, RTA-012, RTA-013, RTA-015, RTA-016, RTA-021, RTA-025, RTA-026, RTA-027, RTA-028, RTA-036, RTA-040
