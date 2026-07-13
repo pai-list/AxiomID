@@ -578,12 +578,72 @@ After all 39 files are generated:
     Sources:
     - [file path or glob pattern]
     - [file path or glob pattern]
-    Last Verified: YYYY-MM-DD
-    ```
+Last Verified: YYYY-MM-DD
+```
 
 ---
 
-## 20. Success Criteria
+## 20. Finding Metadata Format
+
+Every RTA report in `docs/knowledge/00_truth/` MUST include one Audit Baseline (file header), and every finding MUST include one Finding Record for lifecycle tracking.
+
+### Audit Baseline (file header)
+
+```markdown
+## Audit Baseline
+- **Repository SHA:** <full commit hash>
+- **Branch:** <branch name>
+- **Audit Date:** YYYY-MM-DD
+- **Spec Version:** X.Y
+```
+
+> Values in the audit baseline are **placeholders** — they MUST be replaced with current data each audit cycle.
+
+### Finding Record (per Broken Truth / Claim)
+
+```markdown
+### RTA-001: [Title]
+- **Severity:** P0–P3 (P0=Catastrophic, P1=Critical, P2=Medium, P3=Low)
+- **Confidence:** XX%
+- **Evidence:** file:line — specific code or doc evidence
+- **Owner:** Backend / Frontend / Docs / DevOps / Architecture / Full Stack
+- **Recommended Fix:** Actionable description of what to change
+- **Effort:** XS / S / M / L / XL
+- **Impact:** Security, Developer Experience, Investor Trust, Compliance, AI Agents, Pi Browser, Runtime, Production, Documentation, Architecture
+- **Found By:** Agent [Name]
+- **Verified By:** Agent [Name] or — (— for Open findings, mandatory for Verified)
+- **Status:** Open / Accepted / Deferred / In Progress / Fixed / Verified / Closed / Rejected
+- **Linked ADR:** —
+```
+
+### Status Lifecycle
+
+```
+Open → (Accepted | Rejected)
+Accepted → (Deferred | In Progress → Fixed → Verified → Closed)
+Deferred → Accepted
+```
+
+- **Open:** Newly discovered, not yet reviewed
+- **Accepted:** Reviewed, deemed valid, fix planned
+- **Deferred:** Valid but deprioritized for a future phase
+- **In Progress:** Fix being implemented
+- **Fixed:** Fix merged in a PR
+- **Verified:** Re-audited on main after merge, confirmed resolved
+- **Closed:** Lifecycle complete
+- **Rejected:** Determined to be not a valid finding
+
+### Finding ID Convention
+
+- RTA-001 through RTA-999
+- IDs are NEVER reused. If a finding is rejected, its ID stays with the rejection record.
+- IDs are allocated sequentially. Each audit cycle continues from the last used number — no stage-based reservation.
+- The authoritative allocation registry is `docs/knowledge/00_truth/repository-truth-audit.md`.
+- IDs MUST also be referenced in PR descriptions and ADRs for traceability.
+
+---
+
+## 21. Success Criteria
 
 The audit is complete when:
 

@@ -723,6 +723,71 @@ CodeRabbit re-reviews every new commit pushed to a PR. Each round may find new i
 
 ---
 
+# RTA Finding Lifecycle Policy
+
+## Purpose
+Every finding in the Repository Truth Audit (RTA) is a tracked entity with a full lifecycle. No finding disappears — it is resolved, deferred, or explicitly rejected.
+
+## Finding States
+
+```
+Open → (Accepted | Rejected)
+Accepted → (Deferred | In Progress → Fixed → Verified → Closed)
+Deferred → Accepted
+```
+
+| State | Meaning |
+|-------|---------|
+| **Open** | Newly discovered, not yet reviewed |
+| **Accepted** | Reviewed, deemed valid, fix planned |
+| **Deferred** | Valid but deprioritized for a future phase |
+| **In Progress** | Fix being implemented in an open PR |
+| **Fixed** | Fix merged to main |
+| **Verified** | Re-audited on main, confirmed resolved |
+| **Closed** | Lifecycle complete |
+| **Rejected** | Determined to be not a valid finding |
+
+## Finding ID Rules
+
+- Format: `RTA-XXX` (zero-padded, e.g. RTA-001, RTA-042)
+- IDs are NEVER reused. A rejected finding retains its ID.
+- IDs are allocated sequentially. Each audit cycle continues from the last used number — no stage-based reservation.
+- The authoritative allocation registry is `docs/knowledge/00_truth/repository-truth-audit.md`.
+- IDs MUST also be referenced in PR descriptions and ADRs for traceability.
+
+## Finding Metadata Schema
+
+Every finding MUST include:
+
+| Field | Format | Example |
+|-------|--------|---------|
+| ID | RTA-XXX | RTA-001 |
+| Severity | P0–P3 | P1 (Critical) |
+| Confidence | XX% | 85% |
+| Evidence | file:line | README.md:6 |
+| Owner | Team label | Architecture |
+| Recommended Fix | Sentence | Implement agent-in-the-loop auth |
+| Effort | XS/S/M/L/XL | L |
+| Impact | Comma-separated tags | Security, AI Agents |
+| Found By | Agent name | Alpha |
+| Verified By | Agent name or — | Omega (— for Open) |
+| Status | Lifecycle state | Open / Accepted / Deferred / In Progress / Fixed / Verified / Closed / Rejected |
+| Linked ADR | PR # or — | — |
+
+## Audit Baseline
+
+Every RTA report in `docs/knowledge/00_truth/` MUST record its baseline for reproducibility (repository-truth-audit.md, consistency-report.md, and all TRUTH-layer documents):
+
+```markdown
+## Audit Baseline
+- **Repository SHA:** <full commit hash>
+- **Branch:** <branch name>
+- **Audit Date:** YYYY-MM-DD
+- **Spec Version:** X.Y
+```
+
+---
+
 # Senior Staff Engineer + Release Manager Mode
 
 When reviewing ANY code (not writing), follow this persona:
