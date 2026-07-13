@@ -59,7 +59,7 @@ decision-history.md:103-111 timeline summary:
 
 ### 4. Vault API Route — Missing from Decision History
 
-architecture-index.md:50 documents Vault API Route ("empty, 2026-07, ⚠️"). No corresponding entry exists in decision-history.md.
+architecture-index.md:78 documents Vault API Route ("empty, 2026-07, ⚠️"). No corresponding entry exists in decision-history.md.
 
 **Verdict:** MINOR GAP. Vault is referenced in architecture-index but absent from decision-history.
 
