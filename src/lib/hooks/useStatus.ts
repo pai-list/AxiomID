@@ -24,7 +24,10 @@ async function fetchStatus(): Promise<StatusData> {
     throw new Error("Invalid health response format");
   }
 
-  return { ...statusData, ...healthData } as StatusData;
+  return {
+    ...(statusData as Record<string, unknown>),
+    ...(healthData as Record<string, unknown>),
+  } as unknown as StatusData;
 }
 
 export function useStatus() {
