@@ -42,13 +42,13 @@ For each ecosystem AxiomID integrates with or claims compatibility for, we trace
 | **Pi Payments** | `Pi.createPayment()` with metadata, `ready_for_network` check | README.md:37, AGENTS.md | `src/lib/pi-sdk.ts` wraps createPayment. `src/app/api/payments/` routes exist. | ✅ Code exists. Payment flow tested in sandbox. No real Pi payment confirmed. | MEDIUM | Test payment flow with real Pi Testnet/Mainnet pi. |
 | **Pi Native Features - Share** | `Pi.nativeFeature.openShareDialog()` | CHANGELOG.md:83 | `src/lib/pi-native-features.ts` wraps with fallback chain (Pi native → navigator.share → clipboard). | ✅ Implemented. Fallback chain correct. | LOW | Verify on real Pi Browser. |
 | **Pi Native Features - KYC** | `Pi.nativeFeature.openConsentDialog()` | CHANGELOG.md:83 | `src/lib/pi-native-features.ts` wraps. Claim page requests before verification. | ✅ Implemented. | LOW | Verify on real Pi Browser. |
-| **Pi Ads** | `Pi.Ads` API with server-side verification | AGENTS.md:240 | No src/app/api/pi/ads/ route found. AGENTS.md describes pattern only. | ❌ Documented pattern only. No API route for ad verification. | HIGH | Implement `POST /api/pi/ads/verify` with server-side adId check. |
+| **Pi Ads** | `Pi.Ads` API with server-side verification | AGENTS.md:240 | `src/app/api/pi/ads/verify/route.ts` (141 lines) with Zod validation, server-side adId check to `api.minepi.com/v2/ads_network/status/`, XP ledger double-claim protection, rate limiting, and auth. | ✅ Fully implemented. Verified against `backend/src/` codebase. | LOW | Real Pi Browser E2E test to confirm server-side verification works end-to-end. |
 | **Pi App Studio** | App listing, domain verification, manifest | CHANGELOG.md, PROJECT_STATUS.md | Manifest at src/app/manifest.ts. Domain documentation at docs/SUBDOMAIN-SETUP.md. | ⚠️ Manifest exists. P8 DNS activation pending. | MEDIUM | Complete P8 DNS setup, verify app studio listing. |
 | **Pi Wallet** | Wallet address exposure, sign/verify | framework_design.md | `src/lib/pi-sdk.ts` loads wallet info. `src/lib/sovereign-keys.ts` for Ed25519. Pi Wallet address stored on User model. | ⚠️ Wallet integration exists but no Pi Wallet deep links or transaction signing. | MEDIUM | Add Pi Wallet deep link support and in-app transaction signing. |
 | **Sandbox Mode** | Sandbox detection, dev token | AGENTS.md:235 | `determineSandboxMode()` cascades: env → hostname → referrer → query. Production guard in middleware. | ✅ Robust implementation. | LOW | None needed. |
 | **KYC Status Check** | Server-side KYC verification | CHANGELOG.md:29 | `src/lib/pi-kyc.ts` and `POST /api/pi/kyc/verify` route. | ✅ Implemented. | LOW | None needed. |
 
-**Pi Network Overall: 7/10 — Core auth/payments work. Ads unimplemented. Real device testing unconfirmed.**
+**Pi Network Overall: 8/10 — Core auth/payments work. Ads verification implemented. Real device testing still unconfirmed.**
 
 ---
 
@@ -75,10 +75,10 @@ For each ecosystem AxiomID integrates with or claims compatibility for, we trace
 | **Vectorize** | README.md:74 | `backend/src/vectors/` directory exists. Index `axiomid-truth` with 6236 vectors per CHANGELOG. | ⚠️ Index exists. No query endpoint verification in code. | MEDIUM | Add Vectorize query test. Document index stats. |
 | **Workers AI** | README.md:76 | Llama 3.1 8B and BGE-small-en-v1.5 models. | ⚠️ Models referenced but no usage evidence in route handlers. | MEDIUM | Verify Workers AI binding works for Truth RAG pipeline. |
 | **KV** | README.md:78 | KV binding referenced. | ⚠️ KV namespace exists but usage unclear. | LOW | Document KV usage or remove from README claim. |
-| **Durable Objects** | docs/engineering/architecture.md:7 | Architecture doc claims DO usage for "live agent session state" (line 7). | ❌ No DO implementation found in src/ or backend/. Architecture claim is aspirational. | HIGH | Remove DO claim from architecture doc or implement Durable Objects for session state. |
+| **Durable Objects** | docs/engineering/architecture.md:7 | Architecture doc claims DO usage for "live agent session state" (line 7). | ✅ PresenceDO implemented at `backend/src/index.ts:7-52` — extends DurableObject with heartbeat (`/heartbeat`), status (`/status`), alarm-based inactivity timeout (10 min), and persistent storage. Verified at data-flow-map.md:240, architecture-index.md:48, decision-history.md:52. | LOW | None needed. PresenceDO is implemented and operational. |
 | **Workflows** | docs/engineering/architecture.md:8 | Architecture doc claims Workflows for "autonomous missions" (line 8). | ❌ No Workflows implementation found. Claim is aspirational. | HIGH | Remove Workflows claim or implement. |
 
-**Cloudflare Overall: 4/10 — Strong config and code foundation. Deployment unverified. DO and Workflows claims are aspirational (documented but unimplemented).**
+**Cloudflare Overall: 5/10 — Strong config and code foundation. PresenceDO implemented and verified. Workflows claim still aspirational. Deployment unverified.**
 
 ---
 
