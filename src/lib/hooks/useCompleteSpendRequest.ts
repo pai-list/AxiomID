@@ -9,10 +9,10 @@ interface SpendRequest {
 }
 
 async function completeSpendRequest(id: string): Promise<void> {
-  const res = await fetch("/api/spend-request/complete", {
+  const res = await fetch(`/api/spend-request/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
+    body: JSON.stringify({ action: "completed" }),
   });
   if (!res.ok) throw new Error("Failed to complete spend request");
 }
