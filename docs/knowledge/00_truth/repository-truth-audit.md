@@ -573,13 +573,14 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 
 | Severity | P-Level | Count | Details |
 |----------|---------|-------|---------|
-| **Critical** | P1 | 7 | RTA-001 (agent protocol), RTA-008 (Truth RAG), RTA-018 (SOUL evaluator), RTA-022 (backend Worker), RTA-029 (stale SSoT file), RTA-030 (dead weight), RTA-031 (CODEBASE_WIKI), RTA-033 (Ephemeral DIDs) |
-| **Medium** | P2 | 10 | RTA-002, RTA-006, RTA-007, RTA-014, RTA-020, RTA-024, RTA-034, RTA-035, RTA-037 |
-| **Low** | P3 | 14 | RTA-003, RTA-004, RTA-005, RTA-009, RTA-010, RTA-017, RTA-019, RTA-023, RTA-032, RTA-038, RTA-039, RTA-040 |
-| **Verified** | — | 11 | RTA-011, RTA-012, RTA-013, RTA-015, RTA-016, RTA-021, RTA-025, RTA-026, RTA-027, RTA-028, RTA-036 |
+| **Critical** | P1 | 8 | RTA-001, RTA-008, RTA-018, RTA-022, RTA-029, RTA-030, RTA-031, RTA-033 |
+| **Medium** | P2 | 9 | RTA-002, RTA-006, RTA-007, RTA-014, RTA-020, RTA-024, RTA-034, RTA-035, RTA-037 |
+| **Low** | P3 | 23 | RTA-003, RTA-004, RTA-005, RTA-009, RTA-010, RTA-011, RTA-012, RTA-013, RTA-015, RTA-016, RTA-017, RTA-019, RTA-021, RTA-023, RTA-025, RTA-026, RTA-027, RTA-028, RTA-032, RTA-036, RTA-038, RTA-039, RTA-040 |
 
-**Total Claims Traced: 40**
-**Active Broken Truths: 28 (7 P1, 10 P2, 11 P3) — 12 Closed or Verified**
+**Total Claims Traced: 40 — 8 P1, 9 P2, 23 P3**
+
+**Active Broken Truths (Open/Accepted/Deferred): 28**
+**Verified (resolved): 12** — RTA-011, RTA-012, RTA-013, RTA-015, RTA-016, RTA-021, RTA-025, RTA-026, RTA-027, RTA-028, RTA-036, RTA-040
 
 ---
 
