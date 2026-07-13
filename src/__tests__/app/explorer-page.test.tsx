@@ -11,7 +11,13 @@
 
 import React from "react";
 import { render, screen, waitFor, act, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ExplorerPage from "@/app/explorer/page";
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 // Mock Header and Footer
 jest.mock("@/components/Header", () => {
@@ -97,20 +103,20 @@ afterEach(() => {
 describe("ExplorerPage — loading state", () => {
   it("renders without crashing", () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    expect(() => render(<ExplorerPage />)).not.toThrow();
+    expect(() => render(<ExplorerPage />, { wrapper: TestWrapper })).not.toThrow();
   });
 
   it("shows loading skeleton initially before fetch resolves", () => {
     // Never resolves — keep loading
     mockFetch.mockReturnValue(new Promise(() => {}));
-    const { container } = render(<ExplorerPage />);
+    const { container } = render(<ExplorerPage />, { wrapper: TestWrapper });
     // Skeleton has animate-pulse class
     expect(container.querySelector(".animate-pulse")).not.toBeNull();
   });
 
   it("renders PROTOCOL EXPLORER badge", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("PROTOCOL EXPLORER")).toBeInTheDocument();
     });
@@ -118,7 +124,7 @@ describe("ExplorerPage — loading state", () => {
 
   it("renders 'Live Identity Ledger' heading in English", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Live Identity Ledger")).toBeInTheDocument();
     });
@@ -126,7 +132,7 @@ describe("ExplorerPage — loading state", () => {
 
   it("renders NETWORK STATUS: ONLINE badge", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("ONLINE")).toBeInTheDocument();
     });
@@ -139,7 +145,7 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders t('stat_users') as stat label", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       // Global mock returns key string for unknown keys
       expect(screen.getByText("stat_users")).toBeInTheDocument();
@@ -147,28 +153,28 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders t('stat_agents') as stat label", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("stat_agents")).toBeInTheDocument();
     });
   });
 
   it("renders t('total_xp') as stat label", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("total_xp")).toBeInTheDocument();
     });
   });
 
   it("renders t('stat_tx') as stat label", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("stat_tx")).toBeInTheDocument();
     });
   });
 
   it("renders AnimatedCounter with registeredUsers value", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       const counters = screen.getAllByTestId("animated-counter");
       const values = counters.map((el) => el.textContent);
@@ -177,7 +183,7 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders AnimatedCounter with totalXpEarned value", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       const counters = screen.getAllByTestId("animated-counter");
       const values = counters.map((el) => el.textContent);
@@ -186,7 +192,7 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders NetworkGraph with active nodes", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       const graph = screen.getByTestId("network-graph");
       expect(graph).toBeInTheDocument();
@@ -195,14 +201,14 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders tier distribution section headings", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Identity Tier Distribution")).toBeInTheDocument();
     });
   });
 
   it("renders all four tier labels in distribution section", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("SOVEREIGN")).toBeInTheDocument();
       expect(screen.getByText("VALIDATOR")).toBeInTheDocument();
@@ -212,21 +218,21 @@ describe("ExplorerPage — data state (PR change: t() for stat labels)", () => {
   });
 
   it("renders Recent Payments Ledger section", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Recent Payments Ledger")).toBeInTheDocument();
     });
   });
 
   it("renders the payment amount from recent payments", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("+1.5 PI")).toBeInTheDocument();
     });
   });
 
   it("renders payment user's piUsername", async () => {
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("@alice")).toBeInTheDocument();
     });
@@ -242,7 +248,7 @@ describe("ExplorerPage — empty state (registeredUsers = 0)", () => {
         stats: { ...mockExplorerData.stats, registeredUsers: 0 },
       }),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("No Agents Registered Yet")).toBeInTheDocument();
     });
@@ -256,7 +262,7 @@ describe("ExplorerPage — empty state (registeredUsers = 0)", () => {
         stats: { ...mockExplorerData.stats, registeredUsers: 0 },
       }),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Launch App")).toBeInTheDocument();
     });
@@ -266,7 +272,7 @@ describe("ExplorerPage — empty state (registeredUsers = 0)", () => {
 describe("ExplorerPage — error state", () => {
   it("renders error heading when fetch fails", async () => {
     mockFetch.mockRejectedValue(new Error("Network error"));
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Unable to Fetch Explorer Data")).toBeInTheDocument();
     });
@@ -274,7 +280,7 @@ describe("ExplorerPage — error state", () => {
 
   it("renders the error message", async () => {
     mockFetch.mockRejectedValue(new Error("Network error"));
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
     });
@@ -282,7 +288,7 @@ describe("ExplorerPage — error state", () => {
 
   it("renders RETRY button in error state", async () => {
     mockFetch.mockRejectedValue(new Error("fail"));
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
     });
@@ -293,7 +299,7 @@ describe("ExplorerPage — error state", () => {
       ok: false,
       json: async () => ({}),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Unable to Fetch Explorer Data")).toBeInTheDocument();
     });
@@ -309,7 +315,7 @@ describe("ExplorerPage — payments section edge cases", () => {
         recentPayments: [],
       }),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("No payments found on ledger")).toBeInTheDocument();
     });
@@ -332,7 +338,7 @@ describe("ExplorerPage — payments section edge cases", () => {
         ],
       }),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       // Shows first 10 chars of walletAddress when piUsername is null
       expect(screen.getByText("@GXYZ987654")).toBeInTheDocument();
@@ -356,7 +362,7 @@ describe("ExplorerPage — payments section edge cases", () => {
         ],
       }),
     });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Gas Fee Payment")).toBeInTheDocument();
     });
@@ -366,7 +372,7 @@ describe("ExplorerPage — payments section edge cases", () => {
 describe("ExplorerPage — polling behavior (PR change)", () => {
   it("calls fetch again after 15 seconds (polling interval)", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
 
     // Wait for initial fetch
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
@@ -383,7 +389,7 @@ describe("ExplorerPage — polling behavior (PR change)", () => {
 
   it("stops polling on component unmount", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    const { unmount } = render(<ExplorerPage />);
+    const { unmount } = render(<ExplorerPage />, { wrapper: TestWrapper });
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
@@ -408,7 +414,7 @@ describe("ExplorerPage — Arabic language (bilingual PR change)", () => {
     });
 
     mockFetch.mockResolvedValue({ ok: true, json: async () => mockExplorerData });
-    render(<ExplorerPage />);
+    render(<ExplorerPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("مستكشف الهوية المباشر")).toBeInTheDocument();
     });

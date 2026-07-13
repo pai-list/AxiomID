@@ -14,10 +14,16 @@
 
 import React from "react";
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useLanguage } from "@/app/context/language-context";
 import { PassportView } from "@/app/passport/[slug]/PassportView";
 import { sharePassport } from "@/lib/pi-native-features";
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 jest.mock("next/navigation", () => ({
   useParams: jest.fn(),
@@ -79,12 +85,12 @@ describe("PassportView — loading state", () => {
   });
 
   it("renders a loading indicator while the fetch is pending", () => {
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     expect(screen.getByText(/Loading Identity/i)).toBeInTheDocument();
   });
 
   it("does not render passport or error content while loading", () => {
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     expect(screen.queryByTestId("agent-passport")).not.toBeInTheDocument();
   });
 });
@@ -98,7 +104,7 @@ describe("PassportView — no slug", () => {
   });
 
   it("does not call fetch when slug is not yet available", () => {
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });
@@ -113,7 +119,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
 
   it("fetches the passport for the encoded slug", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith("/api/passport/alice"));
   });
 
@@ -123,7 +129,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
       json: async () => ({ message: 'Custom API Error' }),
     });
 
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getAllByText('passport_not_found')[0]).toBeInTheDocument();
@@ -135,7 +141,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
   it("URL-encodes the slug in the fetch request", async () => {
     mockUseParams.mockReturnValue({ slug: "alice bob" });
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith("/api/passport/alice%20bob")
     );
@@ -143,35 +149,35 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
 
   it("renders the AgentPassport once data has loaded", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
     expect(screen.getByTestId("agent-passport")).toHaveTextContent("alice");
   });
 
   it("renders the AgentQR with the passport DID", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-qr")).toBeInTheDocument());
     expect(screen.getByTestId("agent-qr")).toHaveTextContent("did:axiom:alice");
   });
 
   it("treats jobStatus 'COMPLETED' as fully loaded (renders passport, not the building UI)", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "COMPLETED" }) });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
     expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
   });
 
   it("treats jobStatus 'ACTIVE' as fully loaded (renders passport, not the building UI)", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "ACTIVE" }) });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
     expect(screen.queryByText(/Preparing your AI/i)).not.toBeInTheDocument();
   });
 
   it("renders CTA links pointing to /claim", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
     const claimLinks = screen.getAllByRole("link").filter((el) => el.getAttribute("href") === "/claim");
     expect(claimLinks.length).toBeGreaterThan(0);
@@ -179,7 +185,7 @@ describe("PassportView — successful fetch (no jobStatus / COMPLETED)", () => {
 
   it("calls sharePassport with the current URL when the share button is clicked", async () => {
     mockFetchOnce({ ok: true, json: async () => basePassport });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByTestId("agent-passport")).toBeInTheDocument());
 
     const shareButton = screen.getByText("share_passport");
@@ -209,7 +215,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
   it("shows the 'Preparing your AI...' panel when jobStatus is pending", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     await act(async () => {
-      render(<PassportView />);
+      render(<PassportView />, { wrapper: TestWrapper });
       await Promise.resolve();
     });
     expect(screen.getByText(/Preparing your AI/i)).toBeInTheDocument();
@@ -218,7 +224,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
   it("displays the current jobStatus value in the building panel", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     await act(async () => {
-      render(<PassportView />);
+      render(<PassportView />, { wrapper: TestWrapper });
       await Promise.resolve();
     });
     expect(screen.getByText(/Status: PROVISIONING/)).toBeInTheDocument();
@@ -227,7 +233,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
   it("does not render the AgentPassport while the job is still building", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     await act(async () => {
-      render(<PassportView />);
+      render(<PassportView />, { wrapper: TestWrapper });
       await Promise.resolve();
     });
     expect(screen.queryByTestId("agent-passport")).not.toBeInTheDocument();
@@ -236,7 +242,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
   it("polls again after 3 seconds while the job is still building", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     await act(async () => {
-      render(<PassportView />);
+      render(<PassportView />, { wrapper: TestWrapper });
       await Promise.resolve();
     });
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -252,7 +258,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
   it("stops polling once jobStatus becomes COMPLETED", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     await act(async () => {
-      render(<PassportView />);
+      render(<PassportView />, { wrapper: TestWrapper });
       await Promise.resolve();
     });
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -276,7 +282,7 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
     let unmount: ReturnType<typeof render>["unmount"];
     await act(async () => {
-      unmount = render(<PassportView />).unmount;
+      unmount = render(<PassportView />, { wrapper: TestWrapper }).unmount;
       await Promise.resolve();
     });
     unmount!();
@@ -295,7 +301,7 @@ describe("PassportView — fetch error handling", () => {
 
   it("renders an error message when the response is not ok", async () => {
     mockFetchOnce({ ok: false, json: async () => ({ message: "Not found" }) });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByText("Not found")).toBeInTheDocument());
   });
 
@@ -304,7 +310,7 @@ describe("PassportView — fetch error handling", () => {
       ok: false,
       json: () => Promise.reject(new Error("bad json")),
     });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getAllByText("passport_not_found").length).toBeGreaterThan(0);
     });
@@ -312,13 +318,13 @@ describe("PassportView — fetch error handling", () => {
 
   it("renders an error message when fetch itself rejects (network error)", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("network down"));
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByText("network down")).toBeInTheDocument());
   });
 
   it("renders a CTA link to /claim on the error screen", async () => {
     mockFetchOnce({ ok: false, json: async () => ({ message: "Not found" }) });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByText("Not found")).toBeInTheDocument());
     const link = screen.getByText("create_your_passport");
     expect(link.closest("a")).toHaveAttribute("href", "/claim");
@@ -326,7 +332,7 @@ describe("PassportView — fetch error handling", () => {
 
   it("stops showing the loading indicator once an error occurs", async () => {
     mockFetchOnce({ ok: false, json: async () => ({ message: "Not found" }) });
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     await waitFor(() => expect(screen.getByText("Not found")).toBeInTheDocument());
     expect(screen.queryByText(/Loading Identity/i)).not.toBeInTheDocument();
   });

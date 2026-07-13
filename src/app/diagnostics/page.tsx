@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { DiagnosticsSkeleton } from "@/components/skeletons/DiagnosticsSkeleton";
 
 interface DiagnosticEntry {
   id: string;
@@ -14,40 +16,22 @@ interface DiagnosticEntry {
 }
 
 export default function DiagnosticsPage() {
-  const [entries, setEntries] = useState<DiagnosticEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  const fetchLogs = async () => {
-    try {
+  const { data: entries = [], isLoading, refetch } = useQuery<DiagnosticEntry[]>({
+    queryKey: ["diagnostics-logs"],
+    queryFn: async () => {
       const res = await fetch("/api/diagnostics/logs");
       const data = await res.json();
-      setEntries(data.entries || []);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let active = true;
-    const poll = async () => {
-      try {
-        const res = await fetch("/api/diagnostics/logs");
-        const data = await res.json();
-        if (active) setEntries(data.entries || []);
-      } catch { /* ignore */ }
-    };
-    poll();
-    if (!autoRefresh) return () => { active = false; };
-    const interval = setInterval(poll, 3000);
-    return () => { active = false; clearInterval(interval); };
-  }, [autoRefresh]);
+      return data.entries || [];
+    },
+    refetchInterval: autoRefresh ? 3000 : false,
+  });
 
   const clearLogs = async () => {
     await fetch("/api/diagnostics/logs", { method: "DELETE" });
-    setEntries([]);
+    queryClient.setQueryData(["diagnostics-logs"], []);
   };
 
   const levelColor = (level: string) => {
@@ -87,7 +71,7 @@ export default function DiagnosticsPage() {
               {autoRefresh ? "Auto: ON" : "Auto: OFF"}
             </button>
             <button
-              onClick={fetchLogs}
+              onClick={() => refetch()}
               className="px-3 py-1.5 rounded text-sm font-medium bg-gray-700 hover:bg-gray-600 transition"
             >
               Refresh
@@ -101,8 +85,8 @@ export default function DiagnosticsPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20 text-gray-400">Loading...</div>
+        {isLoading ? (
+          <DiagnosticsSkeleton />
         ) : entries.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <p className="text-lg mb-2">No errors captured yet</p>

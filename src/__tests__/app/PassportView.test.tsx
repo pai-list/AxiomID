@@ -1,8 +1,14 @@
 import React, { act } from "react";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PassportView } from "@/app/passport/[slug]/PassportView";
 import { useParams } from "next/navigation";
 import { useLanguage } from "../../app/context/language-context";
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 // Mock useParams
 jest.mock("next/navigation", () => ({
@@ -54,13 +60,13 @@ describe("PassportView", () => {
   });
 
   it("renders loading skeleton initially", () => {
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
     const skeleton = document.querySelector('.animate-pulse');
     expect(skeleton).toBeInTheDocument();
   });
 
   it("renders passport data after fetch", async () => {
-    render(<PassportView />);
+    render(<PassportView />, { wrapper: TestWrapper });
 
     await act(async () => {
       resolveFetch({
@@ -74,7 +80,7 @@ describe("PassportView", () => {
   });
 
   it("does not throw or update state when the fetch resolves after unmount", async () => {
-    const { unmount } = render(<PassportView />);
+    const { unmount } = render(<PassportView />, { wrapper: TestWrapper });
 
     unmount();
 
