@@ -31,7 +31,7 @@ export default function HeroCards() {
             </div>
           </div>
           <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            KYA ✓
+            {t("KYA ✓", "توثيق ✓")}
           </span>
         </div>
 
@@ -43,8 +43,8 @@ export default function HeroCards() {
               <span className="text-emerald-400 font-bold text-xs">98<span className="text-zinc-500 text-[10px] font-normal">/100</span></span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">XP</span>
-              <span className="text-white font-bold text-xs">2,450</span>
+              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("XP", "الخبرة")}</span>
+              <span className="text-emerald-400 font-bold text-xs">2,450</span>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ export default function HeroCards() {
             </div>
           </div>
           <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider font-semibold bg-axiom-purple/10 text-axiom-purple border border-axiom-purple/20">
-            ACTIVE ✓
+            {t("ACTIVE ✓", "نشط ✓")}
           </span>
         </div>
 
@@ -93,8 +93,8 @@ export default function HeroCards() {
               <span className="text-axiom-purple font-bold text-xs">92<span className="text-zinc-500 text-[10px] font-normal">/100</span></span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">UPTIME</span>
-              <span className="text-white font-bold text-xs">99.98%</span>
+              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("UPTIME", "وقت التشغيل")}</span>
+              <span className="text-emerald-400 font-bold text-xs">99.98%</span>
             </div>
           </div>
 
