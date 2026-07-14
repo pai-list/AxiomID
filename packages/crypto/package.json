@@ -1,6 +1,7 @@
 {
   "name": "@axiomid/crypto",
   "version": "0.1.0",
+  "private": true,
   "description": "Sovereign identity cryptography for AxiomID — Ed25519 key derivation, signing, and verification.",
   "main": "src/index.ts",
   "types": "src/index.ts",

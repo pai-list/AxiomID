@@ -1,6 +1,7 @@
 {
   "name": "@axiomid/sdk",
   "version": "0.1.0",
+  "private": true,
   "description": "AxiomID SDK — Verify passports, resolve DIDs, query trust scores",
   "main": "src/index.ts",
   "types": "src/index.ts",
