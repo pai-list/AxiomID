@@ -1593,12 +1593,24 @@
         "summary": "Create spend request",
         "description": "Create a new Pi spend request. Requires authentication. 30-second processing window.",
         "security": [{ "BearerAuth": [] }],
-        "responses": {
           "201": {
-            "description": "Spend request created"
+            "description": "Spend request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "status": { "type": "string" },
+                    "expiresAt": { "type": "string", "format": "date-time" },
+                    "amount": { "type": "number" },
+                    "description": { "type": "string" }
+                  }
+                }
+              }
+            }
           },
           "401": { "$ref": "#/components/responses/Unauthorized" }
-        }
       },
       "get": {
         "tags": ["Spend Requests"],
