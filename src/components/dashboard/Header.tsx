@@ -6,9 +6,9 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/app/context/language-context";
 import { useWallet } from "@/app/context/wallet-context";
 import type { Route } from "next";
-import nextDynamic from "next/dynamic";
+import dynamic from "next/dynamic";
 
-const PiBrowserBadge = nextDynamic(() => import("./PiBrowserBadge"), { ssr: false });
+const PiBrowserBadge = dynamic(() => import("./PiBrowserBadge"), { ssr: false });
 
 interface NavItem {
   href: Route;
