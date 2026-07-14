@@ -23,8 +23,13 @@ describe("Sanitize library", () => {
       expect(safeJsonStringify(largeObj)).toBeNull();
     });
 
-    it("returns null when JSON.stringify throws an error (e.g., BigInt)", () => {
-      expect(safeJsonStringify({ val: BigInt(9007199254740991) })).toBeNull();
+    it("returns null when JSON.stringify throws an error", () => {
+      const throwingObj = {
+        get val() {
+          throw new Error("Serialization error");
+        },
+      };
+      expect(safeJsonStringify(throwingObj)).toBeNull();
     });
   });
 
