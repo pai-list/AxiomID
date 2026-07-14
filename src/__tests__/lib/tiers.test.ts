@@ -92,6 +92,7 @@ describe('Tiers Utility', () => {
 
     it('floors progress at 0% if XP is below current tier threshold', () => {
       expect(getLevelProgress(50, 'Citizen')).toBe(0);
+      expect(getLevelProgress(-10, 'Visitor')).toBe(0);
     });
 
     it('returns 100% for the maximum tier (Sovereign)', () => {
