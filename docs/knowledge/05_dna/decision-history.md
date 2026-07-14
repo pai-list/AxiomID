@@ -23,6 +23,7 @@ Last Verified: 2026-07-14
 | 2026-06-14 | Pi SDK v2 integration | ACCEPTED | Native Pi Browser auth + payments | `src/lib/pi-sdk.ts` |
 | 2026-06-16 | TanStack Query v5 replaces SWR | REPLACED | Better caching, mutations, type safety | `src/lib/query-client.ts` |
 | 2026-06-20 | Marketplace tables migration | ADDED | Skill marketplace data model | `prisma/migrations/` |
+| 2026-06-21 | Pi Network Ads SDK integration | ADDED | Server-side ad verification, XP rewards | `src/app/api/pi/ads/` |
 | 2026-06-22 | Stellar VC anchoring | ADDED | On-chain verification for VCs | `src/lib/stellar/` |
 | 2026-06-24 | Passport export + mint + share | ADDED | User-facing passport features | `src/app/api/passport/` |
 | 2026-06-24 | Truth RAG pipeline (6236 verses) | ADDED | Semantic Quranic search | `backend/src/routes/truth-rag.ts` |
@@ -31,13 +32,23 @@ Last Verified: 2026-07-14
 | 2026-06-27 | Sprint 3: CSS animations, wallet decomposition | CHANGED | Performance and code organization | Multiple files |
 | 2026-06-27 | N+1 query fix in sync route | FIXED | 40x faster D1→Neon sync | `src/app/api/sync/` |
 | 2026-06-28 | Pi-native verification actions | CHANGED | Replaced fake social login XP | `src/lib/pi-actions.ts` |
-| 2026-07-01 | CodeRabbit CI integration | ADDED | Automated PR review | `.github/workflows/` |
-| 2026-07-10 | Marketplace AIX adoption phases 3-6 | ADDED | SOUL alignment, x402 payments | PR #301 |
-| 2026-07-11 | Color contrast fix — theme-aware tokens | CHANGED | WCAG AA compliance across all themes | `src/app/globals.css` |
-| 2026-07-14 | Pi SDK script removed from layout | FIXED | Native Pi was overridden by web SDK | `src/app/layout.tsx` |
 
 ## 2026-07
 
 | Date | Decision | Status | Rationale | Location |
 |------|----------|--------|-----------|----------|
+| 2026-07-01 | CodeRabbit CI integration | ADDED | Automated PR review | `.github/workflows/` |
+| 2026-07-02 | Pi JWKS verification with iss/aud validation | ADDED | Enhanced security for Pi authentication | `src/lib/pi-auth.ts` |
+| 2026-07-02 | Frontend integrity audit P0 fixes | FIXED | Removed fake data, trust-breaking bugs | Multiple files |
+| 2026-07-02 | PWA premium features | ADDED | Splash screen, install prompt, shortcuts | `public/manifest.json` |
+| 2026-07-03 | Marketplace skill versioning | ADDED | Version management for marketplace skills | `src/lib/skill-versioning.ts` |
+| 2026-07-04 | Mobile accessibility improvements | CHANGED | Safe area insets, SW v5, a11y fixes | Multiple files |
+| 2026-07-06 | did:web support | ADDED | Decentralized identifier via .well-known | `src/app/.well-known/did.json/` |
+| 2026-07-06 | Expert auto-labeler CI | ADDED | 7-stage PR labeling pipeline | `.github/workflows/` |
+| 2026-07-07 | Spend Request | ADDED | Agentic Pi payments pipeline | `src/app/api/spend-request/` |
+| 2026-07-10 | Marketplace AIX adoption phases 3-6 | ADDED | SOUL alignment, x402 payments | PR #301 |
+| 2026-07-11 | Color contrast fix — theme-aware tokens | CHANGED | WCAG AA compliance across all themes | `src/app/globals.css` |
+| 2026-07-12 | TanStack Query v5 + Skeleton UI (PR #308) | ADDED | Better caching, loading states, UX | `src/lib/query-client.ts` |
+| 2026-07-12 | Iqra D3.js neural mesh visualization | ADDED | Trust history graph + MemoryTab | `src/app/iqra/` |
 | 2026-07-13 | Repository Truth Audit (RTA) initiated | ACCEPTED | Engineering Intelligence System | `docs/knowledge/` |
+| 2026-07-14 | Pi SDK script removed from layout | FIXED | Native Pi was overridden by web SDK | `src/app/layout.tsx` |

@@ -557,7 +557,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 ### RTA-040: Pi Ads Integration with Server-Side Verification
 - **Severity:** P3
 - **Confidence:** 95%
-- **Evidence:** src/app/api/pi/ads/verify/route.ts (141 lines) with Zod validation, server-side adId check via api.minepi.com/v2/ads_network/status/, XP ledger double-claim protection, rate limiting, and auth. decision-history.md:81 confirms decision #56.
+- **Evidence:** src/app/api/pi/ads/verify/route.ts (141 lines) with Zod validation, server-side adId check via api.minepi.com/v2/ads_network/status/, XP ledger double-claim protection, rate limiting, and auth. decision-history.md:26 confirms Pi Ads integration.
 - **Owner:** Backend
 - **Recommended Fix:** N/A — verified true. Monitor for real Pi Ads usage.
 - **Effort:** —
@@ -565,7 +565,7 @@ Every Claim extracted from AxiomID.Memory files is traced through 5 Truth Chain 
 - **Found By:** Alpha
 - **Verified By:** Omega (corrected from original audit)
 - **Status:** Verified
-- **Linked ADR:** decision-history.md:81
+- **Linked ADR:** decision-history.md:26
 
 ---
 
