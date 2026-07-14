@@ -16,6 +16,10 @@ import path from "path";
 const CONTRIBUTING_MD_PATH = path.join(__dirname, "../../CONTRIBUTING.md");
 const CODE_OF_CONDUCT_MD_PATH = path.join(__dirname, "../../CODE_OF_CONDUCT.md");
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 let content = "";
 
 beforeAll(() => {
@@ -401,8 +405,99 @@ describe("CONTRIBUTING.md — boundary and negative cases", () => {
     expect(content).not.toMatch(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/);
   });
 
-  it("contains exactly one top-level H1 heading", () => {
-    const h1Headings = content.match(/^# .+/gm) ?? [];
+  it("contains exactly one top-level H1 heading (excluding fenced code blocks)", () => {
+    // Strip fenced code blocks first — the Quick Start bash snippet contains a
+    // `# Prerequisites: ...` shell comment that would otherwise be mistaken
+    // for a second Markdown H1 heading by a naive line-anchored regex.
+    const withoutCodeBlocks = content.replace(/```[\s\S]*?```/g, "");
+    const h1Headings = withoutCodeBlocks.match(/^# .+/gm) ?? [];
     expect(h1Headings).toHaveLength(1);
+    expect(h1Headings[0]).toBe("# Contributing to AxiomID");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Markdown structural integrity
+// ---------------------------------------------------------------------------
+
+describe("CONTRIBUTING.md — markdown structural integrity", () => {
+  it("has a balanced (even) number of triple-backtick code fence markers", () => {
+    const fenceMarkers = content.match(/^```/gm) ?? [];
+    expect(fenceMarkers.length % 2).toBe(0);
+    expect(fenceMarkers.length).toBeGreaterThan(0);
+  });
+
+  it("has no empty section headings (every heading has trailing text)", () => {
+    const headingLines = content.match(/^#{1,6}\s*(.*)$/gm) ?? [];
+    for (const line of headingLines) {
+      const text = line.replace(/^#{1,6}\s*/, "").trim();
+      expect(text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("uses '##' (H2) for every major top-level section listed", () => {
+    const majorSections = [
+      "Quick Start",
+      "Prerequisites",
+      "Project Structure",
+      "Development Workflow",
+      "Testing",
+      "Internationalization (i18n)",
+      "Pi SDK Guidelines",
+      "Code of Conduct",
+      "Questions?",
+    ];
+    for (const section of majorSections) {
+      expect(content).toContain(`## ${section}`);
+      // Ensure it isn't accidentally demoted/promoted to another heading level.
+      expect(content).not.toContain(`### ${section}`);
+      expect(content).not.toMatch(new RegExp(`^# ${escapeRegExp(section)}$`, "m"));
+    }
+  });
+
+  it("preserves section ordering: Quick Start precedes Prerequisites precedes Project Structure", () => {
+    const quickStartIdx = content.indexOf("## Quick Start");
+    const prerequisitesIdx = content.indexOf("## Prerequisites");
+    const projectStructureIdx = content.indexOf("## Project Structure");
+    const workflowIdx = content.indexOf("## Development Workflow");
+    const testingIdx = content.indexOf("## Testing");
+    const codeOfConductIdx = content.indexOf("## Code of Conduct");
+    const questionsIdx = content.indexOf("## Questions?");
+
+    expect(quickStartIdx).toBeGreaterThanOrEqual(0);
+    expect(quickStartIdx).toBeLessThan(prerequisitesIdx);
+    expect(prerequisitesIdx).toBeLessThan(projectStructureIdx);
+    expect(projectStructureIdx).toBeLessThan(workflowIdx);
+    expect(workflowIdx).toBeLessThan(testingIdx);
+    expect(testingIdx).toBeLessThan(codeOfConductIdx);
+    expect(codeOfConductIdx).toBeLessThan(questionsIdx);
+  });
+
+  it("does not contain any literal merge-artifact 'undefined' or 'TODO' placeholders", () => {
+    expect(content).not.toMatch(/\bTODO\b/);
+    expect(content).not.toMatch(/\bundefined\b/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Project Structure — referenced paths exist on disk
+// ---------------------------------------------------------------------------
+
+describe("CONTRIBUTING.md — Project Structure paths exist on disk", () => {
+  const REPO_ROOT = path.join(__dirname, "../..");
+
+  const referencedPaths = [
+    "packages/crypto",
+    "packages/sdk",
+    "backend",
+    "prisma",
+    "docs",
+    "src/i18n",
+    "src/diagnostics",
+    "src/types",
+  ];
+
+  it.each(referencedPaths)("the documented path '%s' exists in the repository", (relativePath) => {
+    expect(fs.existsSync(path.join(REPO_ROOT, relativePath))).toBe(true);
   });
 });
