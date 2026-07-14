@@ -229,6 +229,9 @@ AxiomID.Memory/reference/
   vc/
     verifiable-credentials.md
     json-ld.md
+  stellar/
+    stellar-anchoring.md
+    horizon-api.md
   mcp/
     model-context-protocol.md
   cloudflare/
