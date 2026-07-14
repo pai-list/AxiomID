@@ -49,7 +49,7 @@ Both PRs are feature-rich but have **security blockers** that must be fixed befo
 |---|------|-------|-----|
 | 14 | `backend/src/router.ts:63` | `console.error` in Worker | Use structured logging |
 | 15 | Both PRs | Duplicate `.github/workflows/loops.yml` | Merge one, delete the other |
-| 16 | Both PRs | `.superpowers/` files committed | Add to `.gitignore`, remove from tracked |
+| 16 | Both PRs | `.ai/` files committed | Add to `.gitignore`, remove from tracked |
 
 ---
 
@@ -73,7 +73,7 @@ Both PRs are feature-rich but have **security blockers** that must be fixed befo
 ### Phase 3: Consolidate
 1. Pick one PR's loops.yml (PR #76's is more complete)
 2. Delete duplicate
-3. Clean .superpowers/ from git
+3. Clean .ai/ from git
 4. Update .gitignore
 
 ### Phase 4: Final QA
