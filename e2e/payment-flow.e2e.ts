@@ -42,9 +42,8 @@ test.describe("Pi Payment Flow", () => {
         "Authorization": `Bearer valid-pi-token-payment-test`
       },
     });
-    // In CI/Mock environment, this might return 200 or 401 depending on PI_API_KEY
-    // We check that it doesn't 500
-    expect(approveRes.status()).not.toBe(500);
+    // We expect 200 OK for a successful approval initiation
+    expect(approveRes.status()).toBe(200);
 
     // 4. Complete payment
     const completeRes = await request.post("/api/pi/payment/complete", {
@@ -54,7 +53,8 @@ test.describe("Pi Payment Flow", () => {
         "Authorization": `Bearer valid-pi-token-payment-test`
       },
     });
-    expect(completeRes.status()).not.toBe(500);
+    // We expect 200 OK for a successful completion
+    expect(completeRes.status()).toBe(200);
   });
 
   test("unauthorized payment approval is rejected", async ({ request }) => {
