@@ -16,7 +16,7 @@
 
 ## How AxiomID uses it
 
-- Hash anchoring for tamper evidence: document hashes stored via Manage Data operations on the Stellar ledger
+- Hash anchoring for tamper evidence: document hashes stored via transaction memo text on the Stellar ledger
 - Timestamp proofs: the ledger provides a decentralised, immutable timestamp for each anchored hash
 - DID method: `did:axiom:` resolution can verify anchor proofs against Stellar state
 - Stellar account per user agent for anchoring passport and credential hashes
