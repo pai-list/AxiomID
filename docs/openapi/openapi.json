@@ -1593,6 +1593,37 @@
         "summary": "Create spend request",
         "description": "Create a new Pi spend request. Requires authentication. 30-second processing window.",
         "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": { "type": "string", "format": "uuid", "example": "4ef60647-f509-4ed8-a873-c1519c7246ea" },
+                  "amount": { "type": "number", "minimum": 0.000001, "maximum": 500, "example": 10.5 },
+                  "currency": { "type": "string", "default": "PI", "example": "PI" },
+                  "description": { "type": "string", "maxLength": 500, "example": "Purchase subscription" },
+                  "context": { "type": "string", "minLength": 100, "example": "This request is generated contextually for the acquisition of computational resources for user validation operations, ensuring..." },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string", "example": "Validation credit" },
+                        "unit_amount": { "type": "number", "example": 10.5 },
+                        "quantity": { "type": "integer", "example": 1 }
+                      },
+                      "required": ["name", "unit_amount", "quantity"]
+                    }
+                  }
+                },
+                "required": ["agentId", "amount", "description", "context"]
+              }
+            }
+          }
+        },
+        "responses": {
           "201": {
             "description": "Spend request created",
             "content": {
@@ -1600,17 +1631,21 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": { "type": "string" },
-                    "status": { "type": "string" },
+                    "id": { "type": "string", "format": "uuid" },
+                    "status": { "type": "string", "example": "pending" },
                     "expiresAt": { "type": "string", "format": "date-time" },
-                    "amount": { "type": "number" },
-                    "description": { "type": "string" }
-                  }
+                    "amount": { "type": "number", "example": 10.5 },
+                    "description": { "type": "string", "example": "Purchase subscription" }
+                  },
+                  "required": ["id", "status", "expiresAt", "amount", "description"]
                 }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
       },
       "get": {
         "tags": ["Spend Requests"],
@@ -1619,9 +1654,49 @@
         "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Spend request list"
+            "description": "Spend request list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "agentId": { "type": "string", "format": "uuid" },
+                          "userId": { "type": "string", "format": "uuid" },
+                          "amount": { "type": "number", "example": 10.5 },
+                          "currency": { "type": "string", "example": "PI" },
+                          "description": { "type": "string", "example": "Purchase subscription" },
+                          "status": { "type": "string", "example": "pending" },
+                          "createdAt": { "type": "string", "format": "date-time" },
+                          "expiresAt": { "type": "string", "format": "date-time" },
+                          "agent": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "name": { "type": "string", "example": "Validation Agent" },
+                              "avatarUrl": { "type": "string", "nullable": true, "example": "https://example.com/avatar.png" },
+                              "publicId": { "type": "string", "example": "validation-agent" }
+                            },
+                            "required": ["id", "name", "publicId"]
+                          }
+                        },
+                        "required": ["id", "agentId", "userId", "amount", "currency", "description", "status", "createdAt", "expiresAt", "agent"]
+                      }
+                    },
+                    "count": { "type": "integer", "example": 1 }
+                  },
+                  "required": ["requests", "count"]
+                }
+              }
+            }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
         }
       }
     },
@@ -2556,26 +2631,54 @@
         "type": "object",
         "properties": {
           "status": { "type": "string", "example": "healthy" },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "checks": {
-            "type": "object",
-            "properties": {
-              "database": { "type": "string", "example": "connected" },
-              "stellar": { "type": "string", "example": "connected" },
-              "piGateway": { "type": "string", "example": "reachable" },
-              "workersAi": { "type": "string", "example": "reachable" }
+          "uptime": { "type": "integer", "example": 100 },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "Database" },
+                "status": { "type": "string", "enum": ["ONLINE", "DEGRADED", "OFFLINE"], "example": "ONLINE" },
+                "latencyMs": { "type": "integer", "example": 12 }
+              },
+              "required": ["name", "status", "latencyMs"]
             }
-          }
-        }
+          },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "required": ["status", "uptime", "services", "timestamp"]
       },
       "StatusResponse": {
         "type": "object",
         "properties": {
-          "activeUsers": { "type": "integer" },
-          "totalAgents": { "type": "integer" },
-          "totalXp": { "type": "integer" },
-          "verifiedUsers": { "type": "integer" }
-        }
+          "network": { "type": "string", "example": "axiomid" },
+          "version": { "type": "string", "example": "1.0.0" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "registeredUsers": { "type": "integer", "example": 150 },
+              "totalAgents": { "type": "integer", "example": 45 },
+              "activeAgents": { "type": "integer", "example": 30 },
+              "totalPayments": { "type": "integer", "example": 120 },
+              "totalXpEarned": { "type": "integer", "example": 5000 },
+              "activeUsers": { "type": "integer", "example": 12 },
+              "averageTrustScore": { "type": "number", "example": 85 },
+              "verificationRate": { "type": "integer", "example": 60 }
+            },
+            "required": [
+              "registeredUsers",
+              "totalAgents",
+              "activeAgents",
+              "totalPayments",
+              "totalXpEarned",
+              "activeUsers",
+              "averageTrustScore",
+              "verificationRate"
+            ]
+          }
+        },
+        "required": ["network", "version", "timestamp", "stats"]
       },
       "AuthResponse": {
         "type": "object",
@@ -2650,22 +2753,47 @@
       "PassportResponse": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "data": {
-            "type": "object",
-            "properties": {
-              "did": { "type": "string" },
-              "walletAddress": { "type": "string" },
-              "tier": { "type": "string" },
-              "trustScore": { "type": "number" },
-              "xp": { "type": "number" },
-              "stamps": {
-                "type": "array",
-                "items": { "type": "object" }
-              }
+          "username": { "type": "string", "example": "AxiomID Agent" },
+          "walletAddress": { "type": "string", "example": "GDQD5O... or 0x..." },
+          "stellarAddress": { "type": "string", "nullable": true, "example": "GDQD5OJ23X3H..." },
+          "did": { "type": "string", "example": "did:axiom:..." },
+          "tier": { "type": "string", "example": "bronze" },
+          "xp": { "type": "integer", "example": 120 },
+          "trustScore": { "type": "number", "example": 85 },
+          "kyaStatus": { "type": "string", "example": "active" },
+          "kycStatus": { "type": "string", "example": "verified" },
+          "stamps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "example": "PiNetwork" },
+                "provider": { "type": "string", "example": "pi-network" }
+              },
+              "required": ["type", "provider"]
             }
-          }
-        }
+          },
+          "issuedDate": { "type": "string", "format": "date-time" },
+          "agentName": { "type": "string", "nullable": true, "example": "AlphaAgent" },
+          "agentStatus": { "type": "string", "nullable": true, "example": "ACTIVE" },
+          "agentPublicKey": { "type": "string", "nullable": true, "example": "G..." }
+        },
+        "required": [
+          "username",
+          "walletAddress",
+          "stellarAddress",
+          "did",
+          "tier",
+          "xp",
+          "trustScore",
+          "kyaStatus",
+          "kycStatus",
+          "stamps",
+          "issuedDate",
+          "agentName",
+          "agentStatus",
+          "agentPublicKey"
+        ]
       },
       "DidDocument": {
         "type": "object",
@@ -2705,6 +2833,29 @@
       },
       "NotFound": {
         "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Too many requests. Try again later.",
+        "headers": {
+          "Retry-After": {
+            "schema": { "type": "integer" },
+            "description": "The number of seconds to wait before making another request."
+          },
+          "X-RateLimit-Limit": {
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Remaining": {
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Reset": {
+            "schema": { "type": "integer" }
+          }
+        },
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/ErrorResponse" }
