@@ -380,7 +380,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
     mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
-    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "NewTag", slug: "newtag" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "NewTag", slug: "newtag" }] as unknown as Awaited<ReturnType<typeof prisma.skillTag.findMany>>);
     mockPrisma.skillTag.createMany.mockResolvedValue({ count: 1 });
 
     const req = mockPutRequest({ tags: ["NewTag"] });
@@ -398,7 +398,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
     mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
-    mockPrisma.skillTag.findMany.mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }] as unknown as Awaited<ReturnType<typeof prisma.skillTag.findMany>>);
 
     const req = mockPutRequest({ tags: ["AI"] });
     const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
@@ -412,7 +412,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
     mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
-    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "Machine Learning", slug: "machine-learning" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "Machine Learning", slug: "machine-learning" }] as unknown as Awaited<ReturnType<typeof prisma.skillTag.findMany>>);
     mockPrisma.skillTag.createMany.mockResolvedValue({ count: 1 });
 
     const req = mockPutRequest({ tags: ["Machine Learning"] });
