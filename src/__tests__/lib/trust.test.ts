@@ -63,6 +63,29 @@ describe("calculateTrustScore", () => {
     // total = 25 + 10 + 5 + 16 = 56
     expect(calculateTrustScore(500, 3, 25, 80)).toBe(52);
   });
+  it("calculates modern formula with tenure only", () => {
+    // semanticTrust ?? 0 fallback
+    expect(calculateTrustScore(500, 3, 25, undefined)).toBe(36);
+  });
+
+  it("calculates modern formula with semantic trust only", () => {
+    // tenureDays ?? 0 fallback
+    expect(calculateTrustScore(500, 3, undefined, 80)).toBe(47);
+  });
+
+  it("throws error if XP is not an integer", () => {
+    expect(() => calculateTrustScore(500.5, 3)).toThrow();
+  });
+
+  it("throws error if stampsClaimed is not an integer", () => {
+    expect(() => calculateTrustScore(500, 3.5)).toThrow();
+  });
+
+  it("throws error if semanticTrust is out of bounds", () => {
+    expect(() => calculateTrustScore(500, 3, 25, -1)).toThrow();
+    expect(() => calculateTrustScore(500, 3, 25, 101)).toThrow();
+  });
+
 });
 
 describe("calculateTier", () => {
