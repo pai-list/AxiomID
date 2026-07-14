@@ -371,3 +371,68 @@ describe("signAgentAttestationCredential", () => {
     expect(vc.proof.proofValue).toMatch(/^[0-9a-f]+$/i);
   });
 });
+
+describe("signCredential branches (RSA and error paths)", () => {
+  const ORIGINAL_ENV = process.env;
+
+  beforeEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    process.env = ORIGINAL_ENV;
+  });
+
+  it("successfully signs with RS256 algorithm and rsa key type", () => {
+    // Generate an RSA private key
+    const crypto = require("crypto");
+    const { privateKey } = crypto.generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+
+    // Our global setup defines ISSUER_PRIVATE_KEY as an EdDSA key.
+    // getIssuerPrivateKey() checks key.includes("RSA") ? "RS256" : "EdDSA"
+    process.env.ISSUER_PRIVATE_KEY = privateKey + "\n# RSA";
+
+    mockCreateIssuerDid.mockReturnValue("did:axiom:rsa-issuer");
+
+    const vc = signSocialCredential(
+      "user-id",
+      "did:axiom:user123",
+      "twitter",
+      "@alice",
+      "pi:uid-abc"
+    );
+
+    expect(vc.proof.type).toBe("RsaSignature2018");
+    expect(vc.proof.proofValue).toBeTruthy();
+  });
+
+  it("throws when algorithm and key type mismatch", () => {
+    // Generate an RSA private key
+    const crypto = require("crypto");
+    const { privateKey } = crypto.generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+
+    // We want the key to parse as "rsa", but getIssuerPrivateKey to return "EdDSA".
+    // getIssuerPrivateKey uses: key.includes("Ed25519") ? "EdDSA" : key.includes("RSA") ? "RS256" : "EdDSA";
+    // We can fool it by appending "Ed25519" as a comment to the PEM string!
+    process.env.ISSUER_PRIVATE_KEY = privateKey + '\n# Ed25519';
+
+    mockCreateIssuerDid.mockReturnValue("did:axiom:mismatch-issuer");
+
+    expect(() =>
+      signSocialCredential(
+        "user-id",
+        "did:axiom:user123",
+        "twitter",
+        "@alice",
+        "pi:uid-abc"
+      )
+    ).toThrow(/Key type rsa doesn't match expected algorithm EdDSA/);
+  });
+});
