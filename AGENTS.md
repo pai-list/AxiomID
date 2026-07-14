@@ -284,6 +284,7 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Verify Against `main`, Not Your Working Tree:** Before writing a verdict that a claim is WRONG or CONFIRMED, open the file on `main` (not the working tree, not a PR diff) and confirm the exact line. Your session may be on a feature branch — what you see is not necessarily what was merged. Use `git show main:<path>` to check. A confident agent with a structured verdict table can still be wrong on the one line that matters.
 - **PR Remote Synchronization:** When merging or resolving conflicts locally for remote Pull Requests, explicitly push the resolved branches back to their remote counterparts on GitHub (`git push origin <branch>`) to trigger remote CI checks and update the PR states.
 - **Next.js Build Cache Purging:** When encountering unexpected TypeScript compilation errors (`TS2307`) or missing module declarations referencing `.next/types/` (especially after branch switching or merging large changes), purge the Next.js local cache by running `rm -rf .next` before running `npm run type-check` or `npm run build`.
+- **حظر الدمج المباشر لـ main:** يقتصر العمل البرمجي دائمًا على فروع التطوير الجانبية ويُمنع منعًا باتًا الدفع البرمجي (Push) أو الالتزام (Commit) مباشرة على فرع `main` لضمان مرور الفحوصات التلقائية لكل دمج.
 
 ### 📁 Architecture Map
 

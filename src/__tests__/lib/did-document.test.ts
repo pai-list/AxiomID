@@ -15,9 +15,13 @@ const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 describe("DID Document", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519", {
+      publicKeyEncoding: { type: "spki", format: "pem" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
     mockDerive.mockReturnValue({
-      publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwA...\n-----END PUBLIC KEY-----",
-      privateKey: "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQ...\n-----END PRIVATE KEY-----",
+      publicKey,
+      privateKey,
     });
   });
 
