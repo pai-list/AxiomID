@@ -2,27 +2,12 @@
  * @jest-environment node
  */
 
-jest.mock("@/lib/sovereign-keys", () => ({
-  deriveSovereignAgentKeypair: jest.fn(),
-}));
-
 import crypto from "crypto";
 import { buildDidDocument, DidDocumentSchema, pemToMultibase } from "@/lib/did-document";
-import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
-
-const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 
 describe("DID Document", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519", {
-      publicKeyEncoding: { type: "spki", format: "pem" },
-      privateKeyEncoding: { type: "pkcs8", format: "pem" },
-    });
-    mockDerive.mockReturnValue({
-      publicKey,
-      privateKey,
-    });
   });
 
   it("builds a valid W3C DID Document", () => {
