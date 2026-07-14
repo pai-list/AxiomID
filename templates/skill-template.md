@@ -1,9 +1,9 @@
 ## الغرض — Purpose
 <!-- TODO: Define what this skill does in 1-2 sentences. Required. -->
 
-## مبدأ التوافق — Principle Alignment
+## التوافق الروحي — SOUL Alignment
 <!-- TODO: Describe which SOUL principle this skill serves.
-     Vigilance / Correction / Ledger / Triad / Septet / Compounding.
+     Muraqabah / Tawbah / TrustChain / Tasbih / Sab'iyyah / Barakah.
 
      Required. -->
 

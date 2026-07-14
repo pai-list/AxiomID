@@ -1,7 +1,6 @@
 "use client";
 
 import { SOUL_PRINCIPLES, type SoulPrincipleKey } from "@/lib/soul-principles";
-import { useLanguage } from "@/app/context/language-context";
 
 interface SoulBadgeProps {
   principle: SoulPrincipleKey;
@@ -11,16 +10,13 @@ interface SoulBadgeProps {
 
 /**
  * Color-coded badge showing which SOUL principle a skill serves.
- * Bilingual: uses meta.en or meta.ar based on current language.
  */
 export function SoulBadge({ principle, showLabel = true, size = 'sm' }: SoulBadgeProps) {
-  const { language } = useLanguage();
   const meta = SOUL_PRINCIPLES[principle];
   if (!meta) return null;
 
   const dotSize = size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2';
   const textSize = size === 'sm' ? 'text-[9px]' : 'text-[10px]';
-  const label = language === 'ar' ? meta.ar : meta.en;
 
   return (
     <span
@@ -33,7 +29,7 @@ export function SoulBadge({ principle, showLabel = true, size = 'sm' }: SoulBadg
       />
       {showLabel && (
         <span className={`${textSize} font-mono`} style={{ color: meta.color }}>
-          {label}
+          {meta.en}
         </span>
       )}
     </span>

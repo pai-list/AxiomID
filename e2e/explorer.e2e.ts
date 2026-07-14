@@ -107,10 +107,10 @@ test.describe("Explorer Page", () => {
     await page.goto("/explorer");
 
     await expect(page.locator("text=Identity Tier Distribution")).toBeVisible();
-    await expect(page.locator("text=SOVEREIGN")).toBeVisible();
-    await expect(page.locator("text=VALIDATOR")).toBeVisible();
-    await expect(page.locator("text=CITIZEN")).toBeVisible();
-    await expect(page.locator("text=VISITOR")).toBeVisible();
+    await expect(page.locator("span").filter({ hasText: /^SOVEREIGN$/ })).toBeVisible();
+    await expect(page.locator("span").filter({ hasText: /^VALIDATOR$/ })).toBeVisible();
+    await expect(page.locator("span").filter({ hasText: /^CITIZEN$/ })).toBeVisible();
+    await expect(page.locator("span").filter({ hasText: /^VISITOR$/ })).toBeVisible();
   });
 
   test("loading skeleton shows while data loads", async ({ page }) => {
