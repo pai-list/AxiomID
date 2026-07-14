@@ -314,9 +314,8 @@ describe("CONTRIBUTING.md — Internationalization (i18n)", () => {
   });
 
   it("documents the bilingual helper pattern for custom components", () => {
-    expect(content).toContain(
-      "const t = (en: string, ar: string) => language === 'en' ? en : ar",
-    );
+    expect(content).toContain("getBilingualLabel");
+    expect(content).toContain("language === 'en' ? en[key] : ar[key]");
   });
 
   it("the referenced i18n translation files actually exist", () => {
