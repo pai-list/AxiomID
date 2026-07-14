@@ -106,13 +106,19 @@ export async function PUT(
 
     // Create or reuse tags and link them
     const tagLinks: { skillId: string; tagId: string }[] = [];
-    const validTags = tagNames
-      .map((name: string) => name.trim())
-      .filter(Boolean)
-      .map((name: string) => ({
-        name,
-        slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '')
-      }));
+    const validTags = Array.from(
+      new Map(
+        tagNames
+          .map((name: string) => name.trim())
+          .filter(Boolean)
+          .map((name: string) => {
+            const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            return { name, slug };
+          })
+          .filter((t) => t.slug.length > 0)
+          .map((t) => [t.slug, t])
+      ).values()
+    );
 
     if (validTags.length > 0) {
       const slugs = validTags.map((t: { slug: string }) => t.slug);

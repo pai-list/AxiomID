@@ -165,7 +165,7 @@ describe("GET /api/skills/[slug]/tags — rate limiting", () => {
     mockPrisma.skillTag.createMany = jest.fn();
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" })
     mockPrisma.skillTagRelation.findMany.mockResolvedValue([]);
   });
 
@@ -201,7 +201,7 @@ describe("GET /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("returns tags for a skill", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" })
     const relations = [
       { tag: { id: "t1", name: "AI", slug: "ai", description: "Artificial Intelligence", color: "#3b82f6" } },
       { tag: { id: "t2", name: "Automation", slug: "automation", description: null, color: null } },
@@ -219,7 +219,7 @@ describe("GET /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("returns empty array when skill has no tags", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill" })
     mockPrisma.skillTagRelation.findMany.mockResolvedValue([]);
 
     const req = mockGetRequest("http://localhost/api/skills/test-skill/tags");
@@ -250,7 +250,7 @@ describe("PUT /api/skills/[slug]/tags — rate limiting", () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 });
     mockGetClientIp.mockReturnValue("127.0.0.1");
     mockRequireAuth.mockResolvedValue({ error: null, user: mockUser });
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 0 });
   });
@@ -349,7 +349,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("returns 403 when user is not skill author", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "other-user" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "other-user" })
 
     const req = mockPutRequest({ tags: ["AI"] });
     const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
@@ -360,7 +360,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("replaces tags for a skill", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 2 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 2 });
     mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }, { id: "t2", name: "Automation", slug: "automation" }] as unknown as Awaited<ReturnType<typeof prisma.skillTag.findMany>>);
@@ -377,7 +377,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("creates tags that don't exist", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
     mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "NewTag", slug: "newtag" }] as any);
@@ -395,7 +395,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("reuses existing tags", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
     mockPrisma.skillTag.findMany.mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }] as any);
@@ -409,7 +409,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("generates slug from name via kebab-case", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
     mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "Machine Learning", slug: "machine-learning" }] as any);
@@ -438,10 +438,10 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("skips a whitespace-only tag name and does not create or link it", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
-    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }]);
     mockPrisma.skillTag.createMany.mockResolvedValue({ count: 1 });
 
     const req = mockPutRequest({ tags: ["AI", "   "] });
@@ -454,10 +454,10 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
   });
 
   it("strips non-alphanumeric characters when generating a slug from the tag name", async () => {
-    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" })
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
-    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "C++", slug: "c" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "C++", slug: "c" }]);
     mockPrisma.skillTag.createMany.mockResolvedValue({ count: 1 });
 
     const req = mockPutRequest({ tags: ["C++"] });
@@ -468,5 +468,21 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
       data: [{ name: "C++", slug: "c" }],
       skipDuplicates: true
     });
+  });
+
+  it("ensures tags have non-empty unique slugs (ignores whitespace, symbols, and duplicates)", async () => {
+    mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" });
+    mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 1 });
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }]);
+    mockPrisma.skillTag.createMany.mockResolvedValue({ count: 1 });
+
+    const req = mockPutRequest({ tags: ["AI", "   ", "!!!", "A.I."] });
+    const res = await PUT_SKILL_TAGS(req, { params: Promise.resolve({ slug: "test-skill" }) });
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.tagCount).toBe(1);
+    expect(mockPrisma.skillTag.createMany).toHaveBeenCalledTimes(1);
   });
 });
