@@ -10,6 +10,7 @@ git clone https://github.com/Moeabdelaziz007/AxiomID.git
 cd AxiomID
 cp .env.example .env.local
 npm install
+npx prisma generate
 npm run dev
 ```
 
