@@ -1,13 +1,13 @@
 <div align="center">
-  <img src="./public/axiomid-logo.svg" alt="AxiomID" width="720" />
+  <img src="./public/axiomid-banner-v2.jpg" alt="AxiomID Banner: Human Sovereign and AI Agent" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 </div>
 
 <h1 align="center">
-  AxiomID is the Human Authorization Protocol for AI agents and humans.
+  AxiomID: The Human Authorization Protocol for AI Agents and Humans
 </h1>
 
 <p align="center">
-  <em>Pi Browser auth, sovereign passports, verifiable identity, and agent governance in one experience.</em>
+  <em>Sovereign credentials, autonomous wallets, and dual-identity governance for the agentic web.</em>
 </p>
 
 <p align="center">
@@ -39,6 +39,7 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 - **Spend Request** — agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
 - **TrustChain** — append-only hash chain for all agent actions
 - **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
+- **Dual-Identity Governance** — explicit separation and cooperation of Human Sovereign and AI Agent nodes, verified via the protocol
 
 ## Routes
 
@@ -105,7 +106,7 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
 | **State/Cache** | TanStack Query v5 (client-side cache) |
-| **CI/CD** | GitHub Actions → Vercel · 3300+ tests |
+| **CI/CD** | GitHub Actions → Vercel · 3270+ tests |
 
 ## Quick start
 
@@ -145,7 +146,7 @@ npx wrangler deploy
 ```bash
 npm run lint       # 0 errors, 0 warnings
 npm run type-check # type check
-npm test           # 3300+ tests (some page tests need QueryClientProvider wrapper)
+npm test           # 3270+ tests (some page tests need QueryClientProvider wrapper)
 ```
 
 ## Project structure

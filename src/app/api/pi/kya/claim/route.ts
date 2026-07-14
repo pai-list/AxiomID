@@ -51,6 +51,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    if (updated.did) {
+      await prisma.userAgent.updateMany({
+        where: { userId: updated.id },
+        data: { did: `${updated.did}:agent` },
+      });
+    }
+
     return apiSuccess({
       userId: updated.id,
       walletAddress: updated.walletAddress,

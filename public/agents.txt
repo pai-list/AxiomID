@@ -21,6 +21,7 @@
 - Skills Marketplace: Buy and sell AI agent skills (Pi Coin payments)
 - Agent Signing: Cryptographic payload signing via sovereign keys
 - Verifiable Credentials: W3C VC issuance and verification
+- Dual-Identity Governance: Clean separation of Human Sovereign and AI Agent nodes
 
 ## Public APIs (currently deployed)
 - /api/did-document — W3C DID resolution (public, no auth)
@@ -31,6 +32,7 @@
 - /api/route.ts — API root discovery (JSON catalog)
 - /api/skills — Skills marketplace search
 - /api/passport/[slug] — Public passport viewer
+- /api/spend-request — Agentic spend request stream
 
 ## Agentic Endpoints
 - OpenAPI: /api (JSON endpoint catalog)

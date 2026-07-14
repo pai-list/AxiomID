@@ -19,6 +19,13 @@ jest.mock("@/lib/claim-ceremony", () => ({
 jest.mock("@/lib/ip", () => ({
   getClientIp: jest.fn(() => "127.0.0.1"),
 }));
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+  },
+}));
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/agent/identity/route";
@@ -26,11 +33,13 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 import { createIdentityAssertion, verifyPiTokenWithJwks } from "@/lib/auth-tokens";
 import { createClaimToken } from "@/lib/claim-ceremony";
 import { logger } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockCreateAssertion = createIdentityAssertion as jest.Mock;
 const mockVerifyPiToken = verifyPiTokenWithJwks as jest.Mock;
 const mockCreateClaim = createClaimToken as jest.Mock;
+const mockFindUnique = prisma.user.findUnique as jest.Mock;
 
 function mockPostRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/agent/identity", {
@@ -44,6 +53,7 @@ describe("POST /api/agent/identity", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 });
+    mockFindUnique.mockResolvedValue(null);
   });
 
   it("returns identity_assertion for valid ID-JAG", async () => {
@@ -123,6 +133,7 @@ describe("POST /api/agent/identity", () => {
 
   it("identity_assertion response includes did field", async () => {
     mockVerifyPiToken.mockResolvedValue({ sub: "user-12345" });
+    mockFindUnique.mockResolvedValue({ did: "did:axiom:user:6559bcdd2fcf9026" });
     mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
     const req = mockPostRequest({ type: "identity_assertion", assertion: "valid-pi-jwt" });
@@ -131,7 +142,7 @@ describe("POST /api/agent/identity", () => {
 
     expect(data.did).toBeDefined();
     expect(typeof data.did).toBe("string");
-    expect(data.did).toBe("did:axiom:axiomid.app:pi:user-12345");
+    expect(data.did).toBe("did:axiom:user:6559bcdd2fcf9026");
   });
 
   it("anonymous response includes verification_uri in claim", async () => {
@@ -285,14 +296,15 @@ describe("POST /api/agent/identity - Pi JWT verification", () => {
 
   it("builds the did from the Pi token's sub claim and passes it to createIdentityAssertion", async () => {
     mockVerifyPiToken.mockResolvedValue({ sub: "pi-user-999" });
+    mockFindUnique.mockResolvedValue({ did: "did:axiom:user:6559bcdd2fcf9026" });
     mockCreateAssertion.mockResolvedValue("mock-jwt-token");
 
     const req = mockPostRequest({ type: "identity_assertion", assertion: "valid-pi-jwt" });
     const res = await POST(req);
     const data = await res.json();
 
-    expect(data.did).toBe("did:axiom:axiomid.app:pi:pi-user-999");
-    expect(mockCreateAssertion).toHaveBeenCalledWith("did:axiom:axiomid.app:pi:pi-user-999", ["api.read", "api.write"]);
+    expect(data.did).toBe("did:axiom:user:6559bcdd2fcf9026");
+    expect(mockCreateAssertion).toHaveBeenCalledWith("did:axiom:user:6559bcdd2fcf9026", ["api.read", "api.write"]);
   });
 
   it("logs an error and does not fall back when Pi JWKS verification fails in production", async () => {

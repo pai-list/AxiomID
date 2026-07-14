@@ -417,11 +417,6 @@ describe("MarketplacePage — handleInstall wallet flow (PR change)", () => {
         }),
       })
       .mockResolvedValueOnce({
-        // stats endpoint returns empty
-        ok: true,
-        json: async () => ({ totalExecutions: 0, successRate: 0, avgDurationMs: null }),
-      })
-      .mockResolvedValueOnce({
         // install request fails
         ok: false,
         status: 403,
