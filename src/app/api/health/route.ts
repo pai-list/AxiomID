@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     const anyOffline = services.some((s) => s.status === "OFFLINE");
 
     const responsePayload: HealthResponse = {
-      status: allOnline ? "healthy" : anyOffline ? "degraded" : "degraded",
+      status: allOnline ? "healthy" : "degraded",
       uptime: 100,
       services,
       timestamp: new Date().toISOString(),
