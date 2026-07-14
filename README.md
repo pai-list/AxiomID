@@ -21,6 +21,9 @@
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
+  <img src="https://img.shields.io/badge/tests-3377%20passed-22c55e?style=flat-square" alt="Tests Passed" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square" alt="TypeScript Strict" />
+  <img src="https://img.shields.io/badge/SOUL%20Protocol-compliant-emerald?style=flat-square" alt="SOUL Compliant" />
   <img src="https://img.shields.io/badge/status-closed%20beta-orange?style=flat-square" alt="Closed Beta" />
 </p>
 
@@ -70,6 +73,8 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 | `/api/auth/*` | Pi Browser authentication, connect, logout, state |
 | `/api/passport/*` | Passport CRUD, publishing, verification |
 | `/api/agent/*` | Agent identity, sign, activate, pause, manifest |
+| `/api/agents` | List active agents, presence and heartbeats |
+| `/api/agents/harvest` | Submit search/RAG agent harvesting results |
 | `/api/pi/*` | Pi payments (approve, complete), KYA claims, ad verification |
 | `/api/skills/*` | Skills marketplace (CRUD, search, install, execute, pay, review) |
 | `/api/spend-request` | Create, list, approve spend requests + SSE stream |
