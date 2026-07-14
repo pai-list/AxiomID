@@ -8,15 +8,6 @@ import { calculateTrustScore } from '@/lib/trust';
 
 /**
  * Handle GET /status requests and return network metadata and aggregate statistics.
- *
- * Performs client IP-based rate limiting, queries counts and aggregates from the database,
- * and returns a standardized API success payload with network info and stats.
- *
- * @param request - The incoming NextRequest used to determine the client IP for rate limiting
- * @returns An API response object:
- * - On success: a payload containing `network`, `version`, `timestamp`, and `stats` (registeredUsers, totalAgents, activeAgents, totalPayments, totalXpEarned)
- * - On rate limit exceeded: an error response with code `RATE_LIMITED`
- * - On database or internal failure: an error response with code `INTERNAL_ERROR`
  */
 export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
@@ -26,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [userCount, agentCount, activeAgentCount, paymentCount, xpSum, activeUsersCount, verifiedUsersCount, usersSample] = await Promise.all([
+    const results = await Promise.allSettled([
       prisma.user.count(),
       prisma.userAgent.count(),
       prisma.userAgent.count({ where: { status: 'ACTIVE' } }),
@@ -51,10 +42,29 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
+    const getValue = <T>(index: number, fallback: T): T => {
+      const res = results[index];
+      return res.status === 'fulfilled' ? (res.value as T) : fallback;
+    };
+
+    const userCount = getValue(0, 0);
+    const agentCount = getValue(1, 0);
+    const activeAgentCount = getValue(2, 0);
+    const paymentCount = getValue(3, 0);
+    const xpSum = getValue(4, { _sum: { xp: 0 } });
+    const activeUsersCount = getValue(5, 0);
+    const verifiedUsersCount = getValue(6, 0);
+    const usersSample = getValue(7, [] as { xp: number; stamps: { id: string }[] }[]);
+
     let totalTrustScore = 0;
     usersSample.forEach(u => {
-      totalTrustScore += calculateTrustScore(u.xp, u.stamps.length);
+      try {
+        totalTrustScore += calculateTrustScore(u.xp || 0, u.stamps?.length || 0);
+      } catch {
+        // Ignore individual errors in sample
+      }
     });
+
     const averageTrustScore = usersSample.length > 0 ? Math.round(totalTrustScore / usersSample.length) : 0;
     const verificationRate = userCount > 0 ? Math.round((verifiedUsersCount / userCount) * 100) : 0;
 
@@ -67,7 +77,7 @@ export async function GET(request: NextRequest) {
         totalAgents: agentCount,
         activeAgents: activeAgentCount,
         totalPayments: paymentCount,
-        totalXpEarned: xpSum._sum.xp ?? 0,
+        totalXpEarned: xpSum?._sum?.xp ?? 0,
         activeUsers: Math.max(1, activeUsersCount),
         averageTrustScore,
         verificationRate,

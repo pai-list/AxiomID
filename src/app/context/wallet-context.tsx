@@ -5,6 +5,8 @@ import { getLevelProgress, getNextLevelXP } from "@/lib/tiers";
 import { checkPiBrowser, determineSandboxMode } from "@/lib/pi-sdk";
 import { logger } from "@/lib/logger";
 import { User, getStoredWallet, getLocalStorageItem, removeLocalStorageItem, mapApiUser } from "./wallet-types";
+import { setSovereignBadge } from "@/lib/pwa-badging";
+import { enableDiagnostics } from "@/lib/diagnostics/interceptor";
 
 export type { User } from "./wallet-types";
 import { useWalletAuth } from "./use-wallet-auth";
@@ -47,7 +49,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return !!(getStoredWallet() || getLocalStorageItem("pi_access_token"));
   });
   const [error, setError] = useState<string | null>(null);
-  const [isPiBrowser] = useState(() => checkPiBrowser());
+  // ponytail: isPiBrowser must be reactive — in Pi Browser, window.Pi loads
+  // asynchronously after React mounts. A one-time useState check sets it to
+  // false permanently, blocking the entire connect flow.
+  const [isPiBrowser, setIsPiBrowser] = useState(() => checkPiBrowser());
   const [piAccessToken, setPiAccessToken] = useState<string | null>(() => {
     return getLocalStorageItem("pi_access_token");
   });
@@ -56,9 +61,42 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const nextXP = useMemo(() => user ? getNextLevelXP(user.tier) : null, [user]);
   const [walletLogs, setWalletLogs] = useState<string[]>([]);
 
+  // ponytail: Poll for Pi SDK availability after mount. In Pi Browser, the SDK
+  // script loads asynchronously — window.Pi isn't available on first render.
+  // Without this, isPiBrowser stays false and the connect flow is blocked.
+  // Consolidated: this effect ONLY updates isPiBrowser. The initRef effect
+  // below handles SDK init + authentication on detection.
   useEffect(() => {
+    if (isPiBrowser) return;
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (checkPiBrowser()) {
+        setIsPiBrowser(true);
+        clearInterval(interval);
+      } else if (attempts > 25) {
+        clearInterval(interval);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [isPiBrowser]);
+
+  useEffect(() => {
+    // 1. Compare current user with previous state (stored in ref)
+    if (user && userRef.current) {
+      const prev = userRef.current;
+      if (user.xp > prev.xp) {
+        setSovereignBadge('XP_GAIN', 0);
+      }
+      if (user.stamps.length > prev.stamps.length) {
+        setSovereignBadge('NEW_STAMP', 0);
+      }
+    }
+
+    // 2. Update ref for next render
     userRef.current = user;
   }, [user]);
+
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -102,6 +140,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         window.addEventListener("load", registerSW);
       }
     }
+
+    // Enable diagnostics for error capture (Step 10 debugging)
+    enableDiagnostics();
 
     return () => window.removeEventListener("unhandledrejection", handleUnhandledRejection);
   }, []);
@@ -209,9 +250,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (checkPiBrowser()) {
         clearInterval(checkInterval);
         checkInterval = undefined;
+        setIsPiBrowser(true);
         initPiSdk();
         authenticate();
-      } else if (checkCount > 15) {
+      } else if (checkCount > 25) {
         clearInterval(checkInterval);
         checkInterval = undefined;
       }

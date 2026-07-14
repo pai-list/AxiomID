@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useLanguage } from "../context/language-context";
 import type { Route } from "next";
-import { Fingerprint, Store, Settings, Cpu } from "lucide-react";
+import { Fingerprint, Settings } from "lucide-react";
 import { Header } from "@/components/dashboard/Header";
 
 interface NavItem {
@@ -17,8 +18,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", labelKey: "dashboard_title", icon: Fingerprint },
-  { href: "/dashboard/marketplace", labelKey: "marketplace", icon: Store },
-  { href: "/dashboard/sandbox", labelKey: "sandbox", icon: Cpu },
   { href: "/dashboard/settings", labelKey: "settings_page_title", icon: Settings },
 ];
 
@@ -38,9 +37,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <Header pathname={pathname} navItems={NAV_ITEMS} />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-24 animate-in">
         <ErrorBoundary>
-          {children}
+          <Suspense fallback={
+            <div className="animate-pulse space-y-4 p-8">
+              <div className="h-6 bg-white/5 rounded w-1/3" />
+              <div className="h-4 bg-white/5 rounded w-2/3" />
+              <div className="h-32 bg-white/5 rounded w-full" />
+            </div>
+          }>
+            {children}
+          </Suspense>
         </ErrorBoundary>
       </div>
 

@@ -49,7 +49,7 @@ describe("manifest()", () => {
   });
 
   it("has background_color set", () => {
-    expect(result.background_color).toBe("#09090b");
+    expect(result.background_color).toBe("#10131a");
   });
 
   it("has theme_color set", () => {

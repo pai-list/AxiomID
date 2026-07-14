@@ -11,7 +11,7 @@ jest.mock('@/lib/auth-middleware', () => ({
       walletAddress: 'pi:mockuser',
       piUid: 'mock-pi-uid',
       piUsername: 'mockuser',
-      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+      did: 'did:axiom:pi:mock-pi-uid',
       xp: 0,
       tier: 'Beginner',
     },
@@ -145,13 +145,13 @@ describe('POST /api/pi/kya/claim', () => {
       walletAddress: 'pi:nameduser',
       piUid: 'mock-pi-uid',
       piUsername: 'oldname',
-      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+      did: 'did:axiom:pi:mock-pi-uid',
     } as any);
     mockPrisma.user.update.mockResolvedValue({
       id: 'named-user',
       walletAddress: 'pi:nameduser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:axiomid.app:pi:mock-pi-uid',
+      did: 'did:axiom:pi:mock-pi-uid',
     } as any);
 
     const req = mockPostRequest({});
@@ -177,7 +177,7 @@ describe('POST /api/pi/kya/claim', () => {
       id: 'existing-user-no-did',
       walletAddress: 'pi:existinguser',
       kycStatus: 'PENDING',
-      did: 'did:axiom:axiomid.app:pi:mockuser',
+      did: 'did:axiom:pi:mockuser',
     } as any);
 
     const req = mockPostRequest({});
@@ -187,7 +187,7 @@ describe('POST /api/pi/kya/claim', () => {
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          did: 'did:axiom:axiomid.app:pi:mockuser',
+          did: 'did:axiom:pi:mockuser',
           piUsername: 'mockuser', // From auth, not body
         }),
       })

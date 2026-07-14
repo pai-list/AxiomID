@@ -57,8 +57,10 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', parsed.error.issues[0].message, parsed.error.issues);
   }
 
-  const { accessToken, uid, username } = parsed.data;
+  const { accessToken, uid: providedUid, username: clientUsername } = parsed.data;
   let verifiedStellarAddress: string | null = null;
+  let verifiedUsername = '';
+  let verifiedUid = providedUid ?? '';
 
   // ponytail: Rely strictly on NODE_ENV to prevent auth bypass via Host header injection
   const isLocalDev = process.env.NODE_ENV !== "production";
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
     const sandboxToken = getSandboxDevToken();
     if (isLocalDev && sandboxToken && accessToken === sandboxToken) {
       verifiedStellarAddress = "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2";
+      verifiedUsername = clientUsername ?? '';
     } else {
       // Production: always verify against Pi API.
       // 10s timeout matches verifyKycServerSide (src/lib/pi-kyc.ts) and the
@@ -86,12 +89,28 @@ export async function POST(request: NextRequest) {
       }
 
       const piUser = (await piResponse.json()) as PiApiUser;
-      if (piUser.uid !== uid) {
-        logger.error(`[PI-AUTH] UID mismatch: token uid=${uid}, pi api uid=${piUser.uid}`);
+      verifiedUid = piUser.uid || verifiedUid;
+
+      if (providedUid && piUser.uid && piUser.uid !== providedUid) {
+        logger.error(`[PI-AUTH] UID mismatch: token uid=${providedUid}, pi api uid=${piUser.uid}`);
         return apiError('PI_AUTH_FAILED', 'Token UID mismatch');
       }
 
+      if (!verifiedUid) {
+        logger.error('[PI-AUTH] Pi API did not return a user id');
+        return apiError('PI_AUTH_FAILED', 'Pi API did not return a user id');
+      }
+
       verifiedStellarAddress = getVerifiedStellarAddress(piUser);
+      if (!isLocalDev) {
+        if (!piUser.username) {
+          logger.error('[PI-AUTH] Pi API did not return a verified username');
+          return apiError('PI_AUTH_FAILED', 'Could not verify Pi username with the Pi Platform API.');
+        }
+        verifiedUsername = piUser.username;
+      } else {
+        verifiedUsername = clientUsername ?? '';
+      }
     }
   } catch (fetchError) {
     const message = fetchError instanceof Error ? fetchError.message : String(fetchError);
@@ -104,12 +123,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const existingUser = await prisma.user.findUnique({
-      where: { piUid: uid },
+      where: { piUid: verifiedUid },
       include: { agent: true },
     });
 
-    const walletAddress = `pi:${uid}`;
-    const piDid = createPiDid(username);
+    const walletAddress = `pi:${verifiedUid}`;
+    const piDid = createPiDid(verifiedUsername || verifiedUid || 'pi-user');
 
     let user;
     if (existingUser) {
@@ -120,7 +139,7 @@ export async function POST(request: NextRequest) {
       user = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
-          piUsername: username,
+          piUsername: verifiedUsername,
           walletAddress,
           stellarAddress: verifiedStellarAddress,
           piAccessToken: encryptToken(accessToken),
@@ -134,8 +153,8 @@ export async function POST(request: NextRequest) {
         data: {
           walletAddress,
           stellarAddress: verifiedStellarAddress,
-          piUid: uid,
-          piUsername: username,
+          piUid: verifiedUid,
+          piUsername: verifiedUsername,
           piAccessToken: encryptToken(accessToken),
           did: piDid,
           didMethod: 'did:axiom',

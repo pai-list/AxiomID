@@ -186,7 +186,7 @@ export async function requireAuth(request: NextRequest): Promise<
       // Fallback: Verify Pi token via online API
       const userAgent = request.headers.get("user-agent") || "";
       const isPiBrowserReq = /Pi Browser|minepi|PiApp/i.test(userAgent);
-      
+
       const isSandboxOrDev = !isProduction &&
         process.env.SANDBOX_AUTH_BYPASS === "true" &&
         (request.nextUrl?.hostname === "localhost" ||

@@ -1,0 +1,95 @@
+# AxiomID Auto-Labeler — Path-Based Area Labels
+# Used by .github/workflows/label.yml with actions/labeler@v4
+#
+# Each key is a label name, each value is a glob pattern.
+# First match wins per category.
+
+# ── Area Labels ─────────────────────────────────────
+area:frontend:
+  - "src/components/**/*.tsx"
+  - "src/components/**/*.ts"
+  - "src/app/**/page.tsx"
+  - "src/app/**/layout.tsx"
+  - "src/app/globals.css"
+  - "src/app/favicon.ico"
+  - "public/**"
+  - "tailwind.config.*"
+  - "postcss.config.*"
+
+area:backend:
+  - "src/app/api/**"
+  - "src/lib/**"
+  - "prisma/**"
+  - "backend/**"
+
+area:auth:
+  - "src/lib/auth*"
+  - "src/lib/pi-sdk*"
+  - "src/lib/oauth*"
+  - "src/app/api/auth/**"
+  - "src/app/api/pi/**"
+  - "src/lib/auth-middleware*"
+  - "src/middleware.ts"
+
+area:trust-engine:
+  - "src/lib/trust*"
+  - "src/lib/tiers*"
+  - "src/lib/trust-chain*"
+  - "src/lib/soul/**"
+  - "src/lib/stamp*"
+  - "src/lib/semantic*"
+
+area:marketplace:
+  - "src/app/dashboard/marketplace/**"
+  - "src/app/api/skills/**"
+  - "skills/**"
+  - "src/components/dashboard/marketplace/**"
+
+area:testing:
+  - "src/__tests__/**"
+  - "src/test-helpers/**"
+  - "e2e/**"
+  - "playwright.config.*"
+  - "jest.config.*"
+  - "jest.setup.*"
+
+area:docs:
+  - "docs/**"
+  - "*.md"
+  - "handoffs/**"
+  - ".github/**/*.md"
+
+area:deps:
+  - "package.json"
+  - "package-lock.json"
+  - "pnpm-lock.yaml"
+  - "yarn.lock"
+  - "uv.lock"
+  - "pyproject.toml"
+  - "requirements*.txt"
+
+area:i18n:
+  - "src/lib/i18n*"
+  - "**/locales/**"
+  - "**/messages/**"
+  - "**/*.json"
+
+# ── Type Labels (inferred from path patterns) ───────
+ci/cd:
+  - ".github/workflows/**"
+  - ".github/labeler.yml"
+  - ".github/labels.yml"
+  - ".husky/**"
+  - "scripts/**"
+  - "renovate.json"
+  - ".github/dependabot.yml"
+
+security:
+  - "src/lib/auth*"
+  - "src/middleware.ts"
+  - "src/lib/errors.ts"
+  - "src/lib/rate-limiter*"
+  - "src/lib/revocation*"
+  - ".github/SECURITY.md"
+  - "SECURITY.md"
+  - "SECURITY_AUDIT.md"

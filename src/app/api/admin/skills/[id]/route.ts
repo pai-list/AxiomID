@@ -58,23 +58,26 @@ export async function POST(
 
     const newStatus = action === "approve" ? "APPROVED" : "REJECTED";
 
-    const moderation = await prisma.skillModeration.update({
-      where: { id: moderationId },
-      data: {
-        status: newStatus,
-        reviewerId: user.id,
-        reason: reason ?? null,
-        notes: notes ?? null,
-      },
-    });
+    const moderation = await prisma.$transaction(async (tx) => {
+      const updated = await tx.skillModeration.update({
+        where: { id: moderationId },
+        data: {
+          status: newStatus,
+          reviewerId: user.id,
+          reason: reason ?? null,
+          notes: notes ?? null,
+        },
+      });
 
-    // Update the skill's publish status accordingly
-    await prisma.skill.update({
-      where: { id: existing.skillId },
-      data: {
-        status: action === "approve" ? "PUBLISHED" : "DRAFT",
-        isPublished: action === "approve",
-      },
+      await tx.skill.update({
+        where: { id: existing.skillId },
+        data: {
+          status: action === "approve" ? "PUBLISHED" : "DRAFT",
+          isPublished: action === "approve",
+        },
+      });
+
+      return updated;
     });
 
     return apiSuccess({ moderation });

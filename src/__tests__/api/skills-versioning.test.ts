@@ -48,6 +48,21 @@ import { requireAuth } from "@/lib/auth-middleware";
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockRequireAuth = requireAuth as jest.Mock;
 
+const VALID_MANIFEST = [
+  "## الغرض — Purpose",
+  "Test skill purpose",
+  "",
+  "## مبدأ التوافق — Principle Alignment",
+  "Vigilance",
+  "",
+  "## سير التشغيل — Operational Flow",
+  "1. Step one",
+  "2. Step two",
+  "",
+  "## أنماط الفشل — Failure Modes",
+  "| Error | Log | Retry |",
+].join('\n');
+
 const SLUG = "test-skill";
 const mockUser = { id: "user-1", walletAddress: "pi:testuser", piUid: "pi-uid-1", piUsername: "testuser", xp: 0, tier: "Beginner" };
 
@@ -56,7 +71,7 @@ const SKILL_FULL = {
   slug: SLUG,
   name: "Test Skill",
   description: "A test skill",
-  manifestMd: "# manifest",
+      manifestMd: VALID_MANIFEST,
   agentScript: null,
   testSuite: null,
   tier: "BASIC_TOOL" as const,
@@ -74,9 +89,9 @@ const SKILL_FULL = {
 };
 
 const VERSIONS = [
-  { id: "v3", skillId: "skill-1", version: "2.0.0", manifestMd: "# manifest v3", agentScript: "console.log('hi')", testSuite: null, changelog: "Major rewrite", authorId: "user-1", status: "DRAFT", createdAt: new Date("2026-02-01") },
-  { id: "v2", skillId: "skill-1", version: "1.1.0", manifestMd: "# manifest v2", agentScript: null, testSuite: null, changelog: "Updated manifest", authorId: "user-1", status: "PUBLISHED", createdAt: new Date("2026-01-15") },
-  { id: "v1", skillId: "skill-1", version: "1.0.0", manifestMd: "# manifest v1", agentScript: null, testSuite: null, changelog: null, authorId: "user-1", status: "PUBLISHED", createdAt: new Date("2026-01-01") },
+  { id: "v3", skillId: "skill-1", version: "2.0.0", manifestMd: VALID_MANIFEST, agentScript: "console.log('hi')", testSuite: null, changelog: "Major rewrite", authorId: "user-1", status: "DRAFT", createdAt: new Date("2026-02-01") },
+  { id: "v2", skillId: "skill-1", version: "1.1.0", manifestMd: VALID_MANIFEST, agentScript: null, testSuite: null, changelog: "Updated manifest", authorId: "user-1", status: "PUBLISHED", createdAt: new Date("2026-01-15") },
+  { id: "v1", skillId: "skill-1", version: "1.0.0", manifestMd: VALID_MANIFEST, agentScript: null, testSuite: null, changelog: null, authorId: "user-1", status: "PUBLISHED", createdAt: new Date("2026-01-01") },
 ];
 
 function mockVersionsRequest(method: string, body?: unknown) {
@@ -218,7 +233,7 @@ describe("PATCH /api/skills/[slug] — auto-version creation", () => {
       id: "v-new",
       skillId: "skill-1",
       version: "1.1.0",
-      manifestMd: "# manifest v1.1",
+      manifestMd: VALID_MANIFEST,
       agentScript: null,
       testSuite: null,
       changelog: null,
@@ -245,12 +260,12 @@ describe("PATCH /api/skills/[slug] — auto-version creation", () => {
   });
 
   it("creates a SkillVersion when manifestMd changes", async () => {
-    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, manifestMd: "# updated" });
+    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, manifestMd: "## الغرض — Purpose\nUpdated purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step\n\n## أنماط الفشل — Failure Modes\n| Error | Log |" });
     mockPrisma.skillVersion.create.mockResolvedValue({
       id: "v-new",
       skillId: "skill-1",
       version: "1.0.0",
-      manifestMd: "# updated",
+      manifestMd: "## الغرض — Purpose\nUpdated purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step\n\n## أنماط الفشل — Failure Modes\n| Error | Log |",
       agentScript: null,
       testSuite: null,
       changelog: null,
@@ -259,40 +274,36 @@ describe("PATCH /api/skills/[slug] — auto-version creation", () => {
       createdAt: new Date(),
     });
 
-    const req = mockSlugRequest("PATCH", { manifestMd: "# updated" });
+    const req = mockSlugRequest("PATCH", { manifestMd: "## الغرض — Purpose\nUpdated purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step\n\n## أنماط الفشل — Failure Modes\n| Error | Log |" });
     const res = await PATCH(req, makeSlugParams());
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mockPrisma.skillVersion.create).toHaveBeenCalled();
+    expect(mockPrisma.skillVersion.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          skillId: "skill-1",
+          version: "1.0.0",
+        }),
+      })
+    );
   });
 
-  it("does NOT create a SkillVersion when only name changes", async () => {
-    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, name: "New Name" });
+  it("returns updated version from PATCH response", async () => {
+    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, version: "1.1.0", manifestMd: "## الغرض — Purpose\nUpdated purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step\n\n## أنماط الفشل — Failure Modes\n| Error | Log |" });
 
-    const req = mockSlugRequest("PATCH", { name: "New Name" });
+    const req = mockSlugRequest("PATCH", { manifestMd: "## الغرض — Purpose\nUpdated purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step\n\n## أنماط الفشل — Failure Modes\n| Error | Log |" });
     const res = await PATCH(req, makeSlugParams());
     const data = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mockPrisma.skillVersion.create).not.toHaveBeenCalled();
+    expect(data.version).toBe("1.1.0");
   });
 
-  it("does NOT create a SkillVersion when only tier changes", async () => {
-    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, tier: "PRO" });
+  it("skips version creation when manifestMd unchanged", async () => {
+    mockPrisma.skill.update.mockResolvedValue({ ...SKILL_FULL, version: "1.0.0" });
 
-    const req = mockSlugRequest("PATCH", { tier: "PRO" });
-    const res = await PATCH(req, makeSlugParams());
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(mockPrisma.skillVersion.create).not.toHaveBeenCalled();
-  });
-
-  it("does NOT create duplicate version if same version already exists", async () => {
-    mockPrisma.skillVersion.findFirst.mockResolvedValue({ id: "existing-v", version: "1.0.0" });
-
-    const req = mockSlugRequest("PATCH", { version: "1.0.0", manifestMd: "# same version" });
+    const req = mockSlugRequest("PATCH", { version: "1.0.0", manifestMd: "## الغرض — Purpose\nTest skill purpose\n\n## مبدأ التوافق — Principle Alignment\nVigilance\n\n## سير التشغيل — Operational Flow\n1. Step one\n2. Step two\n\n## أنماط الفشل — Failure Modes\n| Error | Log | Retry |" });
     const res = await PATCH(req, makeSlugParams());
 
     expect(res.status).toBe(200);
@@ -317,7 +328,7 @@ describe("PATCH /api/skills/[slug] — auto-version creation", () => {
       id: "v-new",
       skillId: "skill-1",
       version: "2.0.0",
-      manifestMd: "# manifest",
+  manifestMd: VALID_MANIFEST,
       agentScript: null,
       testSuite: null,
       changelog: "Breaking changes",

@@ -48,6 +48,21 @@ jest.mock("@/lib/ip", () => ({
   getClientIp: jest.fn(() => "127.0.0.1"),
 }));
 
+const VALID_MANIFEST = [
+  "## الغرض — Purpose",
+  "Test skill purpose",
+  "",
+  "## مبدأ التوافق — Principle Alignment",
+  "Vigilance",
+  "",
+  "## سير التشغيل — Operational Flow",
+  "1. Step one",
+  "2. Step two",
+  "",
+  "## أنماط الفشل — Failure Modes",
+  "| Error | Log | Retry |",
+].join('\n');
+
 jest.mock("@/lib/logger", () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
 }));
@@ -160,6 +175,36 @@ describe("GET /api/skills — query validation", () => {
       })
     );
   });
+
+  it("filters by soulPrinciple when provided (PR change)", async () => {
+    const req = mockGetRequest("http://localhost/api/skills?soulPrinciple=TAWBAH");
+    await GET(req);
+
+    expect(mockPrisma.skill.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ soulPrinciple: "TAWBAH" }),
+      })
+    );
+  });
+
+  it("does not include soulPrinciple in the where clause when omitted (PR change)", async () => {
+    const req = mockGetRequest("http://localhost/api/skills");
+    await GET(req);
+
+    const callArgs = mockPrisma.skill.findMany.mock.calls[0][0] as { where: Record<string, unknown> };
+    expect(callArgs.where).not.toHaveProperty("soulPrinciple");
+  });
+
+  it("combines soulPrinciple with tier filter", async () => {
+    const req = mockGetRequest("http://localhost/api/skills?tier=PRO&soulPrinciple=BARAKAH");
+    await GET(req);
+
+    expect(mockPrisma.skill.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ tier: "PRO", soulPrinciple: "BARAKAH" }),
+      })
+    );
+  });
 });
 
 describe("GET /api/skills — success responses", () => {
@@ -234,7 +279,7 @@ describe("POST /api/skills — rate limiting", () => {
   it("returns 429 when rate limit exceeded", async () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
 
-    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: "# manifest" });
+    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: VALID_MANIFEST });
     const res = await POST(req);
     const data = await res.json();
 
@@ -255,7 +300,7 @@ describe("POST /api/skills — rate limiting", () => {
     mockPrisma.skill.findUnique.mockResolvedValue(null);
     mockPrisma.skill.create.mockResolvedValue({ id: "s1", slug: "test", name: "Test", tier: "BASIC_TOOL", version: "1.0.0", status: "PUBLISHED" } as any);
 
-    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: "# manifest" });
+    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: VALID_MANIFEST });
     await POST(req);
 
     expect(mockCheckRateLimit).toHaveBeenCalledWith(
@@ -277,7 +322,7 @@ describe("POST /api/skills — auth and validation", () => {
     const { apiError } = jest.requireActual("@/lib/errors") as any;
     mockRequireAuth.mockResolvedValue({ error: apiError("UNAUTHORIZED", "Unauthorized"), user: null });
 
-    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: "# m" });
+    const req = mockPostRequest({ slug: "test", name: "Test", manifestMd: VALID_MANIFEST });
     const res = await POST(req);
     const data = await res.json();
 
@@ -327,7 +372,7 @@ describe("POST /api/skills — business logic", () => {
   it("returns 409 when slug already exists", async () => {
     mockPrisma.skill.findUnique.mockResolvedValue({ id: "existing", slug: "taken" } as any);
 
-    const req = mockPostRequest({ slug: "taken", name: "Test", manifestMd: "# m" });
+    const req = mockPostRequest({ slug: "taken", name: "Test", manifestMd: VALID_MANIFEST });
     const res = await POST(req);
     const data = await res.json();
 
@@ -341,7 +386,7 @@ describe("POST /api/skills — business logic", () => {
       id: "s1", slug: "new-skill", name: "New Skill", tier: "BASIC_TOOL", version: "1.0.0", status: "PUBLISHED",
     });
 
-    const req = mockPostRequest({ slug: "new-skill", name: "New Skill", manifestMd: "# manifest" });
+    const req = mockPostRequest({ slug: "new-skill", name: "New Skill", manifestMd: VALID_MANIFEST });
     const res = await POST(req);
     const data = await res.json();
 
@@ -369,7 +414,7 @@ describe("POST /api/skills — business logic", () => {
     const req = mockPostRequest({
       slug: "pro-skill",
       name: "Pro Skill",
-      manifestMd: "# manifest",
+      manifestMd: VALID_MANIFEST,
       tier: "PRO",
       pricePi: 10,
       version: "2.0.0",
@@ -393,7 +438,7 @@ describe("POST /api/skills — business logic", () => {
     mockPrisma.skill.findUnique.mockResolvedValue(null);
     mockTxSkillCreate.mockRejectedValue(new Error("DB failure"));
 
-    const req = mockPostRequest({ slug: "fail-skill", name: "Fail", manifestMd: "# m" });
+    const req = mockPostRequest({ slug: "fail-skill", name: "Fail", manifestMd: VALID_MANIFEST });
     const res = await POST(req);
     const data = await res.json();
 

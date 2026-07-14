@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "../context/language-context";
+import { StatusSkeleton } from "@/components/skeletons/StatusSkeleton";
 
 interface ServiceCheck {
   name: string;
@@ -44,55 +46,44 @@ const STATUS_BG: Record<string, string> = {
  */
 export default function StatusPage() {
   const { t } = useLanguage();
-  const [stats, setStats] = useState<NetworkStats | null>(null);
-  const [health, setHealth] = useState<HealthData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
   const [timeSince, setTimeSince] = useState<number>(0);
   const network = process.env.NEXT_PUBLIC_NETWORK || "Testnet";
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["status"],
+    queryFn: async () => {
       const [statusRes, healthRes] = await Promise.all([
         fetch("/api/status"),
         fetch("/api/health"),
       ]);
+      let stats: NetworkStats | null = null;
+      let health: HealthData | null = null;
 
       if (statusRes.ok) {
         const statusData = await statusRes.json();
         const s = statusData.stats || {};
-        setStats({
+        stats = {
           registeredAgents: s.totalAgents ?? 0,
           totalTransactions: s.totalPayments ?? 0,
           averageTrustScore: s.averageTrustScore ?? null,
           activeAgents: s.activeAgents ?? 0,
           totalXpEarned: s.totalXpEarned ?? 0,
           verificationRate: s.verificationRate ?? null,
-        });
+        };
       }
 
       if (healthRes.ok) {
-        const healthData = await healthRes.json();
-        setHealth(healthData);
+        health = await healthRes.json();
       }
 
       setLastFetchTime(Date.now());
       setTimeSince(0);
-    } catch (err) {
-      console.error("Failed to fetch status:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line
-    fetchAll();
-    const interval = setInterval(fetchAll, 60000);
-    return () => clearInterval(interval);
-  }, []);
+      return { stats, health };
+    },
+    refetchInterval: 60000,
+  });
 
   useEffect(() => {
     if (lastFetchTime) {
@@ -115,29 +106,33 @@ export default function StatusPage() {
                 <h2 className="text-3xl font-bold text-surface mb-2">{t("status_network_title")}</h2>
                 <p className="text-subtle">{t("status_network_desc")}</p>
             </div>
-            <button onClick={fetchAll} className="btn-primary px-4 py-2 text-sm font-mono">{t("status_retry")}</button>
+            <button onClick={() => refetch()} className="btn-primary px-4 py-2 text-sm font-mono">{t("status_retry")}</button>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bento-card p-6">
-                <div className="h-6 bg-white/5 rounded animate-pulse mb-2" />
-                <div className="h-8 bg-white/5 rounded animate-pulse" />
-              </div>
-            ))}
+        {isLoading ? (
+          <StatusSkeleton />
+        ) : error ? (
+          <div className="glass-card p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">❌</span>
+            </div>
+            <h2 className="text-xl font-bold text-surface mb-2">{t("status_unable_load")}</h2>
+            <p className="text-subtle">{t("status_could_not_fetch")}</p>
+            <button onClick={() => refetch()} className="btn-primary mt-4 px-6 py-2 text-sm font-mono">{t("status_retry")}</button>
           </div>
-        ) : stats && stats.registeredAgents === 0 ? (
+        ) : data?.stats && data.stats.registeredAgents === 0 ? (
           <div className="glass-card p-12 text-center">
             <div className="w-16 h-16 rounded-2xl bg-electric-blue/10 flex items-center justify-center mx-auto mb-4 border border-electric-blue/20">
               <span className="text-2xl">📡</span>
             </div>
             <h2 className="text-xl font-bold text-surface mb-2">{t("status_no_data")}</h2>
             <p className="text-subtle">{t("status_no_data_desc")}</p>
-            <button onClick={fetchAll} className="btn-primary mt-4 px-6 py-2 text-sm font-mono">{t("status_retry")}</button>
+            <button onClick={() => refetch()} className="btn-primary mt-4 px-6 py-2 text-sm font-mono">{t("status_retry")}</button>
           </div>
-        ) : stats ? (
-          <>
+        ) : data?.stats ? (
+          (() => {
+            const { stats, health } = data;
+            return (<>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
               <div className="glass-card p-6 text-center flex flex-col justify-between min-h-[160px] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-neon-green/10 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
@@ -281,17 +276,9 @@ export default function StatusPage() {
                 <span className="text-electric-blue">{"<piUsername>"}</span>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="glass-card p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">❌</span>
-            </div>
-            <h2 className="text-xl font-bold text-surface mb-2">{t("status_unable_load")}</h2>
-            <p className="text-subtle">{t("status_could_not_fetch")}</p>
-            <button onClick={fetchAll} className="btn-primary mt-4 px-6 py-2 text-sm font-mono">{t("status_retry")}</button>
-          </div>
-        )}
+          </>);
+          })()
+        ) : null}
       </div>
       <Footer />
     </main>

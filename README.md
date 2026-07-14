@@ -1,174 +1,113 @@
 <div align="center">
-  <img src="./public/axiomid-banner.jpg" alt="AxiomID" width="100%" />
+  <img src="./public/axiomid-logo.svg" alt="AxiomID" width="720" />
 </div>
 
 <h1 align="center">
-  AxiomID gives humans sovereign control over their AI agents<br/>
-  using portable DIDs and Pi Network.
+  AxiomID is the Human Authorization Protocol for AI agents and humans.
 </h1>
 
 <p align="center">
-  <em>The Human Authorization Protocol for AI Agents</em>
+  <em>Pi Browser auth, sovereign passports, verifiable identity, and agent governance in one experience.</em>
 </p>
 
 <p align="center">
-  <a href="https://axiomid.app"><b>🌐 Live App</b></a> ·
-  <a href="https://axiomid.app/passport/demo"><b>🛂 Demo Passport</b></a> ·
-  <a href="https://axiomid.app/leaderboard"><b>📊 Leaderboard</b></a> ·
-  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>⭐ Star on GitHub</b></a>
+  <a href="https://axiomid.app"><b>Live App</b></a> ·
+  <a href="https://axiomid.app/passport/demo"><b>Demo Passport</b></a> ·
+  <a href="https://axiomid.app/leaderboard"><b>Leaderboard</b></a> ·
+  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>GitHub</b></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
-  <a href="https://github.com/Moeabdelaziz007/AxiomID/releases"><img src="https://img.shields.io/github/v/release/Moeabdelaziz007/AxiomID?style=flat-square&color=blue" alt="Version" /></a>
-  <img src="https://img.shields.io/badge/tests-3037%20passing-brightgreen?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
-  <img src="https://img.shields.io/badge/status-beta-orange?style=flat-square" alt="Beta" />
-  <img src="https://img.shields.io/badge/works%20with-Pi%20Browser-8b5cf6?style=flat-square" alt="Pi Browser" />
-  <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
+  <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
+  <img src="https://img.shields.io/badge/status-closed%20beta-orange?style=flat-square" alt="Closed Beta" />
 </p>
 
 ---
 
-> **⚠️ Beta Notice:** AxiomID is in active development. Features work in Pi Browser and modern browsers. Demo accounts are used during the closed beta phase. [Live status →](https://axiomid.app/status)
+AxiomID is a Next.js application that combines Pi Network authentication, passport-style identity claims, and a lightweight governance layer for human-AI collaboration.
 
----
+## What is available now
 
-**Try it live:** [`axiomid.app/passport/demo`](https://axiomid.app/passport/demo) → See a real Sovereign passport with Trust Score, badges, and KYA verification. No wallet needed.
+- Pi Browser sign-in and callback handling
+- Demo and real identity claim flows
+- Public passport pages with trust and badge metadata
+- Authenticated dashboard with marketplace, settings, and sandbox playground
+- Explorer, leaderboard, docs, and service status views
+- API routes for auth, passport publishing, Pi payments, and health checks
+- **Spend Request** — agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
+- **TrustChain** — append-only hash chain for all agent actions
+- **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
 
----
+## Routes
 
-## Trust Score at a Glance
-
-Every identity on AxiomID has a **Trust Score** — an algorithmic reputation built from verified stamps and experience points (XP). 
-
-### Trust Calculation Formulas
-AxiomID uses a dual-calculation mode based on input parameters (defined in [trust.ts](file:///Users/cryptojoker710/Desktop/AxiomID/src/lib/trust.ts)):
-
-1. **Standard Mode (Fallback):**
-   $$\text{Trust Score} = \text{XP Score} \times 0.7 + \text{Stamp Score} \times 0.3$$
-   *(Clamped to 0-100)*
-
-2. **Advanced Multi-Dimensional Mode (with Tenure & Semantics):**
-   $$\text{Trust Score} = \text{XP Score} \times 0.5 + \text{Stamp Score} \times 0.2 + \text{Tenure Score} \times 0.1 + \text{Semantic Trust} \times 0.2$$
-   - **Tenure:** Up to 50 days (2% per day, capped at 100%).
-   - **Semantic Trust:** Dynamically computed based on agent reputation and peer vouches (0-100).
-
-### API Passport Example
-
-**Live endpoint:** [`GET /api/passport/demo`](https://axiomid.app/api/passport/demo) — returns the complete passport JSON:
-
-```json
-{
-  "username": "AxiomID Agent",
-  "walletAddress": "GD5...3H",
-  "stellarAddress": "GB6...4K",
-  "did": "did:axiom:pi:user123",
-  "tier": "Sovereign",
-  "xp": 1200,
-  "trustScore": 94,
-  "kyaStatus": "VERIFIED",
-  "kycStatus": "VERIFIED",
-  "stamps": [
-    { "type": "KYA", "provider": "pi_network" },
-    { "type": "WALLET_AGE", "provider": "stellar" }
-  ],
-  "issuedDate": "2026-06-25T12:00:00.000Z",
-  "agentName": "SovereignNode1",
-  "agentStatus": "ACTIVE",
-  "agentPublicKey": "MGP..."
-}
-```
-
----
-
-## Passport Example
-
-When a user claims their identity, they get a **Sovereign Passport**:
-
-| Field | Value |
+| Route | Purpose |
 |:---|:---|
-| **DID** | `did:axiom:axiomid.app:pi:{uid}` |
-| **Tier** | Visitor → Citizen → Validator → **Sovereign** |
-| **Trust Score** | 0–100 (XP 70% + verified stamps 30%) |
-| **Stamps** | KYA, Social, Pi Wallet, Agent Delegation |
-| **Attestations** | Peer-signed reputation vouches |
+| `/` | Landing experience and entry point |
+| `/claim` | Identity claim wizard |
+| `/onboarding` | Onboarding flow for new users |
+| `/passport/[slug]` | Public passport viewer |
+| `/dashboard` | Authenticated dashboard |
+| `/dashboard/settings` | User settings and VC viewer |
+| `/agent/[username]` | Public agent profile |
+| `/explorer` | Discover agents and identities |
+| `/leaderboard` | Ranked trust and activity view |
+| `/docs` | Product and API documentation |
+| `/status` | Service health and dependency status |
+| `/diagnostics` | Debug and diagnostic tools |
+| `/about` | About AxiomID |
+| `/privacy` | Privacy policy |
+| `/terms` | Terms of service |
+| `/offline` | Offline fallback page |
+| `/signin/callback` | Pi sign-in callback handler |
 
-**Claim yours in 3 steps:**
+### API Routes
 
-<div align="center">
-
-| Step | Action | Time |
-|:---:|:---|:---:|
-| **1** | Connect Pi Wallet | 10s |
-| **2** | Link Social Accounts | 30s |
-| **3** | Deploy Your Agent | Instant |
-
-</div>
-
-Open [`axiomid.app/claim`](https://axiomid.app/claim) in **Pi Browser** or any modern browser.
-
----
-
-## What AxiomID Does
-
-| Layer | What It Does |
+| Endpoint | Purpose |
 |:---|:---|
-| **DID** | `did:axiom` — W3C-compliant, self-sovereign identity per user |
-| **Verifiable Credentials** | Cryptographically signed stamps (social, KYA, KYC). Each stamp is a VC. |
-| **Trust Engine** | Physics-inspired algorithm — trust score = `XP (70%) + stamps (30%)` |
-| **Agent Passports** | Public identity cards with verification badges, trust scores, and attestation history |
-| **Skills Marketplace** | Install capabilities for agents. Agents execute skills in isolated sandboxes. |
-| **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
-| **Soul System** | Five-gate ethical evaluation loop — Muraqabah, Ethical, Sab'iyyah, Tawbah, Self-Review |
+| `/api/auth/*` | Pi Browser authentication, connect, logout, state |
+| `/api/passport/*` | Passport CRUD, publishing, verification |
+| `/api/agent/*` | Agent identity, sign, activate, pause, manifest |
+| `/api/pi/*` | Pi payments (approve, complete), KYA claims, ad verification |
+| `/api/skills/*` | Skills marketplace (CRUD, search, install, execute, pay, review) |
+| `/api/spend-request` | Create, list, approve spend requests + SSE stream |
+| `/api/health` | Health check |
+| `/api/status` | Protocol metrics: users, agents, XP, payments |
+| `/api/explorer` | Live explorer data and stats |
+| `/api/leaderboard` | Top users ranked by XP |
+| `/api/diagnostics/*` | Error capture and logs |
+| `/api/sandbox/*` | Sandbox dev-token and code execution |
+| `/api/admin/*` | Admin skills moderation |
+| `/api/stamp/*` | Stamp claiming |
+| `/api/social/disconnect` | Social account disconnection |
+| `/api/sync` | Edge-to-PostgreSQL sync |
+| `/api/telegram` | Telegram bot integration |
+| `/api/stellar/anchor` | Stellar trust anchoring |
+| `/api/vault/stake` | Vault staking |
+| `/api/did-document` | DID document resolution |
+| `/api/credential-status` | Credential revocation check |
+| `/api/upload/presign` | Presigned upload URLs |
+| `/api/presence/heartbeat` | Presence heartbeat |
+| `/api/daily-review` | Daily review trigger |
+| `/api/user/status` | User status |
+| `/api/emulate/*` | Service emulation (dev) |
 
-### The Soul System (5 Ethical Gates)
+## Tech stack
 
-AI Agent execution and code validation inside AxiomID are strictly guarded by the **Soul System** — a five-gate ethical evaluation loop designed to enforce sovereign safety, auditability, and absolute alignment (defined in [AGENTS.md](file:///Users/cryptojoker710/Desktop/AxiomID/AGENTS.md)):
+| Layer | Technology |
+|:---|:---|
+| **Frontend** | Next.js 16 · React 19 · Framer Motion 12 · Tailwind 4 |
+| **Backend** | Vercel Serverless · Cloudflare Workers |
+| **Database** | PostgreSQL (Prisma 6) · D1 (edge sync) · Vectorize (semantic search) |
+| **Cache** | Upstash Redis (rate limiting, session state) |
+| **AI** | Workers AI — Llama 3.1 8B · BGE-base-en-v1.5 |
+| **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
+| **Storage** | Cloudflare KV · Vercel Blob |
+| **State/Cache** | TanStack Query v5 (client-side cache) |
+| **CI/CD** | GitHub Actions → Vercel · 3300+ tests |
 
-1. **Muraqabah (Divine/Self Awareness):** Absolute intention verification. Every mutating action is logged.
-2. **Ethical Boundaries:** Hard boundaries preventing code injections, unsafe sandbox functions, or malicious payload execution.
-3. **Sab'iyyah (Cycle Synthesis):** Holistic cycle reflection. Balances opposing states (security vs usability) every 7 cycles.
-4. **Tawbah (Self-Correction):** Fail-safe error tracking, logging, and proactive remediation logic.
-5. **Self-Review (Internal Verification):** Evaluates agent execution parameters prior to final commitment.
-
-### Dynamic Sandbox Mode
-
-AxiomID automatically determines if the SDK operates in Sandbox mode via a fallback cascade sequence (implemented in [pi-sdk.ts](file:///Users/cryptojoker710/Desktop/AxiomID/src/lib/pi-sdk.ts)):
-
-1. **Environment Variables:** Presence of `NEXT_PUBLIC_SANDBOX_DEV_TOKEN` configuration (development only).
-2. **Hostname Check:** Dynamic checks for localhost, local LAN networks, or staging domains.
-3. **Iframe Referrer:** If the frame parent is `sandbox.minepi.com`.
-4. **Query Parameter:** Direct presence of the `?sandbox=true` parameter in the URL.
-
-*Note: In production environments on custom domains (e.g. `axiomid.app`), sandbox mode is strictly disabled for security.*
-
----
-
-## SDK
-
-```bash
-npm install @axiomid/sdk
-```
-
-```typescript
-import { AxiomSDK } from "@axiomid/sdk";
-
-// Initialize the SDK instance
-const sdk = new AxiomSDK({ network: "mainnet" });
-
-// Retrieve the verified trust score for a DID
-const trust = await sdk.getTrustScore("did:axiom:pi:user123");
-// { did: "did:axiom:pi:user123", score: 94, tier: "Sovereign" }
-
-// Retrieve and verify the full sovereign passport
-const passport = await sdk.verifyPassport("did:axiom:pi:user123");
-// returns complete Passport object (username, did, stamps, trustScore, etc.)
-```
-
----
-
-## Quick Start
+## Quick start
 
 ```bash
 git clone https://github.com/Moeabdelaziz007/AxiomID.git
@@ -180,7 +119,17 @@ npx prisma migrate deploy && npx prisma generate
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000.
+
+### Pi Browser local HTTPS
+
+The Pi SDK expects HTTPS in the browser. For local development, use portless:
+
+```bash
+npm install -g portless
+portless axiomid next dev
+# -> https://axiomid.localhost
+```
 
 ### Backend (Cloudflare Worker)
 
@@ -191,35 +140,29 @@ echo "token" | npx wrangler secret put SHARED_SECRET_TOKEN_VERCEL_CF
 npx wrangler deploy
 ```
 
-### Local HTTPS Emulation for Pi Browser
-
-Since the Pi Network SDK requires HTTPS in the browser environment, plain `http://localhost:3000` will fail silently in the Pi Browser. Use `portless` to spin up a local HTTPS gateway with auto-trusted certificates:
+## Verification and quality checks
 
 ```bash
-# Install portless globally (one-time)
-npm install -g portless
-
-# Run local HTTPS proxy pointing next dev
-portless axiomid next dev
-# -> https://axiomid.localhost
+npm run lint       # 0 errors, 0 warnings
+npm run type-check # type check
+npm test           # 3300+ tests (some page tests need QueryClientProvider wrapper)
 ```
 
----
+## Project structure
 
-## Pages
-
-| Route | Description |
-|:---|:---|
-| `/` | Landing — live network stats, trust tiers, hero |
-| `/passport/[slug]` | Public passport viewer with OG metadata |
-| `/claim` | 3-step onboarding (Connect → Verify → Deploy) |
-| `/dashboard` | Authenticated dashboard with marketplace, settings |
-| `/explorer` | Browse all registered agents |
-| `/leaderboard` | Top 50 users ranked by XP |
-| `/docs` | Full docs — stamps, SDK, API reference |
-| `/status` | Live service health (DB, Stellar, Pi, Workers AI) |
-
----
+```
+src/
+  app/
+    api/           # Route handlers (Next.js App Router)
+    dashboard/     # Authenticated dashboard
+    passport/      # Public passport viewer
+  components/      # Shared UI components
+  lib/             # Auth, crypto, Pi SDK, validators, utilities
+  i18n/            # Translation files (en.json, ar.json)
+prisma/            # Schema and migrations
+docs/              # Specs and architecture docs
+AxiomID.Memory/    # Knowledge base and design docs
+```
 
 ## Trust Tiers
 
@@ -230,31 +173,31 @@ portless axiomid next dev
 | **Validator** | 500 | Agent delegation, marketplace install. |
 | **Sovereign** | 1000 | Full trust, vault staking, vouching power. |
 
----
+## Trust Score
 
-## Tech Stack
+Every identity on AxiomID has a **Trust Score** built from verified stamps and experience points (XP):
 
-| Layer | Technology |
+**Basic** (when tenure/semantic data is unavailable):
+$$\text{Trust Score} = \text{XP Score} \times 0.7 + \text{Stamp Score} \times 0.3$$
+
+**Full** (with tenure and semantic trust data):
+$$\text{Trust Score} = \text{XP Score} \times 0.5 + \text{Stamp Score} \times 0.2 + \text{Tenure Score} \times 0.1 + \text{Semantic Trust} \times 0.2$$
+
+Trust decays over time (inactivity penalty) and is boosted by Stellar anchoring (+15%).
+
+## What AxiomID Does
+
+| Layer | What It Does |
 |:---|:---|
-| **Frontend** | Next.js 16 · React 19 · Framer Motion 12 · Tailwind 4 |
-| **Backend** | Vercel Serverless · Cloudflare Workers |
-| **Database** | PostgreSQL (Prisma 6) · D1 (edge sync) · Vectorize (semantic search) |
-| **AI** | Workers AI — Llama 3.1 8B · BGE-small-en-v1.5 |
-| **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
-| **Storage** | Cloudflare KV · Vercel Blob |
-| **CI/CD** | GitHub Actions → Vercel · 3037 tests, 132 suites |
-
----
-
-## Testing
-
-```bash
-npm test           # 3037 tests, 132 suites
-npm run lint       # 0 errors, 0 warnings
-npx tsc --noEmit   # type check
-```
-
----
+| **DID** | `did:axiom` — W3C-compliant, self-sovereign identity per user |
+| **Verifiable Credentials** | Cryptographically signed stamps (social, KYA, KYC) |
+| **Trust Engine** | Physics-inspired algorithm with decay and anchoring |
+| **Agent Passports** | Public identity cards with verification badges and trust scores |
+| **Spend Request** | Agentic Pi payments — agent requests, user approves, Pi SDK executes |
+| **TrustChain** | Append-only hash chain for all agent actions |
+| **Skills Marketplace** | Install capabilities for agents |
+| **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
+| **Soul System** | Six-gate ethical evaluation loop |
 
 ## Contributing
 
@@ -268,9 +211,52 @@ git commit -m "feat(scope): description ۞"
 git push origin feat/my-feature
 ```
 
----
-
 ## License
 
 - **Application code:** Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [`LICENSE`](./LICENSE).
 - **`@axiomid/sdk`** and **`@axiomid/crypto`:** MIT licensed. Open for community use.
+
+## Built By
+
+<div align="center">
+
+**AxiomID** is built by **Mohamed Abdelaziz** ([@Moeabdelaziz007](https://github.com/Moeabdelaziz007)).
+
+Built with passion in Cairo, Egypt.
+
+<a href="https://github.com/Moeabdelaziz007/AxiomID/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Moeabdelaziz007/AxiomID" alt="Contributors" />
+</a>
+
+</div>
+
+### Acknowledgments
+
+**Pi Network** — For the authentication SDK and the vision of a human-centered web. Learn more at [minepi.com](https://minepi.com).
+
+<div align="center">
+
+<a href="https://minepi.com">
+  <img src="https://img.shields.io/badge/Built%20with-Pi%20Network-8b5cf6?style=for-the-badge&logo=pi&logoColor=white" alt="Built with Pi Network" />
+</a>
+<a href="https://vercel.com">
+  <img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deployed on Vercel" />
+</a>
+<a href="https://www.cloudflare.com">
+  <img src="https://img.shields.io/badge/Powered%20by-Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Powered by Cloudflare" />
+</a>
+<a href="https://github.com/vercel/next.js">
+  <img src="https://img.shields.io/badge/Built%20with-Next.js%2016-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Built with Next.js 16" />
+</a>
+
+</div>
+
+---
+
+<div align="center">
+
+**[axiomid.app](https://axiomid.app)** · **[Claim your identity](https://axiomid.app/claim)**
+
+<sub>Built with the belief that every human deserves a sovereign digital identity.</sub>
+
+</div>

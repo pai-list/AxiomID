@@ -11,6 +11,8 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.polyfills.js', '<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
+    '^d3$': '<rootDir>/src/__mocks__/d3.ts',
+    '^d3-(.*)$': '<rootDir>/src/__mocks__/d3-$1/index.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@json-render/react$': '<rootDir>/node_modules/@json-render/react/dist/index.js',
     '^@json-render/react/(.*)$': '<rootDir>/node_modules/@json-render/react/dist/$1.js',

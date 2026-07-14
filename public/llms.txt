@@ -1,45 +1,50 @@
-# AxiomID
+# AxiomID — The Human Authorization Protocol
 
-> W3C DID-based identity layer for humans delegating authority to AI agents on Pi Network and Stellar. Cryptographic proof that an AI agent is working with human authorization.
+> Prove human intent behind AI actions with decentralized identity verification.
 
-## Core Protocol
-- [Introduction](https://axiomid.app/docs): Architecture overview
-- [auth.md Protocol](https://axiomid.app/docs): OpenID Connect + agent signing
-- [JWKS](https://axiomid.app/.well-known/jwks.json): Public key verification
+## What is AxiomID?
 
-## API Reference
-- [Agent Identity](https://axiomid.app/api/agent/identity): Verify Pi ID-JAG tokens
-- [Agent Sign](https://axiomid.app/api/agent/sign): Sign payload with sovereign key
-- [OAuth2 Token](https://axiomid.app/api/oauth2/token): JWT bearer grant exchange
-- [OAuth2 Revoke](https://axiomid.app/api/oauth2/revoke): Revoke access/refresh tokens
-- [DID Document](https://axiomid.app/api/did-document): W3C DID resolution
-- [VC Manifest](https://axiomid.app/api/agent/manifest): Verifiable Credential manifest
-- [Skill Tags](https://axiomid.app/api/skills/tags): Browse skill categories
-- [Skill Search](https://axiomid.app/api/skills): Search marketplace skills
-- [Skill Purchase](https://axiomid.app/api/skills/[skillId]/purchase): Purchase a skill
-- [Agent Skills](https://axiomid.app/api/agent/skills): View agent's owned skills
+AxiomID is a decentralized identity platform that combines Pi Network authentication, sovereign passports, and verifiable credentials to create a trust layer for human-AI collaboration.
 
-## Identity Tiers
-- Visitor (0 XP) - Unverified, rate-limited
-- Citizen (100 XP) - Pi KYC verified, basic skills
-- Validator (500 XP) - Community verified, advanced skills
-- Sovereign (1000 XP) - Full authority, premium skills
+## Core Concepts
 
-## For AI Agents Reading This
-- All API errors follow envelope: {"error": string, "code": string}
-- DID format: did:axiom:piUsername
-- Ed25519 keys used for signing (not RSA)
-- Sandbox mode: add X-Sandbox: true header for testing
-- Live DID document: /api/did-document (public, no auth)
-- Rate limits apply — see /docs for limits
+- **DID (Decentralized Identifier):** Each user gets a W3C-compliant `did:axiom:pi:{uid}` identifier
+- **Sovereign Passport:** A public identity card with trust scores, verification badges, and attestation history
+- **Trust Score:** Algorithmic reputation computed from XP (70%) + verified stamps (30%)
+- **Stamps:** Cryptographically signed verifiable credentials (KYA, Social, Pi Wallet, Agent Delegation)
+- **Agent Governance:** AI agents execute skills in isolated sandboxes with ethical oversight
 
-## For AI Agents
-AxiomID lets AI agents prove human authorization cryptographically.
-Each agent gets a W3C DID document with Ed25519 keys. Payloads are
-signed via OAuth2 JWT bearer grants. Verifiers check the DID document
-and signature chain.
+## Trust Tiers
 
-Agent capabilities are declared in the DID document service endpoints.
-Human delegation is encoded as Verifiable Credentials.
+| Tier | XP Required | Access Level |
+|------|-------------|--------------|
+| Visitor | 0 | Read-only |
+| Citizen | 100 | Social stamps, basic agent access |
+| Validator | 500 | Agent delegation, marketplace install |
+| Sovereign | 1000 | Full trust, vault staking, vouching power |
 
-Full documentation: https://axiomid.app/docs
+## API Endpoints
+
+- `GET /api/passport/{username}` — Public passport data
+- `GET /api/passport/demo` — Demo passport
+- `GET /api/leaderboard` — Top users ranked by XP
+- `GET /api/did-document` — W3C DID document
+
+## Tech Stack
+
+- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS
+- Backend: Vercel Serverless, Cloudflare Workers
+- Database: PostgreSQL (Prisma), D1, Vectorize
+- Auth: Pi Network SDK, Ed25519 sovereign keys
+
+## Links
+
+- Website: https://axiomid.app
+- GitHub: https://github.com/Moeabdelaziz007/AxiomID
+- Claim identity: https://axiomid.app/claim
+- Passports: https://axiomid.app/passport/{username}
+
+## Built By
+
+Mohamed Abdelaziz — https://github.com/Moeabdelaziz007
+Pi Network — https://minepi.com

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useWallet } from "../../context/wallet-context";
@@ -37,11 +38,6 @@ export default function SettingsPage() {
   const { user, connectWallet, claimAction, refreshUser } = useWallet();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<SidebarTab>("profile");
-  const [statusDetails, setStatusDetails] = useState<StatusDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !!(localStorage.getItem("axiomid_wallet") || localStorage.getItem("pi_access_token"));
-  });
 
   // Modal states
   const [activePlatform, setActivePlatform] = useState<"connect_wallet" | "security_circle" | "complete_kyc" | null>(null);
@@ -59,33 +55,24 @@ export default function SettingsPage() {
   const connectDialogRef = useRef<HTMLDialogElement>(null);
   const vcDialogRef = useRef<HTMLDialogElement>(null);
 
-  const fetchStatusDetails = async () => {
-    try {
-      const storedToken = localStorage.getItem("pi_access_token");
+  const { data: statusDetails, isLoading: detailsLoading, refetch: refetchStatus } = useQuery<StatusDetails>({
+    queryKey: ["user-status"],
+    queryFn: async () => {
+      const storedToken = typeof window !== "undefined" ? localStorage.getItem("pi_access_token") : null;
       const headers: Record<string, string> = {};
       if (storedToken) {
         headers["Authorization"] = `Bearer ${storedToken}`;
       }
       const res = await fetch("/api/user/status", { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setStatusDetails({
-          recentLedger: data.recentLedger || [],
-          stats: data.stats || { totalActions: 0, totalXP: 0 },
-        });
-      }
-    } catch {
-      // silent
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (user) fetchStatusDetails();
-  }, [user]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+      if (!res.ok) throw new Error("Failed to fetch status");
+      const data = await res.json();
+      return {
+        recentLedger: data.recentLedger || [],
+        stats: data.stats || { totalActions: 0, totalXP: 0 },
+      };
+    },
+    enabled: !!user,
+  });
 
   const handleDialogBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
     const dialog = e.currentTarget;
@@ -117,7 +104,7 @@ export default function SettingsPage() {
 
     if (success) {
       connectDialogRef.current?.close();
-      await fetchStatusDetails();
+      await refetchStatus();
     }
   };
 
@@ -185,7 +172,7 @@ export default function SettingsPage() {
 
       disconnectDialogRef.current?.close();
       setDisconnectPlatform(null);
-      await Promise.all([fetchStatusDetails(), refreshUser()]);
+      await Promise.all([refetchStatus(), refreshUser()]);
     } catch {
       toast.error(t('settings_disconnect_failed'));
     } finally {

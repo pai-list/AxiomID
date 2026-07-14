@@ -1,0 +1,40 @@
+<svg width="1128" height="191" viewBox="0 0 1128 191" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AxiomID LinkedIn company banner</title>
+<desc>Dark graphite banner with the AxiomID logomark, wordmark, and tagline, plus a faint identity-graph motif on the right</desc>
+
+<rect width="1128" height="191" fill="#12131A"/>
+
+<!-- faint identity-graph motif on the right side, kept out of the safe zone -->
+<g stroke="#20222E" stroke-width="1.5" fill="none">
+<line x1="820" y1="40" x2="900" y2="90"/>
+<line x1="900" y1="90" x2="880" y2="150"/>
+<line x1="900" y1="90" x2="990" y2="60"/>
+<line x1="990" y1="60" x2="1050" y2="120"/>
+<line x1="880" y1="150" x2="960" y2="170"/>
+<line x1="990" y1="60" x2="1070" y2="30"/>
+</g>
+<g fill="#2C2E3C">
+<circle cx="820" cy="40" r="3"/>
+<circle cx="900" cy="90" r="4"/>
+<circle cx="880" cy="150" r="3"/>
+<circle cx="990" cy="60" r="4"/>
+<circle cx="1050" cy="120" r="3"/>
+<circle cx="960" cy="170" r="3"/>
+<circle cx="1070" cy="30" r="3"/>
+</g>
+<circle cx="900" cy="90" r="4" fill="#E3A548"/>
+
+<!-- logomark, small, left side -->
+<g transform="translate(56, 46) scale(0.19)">
+<polygon points="256,120 354,177 354,335 256,392 158,335 158,177"
+  fill="none" stroke="#3A3D4E" stroke-width="6"/>
+<path d="M 196 258 L 238 302 L 330 196"
+  fill="none" stroke="#E3A548" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="354" cy="177" r="14" fill="#E3A548"/>
+</g>
+
+<text x="128" y="90" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700" fill="#F2EFE6">Axiom<tspan fill="#E3A548">ID</tspan></text>
+<text x="130" y="118" font-family="Arial, Helvetica, sans-serif" font-size="13.5" font-weight="400" letter-spacing="1.2" fill="#8B8D99">VERIFIABLE IDENTITY FOR THE AGENTIC WEB</text>
+<text x="130" y="148" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#5A5C68">W3C DID protocol · Pi Network · 18M+ verified humans</text>
+
+</svg>

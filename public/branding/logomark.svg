@@ -1,0 +1,35 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AxiomID logomark</title>
+<desc>A hexagonal node with a checkmark cut through it, on a deep graphite background, representing a verified identity anchor</desc>
+
+<rect width="512" height="512" fill="#12131A"/>
+
+<!-- faint structural grid dots, hints at a network without being busy -->
+<g fill="#262836">
+<circle cx="96" cy="96" r="2.5"/>
+<circle cx="416" cy="96" r="2.5"/>
+<circle cx="96" cy="416" r="2.5"/>
+<circle cx="416" cy="416" r="2.5"/>
+<circle cx="256" cy="64" r="2.5"/>
+<circle cx="256" cy="448" r="2.5"/>
+</g>
+
+<!-- thin connecting lines from corners toward the hex, suggesting the node is anchored in a wider graph -->
+<g stroke="#262836" stroke-width="1.5" fill="none">
+<line x1="96" y1="96" x2="180" y2="164"/>
+<line x1="416" y1="96" x2="332" y2="164"/>
+<line x1="96" y1="416" x2="180" y2="348"/>
+<line x1="416" y1="416" x2="332" y2="348"/>
+</g>
+
+<!-- hexagon: the verification node -->
+<polygon points="256,120 354,177 354,335 256,392 158,335 158,177"
+  fill="none" stroke="#3A3D4E" stroke-width="4"/>
+
+<!-- checkmark, drawn slightly off-center/asymmetric so it reads as a mark, not a stock icon -->
+<path d="M 196 258 L 238 302 L 330 196"
+  fill="none" stroke="#E3A548" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- small secondary node sitting on one hex vertex, hints at identity graph / DID network -->
+<circle cx="354" cy="177" r="10" fill="#E3A548"/>
+</svg>

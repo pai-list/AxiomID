@@ -37,6 +37,8 @@ Desktop.ini
 # qoder/opencode
 .qoder/
 .opencode/
+opencode.json
+tui.json
 
 # gemini CLI (local tool config)
 .gemini/
@@ -66,7 +68,11 @@ memory.graph.json
 scratchpad/
 .jolli/
 
+# generated test reports
+e2e-results.json
+
 # Patch/merge artifacts
 *.orig
 *.rej
 .env*.local
+test-results/

@@ -44,18 +44,23 @@ export function buildPiSignInUrl(options: PiSignInOptions): string {
  * @param options - Sign-in settings such as redirect URI, scopes, and state.
  */
 export function initiatePiSignIn(options?: PiSignInOptions): void {
+  const state = options?.state || crypto.randomUUID();
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("pi_oauth_state", state);
+  }
+
   try {
     if (typeof window !== "undefined" && window.Pi?.signIn && getPiOAuthClientId()) {
       window.Pi.signIn({
         clientId: getPiOAuthClientId()!,
         redirectUri: options?.redirectUri || `${window.location.origin}/signin/callback`,
         scopes: options?.scopes || ["username"],
-        state: options?.state || crypto.randomUUID(),
+        state,
       });
       return;
     }
   } catch {}
-  window.location.assign(buildPiSignInUrl(options || {}));
+  window.location.assign(buildPiSignInUrl({ ...options, state }));
 }
 
 export interface PiSignInCallbackResult {

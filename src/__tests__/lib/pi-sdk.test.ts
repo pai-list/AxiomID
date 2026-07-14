@@ -9,6 +9,14 @@ import {
   checkPiBrowser,
 } from '@/lib/pi-sdk';
 
+interface MutableGlobals {
+  window: { Pi?: { authenticate: jest.Mock } };
+  navigator: Record<string, unknown>;
+  document: Record<string, unknown>;
+}
+
+const g = global as unknown as MutableGlobals;
+
 describe('pi-sdk', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -30,8 +38,8 @@ describe('pi-sdk', () => {
         user: { uid: 'uid-123', username: 'piuser', name: 'Pi User', stellarAddress: 'GSTELLAR' },
         accessToken: 'token-abc',
       });
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = { authenticate: mockAuthenticate };
+      g.window = g.window || {};
+      g.window.Pi = { authenticate: mockAuthenticate };
 
       const result = await connectPi();
 
@@ -44,7 +52,7 @@ describe('pi-sdk', () => {
       expect(result.user.username).toBe('piuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('uses window.Pi.authenticate when available (Pi Browser)', async () => {
@@ -52,8 +60,8 @@ describe('pi-sdk', () => {
         user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User', stellarAddress: 'GSTELLAR' },
         accessToken: 'pb-token',
       });
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = { authenticate: mockAuthenticate };
+      g.window = g.window || {};
+      g.window.Pi = { authenticate: mockAuthenticate };
 
       const result = await connectPi();
 
@@ -67,23 +75,23 @@ describe('pi-sdk', () => {
       expect(result.user.username).toBe('pbuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('throws when window.Pi.authenticate returns no user', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
       };
 
       await expect(connectPi()).rejects.toThrow('no user data received');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('throws when window.Pi.authenticate returns no accessToken', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'u1', username: 'u1', name: 'U' },
           accessToken: null,
@@ -92,12 +100,12 @@ describe('pi-sdk', () => {
 
       await expect(connectPi()).rejects.toThrow('no token received');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('calls pushLog with user name on successful Pi Browser auth', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User' },
           accessToken: 'pb-token',
@@ -114,14 +122,14 @@ describe('pi-sdk', () => {
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Authenticated'));
       expect(pushLog).toHaveBeenCalledWith(expect.stringContaining('Pi Browser User'));
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     // PR change: connectPi now emits structured [DEBUG] prefixed log messages
     // at each stage of the authentication flow for easier console filtering.
     it('emits [DEBUG] Starting Pi authentication flow as the first log message', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid', username: 'debuguser', name: 'Debug User' },
           accessToken: 'debug-token',
@@ -134,12 +142,12 @@ describe('pi-sdk', () => {
       const messages: string[] = pushLog.mock.calls.map(([msg]: [string]) => msg);
       expect(messages[0]).toBe('[DEBUG] Starting Pi authentication flow...');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Browser environment detected log after flow start', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid2', username: 'debuguser2', name: 'Debug User 2' },
           accessToken: 'debug-token-2',
@@ -152,12 +160,12 @@ describe('pi-sdk', () => {
       const messages: string[] = pushLog.mock.calls.map(([msg]: [string]) => msg);
       expect(messages.some((m) => m.includes('[DEBUG] Browser environment detected'))).toBe(true);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Pi SDK loaded successfully and sandbox mode logs', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid3', username: 'debuguser3', name: 'Debug User 3' },
           accessToken: 'debug-token-3',
@@ -172,12 +180,12 @@ describe('pi-sdk', () => {
       expect(messages.some((m) => m.startsWith('[DEBUG] Sandbox mode:'))).toBe(true);
       expect(messages.some((m) => m === '[DEBUG] Environment variables check:')).toBe(true);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Calling Pi.authenticate() and [DEBUG] returned successfully on success', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid4', username: 'debuguser4', name: 'Debug User 4' },
           accessToken: 'debug-token-4',
@@ -191,14 +199,14 @@ describe('pi-sdk', () => {
       expect(messages.some((m) => m.includes('[DEBUG] Calling Pi.authenticate() with timeout'))).toBe(true);
       expect(messages.some((m) => m === '[DEBUG] Pi.authenticate() returned successfully')).toBe(true);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] PiSdkError: prefix (not old "Auth error:") when authentication fails', async () => {
       // When a PiSdkError is thrown (e.g. no user data), the new log format uses
       // "[DEBUG] PiSdkError: {code} - {message}" instead of the old "Auth error:" prefix.
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
       };
       const pushLog = jest.fn();
@@ -211,12 +219,12 @@ describe('pi-sdk', () => {
       // Verify it contains both the error code and a dash separator
       expect(pisdk).toMatch(/\[DEBUG\] PiSdkError: \w+ - .+/);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Authentication failed log when no user is returned', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
       };
       const pushLog = jest.fn();
@@ -226,12 +234,12 @@ describe('pi-sdk', () => {
       const messages: string[] = pushLog.mock.calls.map(([msg]: [string]) => msg);
       expect(messages.some((m) => m === '[DEBUG] Authentication failed - no user data received')).toBe(true);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Authentication failed - no token received when token is missing', async () => {
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'u-no-tok', username: 'notok', name: 'No Token' },
           accessToken: null,
@@ -244,14 +252,14 @@ describe('pi-sdk', () => {
       const messages: string[] = pushLog.mock.calls.map(([msg]: [string]) => msg);
       expect(messages.some((m) => m === '[DEBUG] Authentication failed - no token received')).toBe(true);
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
 
     it('emits [DEBUG] Generic error log for non-PiSdkError exceptions', async () => {
       // When authenticate() throws a plain Error (not a PiSdkError), the catch block
       // uses "[DEBUG] Generic error: {message}" before wrapping it in a PiSdkError.
-      (global as any).window = (global as any).window || {};
-      (global as any).window.Pi = {
+      g.window = g.window || {};
+      g.window.Pi = {
         authenticate: jest.fn().mockRejectedValue(new Error('Network timeout')),
       };
       const pushLog = jest.fn();
@@ -263,18 +271,11 @@ describe('pi-sdk', () => {
       expect(genericMsg).toBeDefined();
       expect(genericMsg).toContain('Network timeout');
 
-      delete (global as any).window.Pi;
+      delete g.window.Pi;
     });
   });
 
   describe('checkPiBrowser', () => {
-    interface MutableGlobals {
-      window: any;
-      navigator: any;
-      document: any;
-    }
-
-    const g = global as unknown as MutableGlobals;
     const originalWindow = g.window;
     const originalNavigator = g.navigator;
     const originalDocument = g.document;
@@ -331,6 +332,20 @@ describe('pi-sdk', () => {
       g.window = { self: {}, top: {} };
       g.navigator = { userAgent: '' };
       g.document = { referrer: 'https://sandbox.minepi.com.attacker.com/auth' };
+      expect(checkPiBrowser()).toBe(false);
+    });
+
+    it('handles relative referrers without throwing uncaught exceptions', () => {
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: '/dashboard' };
+      expect(checkPiBrowser()).toBe(false);
+    });
+
+    it('handles invalid scheme referrers without throwing uncaught exceptions', () => {
+      g.window = { self: {}, top: {} };
+      g.navigator = { userAgent: '' };
+      g.document = { referrer: 'invalid-scheme://foo' };
       expect(checkPiBrowser()).toBe(false);
     });
   });

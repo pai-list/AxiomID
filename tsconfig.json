@@ -42,12 +42,15 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": [
+    "exclude": [
     "node_modules",
     "**/test-harness.ts",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "backend"
+    "backend",
+    "skills",
+    "scripts",
+    "src/__mocks__"
   ]
 }

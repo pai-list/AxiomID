@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["jose"],
   reactStrictMode: true,
   poweredByHeader: false,
+  turbopack: {
+    root: process.cwd(),
+  },
   productionBrowserSourceMaps: false,
   images: {
     formats: ["image/avif", "image/webp"],

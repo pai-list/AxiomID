@@ -18,6 +18,13 @@ export const ACTIONS: Record<string, ActionDefinition> = {
   WALLET_AGE:        { id: 'wallet_age',         xp: 300, weight: 10, tier: 'medium' },
   MINING_STREAK:     { id: 'mining_streak',      xp: 50,  weight: 5,  tier: 'low' },
   VALIDATOR_SERVICE: { id: 'validator_service',  xp: 200, weight: 25, tier: 'critical' },
+
+  // Spend Request (Agentic Payments)
+  SPEND_REQUEST_CREATED:  { id: 'spend_request_created',  xp: 0,   weight: 1,  tier: 'low' },
+  SPEND_REQUEST_APPROVED: { id: 'spend_request_approved', xp: 5,   weight: 3,  tier: 'low' },
+  SPEND_REQUEST_REJECTED: { id: 'spend_request_rejected', xp: 0,   weight: -2, tier: 'low' },
+  SPEND_REQUEST_PAID:     { id: 'spend_request_paid',     xp: 20,  weight: 5,  tier: 'medium' },
+  SPEND_REQUEST_EXPIRED:  { id: 'spend_request_expired',  xp: 0,   weight: -1, tier: 'low' },
 };
 
 /** Maximum possible raw trust score (sum of all weights, including up to 5 mining streaks) */

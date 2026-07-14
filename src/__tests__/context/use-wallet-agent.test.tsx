@@ -1,21 +1,7 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { useWalletAgent } from "@/app/context/use-wallet-agent";
-import { User } from "@/app/context/wallet-types";
-
-function makeUser(overrides: Partial<User> = {}): User {
-  return {
-    id: "agent-test-user",
-    walletAddress: "pi:agent-test-user",
-    xp: 100,
-    tier: "Citizen",
-    trustScore: 60,
-    createdAt: new Date().toISOString(),
-    actions: [],
-    stamps: [],
-    ...overrides,
-  };
-}
+import { makeUser } from "@/test-helpers/wallet-test-helpers";
 
 describe("useWalletAgent — createAgent", () => {
   let mockFetch: jest.Mock;
