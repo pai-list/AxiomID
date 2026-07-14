@@ -42,7 +42,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
         <span className="text-[9px] text-zinc-400 uppercase tracking-widest">L0 Authority • Axiom Protocol</span>
       </div>
       <nav aria-label="Footer navigation" className="flex flex-wrap gap-6 justify-center items-center">
-        <Link href="/privacy" className="relative text-zinc-300 hover:text-white transition-colors group">
+        <Link href="/privacy" className="relative text-zinc-300 hover:text-white transition-colors group focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none rounded">
           {t("nav_privacy")}
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-electric-blue transition-all group-hover:w-full" />
         </Link>
