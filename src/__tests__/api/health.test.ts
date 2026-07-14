@@ -110,7 +110,7 @@ describe('GET /api/health', () => {
 
   it('returns degraded status when an external service (Stellar) is offline', async () => {
     (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes('horizon.stellar.org')) {
+      if (url === 'https://horizon.stellar.org/') {
         throw new Error('network error');
       }
       return { ok: true, status: 200 };
@@ -128,7 +128,7 @@ describe('GET /api/health', () => {
 
   it('returns degraded status (not treated as offline overall) when a service responds with a non-ok status', async () => {
     (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes('horizon.stellar.org')) {
+      if (url === 'https://horizon.stellar.org/') {
         return { ok: false, status: 503 };
       }
       return { ok: true, status: 200 };
@@ -146,7 +146,7 @@ describe('GET /api/health', () => {
 
   it('treats Pi Network 404 responses as ONLINE', async () => {
     (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes('api.minepi.com')) {
+      if (url === 'https://api.minepi.com/') {
         return { ok: false, status: 404 };
       }
       return { ok: true, status: 200 };
@@ -189,7 +189,7 @@ describe('GET /api/health', () => {
   it('returns "degraded" (never a distinct "offline" value) even when one service is fully OFFLINE and another only DEGRADED', async () => {
     (mockPrisma.$queryRaw as jest.Mock).mockRejectedValue(new Error('DB connection failed'));
     (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes('horizon.stellar.org')) {
+      if (url === 'https://horizon.stellar.org/') {
         return { ok: false, status: 503 };
       }
       return { ok: true, status: 200 };
