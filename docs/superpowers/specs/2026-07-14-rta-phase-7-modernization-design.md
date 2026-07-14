@@ -252,7 +252,7 @@ Each PR follows this exact process:
 
 1. **Branch:** `feat/rta-phase7-<pr-label>` (e.g., `feat/rta-phase7-clean-root`)
 2. **Commit:** Single commit or minimal atomic commits. IQRA Chronicle format.
-3. **Verify locally:** `npm run lint` → `npm test` (relevant suites) → `npm run type-check` → `npm run build`
+3. Verify locally: npm run lint → npm run type-check → npm test (relevant suites) → npm run build
 4. **Push + PR:** Open PR against `main`
 5. **CI must pass:** Vercel deploy, GitHub Actions, CodeQL, CodeRabbit
 6. **Merge:** Squash merge to `main`
