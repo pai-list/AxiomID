@@ -1,8 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { setupConsoleErrorCheck } from "./fixtures/helpers";
 
+let testTokenCounter = 0;
+const makeToken = (prefix: string) => `${prefix}-${++testTokenCounter}`;
+const VALID_PI_TOKEN = makeToken("valid-pi");
+const INVALID_PI_TOKEN = makeToken("invalid");
+const SANDBOX_DEV_TOKEN = makeToken("sandbox-dev-bypass");
+const SUPER_SECRET_TOKEN = makeToken("super-secret-leak");
+
 const VALID_BODY = {
-  accessToken: "valid-pi-token-abc123",
+  accessToken: VALID_PI_TOKEN,
   uid: "pi-uid-test-001",
   username: "testuser",
 };
@@ -31,7 +38,7 @@ test.describe("Authentication Flow", () => {
       const res = await request.post("/api/auth/pi", {
         data: {
           ...VALID_BODY,
-          accessToken: "invalid-token-xyz",
+          accessToken: INVALID_PI_TOKEN,
         },
         headers: {
           "User-Agent": "Pi Browser/4.0 (iPhone; iOS 16.0; Scale/3.00)",
@@ -125,7 +132,7 @@ test.describe("Authentication Flow", () => {
     test("sandbox bypass does NOT fire in production env", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
         data: {
-          accessToken: "sandbox-dev-token-bypass-test",
+          accessToken: SANDBOX_DEV_TOKEN,
           uid: "uid-prod-guard-test",
           username: "prodtestuser",
         },
@@ -136,7 +143,7 @@ test.describe("Authentication Flow", () => {
 
       if (res.status() === 200) {
         const json = await res.json();
-        expect(json.data?.piUsername).not.toBe("sandbox-dev-token-bypass-test");
+        expect(json.data?.piUsername).not.toBe(SANDBOX_DEV_TOKEN);
       } else {
         expect([401, 429]).toContain(res.status());
       }
@@ -179,14 +186,14 @@ test.describe("Authentication Flow", () => {
 
     test("no sensitive data in error responses", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
-        data: { accessToken: "super-secret-token-12345", uid: "uid-leak", username: "leak" },
+        data: { accessToken: SUPER_SECRET_TOKEN, uid: "uid-leak", username: "leak" },
         headers: {
           "User-Agent": "Pi Browser/4.0 (iPhone; iOS 16.0; Scale/3.00)",
         },
       });
 
       const text = await res.text();
-      expect(text).not.toContain("super-secret-token-12345");
+      expect(text).not.toContain(SUPER_SECRET_TOKEN);
       expect(text).not.toContain("prisma");
       expect(text).not.toContain("DATABASE_URL");
       expect(text).not.toContain("PI_API_KEY");

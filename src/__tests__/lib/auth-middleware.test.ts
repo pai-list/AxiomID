@@ -28,6 +28,9 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
+
+let testTokenCounter = 0;
+const makeTestToken = (suffix: string) => `test-token-mock-${suffix}-${++testTokenCounter}`;
 import { prisma } from '@/lib/prisma';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -233,13 +236,14 @@ describe('requireAuth', () => {
   });
 
   it('returns error when user not found in database', async () => {
+    const token = makeTestToken('not-found');
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
     mockPrisma.user.findUnique.mockResolvedValue(null);
 
-    const req = mockRequestWithHeader({ authorization: 'Bearer test-token-not-found' });
+    const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
     const result = await requireAuth(req);
 
     expect(result.user).toBeNull();
@@ -568,6 +572,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         xp: 0,
         tier: 'Visitor',
       };
+      const token = makeTestToken('sandbox-chrome');
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({ uid: 'pi-sandbox-bypass', username: 'sandboxbypassuser' }),
@@ -576,7 +581,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
 
       // Chrome UA but SANDBOX_AUTH_BYPASS=true + localhost → isSandboxOrDev=true → Pi Browser check bypassed
       const req = mockRequestWithHeader({
-        authorization: 'Bearer sandbox-chrome-token',
+        authorization: `Bearer ${token}`,
         'user-agent': 'Mozilla/5.0 Chrome/120.0',
       });
 
