@@ -51,6 +51,30 @@ function mockRequestWithHeader(headers: Record<string, string> = {}) {
   } as unknown as NextRequest; // ponytail: test mock — NextRequest-like object without full type
 }
 
+describe('makeTestToken (PR change: unique token generator for tests)', () => {
+  it('includes the provided suffix in the generated token', () => {
+    const token = makeTestToken('my-suffix');
+    expect(token).toContain('my-suffix');
+    expect(token.startsWith('test-token-mock-my-suffix-')).toBe(true);
+  });
+
+  it('generates a different token on each call, even with the same suffix', () => {
+    const tokenA = makeTestToken('dup');
+    const tokenB = makeTestToken('dup');
+    expect(tokenA).not.toBe(tokenB);
+  });
+
+  it('appends a numeric, monotonically increasing counter', () => {
+    const tokenA = makeTestToken('seq');
+    const tokenB = makeTestToken('seq');
+    const numA = Number(tokenA.split('-').pop());
+    const numB = Number(tokenB.split('-').pop());
+    expect(Number.isNaN(numA)).toBe(false);
+    expect(Number.isNaN(numB)).toBe(false);
+    expect(numB).toBeGreaterThan(numA);
+  });
+});
+
 describe('hashToken (PR change: exported)', () => {
   it('returns a 64-character hex string (SHA-256)', () => {
     const result = hashToken('any-token');

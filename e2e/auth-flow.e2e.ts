@@ -15,6 +15,34 @@ const VALID_BODY = {
 };
 
 test.describe("Authentication Flow", () => {
+  test.describe("makeToken helper (PR change: unique token generator)", () => {
+    test("includes the provided prefix in the generated token", () => {
+      const token = makeToken("my-prefix");
+      expect(token.startsWith("my-prefix-")).toBe(true);
+    });
+
+    test("generates a different token on each call, even with the same prefix", () => {
+      const tokenA = makeToken("dup");
+      const tokenB = makeToken("dup");
+      expect(tokenA).not.toBe(tokenB);
+    });
+
+    test("appends a numeric, monotonically increasing counter", () => {
+      const tokenA = makeToken("seq");
+      const tokenB = makeToken("seq");
+      const numA = Number(tokenA.split("-").pop());
+      const numB = Number(tokenB.split("-").pop());
+      expect(Number.isNaN(numA)).toBe(false);
+      expect(Number.isNaN(numB)).toBe(false);
+      expect(numB).toBeGreaterThan(numA);
+    });
+
+    test("module-level constants are all unique, distinct tokens", () => {
+      const tokens = [VALID_PI_TOKEN, INVALID_PI_TOKEN, SANDBOX_DEV_TOKEN, SUPER_SECRET_TOKEN];
+      expect(new Set(tokens).size).toBe(tokens.length);
+    });
+  });
+
   test.describe("POST /api/auth/pi", () => {
     test("valid token returns user data", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
