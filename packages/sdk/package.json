@@ -13,13 +13,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest --runInBand --forceExit",
-    "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
-  },
-  "publishConfig": {
-    "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts"
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
