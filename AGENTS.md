@@ -500,7 +500,7 @@ As the first step, the agent writes a brief plan:
 - **Plan** — step-by-step, smallest batches
 - **Verification** — which tests, lint, type-check, build
 
-Template at `task.md`. Write this BEFORE touching any code.
+Template at `task.template.md`. Copy it to `task.md` (gitignored working copy) and fill it out BEFORE touching any code.
 
 **Two mandatory questions** the agent MUST ask before any execution:
 
