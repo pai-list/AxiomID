@@ -363,7 +363,7 @@ describe("PUT /api/skills/[slug]/tags — business logic", () => {
     mockPrisma.skill.findUnique.mockResolvedValue({ id: "s1", slug: "test-skill", authorId: "user-1" } as any); // ponytail: test mock — partial Prisma model
     mockPrisma.skillTagRelation.deleteMany.mockResolvedValue({ count: 2 });
     mockPrisma.skillTagRelation.createMany.mockResolvedValue({ count: 2 });
-    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }, { id: "t2", name: "Automation", slug: "automation" }] as any);
+    mockPrisma.skillTag.findMany.mockResolvedValueOnce([]).mockResolvedValue([{ id: "t1", name: "AI", slug: "ai" }, { id: "t2", name: "Automation", slug: "automation" }] as unknown as Awaited<ReturnType<typeof prisma.skillTag.findMany>>);
     mockPrisma.skillTag.createMany.mockResolvedValue({ count: 2 });
 
     const req = mockPutRequest({ tags: ["AI", "Automation"] });
