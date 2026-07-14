@@ -102,7 +102,7 @@ const { t, language } = useLanguage();
 // Single key translation
 t('welcome')
 // Bilingual helper for custom components
-const t = (en: string, ar: string) => language === 'en' ? en : ar
+const tb = (en: string, ar: string) => language === 'en' ? en : ar
 ```
 
 ## Pi SDK Guidelines
