@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - One PR at a time, no parallel execution
-- Every PR: `npm run lint` → `npm test` (relevant suites) → `npm run type-check` → `npm run build` before push
+- Every PR: npm run lint → npm run type-check → npm test (relevant suites) → npm run build before push
 - Branch convention: `feat/rta-phase7-<label>`
 - Commit format: IQRA Chronicle `type(scope): description ۞`
 - Squash merge to `main` after CI passes
