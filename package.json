@@ -110,5 +110,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5",
     "undici": "^8.7.0"
+  },
+  "overrides": {
+    "postcss": ">=8.5.10"
   }
 }
