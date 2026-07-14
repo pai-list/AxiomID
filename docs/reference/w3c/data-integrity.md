@@ -7,7 +7,7 @@
 ## Key concepts
 
 - **Data Integrity Proof** — A proof placed in the `proof` property of a JSON-LD document
-- **Ed25519Signature2020** — Proof suite using Ed25519 public keys and RDF Dataset Normalization
+- **Ed25519Signature2018** — Proof suite using Ed25519 public keys and signature generation
 - **Verification Method** — Reference to the public key used for verification (typically a DID URL)
 - **Canonicalization** — RDF Dataset Normalization (URDNA2015) for deterministic serialisation
 - **Proof Purpose** — Distinguishes authentication, assertion, capability invocation/delegation
