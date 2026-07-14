@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // A user is verified if either:
     // 1. The Pi API returns kyc_verified: true
     // 2. They have at least one RELEASED payment in our database (which implies Pi KYC)
-    const kycVerified = kycResult.kycVerified || user.payments.length > 0;
+    const kycVerified = kycResult.kycVerified || user.payments.length > 0 || user.kycStatus === 'VERIFIED';
     const kycStatus = kycVerified ? 'VERIFIED' : 'PENDING';
 
     const stampsToScore = user.stamps.map(s => ({
