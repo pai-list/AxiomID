@@ -45,7 +45,7 @@ export class DelegationResolver {
     this.d1 = d1;
   }
 
-  private isAdmin(did?: string): boolean {
+  isAdmin(did?: string): boolean {
     if (!did) return false;
     const ADMIN_DIDS = [
       "did:axiom:axiomid.app:admin",
