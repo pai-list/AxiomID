@@ -10,9 +10,9 @@ AxiomID is a decentralized identity platform that combines Pi Network authentica
 
 - **DID (Decentralized Identifier):** Each user gets a W3C-compliant `did:axiom:pi:{uid}` identifier
 - **Sovereign Passport:** A public identity card with trust scores, verification badges, and attestation history
-- **Trust Score:** Algorithmic reputation computed from XP (70%) + verified stamps (30%)
+- **Trust Score:** Algorithmic reputation. Basic: XP (70%) + Stamps (30%). Full (with tenure/semantic): XP (50%) + Stamps (20%) + Tenure (10%) + Semantic Trust (20%)
 - **Stamps:** Cryptographically signed verifiable credentials (KYA, Social, Pi Wallet, Agent Delegation)
-- **Agent Governance:** AI agents execute skills in isolated sandboxes with ethical oversight
+- **Agent Governance:** AI agents execute skills in isolated sandboxes with ethical oversight, separating Human Sovereign and AI Agent identities.
 
 ## Trust Tiers
 

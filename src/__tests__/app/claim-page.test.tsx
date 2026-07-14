@@ -524,6 +524,22 @@ describe("ClaimPage — step 3 handleDeploy (agent activation)", () => {
     expect(link).toHaveAttribute("href", "/dashboard");
   });
 
+  it("allows typing a custom agent name which is passed to createAgent", async () => {
+    const createAgent = jest.fn().mockResolvedValue(true);
+    const activateAgent = jest.fn().mockResolvedValue(true);
+    await navigateToStep3({ createAgent, activateAgent });
+
+    const input = screen.getByPlaceholderText("My Agent");
+    fireEvent.change(input, { target: { value: "Super Agent" } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("ACTIVATE AGENT"));
+    });
+
+    expect(createAgent).toHaveBeenCalledWith("Super Agent");
+    expect(activateAgent).toHaveBeenCalled();
+  });
+
   it("shows an error toast and does not call activateAgent when createAgent returns false", async () => {
     const createAgent = jest.fn().mockResolvedValue(false);
     const activateAgent = jest.fn().mockResolvedValue(true);

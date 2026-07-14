@@ -131,7 +131,7 @@ describe("POST /api/agent/identity", () => {
 
     expect(data.did).toBeDefined();
     expect(typeof data.did).toBe("string");
-    expect(data.did).toBe("did:axiom:axiomid.app:pi:user-12345");
+    expect(data.did).toBe("did:axiom:user:6559bcdd2fcf9026");
   });
 
   it("anonymous response includes verification_uri in claim", async () => {
@@ -291,8 +291,8 @@ describe("POST /api/agent/identity - Pi JWT verification", () => {
     const res = await POST(req);
     const data = await res.json();
 
-    expect(data.did).toBe("did:axiom:axiomid.app:pi:pi-user-999");
-    expect(mockCreateAssertion).toHaveBeenCalledWith("did:axiom:axiomid.app:pi:pi-user-999", ["api.read", "api.write"]);
+    expect(data.did).toBe("did:axiom:user:6559bcdd2fcf9026");
+    expect(mockCreateAssertion).toHaveBeenCalledWith("did:axiom:user:6559bcdd2fcf9026", ["api.read", "api.write"]);
   });
 
   it("logs an error and does not fall back when Pi JWKS verification fails in production", async () => {

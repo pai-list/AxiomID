@@ -67,6 +67,7 @@ export default function ClaimPage() {
   const [verifiedTrustScore, setVerifiedTrustScore] = useState<number | null>(null);
   const [deployed, setDeployed] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [agentName, setAgentName] = useState("My Agent");
 
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
@@ -145,10 +146,10 @@ export default function ClaimPage() {
     }
   };
 
-  const handleDeploy = async () => {
+  const handleDeploy = async (name: string) => {
     setIsDeploying(true);
     try {
-      const created = await createAgent();
+      const created = await createAgent(name);
       if (!created) {
         toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
         return;
@@ -340,6 +341,8 @@ export default function ClaimPage() {
                       isDeploying={isDeploying}
                       verifiedTrustScore={verifiedTrustScore}
                       user={user}
+                      agentName={agentName}
+                      setAgentName={setAgentName}
                     />
                   )}
                 </div>
