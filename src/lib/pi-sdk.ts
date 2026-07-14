@@ -337,7 +337,7 @@ export async function connectPi(pushLog?: (msg: string) => void): Promise<PiSdkA
         // keep running (and, on the timeout branch, does not reject an
         // unobserved promise on a subsequent retry).
         return Promise.race([
-          piInstance.authenticate(["username", "payments"], onIncompletePaymentFound),
+          piInstance.authenticate(["username", "payments", "wallet_address"], onIncompletePaymentFound),
           timeout,
         ]).finally(() => clearTimeout(timer));
       };

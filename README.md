@@ -21,25 +21,72 @@
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
+  <img src="https://img.shields.io/badge/Database-Neon-00e599?style=flat-square" alt="Neon" />
   <img src="https://img.shields.io/badge/status-closed%20beta-orange?style=flat-square" alt="Closed Beta" />
 </p>
 
 ---
 
-AxiomID is a Next.js application that combines Pi Network authentication, passport-style identity claims, and a lightweight governance layer for human-AI collaboration.
+## 🎭 The Vision: Human-AI Synergy
 
-## What is available now
+AxiomID is a sovereign authorization protocol that bridges the gap between humans and AI agents. In a world where agents execute on our behalf, AxiomID provides the **Sovereign Passport** needed to verify identity, manage trust, and govern autonomous spending.
 
-- Pi Browser sign-in and callback handling
-- Demo and real identity claim flows
-- Public passport pages with trust and badge metadata
-- Authenticated dashboard with marketplace, settings, and sandbox playground
-- Explorer, leaderboard, docs, and service status views
-- API routes for auth, passport publishing, Pi payments, and health checks
-- **Spend Request** — agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
-- **TrustChain** — append-only hash chain for all agent actions
-- **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
-- **Dual-Identity Governance** — explicit separation and cooperation of Human Sovereign and AI Agent nodes, verified via the protocol
+### 🏗️ Protocol Architecture
+```mermaid
+graph TD
+    User((Human Sovereign))
+    Agent((AI Agent))
+    AxiomID{AxiomID Protocol}
+    PiSDK[Pi Network SDK]
+    
+    User <--> AxiomID
+    Agent <--> AxiomID
+    AxiomID <--> PiSDK
+    
+    subgraph Identity
+        User -- Passport --> AxiomID
+        AxiomID -- Sovereign Keys --> Agent
+    end
+    
+    subgraph Governance
+        Agent -- Spend Request --> User
+        User -- Sign/Approve --> PiSDK
+    end
+```
+
+## ⚡ Core Capabilities
+
+- 🆔 **Dual-Identity Governance** — Explicit separation of Human and Agent nodes.
+- 🛡️ **TrustChain** — Immutable audit log of all agent actions, hashed and verifiable.
+- 💰 **Agentic Payments** — A secure pipeline for agents to request and users to approve Pi payments.
+- 📖 **Truth RAG** — AI-powered wisdom engine indexed over 6,236 verses.
+- 🌐 **Pi Browser Native** — Deep integration with Pi SDK for seamless auth and wallet connectivity.
+
+### 💸 Spend Request Lifecycle
+```mermaid
+sequenceDiagram
+    participant A as AI Agent
+    participant S as Server (AxiomID)
+    participant U as Human Sovereign (User)
+    participant P as Pi SDK / Wallet
+    
+    A->>S: POST /api/spend/request
+    S->>U: Display on Dashboard
+    U->>P: Approve & Pay (Pi Browser)
+    P->>S: POST /api/pi/payment/approve
+    P->>P: Submit Tx to Stellar
+    P->>S: POST /api/pi/payment/complete
+    S->>S: Upgrade User KYC Status & XP
+```
+
+## 🚀 What is available now
+
+- ✅ **Pi Browser Auth** — Secure sign-in with callback handling.
+- ✅ **Identity Claim** — Multi-step wizard with KYC verification.
+- ✅ **Public Passports** — Shareable profiles with trust metadata and badges.
+- ✅ **Agent Marketplace** — Discover and install skills for your agent.
+- ✅ **Telemetry Dashboard** — Real-time monitoring of agent health and logs.
+- ✅ **Pi Ads Boost** — Earn trust and XP by supporting the ecosystem.
 
 ## Routes
 
