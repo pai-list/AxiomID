@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## Prerequisites
 
-- **Node.js 22+** (check with `node --version`)
+- **Node.js 20+** (check with node --version)
 - **npm 10+** (check with `npm --version`)
 - **Git** with signed commits (recommended)
 - **Pi Browser** (for testing Pi Network features)
