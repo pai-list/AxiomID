@@ -40,8 +40,16 @@ export class AgentDispatcher {
     this.env = env!;
   }
 
-  async dispatch(request: DispatchRequest): Promise<DispatchResult> {
+  async dispatch(request: DispatchRequest, authenticatedAgentId?: string): Promise<DispatchResult> {
     const startTime = Date.now();
+
+    // Prevent arbitrary userDid/agentId spoofing by validating authenticatedAgentId if present
+    if (authenticatedAgentId) {
+      // If the caller is an agent, ensure it only dispatches for itself or its owner
+      if (authenticatedAgentId !== request.userDid && request.params.agentId && authenticatedAgentId !== request.params.agentId) {
+        throw new Error("Unauthorized: Authenticated Agent ID mismatch");
+      }
+    }
 
     // Verify skill is installed
     const installed = await this.d1.db
