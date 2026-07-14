@@ -11,7 +11,7 @@
 - **Accounts** — Stellar accounts identified by a public key (`G...`), with a sequence number for transaction ordering
 - **Operations** — Individual actions within a transaction (payment, manage data, set options, etc.)
 - **Transaction** — Atomic bundle of one or more operations with a fee, sequence number, and signature
-- **Manage Data Operation** — Stores key-value pairs (up to 64 bytes key, 64 bytes value) on the Stellar ledger — used for anchoring hashes
+- **Transaction Memo** — Stores a truncated 28-byte hash in the transaction memo field of a self-payment transaction on the Stellar ledger
 - **Horizon API** — RESTful HTTP interface to query the network and submit transactions
 
 ## How AxiomID uses it
