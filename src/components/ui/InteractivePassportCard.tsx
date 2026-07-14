@@ -7,6 +7,7 @@ import { sharePassport } from "@/lib/pi-native-features";
 import { Fingerprint, Award, CheckCircle, Lock, Download, Coins, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import PassportKeyManager from "./PassportKeyManager";
+import { logger } from "@/lib/logger";
 
 interface InteractivePassportCardProps {
   user: {
@@ -56,7 +57,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
 
 
   const [isExporting, setIsExporting] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
 
   const handleExportImage = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -80,9 +80,11 @@ export default function InteractivePassportCard({ user, readonly = false, locked
       const link = document.createElement("a");
       link.href = image;
       link.download = `axiom-passport-${displayUsername}.png`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      console.error("Export failed:", err);
+      logger.error("Export failed:", err);
       toast.error(t("passport_export_failed"));
     } finally {
       if (cardRef.current) {
@@ -92,29 +94,17 @@ export default function InteractivePassportCard({ user, readonly = false, locked
     }
   };
 
-  const handleMintSBT = async (e: React.MouseEvent) => {
+  const handleMintSBT = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isMinting) return;
-
-    setIsMinting(true);
-    try {
-      // Simulate SBT Minting on Stellar
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      alert(t("mint_success") || "Soulbound Token minted successfully on Stellar!");
-    } catch (err) {
-      console.error("Minting failed:", err);
-      alert("Failed to mint SBT.");
-    } finally {
-      setIsMinting(false);
-    }
+    toast.info(t("mint_sbt_coming_soon"));
   };
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/passport/${encodeURIComponent(did)}`;
     await sharePassport({
-      title: "AxiomID Passport",
-      text: "Check out my AxiomID Passport!",
+      title: t("share_title") || "AxiomID Passport",
+      text: t("share_text") || "Check out my AxiomID Passport!",
       url: shareUrl,
     });
   };
@@ -324,7 +314,6 @@ export default function InteractivePassportCard({ user, readonly = false, locked
           </button>
           <button
             onClick={handleMintSBT}
-            disabled={isMinting}
             className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md border border-white/10 transition-colors tooltip-trigger"
             title={t("mint_sbt") || "Mint as SBT (Stellar)"}
           >

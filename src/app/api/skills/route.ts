@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
   }
 
   const { tier, q: search, tags, sort, minPrice, maxPrice, limit, offset } = parsedQuery.data;
+  const soulPrinciple = searchParams.get('soulPrinciple') as 'MURAQABAH' | 'TAWBAH' | 'TRUSTCHAIN' | 'TASBIH' | 'SABIYYAH' | 'BARAKAH' | undefined;
+
 
   try {
     const where: Record<string, unknown> = {
@@ -47,6 +49,9 @@ export async function GET(request: NextRequest) {
 
     if (tier) {
       where.tier = tier;
+    }
+    if (soulPrinciple) {
+      where.soulPrinciple = soulPrinciple;
     }
 
     if (search) {

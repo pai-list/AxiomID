@@ -1,0 +1,40 @@
+<svg width="820" height="312" viewBox="0 0 820 312" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AxiomID Facebook cover photo</title>
+<desc>Dark graphite cover with the AxiomID logomark, wordmark and tagline, keeping the lower-left clear for the profile photo overlap</desc>
+
+<rect width="820" height="312" fill="#12131A"/>
+
+<!-- identity-graph motif, upper right, well clear of the lower-left profile photo overlap zone -->
+<g stroke="#20222E" stroke-width="1.5" fill="none">
+<line x1="560" y1="50" x2="640" y2="30"/>
+<line x1="640" y1="30" x2="710" y2="70"/>
+<line x1="640" y1="30" x2="620" y2="100"/>
+<line x1="710" y1="70" x2="760" y2="40"/>
+<line x1="710" y1="70" x2="740" y2="130"/>
+<line x1="620" y1="100" x2="680" y2="140"/>
+</g>
+<g fill="#2C2E3C">
+<circle cx="560" cy="50" r="3"/>
+<circle cx="640" cy="30" r="4"/>
+<circle cx="710" cy="70" r="4"/>
+<circle cx="620" cy="100" r="3"/>
+<circle cx="760" cy="40" r="3"/>
+<circle cx="740" cy="130" r="3"/>
+<circle cx="680" cy="140" r="3"/>
+</g>
+<circle cx="640" cy="30" r="4" fill="#E3A548"/>
+
+<!-- content kept centered / right-weighted, clear of the bottom-left profile-photo overlap -->
+<g transform="translate(300, 100) scale(0.30)">
+<polygon points="256,120 354,177 354,335 256,392 158,335 158,177"
+  fill="none" stroke="#3A3D4E" stroke-width="5"/>
+<path d="M 196 258 L 238 302 L 330 196"
+  fill="none" stroke="#E3A548" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="354" cy="177" r="11" fill="#E3A548"/>
+</g>
+
+<text x="460" y="168" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700" fill="#F2EFE6">Axiom<tspan fill="#E3A548">ID</tspan></text>
+<text x="462" y="200" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" letter-spacing="1.3" fill="#8B8D99">VERIFIABLE IDENTITY FOR THE AGENTIC WEB</text>
+<text x="462" y="228" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#5A5C68">W3C DID protocol · Pi Network · 18M+ verified humans</text>
+
+</svg>

@@ -45,8 +45,9 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
       // ponytail: use unified theme-aware background color mix to support light mode transitions smoothly
       className="sticky top-0 w-full z-50 backdrop-blur-xl border-b"
       style={{
-        background: "color-mix(in srgb, var(--bg-deep) 90%, transparent)",
-        borderColor: "var(--card-border)"
+        background: "color-mix(in srgb, var(--bg-deep) 92%, transparent)",
+        borderColor: "var(--card-border)",
+        color: "var(--text-primary)",
       }}
     >
       <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3 px-4 sm:px-6 py-4 sm:py-6">
@@ -66,7 +67,7 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
         </div>
 
         {/* Navigation & Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <nav aria-label="Main navigation" className="flex items-center gap-2 sm:gap-3">
           {showBack && (
             <Link href="/" className="btn-ghost text-xs font-mono px-3 py-1.5 flex items-center gap-1.5">
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -117,7 +118,7 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
               )}
             </>
           )}
-        </div>
+        </nav>
       </div>
     </motion.header>
   );

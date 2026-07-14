@@ -5,8 +5,8 @@
 import { ACTIONS } from '@/lib/actions';
 
 describe('Pi-Native ACTIONS', () => {
-  it('has 10 actions defined', () => {
-    expect(Object.keys(ACTIONS)).toHaveLength(10);
+  it('has 15 actions defined', () => {
+    expect(Object.keys(ACTIONS)).toHaveLength(15);
   });
 
   it('each action has id, xp, weight, and tier', () => {

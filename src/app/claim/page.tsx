@@ -7,7 +7,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { DevModeBanner } from "@/components/DevModeBanner";
 import { motion, AnimatePresence } from "framer-motion";
-import { determineSandboxMode } from "@/lib/pi-sdk";
+import confetti from "canvas-confetti";
+import { determineSandboxMode, checkPiBrowser } from "@/lib/pi-sdk";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 import {
   Wallet,
   Shield,
@@ -15,11 +18,12 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCircle2,
-  Sparkles,
-  Lock,
-  Globe,
+      Globe,
 } from "lucide-react";
-import Link from "next/link";
+import { ConnectStep } from "@/components/claim/ConnectStep";
+import { VerifyStep } from "@/components/claim/VerifyStep";
+import { DeployStep } from "@/components/claim/DeployStep";
+
 
 const steps = [
   { id: 1, labelKey: "connect", icon: Wallet },
@@ -62,10 +66,12 @@ export default function ClaimPage() {
   const [verified, setVerified] = useState(false);
   const [verifiedTrustScore, setVerifiedTrustScore] = useState<number | null>(null);
   const [deployed, setDeployed] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [connectError, setConnectError] = useState<string | null>(null);
   const [showBrowserModal, setShowBrowserModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const closeBrowserModal = () => { setCopied(false); setShowBrowserModal(false); };
 
   const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, piAccessToken } = useWallet();
   const { language } = useLanguage();
@@ -89,7 +95,11 @@ export default function ClaimPage() {
 
   const handleConnect = async () => {
     setConnectError(null);
-    if (!isPiBrowser && !determineSandboxMode()) {
+    // ponytail: Real-time Pi Browser check — isPiBrowser from context may lag
+    // behind actual SDK availability (polling interval). Check window.Pi
+    // directly to catch the case where SDK loaded but state hasn't updated yet.
+    const actuallyInPiBrowser = isPiBrowser || (typeof window !== "undefined" && !!window.Pi) || checkPiBrowser();
+    if (!actuallyInPiBrowser && !determineSandboxMode()) {
       setShowBrowserModal(true);
       return;
     }
@@ -128,18 +138,40 @@ export default function ClaimPage() {
         }
       }
     } catch (err) {
-      console.error("Verification failed:", err);
+      logger.error("Verification failed:", err);
+      toast.error(t("Verification failed", "فشل التحقق"));
     } finally {
       setIsVerifying(false);
     }
   };
 
   const handleDeploy = async () => {
-    const created = await createAgent();
-    if (!created) return;
-    const activated = await activateAgent();
-    if (activated) {
-      setDeployed(true);
+    setIsDeploying(true);
+    try {
+      const created = await createAgent();
+      if (!created) {
+        toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
+        return;
+      }
+      const activated = await activateAgent();
+      if (activated) {
+        setDeployed(true);
+        toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#22c55e", "#3b82f6", "#6366f1", "#ffffff"],
+          disableForReducedMotion: true,
+        });
+      } else {
+        toast.error(t("Agent activation failed", "فشل تفعيل الوكيل"));
+      }
+    } catch (err) {
+      logger.error("Deployment failed:", err);
+      toast.error(t("Deployment failed", "فشل عملية النشر"));
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -186,19 +218,23 @@ export default function ClaimPage() {
           </motion.div>
 
           {/* Stepper Progress */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono text-white/40">{t("Step", "خطوة")} {currentStep}/3</span>
-              <span className="text-[10px] font-mono text-white/40">{Math.round((currentStep / 3) * 100)}%</span>
-            </div>
-            <div className="w-full h-1 rounded-full bg-white/5 overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-electric-blue to-neon-green rounded-full"
-                animate={{ width: `${(currentStep / 3) * 100}%` }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
-          </div>
+           <div className="mb-4">
+             <div className="flex items-center justify-between mb-2">
+               <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">
+                 {t("Step", "خطوة")} {currentStep}/3
+               </span>
+               <span className="text-[10px] font-mono text-white/40">
+                 {Math.round((currentStep / 3) * 100)}% {t("Complete", "مكتمل")}
+               </span>
+             </div>
+             <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden p-[1px] border border-white/5">
+               <motion.div
+                 className="h-full bg-gradient-to-r from-electric-blue via-blue-500 to-neon-green rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                 animate={{ width: `${(currentStep / 3) * 100}%` }}
+                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+               />
+             </div>
+           </div>
 
           {/* Circle Stepper */}
           <div className="flex items-center justify-center gap-3 mb-14">
@@ -266,380 +302,45 @@ export default function ClaimPage() {
                 className="w-full"
               >
                 <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 sm:p-10 shadow-2xl shadow-black/40">
+
                   {/* Step 1: Connect */}
                   {currentStep === 1 && (
-                    <div className="text-center">
-                      <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
-                        <Wallet className="w-10 h-10 text-electric-blue" />
-                      </div>
-                      <h2 className="text-2xl font-sans font-bold mb-2">
-                        {t("Connect Wallet", "اتصل بالمحفظة")}
-                      </h2>
-                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
-                        {t(
-                          "Link your Pi Network wallet to begin your decentralized identity journey",
-                          "اربط محفظة شبكة Pi لبدء رحلة هويتك اللامركزية"
-                        )}
-                      </p>
-
-                      {walletConnected || user?.walletAddress ? (
-                        <div className="bg-neon-green/10 border border-neon-green/20 rounded-xl p-4 mb-6">
-                          <div className="flex items-center justify-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-neon-green" />
-                            <span className="font-mono text-sm text-neon-green">
-                              {t("Connected", "متصل")}
-                            </span>
-                          </div>
-                          <p className="text-white/40 font-mono text-xs mt-2">
-                            {user?.walletAddress
-                              ? `${user.walletAddress.slice(0, 12)}...${user.walletAddress.slice(-6)}`
-                              : "Connected"}
-                          </p>
-                        </div>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                          whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                          onClick={handleConnect}
-                          disabled={isConnecting}
-                          className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue/80 to-blue-600/80 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Wallet className="w-5 h-5" />
-                          {isConnecting
-                            ? t("CONNECTING...", "جاري الاتصال...")
-                            : t("CONNECT PI WALLET",
-                            "اتصل بمحفظة PI"
-                          )}
-                          <ChevronRight className="w-4 h-4" />
-                        </motion.button>
-                      )}
-
-                      {!isPiBrowser && !walletConnected && !user?.walletAddress && (
-                        <div className="mt-4 px-4 py-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-                          <p className="text-yellow-500 font-mono text-xs font-bold mb-1">
-                            {t("Pi Browser Required", "يتطلب Pi Browser")}
-                          </p>
-                          <p className="text-white/40 font-mono text-[10px]">
-                            {t(
-                              "Open this app inside Pi Browser to connect your wallet and claim your identity.",
-                              "افتح هذا التطبيق داخل Pi Browser لربط محفظتك والحصول على هويتك."
-                            )}
-                          </p>
-                        </div>
-                      )}
-
-                      {connectError && (
-                        <div className="mt-4 px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/20">
-                          <p className="text-red-400 font-mono text-xs">{connectError}</p>
-                        </div>
-                      )}
-
-                      <div className="mt-8 flex items-center justify-center gap-2 text-white/30">
-                        <Lock className="w-3.5 h-3.5" />
-                        <span className="font-mono text-xs">
-                          {t(
-                            "Non-custodial · Your keys, your identity",
-                            "غير أصيل · مفاتيحك، هويتك"
-                          )}
-                        </span>
-                      </div>
-                    </div>
+                    <ConnectStep
+                      t={t}
+                      walletConnected={walletConnected}
+                      user={user}
+                      handleConnect={handleConnect}
+                      isConnecting={isConnecting}
+                      isPiBrowser={isPiBrowser}
+                      connectError={connectError}
+                    />
                   )}
+
 
                   {/* Step 2: Verify */}
                   {currentStep === 2 && (
-                    <div className="text-center">
-                      <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
-                        <Shield className="w-10 h-10 text-electric-blue" />
-                      </div>
-                      <h2 className="text-2xl font-sans font-bold mb-2">
-                        {t("Know Your Agent", "اعرف وكيلك")}
-                      </h2>
-                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
-                        {t(
-                          "Build your trust score through decentralized verification",
-                          "ابنِ نقاط ثقتك من خلال التحقق اللامركزي"
-                        )}
-                      </p>
-
-                      {!verified ? (
-                        <div className="space-y-4">
-                          {/* Verification Items */}
-                          <div className="space-y-3">
-                            {[
-                              {
-                                key: "kyc" as const,
-                                icon: Shield,
-                                label: t("Pi KYC", "التحقق من هوية Pi"),
-                                status: verificationItems.kyc,
-                              },
-                              {
-                                key: "payment" as const,
-                                icon: Wallet,
-                                label: t("Payment Proof", "إثبات الدفع"),
-                                status: verificationItems.payment,
-                              },
-                            ].map((item) => {
-                              const ItemIcon = item.icon;
-                              return (
-                                <div
-                                  key={item.key}
-                                  className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {item.status ? (
-                                      <CheckCircle2 className="w-4 h-4 text-neon-green" />
-                                    ) : (
-                                      <div className="w-4 h-4 rounded-full border border-white/20" />
-                                    )}
-                                    <ItemIcon className="w-4 h-4 text-white/40" />
-                                    <span className="font-mono text-sm text-white/70">
-                                      {item.label}
-                                    </span>
-                                  </div>
-                                  <span
-                                    className={`font-mono text-xs ${
-                                      item.status
-                                        ? "text-neon-green"
-                                        : "text-white/30"
-                                    }`}
-                                  >
-                                    {item.status
-                                      ? t("VERIFIED", "موثق")
-                                      : t("PENDING", "قيد الانتظار")}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          <motion.button
-                            whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            onClick={handleVerify}
-                            disabled={isVerifying}
-                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-semibold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow disabled:opacity-50"
-                          >
-                            {isVerifying ? (
-                              <>
-                                <motion.div
-                                  animate={{ rotate: 360 }}
-                                  transition={{
-                                    duration: 1,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                  }}
-                                >
-                                  <Shield className="w-5 h-5" />
-                                </motion.div>
-                                {t(
-                                  "VERIFYING...",
-                                  "جارٍ التحقق..."
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <Globe className="w-5 h-5" />
-                                {t(
-                                  "START VERIFICATION",
-                                  "بدء التحقق"
-                                )}
-                              </>
-                            )}
-                          </motion.button>
-                        </div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-neon-green/10 border border-neon-green/20 rounded-xl p-6"
-                        >
-                          <CheckCircle2 className="w-12 h-12 text-neon-green mx-auto mb-3" />
-                          <p className="font-mono text-sm text-neon-green font-bold">
-                            {t(
-                              "VERIFICATION COMPLETE",
-                              "اكتمل التحقق"
-                            )}
-                          </p>
-                          <p className="font-mono text-xs text-white/40 mt-1">
-                            {t("Trust Score: ", "نقاط الثقة: ")}{verifiedTrustScore ?? user?.trustScore ?? 0}
-                          </p>
-                        </motion.div>
-                      )}
-                    </div>
+                    <VerifyStep
+                      t={t}
+                      verified={verified}
+                      verificationItems={verificationItems}
+                      handleVerify={handleVerify}
+                      isVerifying={isVerifying}
+                      verifiedTrustScore={verifiedTrustScore}
+                      user={user}
+                    />
                   )}
+
 
                   {/* Step 3: Activate Agent */}
                   {currentStep === 3 && (
-                    <div className="text-center">
-                      <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center">
-                        <Rocket className="w-10 h-10 text-electric-blue" />
-                      </div>
-                      <h2 className="text-2xl font-sans font-bold mb-2">
-                        {t(
-                          "Activate Your Agent",
-                          "تفعيل وكيلك"
-                        )}
-                      </h2>
-                      <p className="text-white/40 font-sans text-sm mb-8 max-w-sm mx-auto">
-                        {t(
-                          "Deploy your sovereign agent passport on-chain. Your agent will be able to transact, verify, and build trust across the network.",
-                          "نشر جواز سفر الوكيل السيادي على السلسلة. سيكون وكيلك قادراً على المعاملات والتحقق وبناء الثقة عبر الشبكة."
-                        )}
-                      </p>
-
-                      {!deployed ? (
-                        <div className="space-y-6">
-                          {/* Passport Preview */}
-                          <div className="bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/[0.1] rounded-2xl backdrop-blur-xl p-6 text-left relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-electric-blue/10 rounded-full blur-3xl" />
-                            <div className="relative">
-                              <div className="flex items-center gap-2 mb-4">
-                                <div className="w-8 h-8 rounded-lg bg-electric-blue/20 flex items-center justify-center">
-                                  <Rocket className="w-4 h-4 text-electric-blue" />
-                                </div>
-                                <span className="font-mono text-xs text-white/50">
-                                  AXIOM AGENT PASSPORT
-                                </span>
-                              </div>
-                              <div className="space-y-3">
-                                <div className="flex justify-between border-b border-white/5 pb-2">
-                                  <span className="font-mono text-xs text-white/40">
-                                    {t("Status", "الحالة")}
-                                  </span>
-                                  <span className="font-mono text-xs text-neon-green">
-                                    {t("READY", "جاهز")}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between border-b border-white/5 pb-2">
-                                  <span className="font-mono text-xs text-white/40">
-                                    {t("Trust", "الثقة")}
-                                  </span>
-                                  <span className="font-mono text-xs text-electric-blue">
-                                    {verifiedTrustScore ?? user?.trustScore ?? 0}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="font-mono text-xs text-white/40">
-                                    {t("Network", "الشبكة")}
-                                  </span>
-                                  <span className="font-mono text-xs text-white/60">
-                                    Pi Testnet
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <motion.button
-                            whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                            onClick={handleDeploy}
-                            className="w-full max-w-sm mx-auto bg-gradient-to-r from-neon-green/90 to-green-500 text-black font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-neon-green/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-neon-green/20 transition-shadow"
-                          >
-                            <Rocket className="w-5 h-5" />
-                            {t(
-                              "ACTIVATE AGENT",
-                              "تفعيل الوكيل"
-                            )}
-                          </motion.button>
-                          <p className="text-white/30 font-mono text-[10px] mt-2">
-                            {t(
-                              "This will create your DID document and mint your passport NFT.",
-                              "سيؤدي هذا إلى إنشاء مستند DID وإصدار جواز NFT الخاص بك."
-                            )}
-                          </p>
-                        </div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="space-y-6"
-                        >
-                          <div className="bg-neon-green/10 border border-neon-green/20 rounded-2xl p-8">
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 200,
-                                damping: 10,
-                              }}
-                            >
-                              <CheckCircle2 className="w-16 h-16 text-neon-green mx-auto mb-4" />
-                            </motion.div>
-                            <h3 className="font-mono text-lg font-bold text-neon-green mb-2">
-                              {t(
-                                "AGENT ACTIVATED",
-                                "تم تفعيل الوكيل"
-                              )}
-                            </h3>
-                            <p className="font-mono text-sm text-white/50">
-                              {t(
-                                "Your sovereign identity is now on-chain",
-                                "هويتك السيادية الآن على السلسلة"
-                              )}
-                            </p>
-                          </div>
-
-                          <Link href="/dashboard">
-                            <motion.button
-                              whileHover={{ scale: 1.03, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                              whileTap={{ scale: 0.97, transition: { ease: [0.16, 1, 0.3, 1] as const } }}
-                              className="w-full max-w-sm mx-auto bg-gradient-to-r from-electric-blue to-blue-600 text-white font-sans font-bold py-4 px-8 rounded-xl backdrop-blur-md shadow-lg shadow-electric-blue/10 border border-white/10 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-electric-blue/20 transition-shadow"
-                            >
-                              {t(
-                                "ENTER DASHBOARD",
-                                "الدخول إلى لوحة التحكم"
-                              )}
-                              <ChevronRight className="w-5 h-5" />
-                            </motion.button>
-                          </Link>
-
-                          {/* What happens next? */}
-                          <div className="mt-6 text-left">
-                            <p className="text-white/40 font-mono text-xs uppercase tracking-wider mb-3">
-                              {t("What happens next?", "ماذا يحدث بعد ذلك؟")}
-                            </p>
-                            <div className="grid grid-cols-1 gap-2">
-                              {[
-                                {
-                                  icon: Sparkles,
-                                  title: t("Earn your first XP", "اكسب أول نقاط XP"),
-                                  desc: t("Complete KYA verification and connect accounts", "أكمل التحقق من KYA واربط الحسابات"),
-                                },
-                                {
-                                  icon: Globe,
-                                  title: t("Explore the network", "استكشف الشبكة"),
-                                  desc: t("See other agents and their trust scores", "شاهد العملاء الآخرين ونقاط ثقتهم"),
-                                },
-                                {
-                                  icon: Rocket,
-                                  title: t("Deploy your first skill", "نشر أول مهارة"),
-                                  desc: t("Give your agent new capabilities from the marketplace", "امنح وكيلك قدرات جديدة من السوق"),
-                                },
-                              ].map((item) => {
-                                const ItemIcon = item.icon;
-                                return (
-                                  <div
-                                    key={item.title}
-                                    className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-3"
-                                  >
-                                    <div className="w-8 h-8 rounded-lg bg-electric-blue/10 border border-electric-blue/20 flex items-center justify-center shrink-0">
-                                      <ItemIcon className="w-4 h-4 text-electric-blue" />
-                                    </div>
-                                    <div>
-                                      <p className="text-white/80 font-sans text-xs font-medium">{item.title}</p>
-                                      <p className="text-white/40 font-sans text-[10px]">{item.desc}</p>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </div>
+                    <DeployStep
+                      t={t}
+                      deployed={deployed}
+                      handleDeploy={handleDeploy}
+                      isDeploying={isDeploying}
+                      verifiedTrustScore={verifiedTrustScore}
+                      user={user}
+                    />
                   )}
                 </div>
               </motion.div>
@@ -703,7 +404,7 @@ export default function ClaimPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowBrowserModal(false)}
+              onClick={closeBrowserModal}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
             {/* Content Container */}
@@ -745,7 +446,7 @@ export default function ClaimPage() {
                             setTimeout(() => setCopied(false), 2000);
                           }
                         } catch (err) {
-                          console.error("Failed to copy link: ", err);
+                          logger.error("Failed to copy link: ", err);
                         }
                       }}
                       className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"
@@ -762,7 +463,7 @@ export default function ClaimPage() {
                   </div>
 
                   <button
-                    onClick={() => setShowBrowserModal(false)}
+                    onClick={closeBrowserModal}
                     className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-colors"
                   >
                     {t("Got it", "فهمت")}

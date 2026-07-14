@@ -3,12 +3,33 @@
  * Timing-safe shared-secret verification.
  */
 
+import { timingSafeEqual } from "node:crypto";
 import type { Env } from "./types";
 
 export const PUBLIC_ROUTES = ["/health", "/status", "/api/trust/", "/api/truth/", "/api/skills"];
 
 const PUBLIC_EXACT = new Set(["/health", "/status", "/api/skills"]);
 const PUBLIC_PREFIXES = ["/api/trust/", "/api/truth/"];
+
+/**
+ * Constant-time string comparison to prevent timing attacks.
+ * Uses native node:crypto.timingSafeEqual for robust protection.
+ */
+export function safeCompare(a: string, b: string): boolean {
+  if (typeof a !== "string" || typeof b !== "string") {
+    return false;
+  }
+
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+
+  // timingSafeEqual requires buffers of the same length.
+  if (aBuf.length !== bBuf.length) {
+    return false;
+  }
+
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 export function verifyAuth(request: Request, env: Env): { authorized: boolean; agentId?: string } {
   const url = new URL(request.url);
@@ -22,21 +43,13 @@ export function verifyAuth(request: Request, env: Env): { authorized: boolean; a
   }
 
   const authHeader = request.headers.get("X-Shared-Secret");
-  if (!env.SHARED_SECRET_TOKEN_VERCEL_CF || !authHeader) {
-    return { authorized: false };
-  }
-
   const secret = env.SHARED_SECRET_TOKEN_VERCEL_CF;
-  if (authHeader.length !== secret.length) {
+
+  if (!secret || !authHeader) {
     return { authorized: false };
   }
 
-  let match = 0;
-  for (let i = 0; i < authHeader.length; i++) {
-    match |= authHeader.charCodeAt(i) ^ secret.charCodeAt(i);
-  }
-
-  return { authorized: match === 0, agentId };
+  return { authorized: safeCompare(authHeader, secret), agentId };
 }
 
 export function requireAuth(request: Request, env: Env): Response | null {

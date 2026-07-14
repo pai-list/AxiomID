@@ -389,13 +389,21 @@ export function brownianSearch(
  *
  * @returns The oscillator displacement at `time`.
  */
-export function harmonicOscillator(
-  amplitude: number,
-  damping: number,
-  frequency: number,
-  phase: number,
-  time: number,
-): number {
+export interface HarmonicOscillatorOptions {
+  amplitude: number;
+  damping: number;
+  frequency: number;
+  phase: number;
+  time: number;
+}
+
+export function harmonicOscillator({
+  amplitude,
+  damping,
+  frequency,
+  phase,
+  time,
+}: HarmonicOscillatorOptions): number {
   return amplitude * Math.exp(-damping * time) * Math.cos(frequency * time + phase);
 }
 
@@ -577,21 +585,25 @@ export function mctsIterate(
   return root;
 }
 
+export interface MCTSBestActionConfig {
+  root: MCTSNode;
+  iterations?: number;
+  possibleActions: string[];
+  simulateFn: (state: Record<string, unknown>) => number;
+}
+
 /**
  * Selects the most visited action from the root after repeated MCTS iterations.
  *
- * @param root - The search tree root
- * @param iterations - The number of MCTS iterations to run
- * @param possibleActions - The actions used to expand the tree
- * @param simulateFn - Computes the reward for a simulated state
+ * @param config - The configuration object
  * @returns The action associated with the most visited child, or `null` if the root has no children
  */
-export function mctsBestAction(
-  root: MCTSNode,
-  iterations: number = 1000,
-  possibleActions: string[],
-  simulateFn: (state: Record<string, unknown>) => number,
-): string | null {
+export function mctsBestAction({
+  root,
+  iterations = 1000,
+  possibleActions,
+  simulateFn,
+}: MCTSBestActionConfig): string | null {
   for (let i = 0; i < iterations; i++) {
     mctsIterate(root, possibleActions, simulateFn);
   }
@@ -1682,22 +1694,30 @@ export function minCutTrustBottleneck(
 /**
  * Advances trust using a Langevin-style dynamics model.
  *
- * @param currentTrust - The current trust value
- * @param externalForce - The applied external influence
- * @param damping - The resistance to change
- * @param noiseStrength - The magnitude of random fluctuation
- * @param mass - The inertia term
- * @param timeStep - The integration step size
+ * @param options - The simulation options
  * @returns The updated trust value and instantaneous velocity
  */
+export interface LangevinTrustDynamicsOptions {
+  currentTrust: number;
+  externalForce: number;     // F(t) — evidence/delegation push
+  damping?: number;          // γ — resistance to change
+  noiseStrength?: number;    // η — random uncertainty
+  mass?: number;             // m — inertia (resistance to change)
+  timeStep?: number;         // dt
+}
+
 export function langevinTrustDynamics(
-  currentTrust: number,
-  externalForce: number,     // F(t) — evidence/delegation push
-  damping: number = 0.1,     // γ — resistance to change
-  noiseStrength: number = 0.05, // η — random uncertainty
-  mass: number = 1,          // m — inertia (resistance to change)
-  timeStep: number = 0.1,   // dt
+  options: LangevinTrustDynamicsOptions
 ): { newTrust: number; velocity: number } {
+  const {
+    currentTrust,
+    externalForce,
+    damping = 0.1,
+    noiseStrength = 0.05,
+    mass = 1,
+    timeStep = 0.1,
+  } = options;
+
   // Random thermal noise (Gaussian)
   const u1 = Math.random();
   const u2 = Math.random();
@@ -1716,29 +1736,45 @@ export function langevinTrustDynamics(
 }
 
 /**
- * Simulates trust evolution with a decaying external force.
+ * Options for simulating trust evolution over time using the Langevin equation.
+ */
+export interface LangevinSimulationOptions {
+  initialTrust: number;
+  externalForce: number;
+  damping?: number;
+  noiseStrength?: number;
+  totalTime?: number;
+  timeStep?: number;
+}
+
+/**
+ * Simulates trust evolution over time using the Langevin equation.
  *
- * @param initialTrust - Starting trust value
- * @param externalForce - Initial driving force applied at each step
+ * @param options - The simulation parameters including initial trust and external force.
  * @returns The trust history and the final trust value
  */
 export function langevinSimulation(
-  initialTrust: number,
-  externalForce: number,
-  damping: number = 0.1,
-  noiseStrength: number = 0.05,
-  totalTime: number = 10,
-  timeStep: number = 0.1,
+  options: LangevinSimulationOptions
 ): { trustHistory: number[]; finalTrust: number } {
+  const {
+    initialTrust,
+    damping = 0.1,
+    noiseStrength = 0.05,
+    totalTime = 10,
+    timeStep = 0.1,
+  } = options;
+  if (timeStep <= 0) throw new Error("timeStep must be positive");
+  let currentExternalForce = options.externalForce;
+
   const trustHistory = [initialTrust];
   let trust = initialTrust;
 
   for (let t = 0; t < totalTime; t += timeStep) {
-    const result = langevinTrustDynamics(trust, externalForce, damping, noiseStrength, 1, timeStep);
+    const result = langevinTrustDynamics({ currentTrust: trust, externalForce: currentExternalForce, damping, noiseStrength, mass: 1, timeStep });
     trust = result.newTrust;
 
     // External force decays with time (evidence ages)
-    externalForce *= (1 - damping * timeStep);
+    currentExternalForce *= (1 - damping * timeStep);
 
     trustHistory.push(trust);
   }

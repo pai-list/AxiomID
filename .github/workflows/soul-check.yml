@@ -1,0 +1,122 @@
+name: SOUL Alignment Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: soul-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  soul-check:
+    name: SOUL/AGENTS.md Alignment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }} 2>/dev/null || echo "")
+          if [ -z "$DIFF" ]; then
+            echo "diff=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$DIFF" > /tmp/pr.diff
+          FILE_COUNT=$(grep -c "^diff --git" /tmp/pr.diff || echo "0")
+          echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Rule 1: Religious name leaks in code ──
+      - name: Check for religious name leaks
+        if: steps.diff.outputs.file_count != '0'
+        run: |
+          # These names are banned in code per AGENTS.md
+          VIOLATIONS=$(grep -n -i -E '(quran|tawbah|risalah|muraqabah|sabr|tawakkul|shukr|dhikr|salah|zakat|hajj|umrah|jihad|ummah|ummah|deen|dunya|akhirah|jannah|jahannam|barakah|inshallah|mashallah|subhanallah|alhamdulillallah|allahuakbar)' /tmp/pr.diff 2>/dev/null | grep -v "^Binary" | grep -v "docs/" | head -20 || true)
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "⚠️ Religious name leaks found in code (not docs):"
+            echo "$VIOLATIONS"
+            echo "has_violations=true" >> "$GITHUB_OUTPUT"
+            echo "violations<<VEOF" >> "$GITHUB_OUTPUT"
+            echo "$VIOLATIONS" >> "$GITHUB_OUTPUT"
+            echo "VEOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ No religious name leaks in code"
+            echo "has_violations=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Rule 2: Auth changes without matching test ──
+      - name: Check auth changes have tests
+        if: steps.diff.outputs.file_count != '0'
+        run: |
+          AUTH_FILES=$(grep "^diff --git a/src/app/api/auth" /tmp/pr.diff 2>/dev/null | sed 's|diff --git a/||; s| b/.*||' || true)
+          TEST_FILES=$(grep "^diff --git a/src/__tests__" /tmp/pr.diff 2>/dev/null | sed 's|diff --git a/||; s| b/.*||' || true)
+
+          if [ -n "$AUTH_FILES" ] && [ -z "$TEST_FILES" ]; then
+            echo "⚠️ Auth route changes without matching test changes:"
+            echo "$AUTH_FILES"
+            echo "auth_no_test=true" >> "$GITHUB_OUTPUT"
+            echo "auth_files<<AEOF" >> "$GITHUB_OUTPUT"
+            echo "$AUTH_FILES" >> "$GITHUB_OUTPUT"
+            echo "AEOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Auth changes have matching tests"
+            echo "auth_no_test=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Rule 3: bilingual t() helper misuse ──
+      - name: Check t() helper misuse
+        if: steps.diff.outputs.file_count != '0'
+        run: |
+          # Check for t() calls with 2+ arguments (bilingual misuse)
+          MISUSE=$(grep -n "t(\s*\"[^\"]*\"\s*," /tmp/pr.diff 2>/dev/null | grep -v "^Binary" | grep -v "node_modules" | head -20 || true)
+
+          if [ -n "$MISUSE" ]; then
+            echo "⚠️ Possible t() helper misuse (should take 1 key):"
+            echo "$MISUSE"
+            echo "t_misuse=true" >> "$GITHUB_OUTPUT"
+            echo "t_misuse_details<<TEOF" >> "$GITHUB_OUTPUT"
+            echo "$MISUSE" >> "$GITHUB_OUTPUT"
+            echo "TEOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ No t() helper misuse detected"
+            echo "t_misuse=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Post comment (only if violations found) ──
+      - name: Post SOUL findings
+        if: |
+          steps.diff.outputs.file_count != '0' &&
+          (steps.soul-check.outputs.has_violations == 'true' ||
+           steps.soul-check.outputs.auth_no_test == 'true' ||
+           steps.soul-check.outputs.t_misuse == 'true')
+        run: |
+          BODY="## 📜 SOUL Alignment Check\n"
+
+          if [ "${{ steps.soul-check.outputs.has_violations }}" = "true" ]; then
+            BODY="$BODY\n### ⚠️ Religious Name Leaks\nCode must use neutral labels (truthAnchor, Correction, Output). Found:\n\`\`\`\n${{ steps.soul-check.outputs.violations }}\n\`\`\`\n"
+          fi
+
+          if [ "${{ steps.soul-check.outputs.auth_no_test }}" = "true" ]; then
+            BODY="$BODY\n### ⚠️ Auth Changes Without Tests\nAGENTS.md requires matching test for auth route changes:\n\`\`\`\n${{ steps.soul-check.outputs.auth_files }}\n\`\`\`\n"
+          fi
+
+          if [ "${{ steps.soul-check.outputs.t_misuse }}" = "true" ]; then
+            BODY="$BODY\n### ⚠️ t() Helper Misuse\nt() takes a single key. Use bilingual helper: \`const t = (en, ar) => (lang === 'en' ? en : ar)\`\n\`\`\`\n${{ steps.soul-check.outputs.t_misuse_details }}\n\`\`\`\n"
+          fi
+
+          BODY="$BODY\n---\n*SOUL Alignment Check — scoped to AGENTS.md compliance only*"
+
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "$BODY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

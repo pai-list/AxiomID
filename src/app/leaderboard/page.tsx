@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useLanguage } from "../context/language-context";
 import { useWallet } from "../context/wallet-context";
@@ -9,7 +10,7 @@ import Footer from "@/components/Footer";
 import { Trophy, Search, ChevronDown } from "lucide-react";
 import TopThreeCards from "@/components/ui/TopThreeCards";
 import { getTierColor, Tier } from "@/lib/tiers";
-import { logger } from "@/lib/logger";
+import { LeaderboardSkeleton } from "@/components/skeletons/LeaderboardSkeleton";
 
 export const dynamic = 'force-dynamic';
 
@@ -28,40 +29,25 @@ interface LeaderboardUser {
   createdAt: string;
 }
 
-const TIER_FILTERS = ["All", "Sovereign", "Validator", "Citizen", "Visitor"];
+const TIER_FILTERS_EN = ["All", "Sovereign", "Validator", "Citizen", "Visitor"];
+const TIER_FILTERS_AR = ["الكل", "سيادي", "مدقق", "مواطن", "زائر"];
 
 export default function LeaderboardPage() {
   const { language } = useLanguage();
   const { user } = useWallet();
-  const [users, setUsers] = useState<LeaderboardUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("All");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  useEffect(() => {
-    let active = true;
-    const fetchLeaderboard = async () => {
-      try {
-        const res = await fetch("/api/leaderboard");
-        if (!res.ok) throw new Error("Failed to load leaderboard");
-        const json = await res.json();
-        if (active && Array.isArray(json?.leaderboard)) {
-          setUsers(json.leaderboard);
-        }
-      } catch (err) {
-        logger.error("Failed to query leaderboard:", err);
-        if (active) setError("Failed to load leaderboard");
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    fetchLeaderboard();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data: users = [], isLoading, error, refetch } = useQuery<LeaderboardUser[]>({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      const res = await fetch("/api/leaderboard");
+      if (!res.ok) throw new Error("Failed to load leaderboard");
+      const json = await res.json();
+      return Array.isArray(json?.leaderboard) ? json.leaderboard : [];
+    },
+  });
 
   const filteredUsers = users.filter((u) => {
     const q = search.toLowerCase();
@@ -97,7 +83,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Your Rank Sticky Bar */}
-      {user && !loading && users.length > 0 && (() => {
+      {user && !isLoading && users.length > 0 && (() => {
         const myRank = users.find((u) => u.id === user.id);
         if (!myRank) return null;
         const nextUser = users.find((u) => u.rank === myRank.rank - 1);
@@ -124,48 +110,20 @@ export default function LeaderboardPage() {
         );
       })()}
 
-      {error && !loading && (
+      {error && (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
           <div className="glass-card p-12 text-center">
-            <p className="text-sm text-red-400 mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
+            <p className="text-sm text-red-400 mb-4">Failed to load leaderboard</p>
+            <button onClick={() => refetch()} className="text-xs font-mono text-electric-blue hover:underline focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:ring-offset-2 focus:ring-offset-[#0a0b0f] rounded transition-all">
               {language === "en" ? "Retry" : "إعادة المحاولة"}
             </button>
           </div>
         </div>
       )}
 
-      {!error && loading ? (
-        <div className="max-w-4xl mx-auto px-4 mt-10 space-y-6 animate-pulse">
-          {/* Top three skeleton */}
-          <div className="grid grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bento-card p-6 flex flex-col items-center space-y-3">
-                <div className="w-16 h-16 rounded-full bg-white/5" />
-                <div className="h-3 w-24 bg-white/5 rounded" />
-                <div className="h-2 w-16 bg-white/5 rounded" />
-                <div className="h-4 w-20 bg-white/5 rounded" />
-              </div>
-            ))}
-          </div>
-          {/* Table skeleton */}
-          <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
-            <div className="p-4 border-b border-white/5 bg-white/[0.01]">
-              <div className="h-2 w-40 bg-white/5 rounded" />
-            </div>
-            <div className="divide-y divide-white/5">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="flex items-center py-3 px-4 gap-4">
-                  <div className="w-8 h-2 bg-white/5 rounded" />
-                  <div className="w-8 h-8 rounded-full bg-white/5" />
-                  <div className="h-2 w-32 bg-white/5 rounded" />
-                  <div className="h-2 w-16 bg-white/5 rounded ml-auto" />
-                  <div className="h-2 w-12 bg-white/5 rounded" />
-                  <div className="h-2 w-12 bg-white/5 rounded" />
-                </div>
-              ))}
-            </div>
-          </div>
+      {!error && isLoading ? (
+        <div className="max-w-4xl mx-auto px-4 mt-10">
+          <LeaderboardSkeleton />
         </div>
       ) : error ? null : users.length === 0 ? (
         <div className="max-w-4xl mx-auto px-4 mt-10 relative z-10">
@@ -216,12 +174,12 @@ export default function LeaderboardPage() {
 
           {/* Tier Filter Tabs */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            {TIER_FILTERS.map((tier) => (
+            {(language === "ar" ? TIER_FILTERS_AR : TIER_FILTERS_EN).map((tier, i) => (
               <button
-                key={tier}
-                onClick={() => setTierFilter(tier)}
+                key={TIER_FILTERS_EN[i]}
+                onClick={() => setTierFilter(TIER_FILTERS_EN[i])}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-wider transition-all ${
-                  tierFilter === tier
+                  tierFilter === TIER_FILTERS_EN[i]
                     ? "bg-electric-blue/20 text-electric-blue border border-electric-blue/30"
                     : "text-zinc-500 border border-white/[0.04] hover:border-white/[0.08] hover:text-zinc-300"
                 }`}
@@ -235,7 +193,7 @@ export default function LeaderboardPage() {
           <div className="bento-card overflow-hidden border border-white/5 bg-[#101217]/80">
             <div className="p-4 border-b border-white/5 bg-white/[0.01] flex justify-between items-center text-[10px] font-mono text-zinc-500">
               <span>{language === "en" ? "PIONEER REGISTRY" : "سجل رواد البروتوكول"}</span>
-              <span>{tableUsers.length} FOUND</span>
+              <span>{tableUsers.length} {language === "en" ? "FOUND" : "وجد"}</span>
             </div>
             
             <div className="overflow-x-auto no-scrollbar">
@@ -243,12 +201,12 @@ export default function LeaderboardPage() {
                 <thead>
                   <tr className="border-b border-white/5 text-[10px] text-zinc-500 bg-white/[0.005]">
                     <th className="py-3 px-4 text-center w-12">#</th>
-                    <th className="py-3 px-4">PIONEER</th>
-                    <th className="py-3 px-4 text-center">TIER</th>
-                    <th className="py-3 px-4 text-center">STAMPS</th>
-                    <th className="py-3 px-4 text-center">TRUST</th>
+                    <th className="py-3 px-4">{language === "en" ? "PIONEER" : "الرائد"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TIER" : "الطبقة"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "STAMPS" : "الختم"}</th>
+                    <th className="py-3 px-4 text-center">{language === "en" ? "TRUST" : "الثقة"}</th>
                     <th className="py-3 px-4 text-right">XP</th>
-                    <th className="py-3 px-4 text-right sr-only">ACTION</th>
+                    <th className="py-3 px-4 text-right sr-only">{language === "en" ? "ACTION" : "الإجراء"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -302,7 +260,7 @@ export default function LeaderboardPage() {
                   {tableUsers.length === 0 && (
                     <tr>
                       <td colSpan={7} className="py-10 text-center text-zinc-600 text-xs">
-                        No pioneers matched query search.
+                        {language === "ar" ? "لا يوجد روّاد مطابقون للبحث" : "No pioneers matched query search."}
                       </td>
                     </tr>
                   )}

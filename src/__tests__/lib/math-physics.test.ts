@@ -476,13 +476,13 @@ describe("harmonicOscillator (PR sync)", () => {
   it("starts at amplitude * cos(phase) when damping=0 and time=0", () => {
     const amplitude = 1.0;
     const phase = 0;
-    const result = harmonicOscillator(amplitude, 0, 1, phase, 0);
+    const result = harmonicOscillator({ amplitude, damping: 0, frequency: 1, phase, time: 0 });
     expect(result).toBeCloseTo(amplitude, 5);
   });
 
   it("decays to 0 as time increases with positive damping", () => {
-    const early = harmonicOscillator(1, 0.5, 1, 0, 1);
-    const late = harmonicOscillator(1, 0.5, 1, 0, 100);
+    const early = harmonicOscillator({ amplitude: 1, damping: 0.5, frequency: 1, phase: 0, time: 1 });
+    const late = harmonicOscillator({ amplitude: 1, damping: 0.5, frequency: 1, phase: 0, time: 100 });
     expect(Math.abs(late)).toBeLessThan(Math.abs(early));
   });
 
@@ -490,7 +490,7 @@ describe("harmonicOscillator (PR sync)", () => {
     const amplitude = 2;
     const damping = 0.1;
     const time = 5;
-    const result = harmonicOscillator(amplitude, damping, 1, 0, time);
+    const result = harmonicOscillator({ amplitude, damping, frequency: 1, phase: 0, time });
     const envelope = amplitude * Math.exp(-damping * time);
     expect(Math.abs(result)).toBeLessThanOrEqual(envelope + 1e-10);
   });
@@ -641,13 +641,23 @@ describe("mctsBackpropagate (PR sync)", () => {
 describe("mctsBestAction (PR sync)", () => {
   it("returns null when no children", () => {
     const root = createMCTSNode("root");
-    const result = mctsBestAction(root, 0, [], () => 0.5);
+    const result = mctsBestAction({
+      root,
+      iterations: 0,
+      possibleActions: [],
+      simulateFn: () => 0.5,
+    });
     expect(result).toBeNull();
   });
 
   it("returns a string action after iterations", () => {
     const root = createMCTSNode("root");
-    const result = mctsBestAction(root, 10, ["trust", "distrust"], () => Math.random());
+    const result = mctsBestAction({
+      root,
+      iterations: 10,
+      possibleActions: ["trust", "distrust"],
+      simulateFn: () => Math.random(),
+    });
     expect(typeof result === "string" || result === null).toBe(true);
   });
 });
@@ -1536,14 +1546,14 @@ describe("minCutTrustBottleneck (PR sync)", () => {
 describe("langevinTrustDynamics (PR sync)", () => {
   it("returns newTrust in [0, 1]", () => {
     for (let i = 0; i < 20; i++) {
-      const { newTrust } = langevinTrustDynamics(0.5, 0.1);
+      const { newTrust } = langevinTrustDynamics({ currentTrust: 0.5, externalForce: 0.1 });
       expect(newTrust).toBeGreaterThanOrEqual(0);
       expect(newTrust).toBeLessThanOrEqual(1);
     }
   });
 
   it("returns a velocity value", () => {
-    const { velocity } = langevinTrustDynamics(0.5, 0.1);
+    const { velocity } = langevinTrustDynamics({ currentTrust: 0.5, externalForce: 0.1 });
     expect(typeof velocity).toBe("number");
     expect(isFinite(velocity)).toBe(true);
   });
@@ -1554,7 +1564,7 @@ describe("langevinTrustDynamics (PR sync)", () => {
     const N = 50;
     for (let i = 0; i < N; i++) {
       const before = trust;
-      const result = langevinTrustDynamics(trust, 0.5, 0.1, 0.001, 1, 0.1);
+      const result = langevinTrustDynamics({ currentTrust: trust, externalForce: 0.5, damping: 0.1, noiseStrength: 0.001, mass: 1, timeStep: 0.1 });
       trust = result.newTrust;
       if (trust > before) totalIncrease++;
     }
@@ -1565,13 +1575,27 @@ describe("langevinTrustDynamics (PR sync)", () => {
 
 describe("langevinSimulation (PR sync)", () => {
   it("returns trustHistory and finalTrust", () => {
-    const result = langevinSimulation(0.5, 0.1, 0.1, 0.01, 1, 0.1);
+    const result = langevinSimulation({
+      initialTrust: 0.5,
+      externalForce: 0.1,
+      damping: 0.1,
+      noiseStrength: 0.01,
+      totalTime: 1,
+      timeStep: 0.1,
+    });
     expect(Array.isArray(result.trustHistory)).toBe(true);
     expect(typeof result.finalTrust).toBe("number");
   });
 
   it("all trust values stay in [0, 1]", () => {
-    const result = langevinSimulation(0.5, 0.2, 0.1, 0.05, 2, 0.1);
+    const result = langevinSimulation({
+      initialTrust: 0.5,
+      externalForce: 0.2,
+      damping: 0.1,
+      noiseStrength: 0.05,
+      totalTime: 2,
+      timeStep: 0.1,
+    });
     for (const v of result.trustHistory) {
       expect(v).toBeGreaterThanOrEqual(0);
       expect(v).toBeLessThanOrEqual(1);
@@ -1579,7 +1603,10 @@ describe("langevinSimulation (PR sync)", () => {
   });
 
   it("trustHistory starts with initialTrust", () => {
-    const result = langevinSimulation(0.7, 0.1);
+    const result = langevinSimulation({
+      initialTrust: 0.7,
+      externalForce: 0.1,
+    });
     expect(result.trustHistory[0]).toBe(0.7);
   });
 });

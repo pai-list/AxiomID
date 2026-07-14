@@ -100,6 +100,12 @@ export async function POST(
     // Publish to the IPFS gateway
     const ipfsResult = await publishToIPFS(vc);
 
+    // Persist passport URL to user record
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passportUrl: ipfsResult.url },
+    });
+
     // Anchor VC hash to Stellar (non-fatal)
     const SOVEREIGN_KEY = process.env.STELLAR_SECRET_KEY;
     if (SOVEREIGN_KEY) {

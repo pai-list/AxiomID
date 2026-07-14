@@ -31,10 +31,11 @@ export function deriveKeypair(stellarAddress: string, agentId: string, salt: str
     type: "pkcs8",
   });
 
-  const publicKeyObj = crypto.createPublicKey(privateKeyObj);
+  const privateKeyPem = privateKeyObj.export({ format: "pem", type: "pkcs8" }) as string;
+  const publicKeyObj = crypto.createPublicKey(privateKeyPem);
 
   return {
-    privateKey: privateKeyObj.export({ format: "pem", type: "pkcs8" }) as string,
+    privateKey: privateKeyPem,
     publicKey: publicKeyObj.export({ format: "pem", type: "spki" }) as string,
   };
 }

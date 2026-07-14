@@ -9,8 +9,8 @@ jest.mock("@/lib/auth-middleware", () => ({
   requireAuth: jest.fn(),
 }));
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
+jest.mock("@/lib/prisma", () => {
+  const mockPrisma = {
     skillModeration: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -20,8 +20,10 @@ jest.mock("@/lib/prisma", () => ({
     skill: {
       update: jest.fn(),
     },
-  },
-}));
+    $transaction: jest.fn(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
+  };
+  return { prisma: mockPrisma };
+});
 
 jest.mock("@/lib/rate-limiter", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 9, resetAt: Date.now() + 60000 }),
@@ -508,5 +510,56 @@ describe("POST /api/admin/skills/[id] — business logic", () => {
 
     expect(res.status).toBe(500);
     expect(data.code).toBe("INTERNAL_ERROR");
+  });
+
+  it("performs the moderation and skill updates inside a single transaction (PR change)", async () => {
+    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.skillModeration.update.mockResolvedValue({
+      ...MOCK_MODERATION,
+      status: "APPROVED",
+    });
+    mockPrisma.skill.update.mockResolvedValue({} as any);
+
+    const req = mockPostRequest({ action: "approve" });
+    await POST(req, makeParams());
+
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it("returns 500 and does not apiSuccess when the skill update fails inside the transaction (atomicity)", async () => {
+    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.skillModeration.update.mockResolvedValue({
+      ...MOCK_MODERATION,
+      status: "APPROVED",
+    });
+    mockPrisma.skill.update.mockRejectedValue(new Error("skill update failed"));
+
+    const req = mockPostRequest({ action: "approve" });
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(data.code).toBe("INTERNAL_ERROR");
+  });
+
+  it("returns the updated moderation record (not the skill) as the transaction result", async () => {
+    const approvedModeration = {
+      ...MOCK_MODERATION,
+      status: "APPROVED",
+      reviewerId: mockAdminUser.id,
+    };
+    mockPrisma.skillModeration.findUnique.mockResolvedValue(MOCK_MODERATION);
+    mockPrisma.skillModeration.update.mockResolvedValue(approvedModeration);
+    mockPrisma.skill.update.mockResolvedValue({ id: MOCK_MODERATION.skillId, status: "PUBLISHED" } as any);
+
+    const req = mockPostRequest({ action: "approve" });
+    const res = await POST(req, makeParams());
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.moderation).toEqual(
+      expect.objectContaining({ id: approvedModeration.id, status: "APPROVED" })
+    );
   });
 });

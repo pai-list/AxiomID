@@ -1,0 +1,50 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>AxiomID GitHub social preview</title>
+<desc>Dark graphite card with the AxiomID logomark centered, wordmark, tagline, and a network motif background, sized for GitHub's repository social preview</desc>
+
+<rect width="1280" height="640" fill="#12131A"/>
+
+<!-- background identity-graph, spread across the full card, subtle -->
+<g stroke="#1B1D28" stroke-width="1.5" fill="none">
+<line x1="120" y1="90" x2="240" y2="150"/>
+<line x1="240" y1="150" x2="200" y2="260"/>
+<line x1="240" y1="150" x2="360" y2="120"/>
+<line x1="960" y1="520" x2="1080" y2="470"/>
+<line x1="1080" y1="470" x2="1150" y2="540"/>
+<line x1="1080" y1="470" x2="1040" y2="380"/>
+<line x1="1000" y1="130" x2="1100" y2="180"/>
+<line x1="1100" y1="180" x2="1160" y2="120"/>
+<line x1="150" y1="480" x2="240" y2="520"/>
+<line x1="240" y1="520" x2="220" y2="590"/>
+</g>
+<g fill="#21232F">
+<circle cx="120" cy="90" r="4"/>
+<circle cx="240" cy="150" r="5"/>
+<circle cx="200" cy="260" r="4"/>
+<circle cx="360" cy="120" r="4"/>
+<circle cx="960" cy="520" r="4"/>
+<circle cx="1080" cy="470" r="5"/>
+<circle cx="1150" cy="540" r="4"/>
+<circle cx="1040" cy="380" r="4"/>
+<circle cx="1000" cy="130" r="4"/>
+<circle cx="1100" cy="180" r="5"/>
+<circle cx="1160" cy="120" r="4"/>
+<circle cx="150" cy="480" r="4"/>
+<circle cx="240" cy="520" r="5"/>
+<circle cx="220" cy="590" r="4"/>
+</g>
+
+<!-- centered lockup -->
+<g transform="translate(490, 148) scale(0.62)">
+<polygon points="256,120 354,177 354,335 256,392 158,335 158,177"
+  fill="none" stroke="#3A3D4E" stroke-width="4"/>
+<path d="M 196 258 L 238 302 L 330 196"
+  fill="none" stroke="#E3A548" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="354" cy="177" r="10" fill="#E3A548"/>
+</g>
+
+<text x="640" y="440" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" fill="#F2EFE6">Axiom<tspan fill="#E3A548">ID</tspan></text>
+<text x="640" y="480" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" letter-spacing="2" fill="#8B8D99">VERIFIABLE IDENTITY FOR THE AGENTIC WEB</text>
+<text x="640" y="520" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#5A5C68">W3C DID protocol on Pi Network · 18M+ KYC-verified humans</text>
+
+</svg>

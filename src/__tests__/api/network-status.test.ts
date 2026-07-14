@@ -1,4 +1,4 @@
- 
+
 /**
  * @jest-environment node
  */
@@ -38,7 +38,7 @@ function mockGetRequest() {
 }
 
 function setupDbMocks({
-  userCounts = [0, 0, 0],
+  userCounts = [0, 0, 0, 0],
   findMany = [] as unknown[],
   agentCounts = [0, 0],
   paymentCount = 0,
@@ -53,7 +53,8 @@ function setupDbMocks({
   (mockPrisma.user.count as jest.Mock)
     .mockResolvedValueOnce(userCounts[0])
     .mockResolvedValueOnce(userCounts[1])
-    .mockResolvedValueOnce(userCounts[2]);
+    .mockResolvedValueOnce(userCounts[2])
+    .mockResolvedValueOnce(userCounts[3] || 0);
   (mockPrisma.user.findMany as jest.Mock).mockResolvedValueOnce(findMany);
   (mockPrisma.userAgent.count as jest.Mock)
     .mockResolvedValueOnce(agentCounts[0])
@@ -70,8 +71,8 @@ describe('GET /api/status', () => {
 
   it('returns network stats successfully', async () => {
     setupDbMocks({
-      userCounts: [1247, 14, 89],
-      findMany: [{ xp: 50, stamps: [{ id: '1' }] }],
+      userCounts: [1247, 14, 89, 0],
+      findMany: [{ xp: 50, _count: { stamps: 1 } }],
       agentCounts: [856, 312],
       paymentCount: 8934,
       xpSum: 456789,

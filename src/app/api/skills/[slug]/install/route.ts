@@ -51,6 +51,11 @@ export async function POST(
       });
 
       for (const p of payments) {
+        // Fast path string check before doing expensive JSON.parse
+        if (p.amount < skill.pricePi || !p.metadata || !p.metadata.includes(skill.id)) {
+          continue;
+        }
+
         let skillIdFromMeta: string | undefined;
         try {
           const meta = JSON.parse(p.metadata || '{}');
@@ -60,7 +65,7 @@ export async function POST(
         }
 
         // Authorize only when the payment is for this skill AND covers its price.
-        if (skillIdFromMeta === skill.id && p.amount >= skill.pricePi) {
+        if (skillIdFromMeta === skill.id) {
           consumablePaymentId = p.id;
           break;
         }

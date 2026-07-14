@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { AgentPassport } from "@/components/AgentPassport";
 import { AgentQR } from "@/components/AgentQR";
@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useLanguage } from "../../context/language-context";
 import { sharePassport } from "@/lib/pi-native-features";
 import type { PassportStamp } from "@/components/passport/types";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { PassportSkeleton } from "@/components/skeletons/PassportSkeleton";
 
 interface PassportData {
   username: string;
@@ -23,19 +25,32 @@ interface PassportData {
   issuedDate: string;
   agentName: string | null;
   agentStatus: string | null;
+  jobStatus?: string; // Inject IdentityJob status if still building
 }
 
-/**
- * Displays a passport detail page for the current dynamic route.
- *
- * @returns A React element showing a loading skeleton, error panel, passport display with QR and share button, or `null` when no UI is applicable.
- */
 export function PassportView() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useLanguage();
-  const [passport, setPassport] = useState<PassportData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { data: passport, isLoading, error } = useQuery<PassportData>({
+    queryKey: ["passport", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/passport/${encodeURIComponent(slug)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.message || 'translated_passport_not_found');
+      }
+      return res.json();
+    },
+    enabled: !!slug,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data && data.jobStatus && data.jobStatus !== "COMPLETED" && data.jobStatus !== "ACTIVE") {
+        return 3000;
+      }
+      return false;
+    },
+  });
 
   const handleShare = async () => {
     await sharePassport({
@@ -45,43 +60,35 @@ export function PassportView() {
     });
   };
 
-  useEffect(() => {
-    if (!slug) return;
+  if (isLoading) {
+     return <PassportSkeleton />;
+  }
 
-    const abortController = new AbortController();
+  // Identity is still being built
+  if (passport && passport.jobStatus && passport.jobStatus !== "COMPLETED" && passport.jobStatus !== "ACTIVE") {
+      return (
+         <div className="w-full max-w-lg flex flex-col items-center text-center p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+             <div className="w-16 h-16 rounded-full border-4 border-electric-blue border-t-transparent animate-spin mx-auto mb-6" />
+             <h2 className="text-2xl font-bold font-mono text-white mb-2">Preparing your AI...</h2>
+             <p className="text-zinc-400 font-mono text-sm mb-8">Status: {passport.jobStatus}</p>
+             <div className="space-y-2 text-xs font-mono text-left bg-black/30 p-4 rounded-xl w-full">
+                 <div className="flex items-center gap-2 text-zinc-500"><CheckCircle2 className="w-3 h-3" /> Reserving Domain</div>
+                 <div className="flex items-center gap-2 text-emerald-400 animate-pulse"><Loader2 className="w-3 h-3 animate-spin" /> Provisioning Identity Engine</div>
+                 <div className="flex items-center gap-2 text-zinc-700"> Generating DID Document</div>
+                 <div className="flex items-center gap-2 text-zinc-700"> Issuing Sovereign Passport</div>
+             </div>
+         </div>
+      );
+  }
 
-    fetch(`/api/passport/${encodeURIComponent(slug)}`, { signal: abortController.signal })
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.message || t('passport_not_found'));
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setPassport(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (err.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : t('passport_load_error'));
-        setLoading(false);
-      });
-
-    return () => abortController.abort();
-  }, [slug, t]);
+  if (!passport && !error && !isLoading) {
+    return null;
+  }
 
   return (
     <>
-      {loading ? (
-        <div className="w-full max-w-lg">
-          <div className="passport-card p-6 animate-pulse">
-            <div className="h-6 bg-white/5 rounded mb-4 w-1/3" />
-            <div className="h-24 bg-white/5 rounded mb-4" />
-            <div className="h-4 bg-white/5 rounded w-2/3" />
-          </div>
-        </div>
-      ) : error ? (
+      {error ? (
+
         <div className="text-center max-w-md mx-auto">
           <div className="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-6 border border-red-500/20">
             <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,8 +96,8 @@ export function PassportView() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
-          <p className="text-subtle mb-8">{error}</p>
-          <Link href="/" className="btn-primary text-xs">
+          <p className="text-subtle mb-8">{error.message}</p>
+          <Link href="/claim" className="btn-primary text-xs">
             {t('create_your_passport')}
           </Link>
         </div>
@@ -133,7 +140,7 @@ export function PassportView() {
             <p className="text-xs text-faint mb-4">
               {t('passport_verified_by')}
             </p>
-            <Link href="/" className="btn-primary text-xs">
+            <Link href="/claim" className="btn-primary text-xs">
               {t('create_your_passport')}
             </Link>
           </div>

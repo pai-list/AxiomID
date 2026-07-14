@@ -41,6 +41,37 @@ export const PaymentCompleteSchema = z.object({
   txid: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'txid must be alphanumeric, dashes, or underscores').min(1, 'txid is required'),
 });
 
+// ── Spend Request Validation ──────────────────────────────────
+
+export const SpendRequestCreateSchema = z.object({
+  agentId: z.string().uuid('agentId must be a valid UUID'),
+  amount: z.number().positive('amount must be positive').max(500, 'amount cannot exceed 500 Pi'),
+  currency: z.string().default('PI'),
+  description: z.string().min(1, 'description is required').max(500),
+  context: z.string().min(100, 'context must be at least 100 characters'),
+  items: z.array(z.object({
+    name: z.string().min(1),
+    unit_amount: z.number().positive(),
+    quantity: z.number().int().positive(),
+  })).optional(),
+});
+
+export const SpendRequestActionSchema = z.object({
+  status: z.enum(['approved', 'rejected', 'completed']),
+  rejectionReason: z.string().max(500).optional(),
+  paymentId: z.string().optional(),
+});
+
+export const SpendRequestQuerySchema = z.object({
+  userId: z.string().uuid().optional(),
+  status: z.enum(['pending', 'approved', 'rejected', 'expired', 'completed']).optional(),
+  agentId: z.string().uuid().optional(),
+});
+
+export const SpendRequestIdSchema = z.object({
+  id: z.string().uuid('id must be a valid UUID'),
+});
+
 // New Schemas for Step 2 validation audit:
 
 export const AgentMainSchema = z.object({
@@ -52,7 +83,7 @@ export const AgentMainSchema = z.object({
 
 const REQUIRED_MANIFEST_SECTIONS = [
   { en: 'Purpose', ar: 'الغرض', header: 'الغرض — Purpose' },
-  { en: 'SOUL Alignment', ar: 'التوافق الروحي', header: 'التوافق الروحي — SOUL Alignment' },
+  { en: 'Principle Alignment', ar: 'مبدأ التوافق', header: 'مبدأ التوافق — Principle Alignment' },
   { en: 'Operational Flow', ar: 'سير التشغيل', header: 'سير التشغيل — Operational Flow' },
   { en: 'Failure Modes', ar: 'أنماط الفشل', header: 'أنماط الفشل — Failure Modes' },
 ] as const;
@@ -282,6 +313,8 @@ export type ActionClaimInput = z.infer<typeof ActionClaimSchema>;
 export type WalletConnectInput = z.infer<typeof WalletConnectSchema>;
 export type PaymentApproveInput = z.infer<typeof PaymentApproveSchema>;
 export type PaymentCompleteInput = z.infer<typeof PaymentCompleteSchema>;
+export type SpendRequestCreateInput = z.infer<typeof SpendRequestCreateSchema>;
+export type SpendRequestActionInput = z.infer<typeof SpendRequestActionSchema>;
 export type AgentMainInput = z.infer<typeof AgentMainSchema>;
 export type SkillsListQueryInput = z.infer<typeof SkillsListQuerySchema>;
 export type SkillPublishInput = z.infer<typeof SkillPublishSchema>;

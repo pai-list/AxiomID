@@ -8,7 +8,16 @@
 
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LeaderboardPage from "@/app/leaderboard/page";
+
+function makeQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
+let queryClient = makeQueryClient();
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 // Mock Header and Footer
 jest.mock("@/components/Header", () => {
@@ -86,6 +95,7 @@ function mockLeaderboardResponse(users: ReturnType<typeof makeUser>[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  queryClient = makeQueryClient();
   const { useLanguage } = jest.requireMock("@/app/context/language-context");
   useLanguage.mockImplementation(() => ({
     language: "en",
@@ -97,24 +107,24 @@ beforeEach(() => {
 describe("LeaderboardPage — loading state", () => {
   it("renders without crashing", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    expect(() => render(<LeaderboardPage />)).not.toThrow();
+    expect(() => render(<LeaderboardPage />, { wrapper: TestWrapper })).not.toThrow();
   });
 
   it("shows loading skeleton initially", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    const { container } = render(<LeaderboardPage />);
-    expect(container.querySelector(".animate-pulse")).not.toBeNull();
+    const { container } = render(<LeaderboardPage />, { wrapper: TestWrapper });
+    expect(container.querySelector('[data-testid="skeleton"]')).toBeTruthy();
   });
 
   it("renders GLOBAL STANDINGS badge", async () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     expect(screen.getByText("GLOBAL STANDINGS")).toBeInTheDocument();
   });
 
   it("renders 'Sovereign Leaderboard' heading in English", async () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     expect(screen.getByText("Sovereign Leaderboard")).toBeInTheDocument();
   });
 });
@@ -125,21 +135,21 @@ describe("LeaderboardPage — empty state (PR change: bilingual)", () => {
   });
 
   it("renders 'Be the First Sovereign' heading in English when list is empty", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Be the First Sovereign")).toBeInTheDocument();
     });
   });
 
   it("renders 'Launch App' CTA link in empty state", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("Launch App")).toBeInTheDocument();
     });
   });
 
   it("does NOT render the leaderboard table in empty state", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.queryByText("PIONEER REGISTRY")).toBeNull();
     });
@@ -153,7 +163,7 @@ describe("LeaderboardPage — empty state (PR change: bilingual)", () => {
       t: (key: string) => key,
     });
 
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("كن السيادي الأول")).toBeInTheDocument();
     });
@@ -173,7 +183,7 @@ describe("LeaderboardPage — data state", () => {
   });
 
   it("renders the TopThreeCards component with top 3 users", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       const topCards = screen.getByTestId("top-three-cards");
       expect(topCards).toBeInTheDocument();
@@ -182,14 +192,14 @@ describe("LeaderboardPage — data state", () => {
   });
 
   it("renders the PIONEER REGISTRY table", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("PIONEER REGISTRY")).toBeInTheDocument();
     });
   });
 
   it("renders table headers: PIONEER, TIER, STAMPS, TRUST, XP", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("PIONEER")).toBeInTheDocument();
       expect(screen.getByText("TIER")).toBeInTheDocument();
@@ -200,7 +210,7 @@ describe("LeaderboardPage — data state", () => {
   });
 
   it("only shows rank > 3 users in the table (top 3 are in podium)", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       // "dave" is rank 4 → shown in table
       expect(screen.getByText("@dave")).toBeInTheDocument();
@@ -211,14 +221,14 @@ describe("LeaderboardPage — data state", () => {
   });
 
   it("renders '1 FOUND' count in table header for rank 4+ users", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByText("1 FOUND")).toBeInTheDocument();
     });
   });
 
   it("renders link to user passport for table rows", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       const link = screen.getByText("@dave").closest("a");
       expect(link).not.toBeNull();
@@ -235,7 +245,7 @@ describe("LeaderboardPage — data state", () => {
     });
     mockLeaderboardResponse([...users, noUsernameUser]);
 
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       // Format: @{walletAddress.slice(0,8)}...{walletAddress.slice(-6)}
       expect(screen.getByText("@GXXXXXXX...XX1234")).toBeInTheDocument();
@@ -255,14 +265,14 @@ describe("LeaderboardPage — search functionality (PR change)", () => {
   });
 
   it("renders the search input", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Search handle or address...")).toBeInTheDocument();
     });
   });
 
   it("shows matching users when searching by piUsername", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Search handle or address...")).toBeInTheDocument();
@@ -277,7 +287,7 @@ describe("LeaderboardPage — search functionality (PR change)", () => {
   });
 
   it("hides TopThreeCards when search query is non-empty", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByTestId("top-three-cards")).toBeInTheDocument();
@@ -291,7 +301,7 @@ describe("LeaderboardPage — search functionality (PR change)", () => {
   });
 
   it("shows 'No pioneers matched query search.' when no users match", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Search handle or address...")).toBeInTheDocument();
@@ -317,7 +327,7 @@ describe("LeaderboardPage — tier filter (PR change)", () => {
   });
 
   it("renders tier filter tabs: All, Sovereign, Validator, Citizen, Visitor", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Sovereign" })).toBeInTheDocument();
@@ -328,7 +338,7 @@ describe("LeaderboardPage — tier filter (PR change)", () => {
   });
 
   it("clicking 'Visitor' filter shows only Visitor-tier users in table", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Visitor" })).toBeInTheDocument();
@@ -345,7 +355,7 @@ describe("LeaderboardPage — tier filter (PR change)", () => {
   });
 
   it("clicking 'All' shows all users after filtering", async () => {
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Visitor" })).toBeInTheDocument();
@@ -374,7 +384,7 @@ describe("LeaderboardPage — Arabic language (bilingual PR change)", () => {
     });
 
     mockLeaderboardResponse([]);
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("لوحة الصدارة العامة")).toBeInTheDocument();
@@ -391,7 +401,7 @@ describe("LeaderboardPage — Arabic language (bilingual PR change)", () => {
 
     const users = [makeUser({ rank: 4 })];
     mockLeaderboardResponse(users);
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(
@@ -410,7 +420,7 @@ describe("LeaderboardPage — Arabic language (bilingual PR change)", () => {
 
     const users = [makeUser({ rank: 4 })];
     mockLeaderboardResponse(users);
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("سجل رواد البروتوكول")).toBeInTheDocument();
@@ -422,7 +432,7 @@ describe("LeaderboardPage — Arabic language (bilingual PR change)", () => {
 describe("LeaderboardPage — error state (PR change)", () => {
   it("shows error message when fetch throws", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network unavailable"));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("Failed to load leaderboard")).toBeInTheDocument();
@@ -434,7 +444,7 @@ describe("LeaderboardPage — error state (PR change)", () => {
       ok: false,
       json: async () => ({}),
     });
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("Failed to load leaderboard")).toBeInTheDocument();
@@ -443,7 +453,7 @@ describe("LeaderboardPage — error state (PR change)", () => {
 
   it("renders 'Retry' button when error occurs (English)", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Fetch error"));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("Retry")).toBeInTheDocument();
@@ -459,7 +469,7 @@ describe("LeaderboardPage — error state (PR change)", () => {
     });
 
     mockFetch.mockRejectedValueOnce(new Error("Fetch error"));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("إعادة المحاولة")).toBeInTheDocument();
@@ -468,18 +478,18 @@ describe("LeaderboardPage — error state (PR change)", () => {
 
   it("does NOT render the loading skeleton when an error occurred", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Fetch failed"));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("Failed to load leaderboard")).toBeInTheDocument();
     });
 
-    expect(document.querySelector(".animate-pulse")).not.toBeInTheDocument();
+    expect(document.querySelector('[data-testid="skeleton"]')).not.toBeInTheDocument();
   });
 
   it("does NOT render leaderboard content when error occurred", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Server error"));
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(screen.getByText("Failed to load leaderboard")).toBeInTheDocument();
@@ -491,7 +501,7 @@ describe("LeaderboardPage — error state (PR change)", () => {
 
   it("does NOT render error state when fetch succeeds (regression guard)", async () => {
     mockLeaderboardResponse([]);
-    render(<LeaderboardPage />);
+    render(<LeaderboardPage />, { wrapper: TestWrapper });
 
     // Wait for successful load to complete by checking for success marker
     await waitFor(() => {

@@ -41,6 +41,19 @@ These defaults are optimized for AI coding agents (and humans) working on apps t
 
 ## Dev Tools
 
+### Kernel — QA/E2E Browser Testing
+
+Use `kernel` for browser-level smoke tests on critical flows (home, dashboard, connect, claim).
+
+```bash
+# Run smoke tests against a PR preview URL
+kernel run qa:smoke --url https://axiomid-app.vercel.app
+
+# Add new flows in scripts/qa/ or .superpowers/playbooks/
+```
+
+Role: QA/E2E at the browser level. For every new PR or sensitive change, run smoke tests on basic flows. Can later be set up in CI scripts.
+
 ### Portless — Stable .localhost HTTPS URLs
 
 Use `portless` for stable HTTPS dev URLs (Pi Browser testing, multi-service dev, Tailscale sharing).
@@ -269,6 +282,8 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Regression & Test Stability:** The test suite status must remain stable. The number of passing tests must never decrease across PRs. Disabling or skipping active tests to bypass coverage requirements is strictly forbidden.
 - **Shell Quoting for Dynamic Routes:** Always wrap or escape path arguments containing brackets (e.g. `[slug]`) in double quotes (like `git add "src/app/api/passport/[slug]/publish/route.ts"`) when running git or terminal operations in zsh to avoid pattern matching expansion failures.
 - **Verify Against `main`, Not Your Working Tree:** Before writing a verdict that a claim is WRONG or CONFIRMED, open the file on `main` (not the working tree, not a PR diff) and confirm the exact line. Your session may be on a feature branch — what you see is not necessarily what was merged. Use `git show main:<path>` to check. A confident agent with a structured verdict table can still be wrong on the one line that matters.
+- **PR Remote Synchronization:** When merging or resolving conflicts locally for remote Pull Requests, explicitly push the resolved branches back to their remote counterparts on GitHub (`git push origin <branch>`) to trigger remote CI checks and update the PR states.
+- **Next.js Build Cache Purging:** When encountering unexpected TypeScript compilation errors (`TS2307`) or missing module declarations referencing `.next/types/` (especially after branch switching or merging large changes), purge the Next.js local cache by running `rm -rf .next` before running `npm run type-check` or `npm run build`.
 
 ### 📁 Architecture Map
 
@@ -280,17 +295,29 @@ src/
     dashboard/     ← Authenticated dashboard (marketplace, settings)
     dashboard/sandbox/ ← Developer sandbox playground
     passport/      ← Public passport viewer /passport/[slug]
-  components/      ← Shared UI components
-  components/dashboard/
-    TerminalOverlay.tsx ← Multi-pane TUI terminal (ring buffer + throttled render)
-  diagnostics/
-    catalog.ts     ← nostics error catalog (fix fields MUST be static strings)
+  components/
+    ui/            ← Primitive components (skeleton, ErrorFallback, CodeBlock, etc.)
+    skeletons/     ← Page-specific skeleton shells (14 pages)
+    claim/         ← Claim flow steps (ConnectStep, VerifyStep, DeployStep)
+    dashboard/     ← Dashboard widgets + tab panels
+      TerminalOverlay.tsx ← Multi-pane TUI terminal (ring buffer + throttled render)
+    landing/       ← Landing page sections (HeroSection, FeaturesSection, InteractiveShowcase)
+    passport/      ← Passport section components
+    pwa/           ← PWA components (InstallPWA, SovereignSplash, DynamicThemeColor)
   lib/
     errors.ts      ← apiError() + apiSuccess() + rateLimitHeaders()
     pi-sdk.ts      ← Pi SDK loader + determineSandboxMode() + authenticateWithTimeout()
+    hooks/         ← TanStack Query hooks (15 hooks: read + mutation)
+    query-client.ts ← TanStack Query client config
     registry.tsx   ← LinkItem registry with colorClass mapping
+  i18n/            ← Translation files (en.json, ar.json)
+  diagnostics/
+    catalog.ts     ← nostics error catalog (fix fields MUST be static strings)
   types/
     global.d.ts    ← Pi SDK type declarations (window.Pi unified here)
+packages/
+  crypto/          ← @axiomid/crypto (Ed25519 key derivation, signing, verification)
+  sdk/             ← @axiomid/sdk (public API client)
 ```
 
 ### 🔄 Continuous Improvement Loops
@@ -355,6 +382,46 @@ All loops run automatically via `.github/workflows/loops.yml`. Manual dispatch a
 - **Synchronous Multi-DB Coupling:** Do not rely on direct database-to-database replication or sync loops triggered via simple cron scripts (like SQLite-D1-PostgreSQL synchronization via Vercel Cron). This creates a high point of failure and eventual consistency splits. Instead, implement a **Transactional Outbox** pattern where data updates are stored locally as log events and dispatched reliably using queue relays.
 - **Unauthenticated D1 SQLite Exports:** Never expose Cloudflare D1 export endpoints (like `/api/sync/export`) without timing-safe `X-Shared-Secret` verification and strict URL path matching. Always use Prisma `upsert` in Next.js sync jobs to ensure edge data is merged into PostgreSQL without causing key conflicts or duplicate records.
 
+### 🤖 Agent Conduct Rules
+
+**MUST NOT (blocked by pre-commit):**
+- `git merge` or `gh pr merge` without explicit human approval
+- Modify Cognitive OS memory to change historical facts without clear annotation
+- Skip `task.md` intake for sensitive PRs (auth, payments, DB, deployment config)
+- Push directly to `main` — all changes go through PRs
+
+**MUST:**
+- Every major execution starts with `task.md` intake
+- Every sensitive PR ends with an executive report (Phase 4)
+- Run `npm run lint`, `npm test`, `npm run type-check` before every push
+- Wait for human approval after Phase 1 (Plan) before coding
+
+### 🛡️ Pre-Commit SOUL Validation
+
+Every commit passes through SOUL-aligned validation. This is not optional.
+
+**What runs (`.husky/pre-commit`):**
+1. **lint-staged** — ESLint on staged files (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`)
+2. **SOUL validation** — `node scripts/pre-commit-validate.mjs`
+   - **CHECK**: Lint, TypeScript, tests for changed files, skill manifest validation
+   - **REVIEW**: Diff audit — secrets (BLOCK), TODOs (warn), console.log (warn)
+   - **COMMIT**: IQRA Chronicle format + signature check
+3. **CodeRabbit** (optional) — local review if CLI available
+
+**Manual run (for agents):**
+```bash
+node scripts/pre-commit-validate.mjs
+```
+
+**SOUL Principles applied:**
+- **Muraqabah** — Every check runs. No skipping. No hiding.
+- **Tawbah** — Issues confessed, fixed, learned from.
+- **TrustChain** — Every commit a clean, honest record.
+- **IQRA Chronicle** — Commit format: `type(scope): description ۞` + narrative body.
+
+**Pre-existing type errors (known issue):**
+`.next/types/validator.ts` TS2307 error from PR #272 merge — ignored by validation. Do not suppress other TS errors.
+
 # Ponytail — lazy senior dev mode
 
 You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
@@ -376,3 +443,374 @@ Rules:
 - Deletion over addition. Boring over clever. Fewest files possible.
 - Mark intentional simplifications with a `ponytail:` comment.
 - Not lazy about: input validation at trust boundaries, error handling that prevents data loss, security, accessibility.
+
+---
+
+# Engineering Governance Policy (Non-Negotiable)
+
+## Specification-First Workflow
+
+When introducing significant architectural changes, new systems, or repository-wide initiatives:
+
+1. **Write and review the specification first** — no code until the spec is approved.
+2. **Merge the specification into the default branch** before any implementation begins.
+3. **Treat the merged specification as the Single Source of Truth (SSoT)** for the entire initiative.
+4. **Execute implementation in separate PRs**, each focused on a single logical change.
+5. **Keep specification PRs and implementation PRs separate** for clean review history, easier rollback, and accurate traceability.
+6. **If implementation requires changing the specification**, submit a dedicated specification update PR and merge it before beginning the dependent implementation.
+
+**Rationale:** Large engineering organizations (Kubernetes, Next.js, Cloudflare, Vercel) separate design approval from implementation. This improves review quality, enables parallel development, reduces merge conflicts, and preserves a clear architectural decision history.
+
+## Agent Execution Policy
+
+- **Never begin implementation until the governing specification has been merged** into the default branch.
+- **Every implementation PR must reference its governing specification** (link to the spec PR or file).
+- **If multiple agents work simultaneously**, they must all read from the merged specification on the default branch — never from unmerged drafts.
+- **Parallel execution is allowed only after the shared baseline has been established** (spec merged, Phase 0 complete for dependent work).
+- **A final consistency pass must validate all outputs before completion** — cross-reference all generated artifacts against each other and against the specification.
+- **Keep TODO list, milestones, and progress updated continuously** so every agent has an accurate view of the current state.
+- **Synchronize all four layers at all times:** Code ↔ Documentation ↔ GitHub features (Issues, PRs, Projects, Releases, Wiki, Actions) ↔ AxiomID.Memory.
+- **If you discover technical debt or opportunities outside the current scope, record them** in a tech-debt log or TODO for a future PR — never interrupt execution to chase scope creep.
+- **Every generated document must include a metadata header:**
+  ```markdown
+  Version: X.Y
+  Generated: YYYY-MM-DD
+  Generated by: [Agent Name]
+  Confidence: XX%
+  Sources:
+  - [file path or glob pattern]
+  Last Verified: YYYY-MM-DD
+  ```
+
+---
+
+# Agent Workflow Protocol (Non-Negotiable)
+
+> Every major commit or push on a sensitive PR MUST follow this 5-phase process.
+> "Sensitive PR" = touches auth, payments, DB schema, critical UX flows, or deployment config.
+
+## Phase 1: Plan / Intake (task.md)
+
+As the first step, the agent writes a brief plan:
+
+- **Goal** — one sentence
+- **Scope** — which systems/routes/components
+- **Risks** — what could break
+- **Files** — literal list
+- **Plan** — step-by-step, smallest batches
+- **Verification** — which tests, lint, type-check, build
+
+Template at `task.md`. Write this BEFORE touching any code.
+
+**Two mandatory questions** the agent MUST ask before any execution:
+
+> **Q1:** "What is the worst thing that can happen if we execute this plan as-is? How would you reduce the probability?"
+>
+> **Q2:** "What specifically do you need my approval on before starting execution?"
+
+**Wait for human approval before proceeding.** Exactly like `task.md` protocol. The human must answer both Q1 and Q2 before the agent touches any code.
+
+## Phase 2: Execute
+
+- Implement in the smallest possible batches.
+- Run verification after EACH batch:
+  - `npm run lint`
+  - `npm test` (relevant suites)
+  - `npm run type-check`
+  - `npm run build` (if critical path)
+
+## Phase 3: Review by Agents
+
+- Push the PR.
+- Let CodeRabbit + Gemini + CI review.
+- Collect ALL feedback and fix in small batches (repeat Phase 2 per batch).
+- No approval until ALL machine reviews are clean or explicitly acknowledged as WON'T FIX.
+- **WON'T FIX documentation:** Every CodeRabbit or Gemini finding marked as WON'T FIX MUST be documented in the Phase 4 report with:
+  - The exact finding
+  - The reason (design decision, AGENTS.md rule, intentional limitation)
+  - The source (AGENTS.md rule number, architecture decision, explicit prior approval)
+  - The agent MUST NOT reverse a WON'T FIX decision without a new explicit decision from you.
+
+## Phase 4: Report
+
+Use this template exactly. No general opinions — only data and links.
+
+```
+## Executive Summary
+_One paragraph. What was the goal? Done or not?_
+
+## Status Table (PRs)
+| PR | Title | Vercel | CI | CodeQL | CodeRabbit | Gemini | Ready? |
+|----|-------|--------|----|--------|------------|--------|--------|
+| #X | ...   | ✅/❌  | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
+
+## Detailed Notes
+_For each important PR, list:_
+- _What changed (file-level)_
+- _What was fixed from reviews_
+- _What remains open (if anything)_
+
+## Recommended Next Actions
+- _Concrete steps. Bullet points. No filler._
+```
+
+## Phase 5: Human Decision
+
+You (the human) review using the PR Approval Checklist below.
+You decide: merge, request changes, or cancel.
+
+---
+
+# PR Approval Checklist
+
+**Before approving any PR, run this checklist (A through E).**
+
+### A. Scope & Quick Understanding
+
+Open the PR on GitHub and check:
+
+- [ ] Title matches the feature/fix
+- [ ] Description mentions key points (scope, phase, config changes)
+- [ ] Scope is contained — no sneaked-in design changes
+
+### B. Critical Files (Diff View)
+
+- **`next.config.ts`** — Only expected changes. Verify `turbopack.root`.
+- **API routes** — Zod validation, rate limiting, `apiError`/`apiSuccess`, `logger.error()` in ALL catch blocks.
+- **New validation/schemas** — `safeParse`, proper error messages.
+- **i18n** — Keys exist in BOTH `en.json` and `ar.json`. Bilingual helper follows AGENTS.md Rule #6.
+- **UX components** — `focus-visible`, ARIA associations, no broken fallbacks.
+- **Config files** (tui.json, etc.) — Conscious of what's committed.
+
+### C. CI & Security
+
+- [ ] Vercel deploy — green
+- [ ] GitHub Actions — green
+- [ ] CodeQL — all alerts resolved
+- [ ] CodeRabbit — "No findings" or all acknowledged
+- [ ] Gemini Review — all comments resolved or WON'T FIX
+- [ ] No open security alerts related to this PR
+
+### D. Quick QA (Browser)
+
+Smoke test the Vercel preview URL:
+
+- [ ] Home page loads without 404
+- [ ] Dashboard/Settings renders
+- [ ] Auth flow (connect) works in both browser types
+- [ ] Agent page loads
+- [ ] No 404 after turbopack fix
+- [ ] Diagnostics don't crash (ErrorBoundary visible)
+
+### E. Final Decision
+
+- [ ] Changes are within planned scope
+- [ ] No red CI or security warnings
+- [ ] Changes match what was approved for this phase
+- [ ] **Action: Approve + comment OR request changes**
+
+When approving:
+
+> "Reviewed manually: scope consistent with [phase] plan, [key fix] validated, [feature] in place, [config] acceptable. Approved for merge."
+
+Merge with your preferred method (Squash or Merge commit).
+
+---
+
+# CodeRabbit Learning Patterns
+
+> Validated patterns from CodeRabbit reviews. Enforce on every PR.
+
+### 1. Zod Validation for API Route Params + Body (CRITICAL)
+
+For Next.js API route handlers in `src/app/api/**/route.ts`, validate route `params` and request body with Zod schemas. Never use manual `if` checks or `body as {...}` type assertions at trust boundaries.
+
+```typescript
+// src/lib/validators.ts — define schemas
+export const IdParamSchema = z.object({ id: z.string().uuid() });
+export const ActionSchema = z.object({ action: z.enum(['approved', 'rejected']) });
+
+// route.ts — use them
+const { id } = IdParamSchema.parse(params);
+const body = ActionSchema.parse(await req.json());
+```
+
+### 2. Retry-After Header on 429 Responses
+
+When returning 429, include `Retry-After` header with seconds until retry. Use `resetAt` from `checkRateLimit`.
+
+```typescript
+const retryAfter = Math.max(0, Math.ceil((rateLimit.resetAt - Date.now()) / 1000));
+return NextResponse.json(
+  { error: "Too many requests" },
+  { status: 429, headers: { "Retry-After": String(retryAfter) } },
+);
+```
+
+### 3. Browser Timer Types (No Double-Casting)
+
+In browser client components, use `ReturnType<typeof setTimeout>` instead of `NodeJS.Timeout`. Never double-cast.
+
+```typescript
+// Correct
+let pollTimeout: ReturnType<typeof setTimeout>;
+pollTimeout = setTimeout(fetchPassport, 3000);
+
+// Wrong
+let pollTimeout: NodeJS.Timeout;
+pollTimeout = setTimeout(fetchPassport, 3000) as unknown as NodeJS.Timeout;
+```
+
+### 4. i18n Completeness Check
+
+When adding UI text, always verify matching keys exist in BOTH `src/i18n/en.json` AND `src/i18n/ar.json`. Missing keys cause raw key rendering for Arabic users.
+
+### 5. Focus-Visible on Interactive Elements
+
+All interactive elements (links, buttons) must have explicit `focus-visible` styling. Don't rely on browser default outline.
+
+```tsx
+<Link className="... focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue">
+```
+
+### 6. ARIA Tabpanel Association
+
+`role="tabpanel"` must pair with `aria-labelledby` referencing the controlling tab's `id`. Thread tab identifiers through props.
+
+```tsx
+<div role="tabpanel" aria-labelledby={`tab-${tabId}`} id={`panel-${tabId}`}>
+```
+
+### 7. Verify Imports After Component Extraction
+
+After extracting components into separate files, verify all imports point to the correct module. Don't import from re-export modules unless they actually export the symbol.
+
+### 8. Wire ALL Strings Through t() in Localized Components
+
+When adding localization to a component, wire ALL user-visible strings through `t(...)`, not just some. Mixed-language text breaks UX.
+
+---
+
+# Learning from Experience
+
+> Validated in real build/test/merge cycles. These are not theories — every entry was learned the hard way.
+
+### 1. Turbopack Workspace Root
+
+**Problem:** Next.js 16 Turbopack detects multiple `package-lock.json` and picks the wrong workspace root, causing ALL `/api/*` routes to return 404 silently.
+
+**Fix:** Add `turbopack.root: process.cwd()` to `next.config.ts`.
+
+**Detect:** Warning in dev logs: `We detected multiple lockfiles and selected the directory of ...`
+
+### 2. Logger.error in EVERY Catch Block
+
+**Pattern:** All `src/app/api/**/route.ts` catch blocks MUST have `logger.error('[TAG] message', err)`. No exceptions. Even "anonymous/unauthenticated" routes.
+
+**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.superpowers/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
+
+**Review check:** Before every PR, grep for `catch {` in new/modified routes.
+
+### 3. Diagnostics Route Hardening
+
+**Lesson:** "No auth required" does NOT mean "no validation required." Anonymous routes (like diagnostics capture) need:
+- Zod schema validation
+- Rate limiting (even if permissive)
+- Proper error responses (`apiError`/`apiSuccess`)
+
+### 4. Console.error Format String (CodeQL)
+
+**Problem:** `console.error("[DIAG] " + message)` creates an externally-controlled format string alert.
+
+**Fix:** Use `console.error("[DIAG] %s", message)` — pass user data as arguments, never interpolate.
+
+### 5. CodeRabbit Multi-Round Pattern
+
+CodeRabbit re-reviews every new commit pushed to a PR. Each round may find new issues or re-open previous ones. The process:
+- Round 1: finds surface issues (markdown, lint, naming)
+- Round 2: finds structural issues (missing validation, edge cases)
+- Round 3+: finds deeper patterns (missing logging, inconsistent patterns)
+
+**Rule:** Never mark a PR ready until ALL rounds are clean. Check the latest review timestamp.
+
+---
+
+# RTA Finding Lifecycle Policy
+
+## Purpose
+Every finding in the Repository Truth Audit (RTA) is a tracked entity with a full lifecycle. No finding disappears — it is resolved, deferred, or explicitly rejected.
+
+## Finding States
+
+```
+Open → (Accepted | Rejected)
+Accepted → (Deferred | In Progress → Fixed → Verified → Closed)
+Deferred → Accepted
+```
+
+| State | Meaning |
+|-------|---------|
+| **Open** | Newly discovered, not yet reviewed |
+| **Accepted** | Reviewed, deemed valid, fix planned |
+| **Deferred** | Valid but deprioritized for a future phase |
+| **In Progress** | Fix being implemented in an open PR |
+| **Fixed** | Fix merged to main |
+| **Verified** | Re-audited on main, confirmed resolved |
+| **Closed** | Lifecycle complete |
+| **Rejected** | Determined to be not a valid finding |
+
+## Finding ID Rules
+
+- Format: `RTA-XXX` (zero-padded, e.g. RTA-001, RTA-042)
+- IDs are NEVER reused. A rejected finding retains its ID.
+- IDs are allocated sequentially. Each audit cycle continues from the last used number — no stage-based reservation.
+- The authoritative allocation registry is `docs/knowledge/00_truth/repository-truth-audit.md`.
+- IDs MUST also be referenced in PR descriptions and ADRs for traceability.
+
+## Finding Metadata Schema
+
+Every finding MUST include:
+
+| Field | Format | Example |
+|-------|--------|---------|
+| ID | RTA-XXX | RTA-001 |
+| Severity | P0–P3 | P1 (Critical) |
+| Confidence | XX% | 85% |
+| Evidence | file:line | README.md:6 |
+| Owner | Team label | Architecture |
+| Recommended Fix | Sentence | Implement agent-in-the-loop auth |
+| Effort | XS/S/M/L/XL | L |
+| Impact | Comma-separated tags | Security, AI Agents |
+| Found By | Agent name | Alpha |
+| Verified By | Agent name or — | Omega (— for Open) |
+| Status | Lifecycle state | Open / Accepted / Deferred / In Progress / Fixed / Verified / Closed / Rejected |
+| Linked ADR | PR # or — | — |
+
+## Audit Baseline
+
+Every RTA report in `docs/knowledge/00_truth/` MUST record its baseline for reproducibility (repository-truth-audit.md, consistency-report.md, and all TRUTH-layer documents):
+
+```markdown
+## Audit Baseline
+- **Repository SHA:** <full commit hash>
+- **Branch:** <branch name>
+- **Audit Date:** YYYY-MM-DD
+- **Spec Version:** X.Y
+```
+
+---
+
+# Senior Staff Engineer + Release Manager Mode
+
+When reviewing ANY code (not writing), follow this persona:
+
+> You are playing the role of **Senior Staff Engineer + Release Manager** for the AxiomID project.
+>
+> Your mission: do NOT touch code before you:
+>
+> 1. **Re-state the goal** in one paragraph.
+> 2. **Write an action plan** of 5–7 bullet points.
+> 3. **List risks and dependencies.**
+> 4. **Get explicit approval** before executing any step.
+
+This overrides the normal agent workflow — it adds an extra review gate before Phase 1 execution begins.
