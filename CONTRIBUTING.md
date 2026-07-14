@@ -1,36 +1,120 @@
 # Contributing to AxiomID
 
-Thank you for your interest in contributing to AxiomID!
+Welcome to AxiomID — thank you for your interest in contributing!
 
 ## Quick Start
 
-1. Fork the repo
-2. Clone: `git clone https://github.com/YOUR_USERNAME/AxiomID.git`
-3. Install: `npm ci`
-4. Copy env: `cp .env.example .env.local`
-5. Generate Prisma: `npx prisma generate`
-6. Run: `npm run dev`
+```bash
+# Prerequisites: Node.js 22+, npm, Git
+git clone https://github.com/Moeabdelaziz007/AxiomID.git
+cd AxiomID
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-## Development Guidelines
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-- **TypeScript** — strict mode, no `any`
-- **Tailwind CSS** — use CSS variables from `globals.css`
-- **Tests** — add tests for new features (`src/__tests__/`)
-- **i18n** — all user-facing text must use `useLanguage()` hook
-- **Commits** — follow conventional commits (`feat:`, `fix:`, `docs:`)
+## Prerequisites
 
-## Pull Request Process
+- **Node.js 22+** (check with `node --version`)
+- **npm 10+** (check with `npm --version`)
+- **Git** with signed commits (recommended)
+- **Pi Browser** (for testing Pi Network features)
+- **Portless** (optional, for stable HTTPS URLs: `npm install -g portless`)
 
-1. Create a feature branch: `git checkout -b feat/your-feature`
-2. Write tests
-3. Run `npx tsc --noEmit && npm run lint && npm test`
-4. Open PR against `main`
-5. Wait for CI checks to pass
+## Project Structure
 
-## Architecture
+```
+src/              — Next.js App Router (pages, API routes, components)
+  app/            — Route handlers + pages
+  components/     — React components (landing, dashboard, passport)
+  lib/            — Shared utilities (Pi SDK, auth, validators)
+  i18n/           — Translations (en.json, ar.json)
+  diagnostics/    — Nostics error catalog
+  types/          — Global type declarations
+packages/
+  crypto/         — @axiomid/crypto (Ed25519 keys)
+  sdk/            — @axiomid/sdk (public API client)
+backend/          — Cloudflare Workers (truth RAG, MCP, skills)
+prisma/           — Database schema + migrations
+docs/             — Specifications, plans, knowledge base
+.ai/              — Agent workflow scripts (loops, playbooks)
+```
 
-See the [docs page](https://axiomid.app/docs) for full architecture overview.
+## Development Workflow
+
+### Branch Naming
+
+```
+feat/<description>    — New features
+fix/<description>     — Bug fixes
+refactor/<description> — Code restructuring
+docs/<description>    — Documentation
+chore/<description>   — Maintenance
+```
+
+### Commit Format (IQRA Chronicle)
+
+```
+type(scope): short description ۞
+
+Longer narrative explaining what changed and why.
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `style`.
+
+### Before Every Push
+
+```bash
+npm run lint          # No new warnings
+npm run type-check    # TypeScript strict mode
+npm test              # Relevant test suites
+npm run build         # Must pass
+```
+
+### PR Process
+
+1. Create branch from `main`
+2. Make focused changes (one logical change per PR)
+3. Run local verification (lint → type-check → test → build)
+4. Push and open PR against `main`
+5. CI must pass (Vercel, GitHub Actions, CodeQL, CodeRabbit)
+6. Get approving review
+7. Squash merge to `main`
+
+## Testing
+
+```bash
+npm test              # Run all tests
+npm test -- --watch   # Watch mode
+npm test -- --coverage # Coverage report
+```
+
+Write tests for new features. Follow existing patterns in `src/__tests__/`.
+
+## Internationalization (i18n)
+
+All user-visible strings must have keys in both `src/i18n/en.json` and `src/i18n/ar.json`.
+
+```typescript
+const { t, language } = useLanguage();
+// Single key translation
+t('welcome')
+// Bilingual helper for custom components
+const t = (en: string, ar: string) => language === 'en' ? en : ar
+```
+
+## Pi SDK Guidelines
+
+- Pi SDK is browser-only — never import in Server Components or API routes
+- Sandbox mode is determined dynamically via `determineSandboxMode()` — never hardcode
+- Test Pi features in Pi Browser with sandbox mode enabled
 
 ## Code of Conduct
 
-Be respectful. We follow the [Contributor Covenant](https://www.contributor-covenant.org).
+Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md). Be respectful, constructive, and inclusive.
+
+## Questions?
+
+Open a [GitHub Discussion](https://github.com/Moeabdelaziz007/AxiomID/discussions) or check existing issues.
