@@ -5,11 +5,12 @@ Welcome to AxiomID — thank you for your interest in contributing!
 ## Quick Start
 
 ```bash
-# Prerequisites: Node.js 22+, npm, Git
+# Prerequisites: Node.js 20+, npm, Git
 git clone https://github.com/Moeabdelaziz007/AxiomID.git
 cd AxiomID
 cp .env.example .env.local
 npm install
+npx prisma generate
 npm run dev
 ```
 
@@ -17,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## Prerequisites
 
-- **Node.js 22+** (check with `node --version`)
+- **Node.js 20+** (check with node --version)
 - **npm 10+** (check with `npm --version`)
 - **Git** with signed commits (recommended)
 - **Pi Browser** (for testing Pi Network features)
@@ -25,13 +26,13 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## Project Structure
 
-```
+```text
 src/              — Next.js App Router (pages, API routes, components)
   app/            — Route handlers + pages
   components/     — React components (landing, dashboard, passport)
   lib/            — Shared utilities (Pi SDK, auth, validators)
   i18n/           — Translations (en.json, ar.json)
-  diagnostics/    — Nostics error catalog
+  diagnostics/    — Diagnostics error catalog
   types/          — Global type declarations
 packages/
   crypto/         — @axiomid/crypto (Ed25519 keys)
@@ -46,7 +47,7 @@ docs/             — Specifications, plans, knowledge base
 
 ### Branch Naming
 
-```
+```text
 feat/<description>    — New features
 fix/<description>     — Bug fixes
 refactor/<description> — Code restructuring
@@ -56,7 +57,7 @@ chore/<description>   — Maintenance
 
 ### Commit Format (IQRA Chronicle)
 
-```
+```text
 type(scope): short description ۞
 
 Longer narrative explaining what changed and why.
@@ -97,12 +98,24 @@ Write tests for new features. Follow existing patterns in `src/__tests__/`.
 
 All user-visible strings must have keys in both `src/i18n/en.json` and `src/i18n/ar.json`.
 
+**Key-based translation (preferred):**
+
 ```typescript
-const { t, language } = useLanguage();
-// Single key translation
-t('welcome')
-// Bilingual helper for custom components
-const tb = (en: string, ar: string) => language === 'en' ? en : ar
+const { t } = useLanguage();
+t('welcome')  // Resolves from en.json or ar.json
+```
+
+**Custom bilingual helper (for edge cases):**
+
+```typescript
+import en from '@/i18n/en.json';
+import ar from '@/i18n/ar.json';
+
+const getBilingualLabel = (key: string, language: string) =>
+  language === 'en' ? en[key] : ar[key];
+
+// Example usage
+getBilingualLabel('welcome', language)
 ```
 
 ## Pi SDK Guidelines

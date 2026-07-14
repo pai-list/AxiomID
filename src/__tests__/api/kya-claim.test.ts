@@ -28,6 +28,9 @@ jest.mock('@/lib/prisma', () => ({
     piPayment: {
       findFirst: jest.fn(),
     },
+    userAgent: {
+      updateMany: jest.fn(),
+    },
   },
 }));
 

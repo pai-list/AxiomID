@@ -41,7 +41,7 @@ export function calculateTrustScore(
   }
 
   const resolvedTenure = tenureDays ?? 0;
-  const resolvedSemantic = semanticTrust ?? 50;
+  const resolvedSemantic = semanticTrust ?? 0;
 
   const tenureScore = Math.min(100, Math.max(0, resolvedTenure * 2)); // e.g. 50 days = 100%
   const score = xpScore * 0.5 + stampScore * 0.2 + tenureScore * 0.1 + resolvedSemantic * 0.2;

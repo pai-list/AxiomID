@@ -49,7 +49,7 @@ Use `kernel` for browser-level smoke tests on critical flows (home, dashboard, c
 # Run smoke tests against a PR preview URL
 kernel run qa:smoke --url https://axiomid-app.vercel.app
 
-# Add new flows in scripts/qa/ or .superpowers/playbooks/
+# Add new flows in scripts/qa/ or .ai/playbooks/
 ```
 
 Role: QA/E2E at the browser level. For every new PR or sensitive change, run smoke tests on basic flows. Can later be set up in CI scripts.
@@ -329,41 +329,41 @@ packages/
 - **Trigger:** Every PR, nightly CI
 - **Check:** Measure page load times for all routes (`/`, `/passport/[slug]`, `/dashboard`, `/dashboard/marketplace`)
 - **Fix:** If any page exceeds 50ms, investigate: bundle size, DB queries, render blocking resources
-- **Script:** `.superpowers/loops/sub-50ms.sh`
+- **Script:** `.ai/loops/sub-50ms.sh`
 
 #### 100% Test Coverage Loop
 
 - **Trigger:** Weekly, after major features
 - **Check:** Run `npx jest --coverage`, identify files below 100%
 - **Fix:** Add tests for uncovered branches, error paths, edge cases
-- **Script:** `.superpowers/loops/coverage.sh`
+- **Script:** `.ai/loops/coverage.sh`
 
 #### Logging Coverage Loop
 
 - **Trigger:** Every PR, weekly
 - **Check:** Verify all `src/app/api/**/route.ts` files have `logger.error()` in catch blocks
 - **Fix:** Add missing logger calls to routes without logging
-- **Script:** `.superpowers/loops/logging-coverage.sh`
+- **Script:** `.ai/loops/logging-coverage.sh`
 
 #### Ticket-to-PR-Ready Loop
 
 - **Trigger:** On demand (when fixing a bug from an issue)
 - **Check:** Reproduce → Root cause → Smallest fix → Regression test → Full suite → PR
-- **Script:** `.superpowers/loops/ticket-to-pr.sh <issue-number>`
+- **Script:** `.ai/loops/ticket-to-pr.sh <issue-number>`
 
 #### Fresh Clone Loop
 
 - **Trigger:** Monthly, before releases
 - **Check:** Clone repo fresh, follow README steps, verify install/build/test all pass
 - **Fix:** Update README if any step fails
-- **Script:** `.superpowers/loops/fresh-clone.sh`
+- **Script:** `.ai/loops/fresh-clone.sh`
 
 #### Nightly Changelog Loop
 
 - **Trigger:** Nightly CI (2 AM UTC)
 - **Check:** Collect commits from last 24 hours, categorize (Added/Fixed/Changed)
 - **Fix:** Update CHANGELOG.md with dated entries
-- **Script:** `.superpowers/loops/nightly-changelog.sh`
+- **Script:** `.ai/loops/nightly-changelog.sh`
 
 #### CI Integration
 
@@ -500,7 +500,7 @@ As the first step, the agent writes a brief plan:
 - **Plan** — step-by-step, smallest batches
 - **Verification** — which tests, lint, type-check, build
 
-Template at `task.md`. Write this BEFORE touching any code.
+Template at `task.template.md`. Copy it to `task.md` (gitignored working copy) and fill it out BEFORE touching any code.
 
 **Two mandatory questions** the agent MUST ask before any execution:
 
@@ -707,7 +707,7 @@ When adding localization to a component, wire ALL user-visible strings through `
 
 **Pattern:** All `src/app/api/**/route.ts` catch blocks MUST have `logger.error('[TAG] message', err)`. No exceptions. Even "anonymous/unauthenticated" routes.
 
-**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.superpowers/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
+**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.ai/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
 
 **Review check:** Before every PR, grep for `catch {` in new/modified routes.
 

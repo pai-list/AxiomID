@@ -1,0 +1,2867 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AxiomID API Reference",
+    "description": "Cryptographic proof of humanity, decentralized identity resolver (did:axiom), verifiable credential signing, and autonomous agent coordination endpoints for Pi Network.\n\n## Authentication\nMost endpoints require a valid Pi Network access token via the `Authorization: Bearer <token>` header. Anonymous rate-limited endpoints are noted.\n\n## Content-Type\nAll request bodies are `application/json`. Responses are `application/json` unless otherwise noted.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AxiomID Support",
+      "url": "https://axiomid.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://axiomid.app",
+      "description": "Production"
+    },
+    {
+      "url": "https://axiomid-backend.amrikyy.workers.dev",
+      "description": "Cloudflare Worker Backend"
+    }
+  ],
+  "paths": {
+    "/api": {
+      "get": {
+        "tags": ["Root"],
+        "summary": "API discovery endpoint",
+        "description": "Returns basic API metadata and available resources.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string", "example": "AxiomID API" },
+                    "version": { "type": "string", "example": "1.0.0" },
+                    "documentation": { "type": "string", "example": "https://axiomid.app/docs" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": ["Health & Status"],
+        "summary": "System health check",
+        "description": "Performs checks on critical systems: PostgreSQL, Stellar, Pi API gateway, and Workers AI.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "System health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": ["Health & Status"],
+        "summary": "Platform status",
+        "description": "Returns real-time protocol statistics including active users, registered agents, total XP, and verification rates.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Platform status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/pi": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Pi SDK authentication",
+        "description": "Authenticate with Pi Network SDK. Validates the provided Pi access token and creates or retrieves the user's AxiomID profile.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accessToken", "uid", "username"],
+                "properties": {
+                  "accessToken": { "type": "string", "description": "Pi Network SDK access token" },
+                  "uid": { "type": "string", "description": "Pi Network user UID" },
+                  "username": { "type": "string", "description": "Pi Network username" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Pi access token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/state": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Get authentication state",
+        "description": "Retrieve the current authentication state for a wallet address.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["walletAddress"],
+                "properties": {
+                  "walletAddress": { "type": "string", "description": "Pi wallet address" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Auth state retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/connect": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Connect wallet",
+        "description": "Connect a Pi wallet to an AxiomID profile. Returns user profile data and indicates if the user is new.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["walletAddress", "state"],
+                "properties": {
+                  "walletAddress": { "type": "string" },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet connected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": { "type": "string" },
+                    "walletAddress": { "type": "string" },
+                    "tier": { "type": "string" },
+                    "xp": { "type": "integer" },
+                    "did": { "type": "string" },
+                    "kycStatus": { "type": "string" },
+                    "isNewUser": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout",
+        "description": "Invalidate the current session. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/did-document": {
+      "get": {
+        "tags": ["DID & Credentials"],
+        "summary": "Get DID document",
+        "description": "Resolves a did:axiom identifier to its corresponding W3C DID document. Returns application/did+ld+json.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "did",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "The did:axiom identifier to resolve. If omitted, returns the requesting user's DID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "W3C DID document",
+            "content": {
+              "application/did+ld+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DidDocument"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credential-status": {
+      "get": {
+        "tags": ["DID & Credentials"],
+        "summary": "Check credential status",
+        "description": "Verifies the revocation status of a verifiable credential.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "credentialId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Credential status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "revoked": { "type": "boolean" },
+                    "status": { "type": "string" },
+                    "subjectId": { "type": "string" },
+                    "lastUpdated": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Create agent",
+        "description": "Create a new autonomous agent for the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "Agent display name" },
+                  "description": { "type": "string", "description": "Agent purpose description" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string" },
+                    "publicId": { "type": "string" },
+                    "name": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/agents": {
+      "get": {
+        "tags": ["Agent Management"],
+        "summary": "List agents",
+        "description": "List all agents belonging to the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Agent list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agents": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AgentBrief" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/activate": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Activate agent",
+        "description": "Activate the authenticated user's agent.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Agent activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string" },
+                    "status": { "type": "string", "enum": ["ACTIVE"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/pause": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Pause agent",
+        "description": "Pause the authenticated user's active agent.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Agent paused",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string" },
+                    "publicId": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/main": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Agent action",
+        "description": "Perform an action through the authenticated user's agent.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "description": "Action to perform" },
+                  "params": { "type": "object", "description": "Optional action parameters" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string" },
+                    "action": { "type": "string" },
+                    "result": { "type": "object" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/sign": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Sign with sovereign key",
+        "description": "Sign a payload using the user's sovereign key. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["did", "payload"],
+                "properties": {
+                  "did": { "type": "string", "description": "DID to sign with" },
+                  "payload": { "type": "object", "description": "Payload to sign" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signature generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "signature": { "type": "string" },
+                    "did": { "type": "string" },
+                    "keyVersion": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/manifest": {
+      "get": {
+        "tags": ["Agent Management"],
+        "summary": "Get VC manifest",
+        "description": "Retrieve the signed W3C Verifiable Credential manifest for the authenticated user's agent.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Verifiable Credential manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Signed W3C Verifiable Credential"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/public": {
+      "get": {
+        "tags": ["Agent Management"],
+        "summary": "Public agent info",
+        "description": "Retrieve public information about a user and their agent by username. No authentication required.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public agent info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": { "type": "string" },
+                    "walletAddress": { "type": "string" },
+                    "tier": { "type": "string" },
+                    "xp": { "type": "integer" },
+                    "verified": { "type": "boolean" },
+                    "did": { "type": "string" },
+                    "agent": { "type": "object" },
+                    "memberSince": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/identity": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Identity assertion/claim",
+        "description": "Submit an identity assertion or claim a token. Rate limited.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["identity_assertion", "claim_token"],
+                    "description": "Type of identity operation"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Identity operation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/identity/claim": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Check identity claim",
+        "description": "Check the status of an identity claim using a user code. Rate limited.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["user_code"],
+                "properties": {
+                  "user_code": { "type": "string", "description": "User code from the claim initiation" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Claim status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "user_code": { "type": "string" },
+                    "verification_uri": { "type": "string" },
+                    "expires_at": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/harvest": {
+      "post": {
+        "tags": ["Agent Management"],
+        "summary": "Harvest query",
+        "description": "Submit a query to the agent harvest system. Requires authentication and has a custom rate limit.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                  "query": { "type": "string", "description": "Harvest query text" },
+                  "maxTokens": { "type": "integer", "description": "Maximum tokens for response" },
+                  "temperature": { "type": "number", "description": "Response temperature (0.0 - 1.0)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Harvest result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "result": { "type": "string" },
+                    "citations": {
+                      "type": "array",
+                      "items": { "type": "object" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skills": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "List skills",
+        "description": "List available skills in the marketplace with optional filtering, search, and pagination.",
+        "security": [],
+        "parameters": [
+          { "name": "tier", "in": "query", "schema": { "type": "string" } },
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search query" },
+          { "name": "tags", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated tag filter" },
+          { "name": "sort", "in": "query", "schema": { "type": "string" } },
+          { "name": "minPrice", "in": "query", "schema": { "type": "number" } },
+          { "name": "maxPrice", "in": "query", "schema": { "type": "number" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } },
+          { "name": "soulPrinciple", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "skills": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/SkillBrief" }
+                    },
+                    "total": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "offset": { "type": "integer" },
+                    "hasMore": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Publish skill",
+        "description": "Publish a new skill to the marketplace. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["slug", "name", "description", "manifestMd"],
+                "properties": {
+                  "slug": { "type": "string" },
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "manifestMd": { "type": "string" },
+                  "agentScript": { "type": "string" },
+                  "testSuite": { "type": "string" },
+                  "tier": { "type": "string" },
+                  "pricePi": { "type": "number" },
+                  "version": { "type": "string" },
+                  "soulPrinciple": { "type": "string" },
+                  "chainable": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Skill published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "skillId": { "type": "string" },
+                    "slug": { "type": "string" },
+                    "name": { "type": "string" },
+                    "tier": { "type": "string" },
+                    "version": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skills/tags": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "List tags",
+        "description": "List all skill tags available in the marketplace.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Tag list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tags": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/skills/{slug}": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Get skill detail",
+        "description": "Get full details of a specific skill by slug. Authentication optional.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SkillDetail" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Update skill",
+        "description": "Update a skill. Requires authentication as the skill author.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "manifestMd": { "type": "string" },
+                  "agentScript": { "type": "string" },
+                  "testSuite": { "type": "string" },
+                  "pricePi": { "type": "number" },
+                  "version": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Skill updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SkillBrief" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Delete skill",
+        "description": "Delete a skill. Requires authentication as the skill author.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": { "type": "boolean" },
+                    "slug": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/skills/{slug}/execute": {
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Execute skill",
+        "description": "Execute a skill. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Execution result"
+          }
+        }
+      }
+    },
+    "/api/skills/{slug}/install": {
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Install skill",
+        "description": "Install a skill for the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill installed"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "delete": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Uninstall skill",
+        "description": "Uninstall a previously installed skill.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill uninstalled"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/skills/{slug}/stats": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Skill stats",
+        "description": "Get usage statistics for a skill.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill statistics"
+          }
+        }
+      }
+    },
+    "/api/skills/{slug}/pay": {
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Pay for skill",
+        "description": "Process payment for a skill. Returns 200 for free or already-paid skills, 402 if payment is required.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill access granted or free skill"
+          },
+          "402": {
+            "description": "Payment required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "paymentUrl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/skills/{slug}/tags": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Get skill tags",
+        "description": "Get the tags associated with a skill.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill tags",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tags": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Set skill tags",
+        "description": "Set tags for a skill. Requires authentication as the skill author.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tags"],
+                "properties": {
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tags updated"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/skills/{slug}/versions": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "List skill versions",
+        "description": "List all versions of a skill.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "versions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "version": { "type": "string" },
+                          "publishedAt": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/skills/{slug}/review": {
+      "get": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Get skill reviews",
+        "description": "Get public reviews for a skill.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill reviews",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviews": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Review" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Add skill review",
+        "description": "Add a review for a skill. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rating", "comment"],
+                "properties": {
+                  "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review created"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/skills/{slug}/purchase": {
+      "post": {
+        "tags": ["Skills Marketplace"],
+        "summary": "Purchase skill (DEPRECATED)",
+        "description": "This endpoint is deprecated and returns 410 Gone.",
+        "deprecated": true,
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "410": {
+            "description": "Gone — this endpoint is deprecated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/skills": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List skill moderations",
+        "description": "List skills pending moderation. Requires authentication and admin privileges.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Moderation queue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "skills": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/SkillBrief" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/admin/skills/{id}": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Moderate skill",
+        "description": "Approve or reject a skill. Requires authentication and admin privileges.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": ["approved", "rejected"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Skill moderated"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/pi/payment/approve": {
+      "post": {
+        "tags": ["Pi Network"],
+        "summary": "Approve payment",
+        "description": "Approve a Pi Network payment. Requires authentication. 30-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Payment approved"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/pi/payment/complete": {
+      "post": {
+        "tags": ["Pi Network"],
+        "summary": "Complete payment",
+        "description": "Complete a Pi Network payment. Requires authentication. 30-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Payment completed"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/pi/ads/verify": {
+      "post": {
+        "tags": ["Pi Network"],
+        "summary": "Verify ad",
+        "description": "Verify a rewarded ad completion. Requires authentication. 30-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Ad verified"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/pi/kya/verify": {
+      "post": {
+        "tags": ["Pi Network"],
+        "summary": "KYC verify",
+        "description": "Submit KYC verification. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "KYC verification submitted"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/pi/kya/claim": {
+      "post": {
+        "tags": ["Pi Network"],
+        "summary": "KYC claim",
+        "description": "Claim KYC verification reward. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "KYC reward claimed"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/passport/{slug}": {
+      "get": {
+        "tags": ["Passport"],
+        "summary": "Get passport",
+        "description": "Retrieve a public passport profile by username slug. Includes verification badges, trust score, XP, user tier, and associated agent.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Username slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passport retrieved",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PassportResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/passport/{slug}/publish": {
+      "post": {
+        "tags": ["Passport"],
+        "summary": "Publish passport to IPFS",
+        "description": "Publish the passport credential to IPFS. Requires authentication as the passport owner.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published to IPFS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ipfsHash": { "type": "string" },
+                    "url": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/passport/{slug}/verify": {
+      "get": {
+        "tags": ["Passport"],
+        "summary": "Verify passport",
+        "description": "Verify the cryptographic integrity of a passport credential.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "verified": { "type": "boolean" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/stamp": {
+      "get": {
+        "tags": ["Stamps"],
+        "summary": "List stamps",
+        "description": "List all badges/stamps earned by the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Stamp collection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stamps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "icon": { "type": "string" },
+                          "earnedAt": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/stamp/claim": {
+      "post": {
+        "tags": ["Stamps"],
+        "summary": "Claim stamp",
+        "description": "Claim a new badge/stamp. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Stamp claimed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stamp": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string" },
+                        "icon": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/social/disconnect": {
+      "post": {
+        "tags": ["Social"],
+        "summary": "Disconnect platform",
+        "description": "Disconnect a social platform from the authenticated user's profile.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Platform disconnected"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/user/status": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Full user status",
+        "description": "Get the complete status of the authenticated user, including profile, XP, tier, agent status, and settings.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "walletAddress": { "type": "string" },
+                    "tier": { "type": "string" },
+                    "xp": { "type": "integer" },
+                    "did": { "type": "string" },
+                    "kycStatus": { "type": "string" },
+                    "hasAgent": { "type": "boolean" },
+                    "agent": { "$ref": "#/components/schemas/AgentBrief" },
+                    "stamps": { "type": "array", "items": { "type": "object" } },
+                    "skills": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/spend-request": {
+      "post": {
+        "tags": ["Spend Requests"],
+        "summary": "Create spend request",
+        "description": "Create a new Pi spend request. Requires authentication. 30-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": { "type": "string", "format": "uuid", "example": "4ef60647-f509-4ed8-a873-c1519c7246ea" },
+                  "amount": { "type": "number", "minimum": 0.000001, "maximum": 500, "example": 10.5 },
+                  "currency": { "type": "string", "default": "PI", "example": "PI" },
+                  "description": { "type": "string", "maxLength": 500, "example": "Purchase subscription" },
+                  "context": { "type": "string", "minLength": 100, "example": "This request is generated contextually for the acquisition of computational resources for user validation operations, ensuring..." },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string", "example": "Validation credit" },
+                        "unit_amount": { "type": "number", "example": 10.5 },
+                        "quantity": { "type": "integer", "example": 1 }
+                      },
+                      "required": ["name", "unit_amount", "quantity"]
+                    }
+                  }
+                },
+                "required": ["agentId", "amount", "description", "context"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Spend request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "status": { "type": "string", "example": "pending" },
+                    "expiresAt": { "type": "string", "format": "date-time" },
+                    "amount": { "type": "number", "example": 10.5 },
+                    "description": { "type": "string", "example": "Purchase subscription" }
+                  },
+                  "required": ["id", "status", "expiresAt", "amount", "description"]
+                }
+              }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      },
+      "get": {
+        "tags": ["Spend Requests"],
+        "summary": "List spend requests",
+        "description": "List all spend requests for the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Spend request list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "agentId": { "type": "string", "format": "uuid" },
+                          "userId": { "type": "string", "format": "uuid" },
+                          "amount": { "type": "number", "example": 10.5 },
+                          "currency": { "type": "string", "example": "PI" },
+                          "description": { "type": "string", "example": "Purchase subscription" },
+                          "status": { "type": "string", "example": "pending" },
+                          "createdAt": { "type": "string", "format": "date-time" },
+                          "expiresAt": { "type": "string", "format": "date-time" },
+                          "agent": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "name": { "type": "string", "example": "Validation Agent" },
+                              "avatarUrl": { "type": "string", "nullable": true, "example": "https://example.com/avatar.png" },
+                              "publicId": { "type": "string", "example": "validation-agent" }
+                            },
+                            "required": ["id", "name", "publicId"]
+                          }
+                        },
+                        "required": ["id", "agentId", "userId", "amount", "currency", "description", "status", "createdAt", "expiresAt", "agent"]
+                      }
+                    },
+                    "count": { "type": "integer", "example": 1 }
+                  },
+                  "required": ["requests", "count"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/api/spend-request/{id}": {
+      "get": {
+        "tags": ["Spend Requests"],
+        "summary": "Get spend request",
+        "description": "Get details of a specific spend request.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Spend request details"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Spend Requests"],
+        "summary": "Update spend request status",
+        "description": "Update the status of a spend request. Requires authentication. 30-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Spend request updated"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/spend-request/stream": {
+      "get": {
+        "tags": ["Spend Requests"],
+        "summary": "Spend request SSE stream",
+        "description": "Server-Sent Events stream for real-time spend request updates. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "SSE event stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "Server-Sent Events stream"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/stellar/anchor": {
+      "post": {
+        "tags": ["Stellar"],
+        "summary": "Anchor VC hash",
+        "description": "Anchor a Verifiable Credential hash to the Stellar blockchain. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "VC hash anchored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stellarTxHash": { "type": "string" },
+                    "ledger": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/vault/stake": {
+      "get": {
+        "tags": ["Vault / Staking"],
+        "summary": "List stakes",
+        "description": "List all stakes for the authenticated user.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Stake list"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Vault / Staking"],
+        "summary": "Stake / Unstake",
+        "description": "Stake or unstake Pi tokens. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Stake operation completed"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/presence/heartbeat": {
+      "post": {
+        "tags": ["Presence"],
+        "summary": "Heartbeat",
+        "description": "Send a presence heartbeat to indicate the user is online. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Heartbeat received"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/diagnostics/capture": {
+      "post": {
+        "tags": ["Diagnostics"],
+        "summary": "Capture diagnostics",
+        "description": "Capture frontend diagnostics. No authentication required.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": { "type": "object" },
+                  "piApiResponse": { "type": "object" },
+                  "walletAuth": { "type": "object" },
+                  "timestamp": { "type": "string", "format": "date-time" },
+                  "userAgent": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Diagnostics captured"
+          }
+        }
+      }
+    },
+    "/api/diagnostics/logs": {
+      "get": {
+        "tags": ["Diagnostics"],
+        "summary": "List diagnostics logs",
+        "description": "List captured diagnostics logs. No authentication required.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 },
+            "description": "Pagination offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diagnostics logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "timestamp": { "type": "string", "format": "date-time" },
+                      "errorType": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Diagnostics"],
+        "summary": "Clear diagnostics logs",
+        "description": "Clear all captured diagnostics logs. No authentication required.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Diagnostics cleared",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sandbox/execute": {
+      "post": {
+        "tags": ["Sandbox"],
+        "summary": "Execute sandbox",
+        "description": "Execute code in a secure sandbox environment. Requires authentication. Returns NDJSON stream.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code"],
+                "properties": {
+                  "code": { "type": "string" },
+                  "language": { "type": "string", "default": "javascript" },
+                  "timeout": { "type": "integer", "default": 5000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON execution stream",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string",
+                  "description": "Newline-delimited JSON stream of execution results"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/sandbox/dev-token": {
+      "get": {
+        "tags": ["Sandbox"],
+        "summary": "Get dev token",
+        "description": "Retrieve the sandbox development token. Loopback only (localhost/127.0.0.1).",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Dev token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not available from remote hosts",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/presign": {
+      "post": {
+        "tags": ["Upload"],
+        "summary": "Presign upload URL",
+        "description": "Get a presigned URL for file upload. Requires authentication.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Presigned URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": { "type": "string" },
+                    "key": { "type": "string" },
+                    "fields": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/sync": {
+      "post": {
+        "tags": ["Sync"],
+        "summary": "Sync data",
+        "description": "Trigger a data sync operation. Requires authentication. 60-second processing window.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sync completed"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "get": {
+        "tags": ["Sync"],
+        "summary": "Sync status",
+        "description": "Get current sync status. Requires authentication or CRON_SECRET.",
+        "security": [{ "BearerAuth": [] }, { "CronSecret": [] }],
+        "responses": {
+          "200": {
+            "description": "Sync status"
+          }
+        }
+      }
+    },
+    "/api/explorer": {
+      "get": {
+        "tags": ["Explorer & Leaderboard"],
+        "summary": "Explorer data",
+        "description": "Fetches paginated distribution of registered users, agents, and trust tiers.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Explorer data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalUsers": { "type": "integer" },
+                    "totalAgents": { "type": "integer" },
+                    "tierDistribution": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leaderboard": {
+      "get": {
+        "tags": ["Explorer & Leaderboard"],
+        "summary": "Leaderboard",
+        "description": "Returns the top users ranked by total XP earnings with verified trust scores.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 50 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "leaderboard": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rank": { "type": "integer" },
+                          "username": { "type": "string" },
+                          "xp": { "type": "integer" },
+                          "tier": { "type": "string" },
+                          "trustScore": { "type": "number" }
+                        }
+                      }
+                    },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/telegram": {
+      "post": {
+        "tags": ["Telegram"],
+        "summary": "Telegram webhook",
+        "description": "Webhook endpoint for Telegram bot integration. No authentication required.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Telegram Update object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed"
+          }
+        }
+      }
+    },
+    "/api/daily-review": {
+      "get": {
+        "tags": ["Daily Review"],
+        "summary": "Trigger daily review",
+        "description": "Trigger the daily review process. Requires CRON_SECRET.",
+        "security": [{ "CronSecret": [] }],
+        "responses": {
+          "200": {
+            "description": "Daily review triggered"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/emulate/{path+}": {
+      "parameters": [
+        {
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "description": "Emulated service path"
+        }
+      ],
+      "get": {
+        "tags": ["Emulate"],
+        "summary": "Emulation proxy",
+        "description": "Proxy for local development emulators (GitHub, Google, Slack, etc.). Returns 404 in production.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Emulated response"
+          },
+          "404": {
+            "description": "Not available in production"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Emulate"],
+        "summary": "Emulation proxy (POST)",
+        "description": "Proxy for local development emulators (POST methods). Returns 404 in production.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Emulated response"
+          },
+          "404": {
+            "description": "Not available in production"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Emulate"],
+        "summary": "Emulation proxy (PATCH)",
+        "description": "Proxy for local development emulators (PATCH methods). Returns 404 in production.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Emulated response"
+          },
+          "404": {
+            "description": "Not available in production"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Emulate"],
+        "summary": "Emulation proxy (DELETE)",
+        "description": "Proxy for local development emulators (DELETE methods). Returns 404 in production.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Emulated response"
+          },
+          "404": {
+            "description": "Not available in production"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker health check",
+        "description": "Health check for the Cloudflare Worker backend (axiomid-backend.amrikyy.workers.dev).",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Worker is healthy"
+          }
+        }
+      }
+    },
+    "/api/truth/ask": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Truth RAG query",
+        "description": "Query the Truth RAG pipeline for answers grounded in the trust corpus.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Query string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RAG response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answer": { "type": "string" },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chapter": { "type": "string" },
+                          "verse": { "type": "string" },
+                          "text": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/truth/daily-truth": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Daily truth verse",
+        "description": "Get the daily truth verse from the trust corpus.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Daily truth verse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "chapter": { "type": "string" },
+                    "verse": { "type": "string" },
+                    "text": { "type": "string" },
+                    "date": { "type": "string", "format": "date" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Vector search",
+        "description": "Perform a vector similarity search across the trust corpus.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 5 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results"
+          }
+        }
+      }
+    },
+    "/api/search/similar": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Similarity search",
+        "description": "Find semantically similar texts from the trust corpus.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Similar results"
+          }
+        }
+      }
+    },
+    "/api/trust/{did}": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Trust score",
+        "description": "Get the trust score for a did:axiom identifier.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trust score",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "did": { "type": "string" },
+                    "trustScore": { "type": "number" },
+                    "confidence": { "type": "number" },
+                    "lastUpdated": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/harvest": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Queue harvest job",
+        "description": "Queue a new knowledge harvest job.",
+        "security": [],
+        "responses": {
+          "202": {
+            "description": "Job queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harvest/{jobId}": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Harvest job status",
+        "description": "Get the status of a knowledge harvest job.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": { "type": "string" },
+                    "status": { "type": "string" },
+                    "progress": { "type": "integer" },
+                    "result": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/skills-worker": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker skills list",
+        "description": "List skills from the Worker backend (KV-cached).",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Skills list (KV-cached)"
+          }
+        }
+      }
+    },
+    "/api/skills-worker/{slug}": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker skill detail",
+        "description": "Get skill detail from the Worker backend.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill detail"
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/skills-worker/{slug}/install": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker install skill",
+        "description": "Install a skill via the Worker backend.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Skill installed"
+          }
+        }
+      }
+    },
+    "/api/agent/dispatch": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Dispatch agent action",
+        "description": "Dispatch an action to be executed by an agent on the Worker backend.",
+        "security": [],
+        "responses": {
+          "202": {
+            "description": "Action dispatched"
+          }
+        }
+      }
+    },
+    "/heartbeat": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker presence heartbeat",
+        "description": "Send a presence heartbeat to the Worker backend.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Heartbeat received"
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker presents status",
+        "description": "Get the present status from the Worker backend.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Present status"
+          }
+        }
+      }
+    },
+    "/api/embed": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Get embeddings",
+        "description": "Generate embeddings for provided text using the Worker AI embedding model.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Embeddings generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "embeddings": {
+                      "type": "array",
+                      "items": { "type": "number" }
+                    },
+                    "dimensions": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sync-worker": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker sync status",
+        "description": "Get sync status from the Worker backend.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Sync status"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Worker trigger sync",
+        "description": "Trigger a sync from the Worker backend.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Sync triggered"
+          }
+        }
+      }
+    },
+    "/api/sync/export": {
+      "get": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "Export sync data",
+        "description": "Export synchronization data from the Worker backend.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Sync data export"
+          }
+        }
+      }
+    },
+    "/mcp": {
+      "post": {
+        "tags": ["Cloudflare Worker Backend"],
+        "summary": "MCP server endpoint",
+        "description": "MCP (Model Context Protocol) server endpoint for AI agent integration.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "MCP response"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Pi Network access token verification header."
+      },
+      "CronSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Cron-Secret",
+        "description": "Cron job authentication secret."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "healthy" },
+          "uptime": { "type": "integer", "example": 100 },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "Database" },
+                "status": { "type": "string", "enum": ["ONLINE", "DEGRADED", "OFFLINE"], "example": "ONLINE" },
+                "latencyMs": { "type": "integer", "example": 12 }
+              },
+              "required": ["name", "status", "latencyMs"]
+            }
+          },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "required": ["status", "uptime", "services", "timestamp"]
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "network": { "type": "string", "example": "axiomid" },
+          "version": { "type": "string", "example": "1.0.0" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "registeredUsers": { "type": "integer", "example": 150 },
+              "totalAgents": { "type": "integer", "example": 45 },
+              "activeAgents": { "type": "integer", "example": 30 },
+              "totalPayments": { "type": "integer", "example": 120 },
+              "totalXpEarned": { "type": "integer", "example": 5000 },
+              "activeUsers": { "type": "integer", "example": 12 },
+              "averageTrustScore": { "type": "number", "example": 85 },
+              "verificationRate": { "type": "integer", "example": 60 }
+            },
+            "required": [
+              "registeredUsers",
+              "totalAgents",
+              "activeAgents",
+              "totalPayments",
+              "totalXpEarned",
+              "activeUsers",
+              "averageTrustScore",
+              "verificationRate"
+            ]
+          }
+        },
+        "required": ["network", "version", "timestamp", "stats"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "walletAddress": { "type": "string" },
+          "stellarAddress": { "type": "string" },
+          "piUid": { "type": "string" },
+          "piUsername": { "type": "string" },
+          "tier": { "type": "string" },
+          "xp": { "type": "integer" },
+          "did": { "type": "string" },
+          "kycStatus": { "type": "string" },
+          "hasAgent": { "type": "boolean" }
+        }
+      },
+      "AgentBrief": {
+        "type": "object",
+        "properties": {
+          "agentId": { "type": "string" },
+          "publicId": { "type": "string" },
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SkillBrief": {
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "tier": { "type": "string" },
+          "pricePi": { "type": "number" },
+          "version": { "type": "string" },
+          "author": { "type": "string" },
+          "rating": { "type": "number" },
+          "installCount": { "type": "integer" }
+        }
+      },
+      "SkillDetail": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SkillBrief" },
+          {
+            "type": "object",
+            "properties": {
+              "manifestMd": { "type": "string" },
+              "agentScript": { "type": "string" },
+              "testSuite": { "type": "string" },
+              "soulPrinciple": { "type": "string" },
+              "chainable": { "type": "boolean" },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "comment": { "type": "string" },
+          "author": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PassportResponse": {
+        "type": "object",
+        "properties": {
+          "username": { "type": "string", "example": "AxiomID Agent" },
+          "walletAddress": { "type": "string", "example": "GDQD5O... or 0x..." },
+          "stellarAddress": { "type": "string", "nullable": true, "example": "GDQD5OJ23X3H..." },
+          "did": { "type": "string", "example": "did:axiom:..." },
+          "tier": { "type": "string", "example": "bronze" },
+          "xp": { "type": "integer", "example": 120 },
+          "trustScore": { "type": "number", "example": 85 },
+          "kyaStatus": { "type": "string", "example": "active" },
+          "kycStatus": { "type": "string", "example": "verified" },
+          "stamps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "example": "PiNetwork" },
+                "provider": { "type": "string", "example": "pi-network" }
+              },
+              "required": ["type", "provider"]
+            }
+          },
+          "issuedDate": { "type": "string", "format": "date-time" },
+          "agentName": { "type": "string", "nullable": true, "example": "AlphaAgent" },
+          "agentStatus": { "type": "string", "nullable": true, "example": "ACTIVE" },
+          "agentPublicKey": { "type": "string", "nullable": true, "example": "G..." }
+        },
+        "required": [
+          "username",
+          "walletAddress",
+          "stellarAddress",
+          "did",
+          "tier",
+          "xp",
+          "trustScore",
+          "kyaStatus",
+          "kycStatus",
+          "stamps",
+          "issuedDate",
+          "agentName",
+          "agentStatus",
+          "agentPublicKey"
+        ]
+      },
+      "DidDocument": {
+        "type": "object",
+        "properties": {
+          "@context": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "id": { "type": "string" },
+          "verificationMethod": {
+            "type": "array",
+            "items": { "type": "object" }
+          },
+          "authentication": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Too many requests. Try again later.",
+        "headers": {
+          "Retry-After": {
+            "schema": { "type": "integer" },
+            "description": "The number of seconds to wait before making another request."
+          },
+          "X-RateLimit-Limit": {
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Remaining": {
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Reset": {
+            "schema": { "type": "integer" }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    }
+  }
+}

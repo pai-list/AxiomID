@@ -68,6 +68,32 @@ JWT bearer grant exchange. Convert Pi token to AxiomID access token.
 Revoke access or refresh token.
 - Body: `{ token: string, token_type_hint?: "access_token" | "refresh_token" }`
 
+#### POST /api/spend-request
+Create a new agentic spend request for a user.
+- Body: `{ amount: number, memo: string, receiver: string }`
+
+#### POST /api/presence/heartbeat
+Send a presence heartbeat for an active agent.
+- Body: `{ did: string, status: string }`
+
+#### POST /api/sync
+Sync local D1 SQLite data to edge.
+
+#### POST /api/vault/stake
+Stake Pi tokens in the sovereign vault.
+
+### Trust Score Formula
+The trust engine calculates two variants of the Trust Score (clamped 0–100, default 0):
+- **Basic (default):** `XP * 0.7 + Stamps * 0.3`
+- **Full (when tenure/semantic data is available):** `XP * 0.5 + Stamps * 0.2 + Tenure * 0.1 + Semantic Trust * 0.2`
+
+Stellar trust anchoring grants a flat +15% boost. Trust decays over time during periods of inactivity.
+
+### Dual Identity Governance
+The protocol divides roles cleanly between:
+1. **Human Sovereign:** The absolute controller, managing credentials, stamps, keypairs, and approval loops.
+2. **AI Agent:** The executor, authorized to act on behalf of the Human via delegation credentials and sandboxed workflows.
+
 ### Marketplace Endpoints
 
 #### GET /api/skills

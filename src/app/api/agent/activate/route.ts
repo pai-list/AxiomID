@@ -24,9 +24,11 @@ export async function POST(request: NextRequest) {
   const user = auth.user;
 
   try {
+    const agentDid = user.did ? `${user.did}:agent` : `did:axiom:pi:${user.piUsername || user.piUid || user.id}:agent`;
+
     const result = await prisma.$queryRaw<Array<{ id: string; publicId: string; status: string }>>`
       UPDATE "UserAgent"
-      SET status = 'ACTIVE', "lastActive" = NOW(), "updatedAt" = NOW()
+      SET status = 'ACTIVE', did = ${agentDid}, "lastActive" = NOW(), "updatedAt" = NOW()
       WHERE "userId" = ${user.id} AND status IN ('INACTIVE', 'PAUSED')
       RETURNING id, "publicId", status
     `;

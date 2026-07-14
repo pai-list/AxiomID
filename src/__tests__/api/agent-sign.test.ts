@@ -14,15 +14,24 @@ jest.mock("@/lib/sovereign-keys", () => ({
   deriveSovereignAgentKeypair: jest.fn(),
   ROOT_AGENT_ID: "axiom-root",
 }));
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    user: {
+      findFirst: jest.fn(),
+    },
+  },
+}));
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/agent/sign/route";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { deriveSovereignAgentKeypair, signPayloadWithAgentKey } from "@/lib/sovereign-keys";
+import { prisma } from "@/lib/prisma";
 
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 const mockSign = signPayloadWithAgentKey as jest.Mock;
+const mockFindFirst = prisma.user.findFirst as jest.Mock;
 
 function mockPostRequest(body: unknown): NextRequest {
   return new NextRequest("http://localhost/api/agent/sign", {
@@ -38,6 +47,7 @@ describe("POST /api/agent/sign", () => {
     mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 });
     mockDerive.mockReturnValue({ privateKey: "mock-private-key", publicKey: "mock-public-key" });
     mockSign.mockReturnValue("0x3a8fsignature");
+    mockFindFirst.mockResolvedValue(null);
   });
 
   it("returns signature for valid request", async () => {
@@ -145,5 +155,14 @@ describe("POST /api/agent/sign", () => {
 
     // Should pass DID validation (starts with did:axiom:)
     expect(res.status).toBe(200);
+  });
+
+  it("queries the database by DID and uses the user's piUid for key derivation if found", async () => {
+    mockFindFirst.mockResolvedValue({ id: "db-user-id", piUid: "db-pi-uid" });
+    const req = mockPostRequest({ payload: "hello world", did: "did:axiom:pi:myusername" });
+    const res = await POST(req);
+
+    expect(res.status).toBe(200);
+    expect(mockDerive).toHaveBeenCalledWith("db-pi-uid", "axiom-root");
   });
 });

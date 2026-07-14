@@ -13,14 +13,60 @@ import { toast } from "sonner";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { t } = useLanguage();
-  const { user, connectWallet, isConnecting, createAgent } = useWallet();
+  const { t, language } = useLanguage();
+  const tText = (en: string, ar: string) => (language === "en" ? en : ar);
+
+  const { user, connectWallet, isConnecting, createAgent, activateAgent, piAccessToken } = useWallet();
 
   const [step, setStep] = useState(1);
   const [agentName, setAgentName] = useState("");
   const [creatingAgent, setCreatingAgent] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isSelfVerified, setIsSelfVerified] = useState(false);
+
+  const verified = user?.kycStatus === "VERIFIED" || isSelfVerified;
 
   const didAutoAdvance = useRef(false);
+
+  const handleVerify = async () => {
+    setIsVerifying(true);
+    try {
+      const kyaRes = await fetch("/api/pi/kya/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(piAccessToken ? { Authorization: `Bearer ${piAccessToken}` } : {}),
+        },
+        body: JSON.stringify({ accessToken: piAccessToken }),
+      });
+
+      if (kyaRes.ok) {
+        const kyaData = await kyaRes.json();
+        if (kyaData.kycStatus === "VERIFIED") {
+          setIsSelfVerified(true);
+          toast.success(t("onboarding_seal_verified"));
+          handleNextStep();
+        } else {
+          toast.error("KYC verification pending");
+        }
+      } else {
+        toast.error("Verification failed");
+      }
+    } catch (err) {
+      logger.error("Verification failed:", err);
+      toast.error("Verification failed");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleVerifyClick = async () => {
+    if (verified || user?.kycStatus === "VERIFIED") {
+      handleNextStep();
+      return;
+    }
+    await handleVerify();
+  };
 
   // Auto-advance returning users who have already provisioned an agent.
   // First-time connections stay on step 1 so the "Continue" button is used.
@@ -47,7 +93,12 @@ export default function OnboardingPage() {
     try {
       const ok = await createAgent(agentName || t("onboarding_default_agent_name"));
       if (ok) {
-        handleNextStep();
+        const activated = await activateAgent();
+        if (activated) {
+          handleNextStep();
+        } else {
+          toast.error(t("onboarding_agent_failed"));
+        }
       } else {
         toast.error(t("onboarding_agent_failed"));
       }
@@ -216,13 +267,30 @@ export default function OnboardingPage() {
                     <p className="text-xs text-zinc-500 font-mono">
                       {t("onboarding_seal_desc")}
                     </p>
-                    <div className="flex items-center gap-2 text-amber-400 text-xs font-mono bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl">
-                      <ShieldCheck className="w-4 h-4 animate-pulse" />
-                      <span>{t("onboarding_seal_verified")}</span>
+                    <div className={`flex items-center gap-2 text-xs font-mono p-3 rounded-xl border transition-all duration-300 ${
+                      verified || user?.kycStatus === "VERIFIED"
+                        ? "text-green-400 border-green-500/20 bg-green-500/5"
+                        : "text-amber-400 border-amber-500/20 bg-amber-500/5"
+                    }`}>
+                      <ShieldCheck className={`w-4 h-4 ${!verified && user?.kycStatus !== "VERIFIED" ? "animate-pulse" : ""}`} />
+                      <span>{verified || user?.kycStatus === "VERIFIED" ? t("onboarding_seal_verified") : tText("Verification pending", "التحقق قيد الانتظار")}</span>
                     </div>
-                    <button onClick={handleNextStep} className="btn-primary w-full py-3 text-xs font-mono font-bold flex items-center justify-center gap-2">
-                      {t("onboarding_seal_btn")}
-                      <ChevronRight className="w-4 h-4" />
+                    <button 
+                      onClick={handleVerifyClick} 
+                      disabled={isVerifying}
+                      className="btn-primary w-full py-3 text-xs font-mono font-bold flex items-center justify-center gap-2"
+                    >
+                      {isVerifying ? (
+                        <>
+                          <span className="animate-spin">⟳</span>
+                          <span>{tText("Verifying...", "جارٍ التحقق...")}</span>
+                        </>
+                      ) : (
+                        <>
+                          {verified || user?.kycStatus === "VERIFIED" ? tText("Continue", "متابعة") : t("onboarding_seal_btn")}
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
                     </button>
                   </div>
                 )}
