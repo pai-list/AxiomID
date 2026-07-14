@@ -1,11 +1,14 @@
 import React, { act } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PassportView } from "@/app/passport/[slug]/PassportView";
 import { useParams } from "next/navigation";
 import { useLanguage } from "../../app/context/language-context";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function makeQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
+let queryClient = makeQueryClient();
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
@@ -50,6 +53,7 @@ describe("PassportView", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    queryClient = makeQueryClient();
     (useParams as jest.Mock).mockReturnValue({ slug: "alice" });
 
     global.fetch = jest.fn().mockImplementation(() =>
@@ -61,7 +65,7 @@ describe("PassportView", () => {
 
   it("renders loading skeleton initially", () => {
     render(<PassportView />, { wrapper: TestWrapper });
-    const skeleton = document.querySelector('.animate-pulse');
+    const skeleton = document.querySelector('[data-testid="skeleton"]');
     expect(skeleton).toBeInTheDocument();
   });
 
@@ -75,8 +79,10 @@ describe("PassportView", () => {
       });
     });
 
-    expect(screen.getByTestId("agent-passport")).toBeInTheDocument();
-    expect(screen.getByTestId("agent-qr")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("agent-passport")).toBeInTheDocument();
+      expect(screen.getByTestId("agent-qr")).toBeInTheDocument();
+    });
   });
 
   it("does not throw or update state when the fetch resolves after unmount", async () => {

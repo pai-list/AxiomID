@@ -11,7 +11,10 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LeaderboardPage from "@/app/leaderboard/page";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function makeQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
+let queryClient = makeQueryClient();
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
@@ -92,6 +95,7 @@ function mockLeaderboardResponse(users: ReturnType<typeof makeUser>[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  queryClient = makeQueryClient();
   const { useLanguage } = jest.requireMock("@/app/context/language-context");
   useLanguage.mockImplementation(() => ({
     language: "en",
@@ -109,7 +113,7 @@ describe("LeaderboardPage — loading state", () => {
   it("shows loading skeleton initially", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     const { container } = render(<LeaderboardPage />, { wrapper: TestWrapper });
-    expect(container.querySelector(".animate-pulse")).not.toBeNull();
+    expect(container.querySelector('[data-testid="skeleton"]')).toBeTruthy();
   });
 
   it("renders GLOBAL STANDINGS badge", async () => {
@@ -480,7 +484,7 @@ describe("LeaderboardPage — error state (PR change)", () => {
       expect(screen.getByText("Failed to load leaderboard")).toBeInTheDocument();
     });
 
-    expect(document.querySelector(".animate-pulse")).not.toBeInTheDocument();
+    expect(document.querySelector('[data-testid="skeleton"]')).not.toBeInTheDocument();
   });
 
   it("does NOT render leaderboard content when error occurred", async () => {

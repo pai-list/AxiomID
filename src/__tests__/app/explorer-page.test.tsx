@@ -14,7 +14,10 @@ import { render, screen, waitFor, act, fireEvent } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ExplorerPage from "@/app/explorer/page";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function makeQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
+let queryClient = makeQueryClient();
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
@@ -93,6 +96,7 @@ const mockExplorerData = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  queryClient = makeQueryClient();
   jest.useFakeTimers();
 });
 
@@ -111,7 +115,7 @@ describe("ExplorerPage — loading state", () => {
     mockFetch.mockReturnValue(new Promise(() => {}));
     const { container } = render(<ExplorerPage />, { wrapper: TestWrapper });
     // Skeleton has animate-pulse class
-    expect(container.querySelector(".animate-pulse")).not.toBeNull();
+    expect(container.querySelector('[data-testid="skeleton"]')).toBeTruthy();
   });
 
   it("renders PROTOCOL EXPLORER badge", async () => {
@@ -377,10 +381,8 @@ describe("ExplorerPage — polling behavior (PR change)", () => {
     // Wait for initial fetch
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
-    // Advance 15 seconds
-    act(() => {
-      jest.advanceTimersByTime(15000);
-    });
+    // Advance 15 seconds with async variant to flush TanStack Query microtasks
+    await jest.advanceTimersByTimeAsync(15000);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -395,9 +397,7 @@ describe("ExplorerPage — polling behavior (PR change)", () => {
 
     unmount();
 
-    act(() => {
-      jest.advanceTimersByTime(30000);
-    });
+    await jest.advanceTimersByTimeAsync(30000);
 
     // Should still be only 1 call (no polling after unmount)
     expect(mockFetch).toHaveBeenCalledTimes(1);

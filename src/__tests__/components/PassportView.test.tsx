@@ -20,9 +20,11 @@ import { useLanguage } from "@/app/context/language-context";
 import { PassportView } from "@/app/passport/[slug]/PassportView";
 import { sharePassport } from "@/lib/pi-native-features";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function makeQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+}
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  <QueryClientProvider client={makeQueryClient()}>{children}</QueryClientProvider>
 );
 
 jest.mock("next/navigation", () => ({
@@ -86,7 +88,7 @@ describe("PassportView — loading state", () => {
 
   it("renders a loading indicator while the fetch is pending", () => {
     render(<PassportView />, { wrapper: TestWrapper });
-    expect(screen.getByText(/Loading Identity/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0);
   });
 
   it("does not render passport or error content while loading", () => {
@@ -214,78 +216,52 @@ describe("PassportView — identity still building (jobStatus not COMPLETED/ACTI
 
   it("shows the 'Preparing your AI...' panel when jobStatus is pending", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />, { wrapper: TestWrapper });
-      await Promise.resolve();
-    });
-    expect(screen.getByText(/Preparing your AI/i)).toBeInTheDocument();
+    render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(screen.getByText(/Preparing your AI/i)).toBeInTheDocument());
   });
 
   it("displays the current jobStatus value in the building panel", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />, { wrapper: TestWrapper });
-      await Promise.resolve();
-    });
-    expect(screen.getByText(/Status: PROVISIONING/)).toBeInTheDocument();
+    render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(screen.getByText(/Status: PROVISIONING/)).toBeInTheDocument());
   });
 
   it("does not render the AgentPassport while the job is still building", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />, { wrapper: TestWrapper });
-      await Promise.resolve();
-    });
+    render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(screen.getByText(/Preparing your AI/i)).toBeInTheDocument());
     expect(screen.queryByTestId("agent-passport")).not.toBeInTheDocument();
   });
 
   it("polls again after 3 seconds while the job is still building", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />, { wrapper: TestWrapper });
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
 
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "COMPLETED" }) });
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await jest.advanceTimersByTimeAsync(3000);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
   it("stops polling once jobStatus becomes COMPLETED", async () => {
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    await act(async () => {
-      render(<PassportView />, { wrapper: TestWrapper });
-      await Promise.resolve();
-    });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
 
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "COMPLETED" }) });
-    await act(async () => {
-      jest.advanceTimersByTime(3000);
-      await Promise.resolve();
-    });
+    await jest.advanceTimersByTimeAsync(3000);
     expect(global.fetch).toHaveBeenCalledTimes(2);
 
-    await act(async () => {
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-    });
+    await jest.advanceTimersByTimeAsync(10000);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
   it("clears the pending poll timeout on unmount", async () => {
     const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
     mockFetchOnce({ ok: true, json: async () => ({ ...basePassport, jobStatus: "PROVISIONING" }) });
-    let unmount: ReturnType<typeof render>["unmount"];
-    await act(async () => {
-      unmount = render(<PassportView />, { wrapper: TestWrapper }).unmount;
-      await Promise.resolve();
-    });
-    unmount!();
+    const { unmount } = render(<PassportView />, { wrapper: TestWrapper });
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+    unmount();
     expect(clearTimeoutSpy).toHaveBeenCalled();
     clearTimeoutSpy.mockRestore();
   });
