@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     const issuerPublicKeyMultibase = pemToMultibase(issuerPublicKeyPem);
     const doc = buildDidDocument(issuerDid, issuerPublicKeyMultibase);
 
-const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_APP_URL || "https://axiomid.app";
 
     const enrichedDoc = {
       ...doc,
