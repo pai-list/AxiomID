@@ -51,7 +51,7 @@ Every feature identified in the codebase is checked against 6 documentation type
 | **DID (did:axiom)** | ✅ README.md:159 | ✅ framework_design.md:64-74 | ✅ src/lib/did-document.ts inline | ✅ `/api/did-document` route exists | ❌ | ❌ |
 | **Verifiable Credentials** | ✅ README.md:160 | ✅ framework_design.md:25-51 | ✅ src/lib/vc.ts inline | ⚠️ `/api/credential-status` route, no issuance/verification docs | ❌ | ❌ |
 | **Pi Payments** | ✅ README.md:37 | ✅ PROJECT_STATUS.md | ✅ docs/specs/ (various) | ⚠️ `/api/payments/*` listed, no detail | ❌ | ❌ |
-| **Pi Ads** | ❌ | ⚠️ AGENTS.md:240 documents pattern only | ❌ | ❌ | ❌ | ❌ |
+| **Pi Ads** | ❌ | ✅ `POST /api/pi/ads/verify` route exists | ✅ `src/app/api/pi/ads/verify/route.ts` | ⚠️ Route exists, no published API docs | ❌ | ❌ |
 | **Stellar Anchoring** | ❌ | ✅ CHANGELOG.md:20-25 | ✅ docs/STELLAR_ANCHORING.md | ✅ POST /api/stellar/anchor documented | ❌ | ❌ |
 | **SOUL Protocol** | ✅ README.md:167 | ✅ SOUL.md, AGENTS.md:98-200 | ✅ src/lib/soul-principles.ts inline | ❌ No ethical evaluator API | ❌ | ❌ |
 | **Rate Limiting** | ❌ | ✅ PROJECT_STATUS.md:205-206 | ✅ AGENTS.md (best practices) | ❌ No rate limit headers documented in API docs | ❌ | ❌ |

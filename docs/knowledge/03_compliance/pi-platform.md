@@ -31,7 +31,7 @@ Last Verified: 2026-07-13
 | **Pi Auth (Server-side)** | ✅ Implemented | `POST /api/auth/pi` verifies token against `https://api.minepi.com/v2/me` with 10s timeout (`src/app/api/auth/pi/route.ts:80-83`). UID mismatch check. Sandbox dev token bypass for local dev. Zod validation via `PiAuthSchema`. | Production auth for non-sandbox not end-to-end verified on real Pi Browser. | P1 |
 | **Pi Payments** | ✅ Implemented | `createPiPayment()` uses `window.Pi.createPayment()` with 4 callbacks: `onReadyForServerApproval`, `onReadyForServerCompletion`, `onError`, `onCancel` (`src/lib/pi-sdk.ts:447-511`). Server-side: `/api/pi/payment/approve` and `/api/pi/payment/complete`. | No `/api/pi/payment/incomplete` standalone route (only handled during auth flow). No mainnet payment testing. | P2 |
 | **Pi Native Features** | ✅ Implemented | `sharePassport()` wraps `pi.nativeFeature.openShareDialog()` with fallback chain: Pi native → navigator.share → clipboard (`src/lib/pi-native-features.ts:16-42`). `requestKycConsent()` wraps `pi.nativeFeature.openConsentDialog()` (`src/lib/pi-native-features.ts:51-71`). | Share dialog fallback does not verify clipboard write success. | P3 |
-| **Pi Ads** | ⚠️ Partial | `showRewardedAd()` implemented in `src/lib/pi-sdk.ts:513-547`. Uses `window.Pi.Ads.isAdReady()`, `requestAd()`, `showAd()`. Returns `{ result, adId }`. AGENTS.md:240 documents server-side verification pattern (`GET https://api.minepi.com/v2/ads_network/status/:adId`). | **No server-side API route for ad verification.** Pattern documented but not implemented. No `/api/pi/ads/verify` route. Ads verification is client-side only — susceptible to replay. | HIGH |
+| **Pi Ads** | ✅ Implemented | `showRewardedAd()` implemented in `src/lib/pi-sdk.ts:513-547`. Uses `window.Pi.Ads.isAdReady()`, `requestAd()`, `showAd()`. Returns `{ result, adId }`. Server-side: `POST /api/pi/ads/verify` route (141 lines) with Zod validation, adId check against `api.minepi.com/v2/ads_network/status/:adId`, XP ledger double-claim protection, rate limiting, and auth. | No real Pi Browser E2E test confirmation for server-side verification. | LOW |
 | **Pi Domains** | ✅ Implemented | `determineSandboxMode()` short-circuits for `axiomid.app`, `*.axiomid.app`, `pinet.com`, `*.pinet.com` as production (`src/lib/pi-sdk.ts:107-113`). CORS allows `app.minepi.com` and `sandbox.minepi.com` (`src/middleware.ts:19-20`). CSP should allow these domains. | No `axiomid.app` domain verification against Pi App Studio checklist. | P2 |
 | **Sandbox Detection** | ✅ Robust | `determineSandboxMode()` 7-stage cascade: env var → production domain short-circuit → staging fallback → localhost/LAN → iframe referrer (`sandbox.minepi.com`) → query param `?sandbox=true` (`src/lib/pi-sdk.ts:97-157`). Never hardcoded per AGENTS.md:235. | No dynamic sandbox notification to user. | P3 |
 | **Sandbox Dev Token** | ✅ Implemented | `getSandboxDevToken()` returns token in dev only (`src/lib/sandbox-token.ts`). Guarded by `NODE_ENV !== "production"` in both auth route (`src/app/api/auth/pi/route.ts:71`) and middleware (`src/middleware.ts` via `auth-middleware.ts:143`). | Sandbox user hardcoded as `piUid: "sandbox-developer"` — not configurable. | P3 |
@@ -96,7 +96,7 @@ Last Verified: 2026-07-13
 
 | # | Missing | Impact | Priority |
 |---|---------|--------|----------|
-| 1 | Server-side Pi Ads verification route | Ads can be claimed without server verification — revenue loss | HIGH |
+| 1 | Server-side Pi Ads verification route | ✅ Implemented at `src/app/api/pi/ads/verify/route.ts` | ✅ DONE |
 | 2 | Pi App Studio submission | App not listed in Pi ecosystem — discoverability loss | P2 |
 | 3 | Mainnet payment testing | Payment flow never tested on real Pi Network mainnet | P2 |
 | 4 | Token refresh / expiry handling | Users may need to re-authenticate on token expiry | P2 |
@@ -108,7 +108,7 @@ Last Verified: 2026-07-13
 
 ## Recommended Actions
 
-1. **P0:** Implement `POST /api/pi/ads/verify` route with server-side `adId` verification against `GET https://api.minepi.com/v2/ads_network/status/:adId`
+1. **P0:** ✅ DONE — `POST /api/pi/ads/verify` implemented at `src/app/api/pi/ads/verify/route.ts`
 2. **P1:** Complete Pi App Studio readiness — add `appType`, `icon`, `category` metadata
 3. **P1:** End-to-end Pi Browser + mainnet auth/payment test on real hardware
 4. **P2:** Add token refresh flow with `Pi.signIn()` for session extension

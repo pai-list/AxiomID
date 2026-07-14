@@ -43,7 +43,7 @@ A release CANNOT be labeled "Pi Ready" until ALL items below are ✅.
 | 4 | Sandbox detection is dynamic | `determineSandboxMode()` — never hardcoded | ✅ | `src/lib/pi-sdk.ts:97-157`. 7-stage cascade. AGENTS.md:235 | Frontend |
 | 5 | Production guard on sandbox bypass | `NODE_ENV === "production"` blocks sandbox path | ✅ | `src/app/api/auth/pi/route.ts:66`. Middleware at `auth-middleware.ts:143` | Backend |
 | 6 | Pi Browser detection works | `checkPiBrowser()` returns true in Pi Browser | ✅ | `src/lib/pi-sdk.ts:208-231`. 4-tier detection | Frontend |
-| 7 | Pi Ads server-side verification | `POST /api/pi/ads/verify` verifies `adId` server-side | ❌ **NOT IMPLEMENTED** | Pattern documented in AGENTS.md:240. No API route exists | Backend |
+| 7 | Pi Ads server-side verification | `POST /api/pi/ads/verify` verifies `adId` server-side | ✅ | `src/app/api/pi/ads/verify/route.ts` (141 lines). Zod validation, adId check, XP ledger double-claim protection, rate limiting, auth | Backend |
 | 8 | Real Pi Browser E2E test passed | Auth, payments, share, KYC all tested on real device | ❌ **NOT DONE** | All testing is sandbox-only per AGENTS.md:235-236 | QA |
 
 ### P1 — Must Have (high priority)
@@ -84,7 +84,7 @@ A release CANNOT be labeled "Pi Ready" until ALL items below are ✅.
 
 | Task | Effort | Assignee | Depends On |
 |------|--------|----------|------------|
-| Implement `POST /api/pi/ads/verify` route with server-side adId check against `api.minepi.com/v2/ads_network/status/:adId` | 1 day | Backend | None |
+| ✅ DONE — `POST /api/pi/ads/verify` implemented at `src/app/api/pi/ads/verify/route.ts` | ✅ | Backend | — |
 | Set up real Pi Browser testing environment (portless HTTPS tunnel + real Pi device) | 1 day | QA | None |
 | Execute and document E2E test: auth + payment + share on real Pi Browser | 1 day | QA | Testing env |
 | Fix any bugs found during real Pi Browser testing | 2 days | Flex | Test results |

@@ -172,7 +172,7 @@ POST /api/auth/pi { accessToken, uid, username }
 
 ## Recommended Actions
 
-1. **P0:** Add server-side `POST /api/pi/ads/verify` route for ad ID verification
+1. **P0:** ✅ DONE — `POST /api/pi/ads/verify` implemented at `src/app/api/pi/ads/verify/route.ts`
 2. **P1:** Implement `disconnectPi()` / `logoutPi()` to clear local state + optionally revoke token
 3. **P1:** Add token expiry detection and automatic re-auth flow
 4. **P2:** Add PKCE to OAuth flow (`initiatePiSignIn`)

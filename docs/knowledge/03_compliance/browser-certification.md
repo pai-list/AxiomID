@@ -91,7 +91,7 @@ Last Verified: 2026-07-13
 | Pi Native Share | ✅ | Always | `pi.nativeFeature.openShareDialog()` |
 | Pi Native KYC | ✅ | Always | `pi.nativeFeature.openConsentDialog()` |
 | Pi Payments | ✅ | Always | `Pi.createPayment()` |
-| Pi Ads | ⚠️ | Client-only | No server-side verification route |
+| Pi Ads | ✅ | Server-side | `POST /api/pi/ads/verify` route with adId verification, rate limiting, auth |
 | Pi OAuth (web fallback) | ✅ | Always | `initiatePiSignIn()` with URL redirect |
 | Next.js SSR (RSC) | ✅ | Expected | WebKit-based — same as Safari |
 | React 19 client components | ✅ | Expected | WebKit-based |

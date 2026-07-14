@@ -43,7 +43,7 @@ Last Verified: 2026-07-13
 | Pi Auth (SDK + OAuth) | ✅ | No refresh token, no logout, PKCE missing | Frontend | LOW — stable flow |
 | Pi Payments | ✅ | No mainnet testing, no incomplete endpoint | Backend | MEDIUM — SDK may add requirements |
 | Pi Native Features (Share, KYC) | ✅ | Clipboard fallback unverified | Frontend | LOW — stable API |
-| Pi Ads | ⚠️ Partial | **NO server-side verification route** | Backend | HIGH — spec changes likely |
+| Pi Ads | ✅ Implemented | `POST /api/pi/ads/verify` with Zod validation, adId check, XP ledger double-claim protection, rate limiting | Backend | LOW — implemented |
 | Pi Browser Detection | ✅ | No auto-install redirect | Frontend | LOW — stable detection |
 | Pi Domains | ✅ | P8 DNS activation pending | DevOps | MEDIUM — blocking App Studio |
 | Pi App Studio | ❌ | No submission, no listing | Product | HIGH — missed launch window |
@@ -80,7 +80,7 @@ Last Verified: 2026-07-13
 | Vectorize | ⚠️ Partial | Index seeded, query endpoint not verified | Backend | MEDIUM — API changes possible |
 | Workers AI | ⚠️ Partial | Model referenced, no usage evidence | Backend | MEDIUM — model deprecation risk |
 | KV | ✅ | Configured, usage unclear | Backend | LOW — stable |
-| Durable Objects | ❌ | **Claimed in architecture, not implemented** | Backend | HIGH — architecture mismatch |
+| Durable Objects | ✅ | `PresenceDO` implemented at `backend/src/index.ts:7-52` — heartbeat, status, alarm-based timeout | Backend | LOW — implemented |
 | Workflows | ❌ | **Claimed in architecture, not implemented** | Backend | HIGH — architecture mismatch |
 | R2 | ✅ | Configured, active | Backend | LOW — stable |
 
