@@ -96,14 +96,22 @@ function safeGetHostname(urlStr: string): string {
 
 export function determineSandboxMode(): boolean {
   if (typeof window === "undefined" || !window.location) return false;
+
+  // 1. Configuration-driven: NEXT_PUBLIC_PI_NETWORK=testnet|mainnet
+  //    Canonical way to set the network. Independent of hostname.
+  const network = process.env.NEXT_PUBLIC_PI_NETWORK;
+  if (network === "testnet" || network === "Testnet") return true;
+  if (network === "mainnet" || network === "Mainnet") return false;
+
+  // 2. Legacy override: NEXT_PUBLIC_PI_SANDBOX=true|false
   if (process.env.NEXT_PUBLIC_PI_SANDBOX !== undefined) {
     return process.env.NEXT_PUBLIC_PI_SANDBOX === "true";
   }
+
   const hostname = window.location.hostname.toLowerCase();
 
-  // ponytail: Production domains are NEVER sandbox — short-circuit before iframe/referrer checks.
-  // Pi Browser loads apps inside an iframe where document.referrer can be sandbox.minepi.com
-  // even on production domains, causing false positives.
+  // 3. Fallback: hostname-based detection for local dev without env vars
+  //    Production domains default to mainnet.
   if (
     hostname === "axiomid.app" ||
     hostname.endsWith(".axiomid.app") ||
