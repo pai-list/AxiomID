@@ -16,6 +16,16 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
+jest.mock("@/lib/auth-middleware", () => ({
+  requireAuth: jest.fn().mockResolvedValue({
+    user: { id: "user-1", did: "did:axiom:alice" },
+  }),
+}));
+
+jest.mock("@/lib/admin", () => ({
+  isAdmin: jest.fn().mockImplementation((user) => user.role === "ADMIN" || user.id === "user-admin"),
+}));
+
 jest.mock("@/lib/rate-limiter", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: {
@@ -32,8 +42,10 @@ import { GET } from "@/app/api/credential-status/route";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
+import { requireAuth } from "@/lib/auth-middleware";
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockRequireAuth = requireAuth as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 const mockGetClientIp = getClientIp as jest.Mock;
 
@@ -44,6 +56,12 @@ function mockGetRequest(params: Record<string, string> = {}) {
   }
   return new Request(url.toString(), { method: "GET" }) as any;
 }
+
+beforeEach(() => {
+  mockRequireAuth.mockResolvedValue({
+    user: { id: "user-1", did: "did:axiom:alice" },
+  });
+});
 
 describe("GET /api/credential-status — rate limiting (PR change)", () => {
   beforeEach(() => {
@@ -190,6 +208,9 @@ describe("GET /api/credential-status — user lookup", () => {
   });
 
   it("returns REVOKED status for user with REJECTED KYC", async () => {
+    mockRequireAuth.mockResolvedValue({
+      user: { id: "user-2", did: "did:axiom:bob" },
+    });
     mockPrisma.user.findFirst.mockResolvedValue({
       id: "user-2",
       did: "did:axiom:bob",
@@ -217,6 +238,9 @@ describe("GET /api/credential-status — user lookup", () => {
 
   it("looks up user by UUID for user-prefixed DID", async () => {
     const uuid = "123e4567-e89b-42d3-a456-426614174000";
+    mockRequireAuth.mockResolvedValue({
+      user: { id: uuid, did: `did:axiom:user-${uuid}` },
+    });
     mockPrisma.user.findUnique.mockResolvedValue({
       id: uuid,
       did: `did:axiom:user-${uuid}`,
@@ -230,6 +254,44 @@ describe("GET /api/credential-status — user lookup", () => {
 
     expect(res.status).toBe(200);
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({ where: { id: uuid } });
+    expect(data.status).toBe("VALID");
+  });
+
+  it("returns 403 Forbidden when trying to view another user's status", async () => {
+    mockRequireAuth.mockResolvedValue({
+      user: { id: "user-attacker", did: "did:axiom:attacker" },
+    });
+    mockPrisma.user.findFirst.mockResolvedValue({
+      id: "user-victim",
+      did: "did:axiom:victim",
+      kycStatus: "APPROVED",
+      updatedAt: new Date("2024-01-01"),
+    } as any);
+
+    const req = mockGetRequest({ subjectId: "did:axiom:victim" });
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(data.code).toBe("FORBIDDEN");
+  });
+
+  it("allows admin user to view another user's status", async () => {
+    mockRequireAuth.mockResolvedValue({
+      user: { id: "user-admin", did: "did:axiom:admin", role: "ADMIN" },
+    });
+    mockPrisma.user.findFirst.mockResolvedValue({
+      id: "user-victim",
+      did: "did:axiom:victim",
+      kycStatus: "APPROVED",
+      updatedAt: new Date("2024-01-01"),
+    } as any);
+
+    const req = mockGetRequest({ subjectId: "did:axiom:victim" });
+    const res = await GET(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
     expect(data.status).toBe("VALID");
   });
 });
