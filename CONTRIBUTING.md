@@ -5,7 +5,7 @@ Welcome to AxiomID — thank you for your interest in contributing!
 ## Quick Start
 
 ```bash
-# Prerequisites: Node.js 22+, npm, Git
+# Prerequisites: Node.js 20+, npm, Git
 git clone https://github.com/Moeabdelaziz007/AxiomID.git
 cd AxiomID
 cp .env.example .env.local
