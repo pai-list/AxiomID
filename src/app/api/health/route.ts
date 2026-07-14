@@ -110,7 +110,6 @@ export async function GET(request: NextRequest) {
 
     const services = [db, stellar, pi, workersAI];
     const allOnline = services.every((s) => s.status === "ONLINE");
-    const anyOffline = services.some((s) => s.status === "OFFLINE");
 
     const responsePayload: HealthResponse = {
       status: allOnline ? "healthy" : "degraded",
