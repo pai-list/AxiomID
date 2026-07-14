@@ -6,6 +6,9 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/app/context/language-context";
 import { useWallet } from "@/app/context/wallet-context";
 import type { Route } from "next";
+import nextDynamic from "next/dynamic";
+
+const PiBrowserBadge = nextDynamic(() => import("./PiBrowserBadge"), { ssr: false });
 
 interface NavItem {
   href: Route;
@@ -74,11 +77,7 @@ className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono tra
             ))}
           </nav>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 font-mono">
-            {isPiBrowser && !user && (
-              <span className="hidden sm:inline text-[10px] font-mono px-2 py-1 rounded border" style={{ background: 'rgba(59, 130, 246, 0.1)', borderColor: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>
-                Pi Browser
-              </span>
-            )}
+            <PiBrowserBadge isPiBrowser={isPiBrowser} user={user} />
             {user ? (
               <button onClick={() => logout()} className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -67,7 +67,32 @@ export async function GET(request: NextRequest) {
     const issuerDid = createIssuerDid();
     const issuerPublicKeyMultibase = pemToMultibase(issuerPublicKeyPem);
     const doc = buildDidDocument(issuerDid, issuerPublicKeyMultibase);
-    return apiSuccess(doc, 200, {
+
+    const origin = request.nextUrl.origin;
+
+    const enrichedDoc = {
+      ...doc,
+      alsoKnownAs: ["https://axiomid.app"],
+      service: [
+        {
+          id: `${issuerDid}#passport`,
+          type: "AxiomPassport",
+          serviceEndpoint: `${origin}/passport`,
+        },
+        {
+          id: `${issuerDid}#agents`,
+          type: "AgentCoordination",
+          serviceEndpoint: `${origin}/dashboard`,
+        },
+        {
+          id: `${issuerDid}#credential-status`,
+          type: "CredentialStatus",
+          serviceEndpoint: `${origin}/api/credential-status`,
+        },
+      ],
+    };
+
+    return apiSuccess(enrichedDoc, 200, {
       "Content-Type": "application/did+ld+json",
       "Cache-Control": "public, max-age=86400, stale-while-revalidate=3600",
     });
