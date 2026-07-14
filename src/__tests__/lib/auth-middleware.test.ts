@@ -28,10 +28,10 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
+import { prisma } from '@/lib/prisma';
 
 let testTokenCounter = 0;
-const makeTestToken = (suffix: string) => `test-token-mock-${suffix}-${++testTokenCounter}`;
-import { prisma } from '@/lib/prisma';
+const makeTestToken = (suffix: string) => "test-token-mock-" + suffix + "-" + (++testTokenCounter);
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
