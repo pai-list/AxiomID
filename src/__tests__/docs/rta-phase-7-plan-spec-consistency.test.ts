@@ -68,3 +68,24 @@ describe("RTA Phase 7 PR-J archival is fully realized on disk", () => {
     expect(archiveReadmeContent).toContain(path.basename(archiveSchemaPath));
   });
 });
+
+describe("RTA Phase 7 plan <-> spec consistency — negative/boundary checks", () => {
+  it("the plan does not reference any PR label outside the known set of 11", () => {
+    const foundLabels = new Set(Array.from(planContent.matchAll(/PR-(\w+)\b/g)).map((m) => m[1]));
+    for (const label of foundLabels) {
+      expect(ALL_PR_LABELS).toContain(label);
+    }
+  });
+
+  it("the spec does not reference any PR label outside the known set of 11", () => {
+    const foundLabels = new Set(Array.from(specContent.matchAll(/PR-(\w+)\b/g)).map((m) => m[1]));
+    for (const label of foundLabels) {
+      expect(ALL_PR_LABELS).toContain(label);
+    }
+  });
+
+  it("ALL_PR_LABELS itself has no duplicate entries and covers exactly 11 labels", () => {
+    expect(ALL_PR_LABELS).toHaveLength(11);
+    expect(new Set(ALL_PR_LABELS).size).toBe(11);
+  });
+});

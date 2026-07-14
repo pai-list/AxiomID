@@ -101,3 +101,27 @@ describe("rta-phase-7-implementation.md — PR-H checklist (only task with step-
     expect(planContent).toContain("- Modify: `docs/knowledge/05_dna/decision-history.md`");
   });
 });
+
+describe("rta-phase-7-implementation.md — status markers (regression/boundary)", () => {
+  it("has exactly one task marked (Blocked ...) and one marked (Done ...)", () => {
+    const blockedMatches = planContent.match(/\(Blocked —/g) ?? [];
+    const doneMatches = planContent.match(/\(Done —/g) ?? [];
+    expect(blockedMatches).toHaveLength(1);
+    expect(doneMatches).toHaveLength(1);
+  });
+
+  it("does not mark any task as both blocked and done", () => {
+    const taskBlocks = planContent.split(/^### Task \d+:/m).slice(1);
+    for (const block of taskBlocks) {
+      const isBlocked = /\(Blocked —/.test(block);
+      const isDone = /\(Done —/.test(block);
+      expect(isBlocked && isDone).toBe(false);
+    }
+  });
+
+  it("has no duplicate PR labels across tasks", () => {
+    const labels = Array.from(planContent.matchAll(/^### Task \d+: PR-(\w+)\b/gm)).map((m) => m[1]);
+    const uniqueLabels = new Set(labels);
+    expect(labels).toHaveLength(uniqueLabels.size);
+  });
+});

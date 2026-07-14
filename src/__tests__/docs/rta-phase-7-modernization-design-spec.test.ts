@@ -101,3 +101,25 @@ describe("rta-phase-7-modernization-design.md — success criteria checklist", (
     expect(specContent).toContain("- [ ] `AxiomID.Memory/reference/` directory exists with standards summaries");
   });
 });
+
+describe("rta-phase-7-modernization-design.md — batch sizing (regression/boundary)", () => {
+  it("Batch 1, 2, and 3 PR counts (5, 3, 3) sum to the total of 11 PRs", () => {
+    const batch1Row = specContent.match(/\| 1 \| PR-K \|[\s\S]*?\| 5 \| PR-A \|.*\|/);
+    const batch2Row = specContent.match(/\| 6 \| PR-B \|[\s\S]*?\| 8 \| PR-F \|.*\|/);
+    const batch3Row = specContent.match(/\| 9 \| PR-E \|[\s\S]*?\| 11 \| PR-L \|.*\|/);
+    expect(batch1Row).not.toBeNull();
+    expect(batch2Row).not.toBeNull();
+    expect(batch3Row).not.toBeNull();
+  });
+
+  it("has no gaps or duplicates in the per-PR detail section numbering (3.1 through 3.11)", () => {
+    const sectionNumbers = Array.from(specContent.matchAll(/^### (3\.\d+) PR-\w+:/gm)).map((m) =>
+      Number(m[1].split(".")[1])
+    );
+    expect(sectionNumbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  it("does not mark PR-J (single 1.9KB file move) as higher than Low risk", () => {
+    expect(specContent).toContain("| 7 | PR-J | Archive `iqra-core/` | S | None — single 1.9KB `schema.sql` | None |");
+  });
+});

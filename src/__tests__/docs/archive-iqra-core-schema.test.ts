@@ -108,3 +108,25 @@ describe("docs/archive/iqra-core-schema.sql — basic syntax sanity", () => {
     expect(schemaContent).not.toMatch(/\bTRUNCATE\b/i);
   });
 });
+
+describe("docs/archive/iqra-core-schema.sql — foreign key ordering (regression)", () => {
+  it("defines truth_chapters before truth_verses, which references it via foreign key", () => {
+    const chaptersIndex = schemaContent.indexOf("CREATE TABLE IF NOT EXISTS truth_chapters");
+    const versesIndex = schemaContent.indexOf("CREATE TABLE IF NOT EXISTS truth_verses");
+    expect(chaptersIndex).toBeGreaterThan(-1);
+    expect(versesIndex).toBeGreaterThan(chaptersIndex);
+  });
+
+  it("defines truth_verses before daily_truth, which references it via foreign key", () => {
+    const versesIndex = schemaContent.indexOf("CREATE TABLE IF NOT EXISTS truth_verses");
+    const dailyTruthIndex = schemaContent.indexOf("CREATE TABLE IF NOT EXISTS daily_truth");
+    expect(versesIndex).toBeGreaterThan(-1);
+    expect(dailyTruthIndex).toBeGreaterThan(versesIndex);
+  });
+
+  it("rag_cache has no foreign keys and does not depend on ordering relative to other tables", () => {
+    const ragCacheMatch = schemaContent.match(/CREATE TABLE IF NOT EXISTS rag_cache\s*\(([\s\S]*?)\);/);
+    expect(ragCacheMatch).not.toBeNull();
+    expect(ragCacheMatch![1]).not.toContain("FOREIGN KEY");
+  });
+});

@@ -59,3 +59,25 @@ describe("docs/archive/README.md — iqra-core-schema.sql entry", () => {
     expect(fs.existsSync(archivedFilePath)).toBe(true);
   });
 });
+
+describe("docs/archive/README.md — negative/boundary checks", () => {
+  it("does not contain placeholder or unfinished-content markers", () => {
+    expect(readmeContent).not.toMatch(/\bTODO\b/i);
+    expect(readmeContent).not.toMatch(/\bTBD\b/i);
+    expect(readmeContent).not.toMatch(/\bFIXME\b/i);
+  });
+
+  it("has exactly one archived-file section heading (single-entry archive)", () => {
+    const headings = readmeContent.match(/^## `[^`]+`$/gm) ?? [];
+    expect(headings).toHaveLength(1);
+  });
+
+  it("declares the date archived using a real, well-formed calendar date", () => {
+    const match = readmeContent.match(/\*\*Date archived:\*\*\s*(\d{4}-\d{2}-\d{2})/);
+    const [, dateStr] = match ?? [];
+    expect(dateStr).toBeDefined();
+    const parsed = new Date(`${dateStr}T00:00:00Z`);
+    expect(Number.isNaN(parsed.getTime())).toBe(false);
+    expect(parsed.toISOString().slice(0, 10)).toBe(dateStr);
+  });
+});
