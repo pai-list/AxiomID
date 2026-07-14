@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
           data: {
             kycStatus,
             kycProvider: 'pi_network',
-            kycVerifiedAt: kycVerified ? new Date() : null,
+            kycVerifiedAt: kycVerified ? (user.kycVerifiedAt || new Date()) : null,
           },
         });
 
