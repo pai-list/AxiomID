@@ -46,7 +46,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
           {t("nav_privacy")}
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-electric-blue transition-all group-hover:w-full" />
         </Link>
-        <Link href="/terms" className="relative text-zinc-300 hover:text-white transition-colors group">
+        <Link href="/terms" className="relative text-zinc-300 hover:text-white transition-colors group focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none rounded">
           {t("nav_terms")}
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-electric-blue transition-all group-hover:w-full" />
         </Link>
