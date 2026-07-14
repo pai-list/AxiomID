@@ -38,7 +38,7 @@ test.describe("Landing Page", () => {
 
   test("trust tiers render and expand/collapse on click", async ({ page }) => {
     await page.goto("/");
-    const tierList = page.locator('[role="list"]');
+    const tierList = page.locator('[role="list"]').filter({ hasText: /Visitor/i }).first();
     await expect(tierList).toBeVisible();
 
     const tierItems = tierList.locator('[role="listitem"]');
@@ -97,8 +97,8 @@ test.describe("Landing Page", () => {
 
   test("feature pills render", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("text=W3C DID")).toBeVisible();
-    await expect(page.locator("text=Zero Permissions")).toBeVisible();
+    await expect(page.getByText("W3C DID", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("Zero Permissions", { exact: false }).first()).toBeVisible();
   });
 
   test("CTA links navigate to /claim and /docs", async ({ page }) => {
