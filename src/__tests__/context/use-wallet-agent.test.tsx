@@ -3,6 +3,8 @@ import { renderHook, act } from "@testing-library/react";
 import { useWalletAgent } from "@/app/context/use-wallet-agent";
 import { makeUser } from "@/test-helpers/wallet-test-helpers";
 
+const getMockToken = (prefix: string) => `${prefix}-${Math.random().toString(36).substring(2)}`;
+
 describe("useWalletAgent — createAgent", () => {
   let mockFetch: jest.Mock;
   let mockRefreshUser: jest.Mock;
@@ -35,11 +37,12 @@ describe("useWalletAgent — createAgent", () => {
 
   it("calls /api/agent POST with name in body and returns true on success", async () => {
     const userRef = { current: makeUser() };
+    const token = getMockToken("agent");
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
     const { result } = renderHook(() =>
       useWalletAgent({
-        piAccessToken: "agent-token",
+        piAccessToken: token,
         userRef,
         refreshUser: mockRefreshUser,
       })
@@ -55,7 +58,7 @@ describe("useWalletAgent — createAgent", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer agent-token",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ name: "MyAgent" }),
     });
@@ -176,11 +179,12 @@ describe("useWalletAgent — activateAgent", () => {
 
   it("calls /api/agent/activate POST and returns true on success", async () => {
     const userRef = { current: makeUser() };
+    const token = getMockToken("activate");
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
     const { result } = renderHook(() =>
       useWalletAgent({
-        piAccessToken: "activate-token",
+        piAccessToken: token,
         userRef,
         refreshUser: mockRefreshUser,
       })
@@ -196,7 +200,7 @@ describe("useWalletAgent — activateAgent", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer activate-token",
+        Authorization: `Bearer ${token}`,
       },
     });
     expect(mockRefreshUser).toHaveBeenCalledTimes(1);
@@ -295,11 +299,12 @@ describe("useWalletAgent — pauseAgent", () => {
 
   it("calls /api/agent/pause POST and returns true on success", async () => {
     const userRef = { current: makeUser() };
+    const token = getMockToken("pause");
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
     const { result } = renderHook(() =>
       useWalletAgent({
-        piAccessToken: "pause-token",
+        piAccessToken: token,
         userRef,
         refreshUser: mockRefreshUser,
       })
@@ -315,7 +320,7 @@ describe("useWalletAgent — pauseAgent", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer pause-token",
+        Authorization: `Bearer ${token}`,
       },
     });
     expect(mockRefreshUser).toHaveBeenCalledTimes(1);
@@ -396,11 +401,12 @@ describe("useWalletAgent — authHeaders helper", () => {
 
   it("includes Authorization header when piAccessToken is provided for pauseAgent", async () => {
     const userRef = { current: makeUser() };
+    const token = getMockToken("pause-auth");
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
     const { result } = renderHook(() =>
       useWalletAgent({
-        piAccessToken: "pause-auth-token",
+        piAccessToken: token,
         userRef,
         refreshUser: mockRefreshUser,
       })
@@ -411,7 +417,7 @@ describe("useWalletAgent — authHeaders helper", () => {
     });
 
     const headers = mockFetch.mock.calls[0][1].headers;
-    expect(headers["Authorization"]).toBe("Bearer pause-auth-token");
+    expect(headers["Authorization"]).toBe(`Bearer ${token}`);
   });
 
   it("does not include Authorization header when piAccessToken is null for activateAgent", async () => {
