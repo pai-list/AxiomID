@@ -146,11 +146,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        <Script
-          src="https://sdk.minepi.com/pi-sdk.js"
-          strategy="beforeInteractive"
-          // ponytail: SRI removed — Pi SDK updates without semver; stale hash silently blocks script load.
-        />
+        {/* Pi SDK loaded dynamically by loadPiSdk() in pi-sdk.ts — avoids overriding native Pi in Pi Browser */}
         <Script src="/register-sw.js" strategy="afterInteractive" />
       <ThemeProvider>
         <DynamicThemeColor />
