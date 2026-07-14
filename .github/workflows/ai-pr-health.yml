@@ -28,9 +28,14 @@ jobs:
           fi
           echo "$DIFF" > /tmp/pr.diff
           FILE_COUNT=$(grep -c "^diff --git" /tmp/pr.diff || true)
+          : "${FILE_COUNT:=0}"
           echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
-          echo "additions=$(grep -c '^+[^+]' /tmp/pr.diff || true)" >> "$GITHUB_OUTPUT"
-          echo "deletions=$(grep -c '^-[^-]' /tmp/pr.diff || true)" >> "$GITHUB_OUTPUT"
+          ADDITIONS=$(grep -c '^+[^+]' /tmp/pr.diff || true)
+          : "${ADDITIONS:=0}"
+          echo "additions=$ADDITIONS" >> "$GITHUB_OUTPUT"
+          DELETIONS=$(grep -c '^-[^-]' /tmp/pr.diff || true)
+          : "${DELETIONS:=0}"
+          echo "deletions=$DELETIONS" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

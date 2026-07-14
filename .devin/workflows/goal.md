@@ -1,1 +1,0 @@
-Keep working autonomously to achieve the user's request. Smartly apply engineering principles using MCP tools and available skills. If you are stuck after 7 attempts or encounter failures, ask the user for clarification.

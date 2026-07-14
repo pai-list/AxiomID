@@ -76,3 +76,9 @@ e2e-results.json
 *.rej
 .env*.local
 test-results/
+
+# Local tool config
+portless.json
+axiomidrules
+task.md
+.devin/
