@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { AgentIdentitySchema } from "@/lib/validators";
 import { createIdentityAssertion, verifyPiTokenWithJwks } from "@/lib/auth-tokens";
 import { createClaimToken } from "@/lib/claim-ceremony";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Derives a deterministic DID from an assertion string.
@@ -52,7 +53,11 @@ export async function POST(request: NextRequest) {
       let did: string;
       try {
         const payload = await verifyPiTokenWithJwks(parsed.data.assertion);
-        did = "did:axiom:axiomid.app:pi:" + payload.sub;
+        const dbUser = await prisma.user.findUnique({
+          where: { piUid: payload.sub },
+          select: { did: true },
+        });
+        did = dbUser?.did || "did:axiom:axiomid.app:pi:" + payload.sub;
       } catch (err) {
         if (process.env.NODE_ENV !== "production") {
           logger.warn("[AGENT-IDENTITY] Pi JWKS verification failed, falling back to deterministic DID for dev");

@@ -61,6 +61,7 @@ const baseUser = {
   id: 'user-1',
   did: null,
   piUsername: 'alice',
+  piUid: 'alice-uid',
   walletAddress: 'pi:alice',
   stellarAddress: null,
   tier: 'Citizen',
@@ -258,7 +259,7 @@ describe('GET /api/passport/[slug] — agentPublicKey derivation (PR change)', (
     expect(mockDeriveSovereignAgentKeypair).toHaveBeenCalledWith('GABC123DEF456', 'agent-pub-001');
   });
 
-  it('falls back to walletAddress when stellarAddress is null for agentPublicKey derivation', async () => {
+  it('falls back to piUid when stellarAddress is null for agentPublicKey derivation', async () => {
     mockPrisma.user.findFirst.mockResolvedValue({
       ...baseUser,
       stellarAddress: null,
@@ -269,7 +270,22 @@ describe('GET /api/passport/[slug] — agentPublicKey derivation (PR change)', (
     const req = mockGetRequest();
     await GET(req, { params: Promise.resolve({ slug: 'alice' }) });
 
-    expect(mockDeriveSovereignAgentKeypair).toHaveBeenCalledWith('pi:alice-wallet', 'agent-pub-002');
+    expect(mockDeriveSovereignAgentKeypair).toHaveBeenCalledWith('alice-uid', 'agent-pub-002');
+  });
+
+  it('falls back to id when stellarAddress and piUid are null for agentPublicKey derivation', async () => {
+    mockPrisma.user.findFirst.mockResolvedValue({
+      ...baseUser,
+      stellarAddress: null,
+      piUid: null,
+      id: 'fallback-id-123',
+      agent: { publicId: 'agent-pub-004', name: 'DeltaAgent', status: 'ACTIVE' },
+    } as any);
+
+    const req = mockGetRequest();
+    await GET(req, { params: Promise.resolve({ slug: 'alice' }) });
+
+    expect(mockDeriveSovereignAgentKeypair).toHaveBeenCalledWith('fallback-id-123', 'agent-pub-004');
   });
 
   it('returns agentPublicKey as null when user has no agent', async () => {

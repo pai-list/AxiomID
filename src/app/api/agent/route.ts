@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
         name: parsed.data.name || "My Agent",
         description: parsed.data.description || null,
         status: "INACTIVE",
+        did: user.did ? `${user.did}:agent` : `did:axiom:pi:${user.piUsername || user.piUid || user.id}:agent`,
       },
     });
 

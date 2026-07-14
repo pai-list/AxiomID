@@ -18,6 +18,7 @@ interface PassportUser {
   id: string;
   did?: string | null;
   piUsername?: string | null;
+  piUid?: string | null;
   walletAddress: string;
   stellarAddress?: string | null;
   tier: string;
@@ -43,9 +44,9 @@ function buildPassportResponse(user: PassportUser) {
   const trustScore = calculateTrustScore(user.xp, stamps.length);
 
   let agentPublicKey: string | null = null;
-  if (user.agent && (user.stellarAddress || user.walletAddress)) {
+  if (user.agent && (user.stellarAddress || user.piUid || user.id)) {
     try {
-      const keys = deriveSovereignAgentKeypair(user.stellarAddress || user.walletAddress, user.agent.publicId);
+      const keys = deriveSovereignAgentKeypair(user.stellarAddress || user.piUid || user.id, user.agent.publicId);
       agentPublicKey = keys.publicKey;
     } catch (e) {
       logger.error('[PASSPORT-API] Key derivation failed:', e);
