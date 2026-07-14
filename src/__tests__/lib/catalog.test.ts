@@ -1,6 +1,17 @@
 /**
  * @jest-environment node
  */
+
+// Mock @json-render/core to pass through the catalog definition
+jest.mock("@json-render/core", () => ({
+  defineCatalog: (schema: any, config: any) => config,
+}));
+
+// Mock @json-render/react/schema if it fails to load or to be safe
+jest.mock("@json-render/react/schema", () => ({
+  schema: {},
+}));
+
 import { axiomCatalog } from '@/lib/catalog';
 
 describe('axiomCatalog', () => {
