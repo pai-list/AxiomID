@@ -73,7 +73,7 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 | `/api/auth/*` | Pi Browser authentication, connect, logout, state |
 | `/api/passport/*` | Passport CRUD, publishing, verification |
 | `/api/agent/*` | Agent identity, sign, activate, pause, manifest |
-| `/api/agents` | List active agents, presence and heartbeats |
+| `/api/agents` | List agents for the authenticated user |
 | `/api/agents/harvest` | Submit search/RAG agent harvesting results |
 | `/api/pi/*` | Pi payments (approve, complete), KYA claims, ad verification |
 | `/api/skills/*` | Skills marketplace (CRUD, search, install, execute, pay, review) |
