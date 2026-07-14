@@ -17,6 +17,8 @@ interface MutableGlobals {
 
 const g = global as unknown as MutableGlobals;
 
+const makeMockToken = (prefix: string) => `${prefix}-${Math.random().toString(36).substring(2)}`;
+
 describe('pi-sdk', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -34,9 +36,10 @@ describe('pi-sdk', () => {
     });
 
     it('returns PiAuthResult on successful auth via window.Pi', async () => {
+      const token = makeMockToken('token-abc');
       const mockAuthenticate = jest.fn().mockResolvedValue({
         user: { uid: 'uid-123', username: 'piuser', name: 'Pi User', stellarAddress: 'GSTELLAR' },
-        accessToken: 'token-abc',
+        accessToken: token,
       });
       g.window = g.window || {};
       g.window.Pi = { authenticate: mockAuthenticate };
@@ -47,7 +50,7 @@ describe('pi-sdk', () => {
         expect.arrayContaining(["username", "payments"]),
         expect.any(Function)
       );
-      expect(result.token).toBe('token-abc');
+      expect(result.token).toBe(token);
       expect(result.user.uid).toBe('uid-123');
       expect(result.user.username).toBe('piuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
@@ -56,9 +59,10 @@ describe('pi-sdk', () => {
     });
 
     it('uses window.Pi.authenticate when available (Pi Browser)', async () => {
+      const token = makeMockToken('pb-token');
       const mockAuthenticate = jest.fn().mockResolvedValue({
         user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User', stellarAddress: 'GSTELLAR' },
-        accessToken: 'pb-token',
+        accessToken: token,
       });
       g.window = g.window || {};
       g.window.Pi = { authenticate: mockAuthenticate };
@@ -70,7 +74,7 @@ describe('pi-sdk', () => {
         expect.any(Function)
       );
       expect(mockAuthenticate).toHaveBeenCalled();
-      expect(result.token).toBe('pb-token');
+      expect(result.token).toBe(token);
       expect(result.user.uid).toBe('pb-uid');
       expect(result.user.username).toBe('pbuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
@@ -81,7 +85,7 @@ describe('pi-sdk', () => {
     it('throws when window.Pi.authenticate returns no user', async () => {
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
 
       await expect(connectPi()).rejects.toThrow('no user data received');
@@ -104,11 +108,12 @@ describe('pi-sdk', () => {
     });
 
     it('calls pushLog with user name on successful Pi Browser auth', async () => {
+      const token = makeMockToken('pb-token');
       g.window = g.window || {};
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User' },
-          accessToken: 'pb-token',
+          accessToken: token,
         }),
       };
       const pushLog = jest.fn();
@@ -132,7 +137,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid', username: 'debuguser', name: 'Debug User' },
-          accessToken: 'debug-token',
+          accessToken: makeMockToken('debug-token'),
         }),
       };
       const pushLog = jest.fn();
@@ -150,7 +155,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid2', username: 'debuguser2', name: 'Debug User 2' },
-          accessToken: 'debug-token-2',
+          accessToken: makeMockToken('debug-token-2'),
         }),
       };
       const pushLog = jest.fn();
@@ -168,7 +173,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid3', username: 'debuguser3', name: 'Debug User 3' },
-          accessToken: 'debug-token-3',
+          accessToken: makeMockToken('debug-token-3'),
         }),
       };
       const pushLog = jest.fn();
@@ -188,7 +193,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid4', username: 'debuguser4', name: 'Debug User 4' },
-          accessToken: 'debug-token-4',
+          accessToken: makeMockToken('debug-token-4'),
         }),
       };
       const pushLog = jest.fn();
@@ -207,7 +212,7 @@ describe('pi-sdk', () => {
       // "[DEBUG] PiSdkError: {code} - {message}" instead of the old "Auth error:" prefix.
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
       const pushLog = jest.fn();
 
@@ -225,7 +230,7 @@ describe('pi-sdk', () => {
     it('emits [DEBUG] Authentication failed log when no user is returned', async () => {
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
       const pushLog = jest.fn();
 

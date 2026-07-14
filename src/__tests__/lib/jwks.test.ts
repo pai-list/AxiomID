@@ -7,20 +7,24 @@ jest.mock("@/lib/sovereign-keys", () => ({
   ROOT_AGENT_ID: "axiom-root",
 }));
 
+import crypto from "crypto";
 import { exportJwks } from "@/lib/jwks";
 import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
 
 const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 
-// Valid Ed25519 key PEM (generated for test purposes)
-const VALID_ED25519_PUBLIC_PEM = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOKH3MUqXr7DXFp9IHtf6LebKtA+Mtwfon8CHJX6tz5E=\n-----END PUBLIC KEY-----\n";
+// Dynamically generate valid Ed25519 keypair for tests in memory to avoid hardcoded secrets
+const { publicKey: VALID_ED25519_PUBLIC_PEM, privateKey: VALID_ED25519_PRIVATE_PEM } = crypto.generateKeyPairSync("ed25519", {
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+});
 
 describe("JWKS", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockDerive.mockReturnValue({
       publicKey: VALID_ED25519_PUBLIC_PEM,
-      privateKey: "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIMA5vVnREIasSgrFZI8aJgMCoPEyYm21lk5c4N6nuLd/\n-----END PRIVATE KEY-----\n",
+      privateKey: VALID_ED25519_PRIVATE_PEM,
     });
   });
 

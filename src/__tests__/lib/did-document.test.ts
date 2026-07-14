@@ -2,23 +2,12 @@
  * @jest-environment node
  */
 
-jest.mock("@/lib/sovereign-keys", () => ({
-  deriveSovereignAgentKeypair: jest.fn(),
-}));
-
 import crypto from "crypto";
 import { buildDidDocument, DidDocumentSchema, pemToMultibase } from "@/lib/did-document";
-import { deriveSovereignAgentKeypair } from "@/lib/sovereign-keys";
-
-const mockDerive = deriveSovereignAgentKeypair as jest.Mock;
 
 describe("DID Document", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDerive.mockReturnValue({
-      publicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwA...\n-----END PUBLIC KEY-----",
-      privateKey: "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQ...\n-----END PRIVATE KEY-----",
-    });
   });
 
   it("builds a valid W3C DID Document", () => {
