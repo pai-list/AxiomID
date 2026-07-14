@@ -16,7 +16,7 @@
 ## How AxiomID uses it
 
 - SEP-10 authentication for Stellar-based login flows
-- Anchor API implementation at `src/app/api/stellar/anchor/route.ts`
+- VC anchoring endpoint at `src/app/api/stellar/anchor/route.ts` to publish and record on-chain proofs
 - KYC status integration with Stellar SEP-12 data models
 - Passport credential anchoring to Stellar for tamper-evident publication
 - Future: asset issuance for on‑chain passport badges and reputation tokens
