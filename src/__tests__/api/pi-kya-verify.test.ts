@@ -128,7 +128,7 @@ describe('POST /api/pi/kya/verify', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -156,7 +156,7 @@ describe('POST /api/pi/kya/verify', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -205,7 +205,7 @@ describe('POST /api/pi/kya/verify', () => {
     });
     const now = new Date();
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', lastActive: now,
+      id: 'user-1', xp: 0, tier: 'Visitor', lastActive: now, payments: [],
       stamps: [
         { type: 'connect_twitter', xpAwarded: 10, createdAt: now },
         { type: 'daily_pow', xpAwarded: 5, createdAt: now },
@@ -248,7 +248,7 @@ describe('POST /api/pi/kya/verify — idempotency (existing stamp)', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
   });
@@ -332,7 +332,7 @@ describe('POST /api/pi/kya/verify — action hash-chain (PR change)', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
   });
@@ -448,7 +448,7 @@ describe('POST /api/pi/kya/verify — tier recalculation (PR change)', () => {
   it('updates tier when calculateTier returns a different tier from user.tier', async () => {
     // User is Visitor (xp=0, Citizen threshold=100) → after +200 XP → xp=200 → Citizen (tier changes)
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -485,7 +485,7 @@ describe('POST /api/pi/kya/verify — tier recalculation (PR change)', () => {
   it('does not make a second user.update when tier has not changed', async () => {
     // User is Citizen (xp=100) → after +200 XP → xp=300 → still Citizen (no tier change)
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 100, tier: 'Citizen', stamps: [], lastActive: null,
+      id: 'user-1', xp: 100, tier: 'Citizen', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
