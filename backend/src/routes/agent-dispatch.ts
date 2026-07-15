@@ -53,7 +53,7 @@ export class AgentDispatcher {
       throw new Error("Skill not installed");
     }
 
-    const result = await this.executeSkillAction(request.skillSlug, request.action, request.params);
+    const result = await this.executeSkillAction(request.skillSlug, request.action, request.params, request.userDid);
 
     return {
       skillSlug: request.skillSlug,
@@ -66,14 +66,15 @@ export class AgentDispatcher {
   private async executeSkillAction(
     slug: string,
     action: string,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
+    callerDid: string
   ): Promise<unknown> {
-    const executors: Record<string, (action: string, params: Record<string, unknown>) => Promise<unknown>> = {
-      "harvest-search": this.executeHarvestSearch.bind(this),
-      "trust-verify": this.executeTrustVerify.bind(this),
-      "did-resolve": this.executeDidResolve.bind(this),
-      "presence-monitor": this.executePresenceMonitor.bind(this),
-      "identity-builder": this.executeIdentityBuilder.bind(this),
+    const executors: Record<string, (action: string, params: Record<string, unknown>, callerDid: string) => Promise<unknown>> = {
+      "harvest-search": (act, prm) => this.executeHarvestSearch(act, prm),
+      "trust-verify": (act, prm, caller) => this.executeTrustVerify(act, prm, caller),
+      "did-resolve": (act, prm) => this.executeDidResolve(act, prm),
+      "presence-monitor": (act, prm) => this.executePresenceMonitor(act, prm),
+      "identity-builder": (act, prm) => this.executeIdentityBuilder(act, prm),
     };
 
     const executor = executors[slug];
@@ -81,7 +82,7 @@ export class AgentDispatcher {
       throw new Error(`No executor for skill: ${slug}`);
     }
 
-    return executor(action, params);
+    return executor(action, params, callerDid);
   }
 
   private async executeHarvestSearch(
@@ -115,8 +116,12 @@ export class AgentDispatcher {
 
   private async executeTrustVerify(
     action: string,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
+    callerDid: string
   ): Promise<unknown> {
+    if (!callerDid) {
+      throw new Error("Unauthorized: callerDid must be provided for trust verification.");
+    }
     if (action === "score") {
       const did = params.did as string;
       if (!did) throw new Error("Missing did parameter");
@@ -139,8 +144,8 @@ export class AgentDispatcher {
     if (action === "chain") {
       const { sourceDid, targetDid } = params;
       if (!sourceDid || !targetDid) throw new Error("Missing sourceDid or targetDid");
-      const chain = await this.delegation.resolveChain(sourceDid as string, targetDid as string);
-      const delegatedTrust = await this.delegation.computeDelegatedTrust(sourceDid as string, targetDid as string);
+      const chain = await this.delegation.resolveChain(sourceDid as string, targetDid as string, callerDid);
+      const delegatedTrust = await this.delegation.computeDelegatedTrust(sourceDid as string, targetDid as string, callerDid);
       return { chain, delegatedTrust, hops: chain.length };
     }
 
