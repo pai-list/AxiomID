@@ -116,15 +116,15 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 ### Security PRs (Jules) 🔄 OPEN
 - #337: Hardcoded secrets in e2e + auth-middleware tests
 - #339: Auth bypass + sandbox vulnerabilities
-- #338: Trust delegation IDOR (needs rebase)
-- #340: Mass credential IDOR (approved, needs rebase)
+- #338: Trust delegation IDOR ✅ rebased (Jul 15)
+- #340: Mass credential IDOR ✅ rebased (Jul 15, approved by human)
 
 ### Coverage PRs (Jules) 🔄 OPEN
-- #332: Sanitize library (needs rebase)
+- #332: Sanitize library ✅ rebased (Jul 15)
 - #333: Trust.ts fallbacks
 - #334: Auth-middleware 100%
 - #335: vc.ts RSA branches
-- #336: Tiers library (needs rebase)
+- #336: Tiers library ✅ rebased (Jul 15, .idea/workspace.xml stripped)
 
 ### Refactor PRs (Jules) 🔄 OPEN
 - #327: console.log → console.info
@@ -139,8 +139,8 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 | Dead Code Cleanup (#346) | Agent Review | `feat/dead-code-cleanup` |
 | Pi Verification Fallback (#347) | Agent Review | `feat/pi-verification-fallback` |
 | AGENTS.md Rebrand (#348) | Agent Review | `feat/agents-md-rebrand` |
-| Security PRs (#337→#339→#338→#340) | Review + Rebase | Various Jules branches |
-| Coverage PRs (#336→#335→#334→#333→#332) | Review + Rebase | Various Jules branches |
+| Security PRs (#337→#339→#338→#340) | Merge after CI (all rebased) | Various Jules branches |
+| Coverage PRs (#336→#335→#334→#333→#332) | Merge after CI (332, 336 rebased) | Various Jules branches |
 
 ---
 
