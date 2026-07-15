@@ -32,9 +32,7 @@ export function calculateTrustScore(
 
   const xpScore = Math.min(100, Math.max(0, Math.floor((xp || 0) / 10)));
 
-  const stampScore = TOTAL_STAMPS > 0
-    ? Math.round((clamped / TOTAL_STAMPS) * 100)
-    : 0;
+  const stampScore = Math.round((clamped / TOTAL_STAMPS) * 100);
 
   if (tenureDays === undefined && semanticTrust === undefined) {
     return Math.max(0, Math.min(100, Math.round(xpScore * 0.7 + stampScore * 0.3)));
