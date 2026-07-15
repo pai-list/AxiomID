@@ -86,6 +86,10 @@ describe("calculateTrustScore", () => {
     expect(() => calculateTrustScore(500, 3, 25, 101)).toThrow();
   });
 
+  it("throws error if tenureDays is not an integer", () => {
+    expect(() => calculateTrustScore(500, 3, 25.5)).toThrow();
+  });
+
 });
 
 describe("calculateTier", () => {
