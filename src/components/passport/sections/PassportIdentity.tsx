@@ -36,7 +36,7 @@ export function PassportIdentity({
         <h3 className="text-lg font-bold font-mono text-text-primary">{username}</h3>
         <div className="flex items-center justify-center gap-2 mt-1">
           <p className="text-[10px] font-mono break-all text-text-muted">{did}</p>
-          <button type="button" onClick={() => copyToClipboard(did)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Copy DID"><Copy className="w-3.5 h-3.5" /></button>
+          <button type="button" onClick={() => copyToClipboard(did)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all" aria-label="Copy DID"><Copy className="w-3.5 h-3.5" /></button>
         </div>
       </div>
 
@@ -45,7 +45,7 @@ export function PassportIdentity({
         <span className="text-[9px] font-mono block text-text-muted">{t('label_wallet')}</span>
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-neon-green font-mono animate-pulse-glow">{shortAddress}</span>
-          {displayAddress && <button type="button" onClick={() => copyToClipboard(displayAddress)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Copy Wallet Address"><Copy className="w-3.5 h-3.5" /></button>}
+          {displayAddress && <button type="button" onClick={() => copyToClipboard(displayAddress)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all" aria-label="Copy Wallet Address"><Copy className="w-3.5 h-3.5" /></button>}
         </div>
       </div>
 

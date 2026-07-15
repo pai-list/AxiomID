@@ -1,48 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { setupConsoleErrorCheck } from "./fixtures/helpers";
 
-let testTokenCounter = 0;
-const makeToken = (prefix: string) => `${prefix}-${++testTokenCounter}`;
-const VALID_PI_TOKEN = makeToken("valid-pi");
-const INVALID_PI_TOKEN = makeToken("invalid");
-const SANDBOX_DEV_TOKEN = makeToken("sandbox-dev-bypass");
-const SUPER_SECRET_TOKEN = makeToken("super-secret-leak");
-
 const VALID_BODY = {
-  accessToken: VALID_PI_TOKEN,
+  accessToken: "valid-pi-token-abc123",
   uid: "pi-uid-test-001",
   username: "testuser",
 };
 
 test.describe("Authentication Flow", () => {
-  test.describe("makeToken helper (PR change: unique token generator)", () => {
-    test("includes the provided prefix in the generated token", () => {
-      const token = makeToken("my-prefix");
-      expect(token.startsWith("my-prefix-")).toBe(true);
-    });
-
-    test("generates a different token on each call, even with the same prefix", () => {
-      const tokenA = makeToken("dup");
-      const tokenB = makeToken("dup");
-      expect(tokenA).not.toBe(tokenB);
-    });
-
-    test("appends a numeric, monotonically increasing counter", () => {
-      const tokenA = makeToken("seq");
-      const tokenB = makeToken("seq");
-      const numA = Number(tokenA.split("-").pop());
-      const numB = Number(tokenB.split("-").pop());
-      expect(Number.isNaN(numA)).toBe(false);
-      expect(Number.isNaN(numB)).toBe(false);
-      expect(numB).toBeGreaterThan(numA);
-    });
-
-    test("module-level constants are all unique, distinct tokens", () => {
-      const tokens = [VALID_PI_TOKEN, INVALID_PI_TOKEN, SANDBOX_DEV_TOKEN, SUPER_SECRET_TOKEN];
-      expect(new Set(tokens).size).toBe(tokens.length);
-    });
-  });
-
   test.describe("POST /api/auth/pi", () => {
     test("valid token returns user data", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
@@ -66,7 +31,7 @@ test.describe("Authentication Flow", () => {
       const res = await request.post("/api/auth/pi", {
         data: {
           ...VALID_BODY,
-          accessToken: INVALID_PI_TOKEN,
+          accessToken: "invalid-token-xyz",
         },
         headers: {
           "User-Agent": "Pi Browser/4.0 (iPhone; iOS 16.0; Scale/3.00)",
@@ -160,7 +125,7 @@ test.describe("Authentication Flow", () => {
     test("sandbox bypass does NOT fire in production env", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
         data: {
-          accessToken: SANDBOX_DEV_TOKEN,
+          accessToken: "sandbox-dev-token-bypass-test",
           uid: "uid-prod-guard-test",
           username: "prodtestuser",
         },
@@ -171,7 +136,7 @@ test.describe("Authentication Flow", () => {
 
       if (res.status() === 200) {
         const json = await res.json();
-        expect(json.data?.piUsername).not.toBe(SANDBOX_DEV_TOKEN);
+        expect(json.data?.piUsername).not.toBe("sandbox-dev-token-bypass-test");
       } else {
         expect([401, 429]).toContain(res.status());
       }
@@ -214,14 +179,14 @@ test.describe("Authentication Flow", () => {
 
     test("no sensitive data in error responses", async ({ request }) => {
       const res = await request.post("/api/auth/pi", {
-        data: { accessToken: SUPER_SECRET_TOKEN, uid: "uid-leak", username: "leak" },
+        data: { accessToken: "super-secret-token-12345", uid: "uid-leak", username: "leak" },
         headers: {
           "User-Agent": "Pi Browser/4.0 (iPhone; iOS 16.0; Scale/3.00)",
         },
       });
 
       const text = await res.text();
-      expect(text).not.toContain(SUPER_SECRET_TOKEN);
+      expect(text).not.toContain("super-secret-token-12345");
       expect(text).not.toContain("prisma");
       expect(text).not.toContain("DATABASE_URL");
       expect(text).not.toContain("PI_API_KEY");

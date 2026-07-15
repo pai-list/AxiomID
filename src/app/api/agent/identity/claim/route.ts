@@ -17,7 +17,7 @@ const ClaimCheckSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const rateLimit = await checkRateLimit(`agent-claim:${ip}`, RATE_LIMITS.piAuth);
+  const rateLimit = await checkRateLimit(`agent-claim:${ip}`, RATE_LIMITS.authenticated);
   if (!rateLimit.allowed) {
     return apiError("RATE_LIMITED", "Too many requests.", undefined, rateLimitHeaders(rateLimit));
   }

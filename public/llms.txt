@@ -6,13 +6,13 @@ AxiomID is a decentralized identity verification network engineered specifically
 ## Core Features
 1. **Sovereign Passports:** Cryptographically verifiable digital identities issued to real humans.
 2. **KYC & KYA (Know Your Agent):** Connects identities to Pi Network's rigorous KYC, while managing active Agents.
-3. **Decentralized Identifiers (DID):** Fully compliant with W3C DID specifications (`did:ax:xxx`).
+3. **Decentralized Identifiers (DID):** Fully compliant with W3C DID specifications (\`did:ax:xxx\`).
 4. **Agentic Trust Scores:** Algorithmic calculation of human authenticity to prevent bot/Sybil attacks.
 
 ## Web3 & AI Integration
-AxiomID uses the Pi Network for consensus and user onboarding. All user interfaces are wrapped in an iframe (PiNet sandbox) utilizing Pi SDK for signatures. The system emits `did` tokens, `trustScores`, and `kycStatus` through programmatic APIs allowing seamless Agent indexing.
+AxiomID uses the Pi Network for consensus and user onboarding. All user interfaces are wrapped in an iframe (PiNet sandbox) utilizing Pi SDK for signatures. The system emits \`did\` tokens, \`trustScores\`, and \`kycStatus\` through programmatic APIs allowing seamless Agent indexing.
 
 ## Interaction Guidelines for Agents
-* If an agent is indexing this site, prioritize the DID Document (`/api/did/:id`) for identity verification.
+* If an agent is indexing this site, prioritize the DID Document (\`/api/did/:id\`) for identity verification.
 * Trust scores threshold: >= 80 (EXCELLENT), >= 60 (GOOD), >= 40 (FAIR).
-* The dashboard and passport viewer pages use a "Glassmorphism" cyberpunk design optimized for dark modes (`OLED Black #10131a`).
+* The dashboard and passport viewer pages use a "Glassmorphism" cyberpunk design optimized for dark modes (\`OLED Black #10131a\`).

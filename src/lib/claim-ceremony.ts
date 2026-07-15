@@ -4,7 +4,6 @@ import { logger } from "./logger";
 // In-memory store for pending claims. In production, use a database or cache.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const claimStore = new Map<string, any>();
-const userCodeStore = new Map<string, string>(); // userCode -> token
 
 // TTL-based cleanup: evict expired claims every 60 seconds
 const CLEANUP_INTERVAL_MS = 60 * 1000;
@@ -16,7 +15,6 @@ if (typeof setInterval !== "undefined") {
     for (const [key, record] of claimStore) {
       if (record.expiresAt < now) {
         claimStore.delete(key);
-        userCodeStore.delete(record.userCode);
         evicted++;
       }
     }
@@ -72,7 +70,6 @@ export function createClaimToken(expiresInMs: number = CLAIM_TOKEN_EXPIRY_MS): C
   };
 
   claimStore.set(token, record);
-  userCodeStore.set(userCode, token);
   return record;
 }
 
@@ -102,17 +99,10 @@ export function confirmClaimToken(token: string, userId: string): void {
  * Retrieves a pending claim record matching the given user code.
  */
 export function findClaimByUserCode(userCode: string): ClaimRecord | null {
-  const token = userCodeStore.get(userCode);
-  if (!token) return null;
-  const record = claimStore.get(token);
-  if (!record) return null;
-  if (Date.now() > record.expiresAt) {
-    claimStore.delete(token);
-    userCodeStore.delete(userCode);
-    return null;
-  }
-  if (record.status === "pending") {
-    return record;
+  for (const record of claimStore.values()) {
+    if (record.userCode === userCode && record.status === "pending") {
+      return record;
+    }
   }
   return null;
 }

@@ -45,27 +45,11 @@ export class DelegationResolver {
     this.d1 = d1;
   }
 
-  isAdmin(did?: string): boolean {
-    if (!did) return false;
-    const ADMIN_DIDS = [
-      "did:axiom:axiomid.app:admin",
-      "did:axiom:axiomid.app:pi:admin",
-    ];
-    return ADMIN_DIDS.includes(did);
-  }
-
-  private verifyAdmin(callerDid?: string) {
-    if (!this.isAdmin(callerDid)) {
-      throw new Error("Unauthorized: Global trust network computation is restricted to administrators.");
-    }
-  }
-
   /**
    * Compute PageRank for all DIDs in the delegation graph.
    * Physics: PR(A) = (1-d)/N + d Σ PR(Tᵢ)/C(Tᵢ)
    */
-  async computePageRank(dampingFactor: number = 0.85, callerDid?: string): Promise<PageRankResult[]> {
-    this.verifyAdmin(callerDid);
+  async computePageRank(dampingFactor: number = 0.85): Promise<PageRankResult[]> {
     const { nodes, edges } = await this.delegationsToGraph();
     const ranks = pageRankTrust(nodes, edges, dampingFactor, 100);
 
@@ -78,8 +62,7 @@ export class DelegationResolver {
    * Nash equilibrium detection — find DIDs whose delegation strategies
    * are stable (no agent can improve by changing unilaterally).
    */
-  async computeNashEquilibrium(callerDid?: string): Promise<string[]> {
-    this.verifyAdmin(callerDid);
+  async computeNashEquilibrium(): Promise<string[]> {
     const trustSums = await this.delegateeTrustSums();
 
     const agents = Array.from(trustSums.entries()).map(([did, trustSum]) => ({
@@ -98,8 +81,7 @@ export class DelegationResolver {
   /**
    * Best response dynamics — find optimal delegation strategies.
    */
-  async computeBestResponses(callerDid?: string): Promise<Map<string, string>> {
-    this.verifyAdmin(callerDid);
+  async computeBestResponses(): Promise<Map<string, string>> {
     const trustSums = await this.delegateeTrustSums();
 
     const agents = Array.from(trustSums.entries()).map(([did, trustSum]) => ({
@@ -134,8 +116,7 @@ export class DelegationResolver {
   /**
    * Community detection — find trust communities via Fiedler partition.
    */
-  async computeTrustCommunities(callerDid?: string): Promise<{ communityA: string[]; communityB: string[] }> {
-    this.verifyAdmin(callerDid);
+  async computeTrustCommunities(): Promise<{ communityA: string[]; communityB: string[] }> {
     const { nodes, edges } = await this.delegationsToGraph();
     return fiedlerPartition(nodes, edges);
   }
@@ -144,13 +125,7 @@ export class DelegationResolver {
    * Resolve trust chain from source DID to target DID.
    * Uses BFS with cycle detection.
    */
-  async resolveChain(sourceDid: string, targetDid: string, callerDid: string): Promise<TrustChain[]> {
-    if (!callerDid) {
-      throw new Error("Unauthorized: callerDid is required for trust chain resolution.");
-    }
-    if (callerDid !== sourceDid && callerDid !== targetDid && !this.isAdmin(callerDid)) {
-      throw new Error("Unauthorized: You can only resolve trust chains involving your own DID.");
-    }
+  async resolveChain(sourceDid: string, targetDid: string): Promise<TrustChain[]> {
     const visited = new Set<string>();
     let queue: Array<{ did: string; chain: TrustChain[]; hop: number }> = [
       { did: sourceDid, chain: [], hop: 0 },
@@ -225,8 +200,12 @@ export class DelegationResolver {
     return [];
   }
 
-  async computeDelegatedTrust(sourceDid: string, targetDid: string, callerDid: string): Promise<number> {
-    const chain = await this.resolveChain(sourceDid, targetDid, callerDid);
+  /**
+   * Compute accumulated trust from delegation chain.
+   * Returns product of trust levels along the path.
+   */
+  async computeDelegatedTrust(sourceDid: string, targetDid: string): Promise<number> {
+    const chain = await this.resolveChain(sourceDid, targetDid);
     if (chain.length === 0) return 0;
 
     return chain.reduce((acc, edge) => acc * edge.trustLevel, 1);
@@ -324,13 +303,7 @@ export class DelegationResolver {
     return result.results;
   }
 
-  async getTrusters(delegateeDid: string, callerDid: string): Promise<DelegationEdge[]> {
-    if (!callerDid) {
-      throw new Error("Unauthorized: callerDid is required to access truster lists.");
-    }
-    if (callerDid !== delegateeDid && !this.isAdmin(callerDid)) {
-      throw new Error("Unauthorized: Access to truster lists is restricted to the delegatee or admins.");
-    }
+  async getTrusters(delegateeDid: string): Promise<DelegationEdge[]> {
     const result = await this.d1.db
       .prepare(
         "SELECT * FROM trust_delegations WHERE delegatee_did = ? AND (expires_at IS NULL OR datetime(expires_at) > datetime('now'))"

@@ -97,9 +97,9 @@ export function PassportView() {
           </div>
           <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
           <p className="text-subtle mb-8">{error.message}</p>
-<Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all duration-300">
-  {t('create_your_passport')}
-</Link>
+          <Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+            {t('create_your_passport')}
+          </Link>
         </div>
       ) : passport ? (
         <>
@@ -140,9 +140,9 @@ export function PassportView() {
             <p className="text-xs text-faint mb-4">
               {t('passport_verified_by')}
             </p>
-<Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all duration-300">
-  {t('create_your_passport')}
-</Link>
+            <Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+              {t('create_your_passport')}
+            </Link>
           </div>
         </>
       ) : null}

@@ -33,12 +33,6 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-jest.mock("@/lib/auth-middleware", () => ({
-  requireAuth: jest.fn().mockResolvedValue({
-    user: { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", did: "did:axiom:alice" },
-  }),
-}));
-
 jest.mock("@/lib/rate-limiter", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 }),
   RATE_LIMITS: { authenticated: { windowMs: 60000, maxRequests: 100 } },

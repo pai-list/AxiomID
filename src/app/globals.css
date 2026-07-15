@@ -126,8 +126,7 @@ body {
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
-  --color-subtle: var(--text-subtle);
-  --color-faint: var(--text-faint);
+
   --font-mono: var(--font-mono);
 }
 

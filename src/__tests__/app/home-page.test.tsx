@@ -38,6 +38,11 @@ jest.mock("@/components/Footer", () => ({
   default: () => <div data-testid="footer-stub" />,
 }));
 
+jest.mock("@/components/HeroDemo", () => ({
+  __esModule: true,
+  default: () => <div data-testid="hero-demo-stub" />,
+}));
+
 jest.mock("@/components/TrustTiers", () => ({
   __esModule: true,
   default: () => <div data-testid="trust-tiers-stub" />,

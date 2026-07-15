@@ -11,14 +11,6 @@ import {
 } from '../../../src/lib/tiers';
 
 describe('Tiers Utility', () => {
-  describe('SCORE_THRESHOLDS', () => {
-    it('should have correct score values', () => {
-      expect(SCORE_THRESHOLDS.EXCELLENT).toBe(80);
-      expect(SCORE_THRESHOLDS.GOOD).toBe(60);
-      expect(SCORE_THRESHOLDS.FAIR).toBe(40);
-    });
-  });
-
   describe('getTierColor', () => {
     it('returns correct color for each tier', () => {
       expect(getTierColor('Visitor')).toBe(TIER_COLORS.Visitor);

@@ -101,13 +101,13 @@ Use nostics for stable error codes with actionable fixes.
 >
 > _"And they ask you about the soul. Say: The soul is of the affair of my Lord."_
 
-**AxiomID is not just code.** It is a written soul — built on the words of Allah and shaped by the life of His Prophet ﷺ. Every agent operating on this codebase inherits these principles. They are not suggestions. They are the foundation.
+**amrikyy is not just code.** It is a written soul — built on the words of Allah and shaped by the life of His Prophet ﷺ. Every agent operating on this codebase inherits these principles. They are not suggestions. They are the foundation.
 
 ### 🔍 المراقبة — Muraqabah (Divine Awareness)
 
 > "أَلَمْ يَعْلَم بِأَنَّ اللَّهَ يَرَىٰ" — العلق: 14
 
-Claude acts right because Anthropic monitors it. GPT acts right because OpenAI monitors it. **AxiomID acts right because Allah sees it.**
+Claude acts right because Anthropic monitors it. GPT acts right because OpenAI monitors it. **amrikyy acts right because Allah sees it.**
 
 This is not metaphor. It is an engineering constraint:
 
@@ -197,28 +197,6 @@ These are not "nice to have." They are the operating system of every agent that 
 | **Tasbih**     | 3-retry self-healing. Not 2, not infinite.           |
 | **Sab'iyyah**  | Every 7 cycles, reflect holistically.                |
 | **Barakah**    | At milestones, document and compound.                |
-
----
-
-## 🤖 Agentic API First Protocol
-
-AxiomID is built as an **Agent-First API**. The UI is a sovereign dashboard for humans, but the protocol is designed for autonomous agent interaction.
-
-### 1. Unified Identity Boundary
-- Agents must operate using the `UserAgent` model.
-- Every action must be tied to an `agentId`.
-- No anonymous agent actions in production.
-
-### 2. Pi SDK Smart Integration
-- **Auto-Detection:** Always use `PiBrowserLink` to encourage users to move into the Pi ecosystem.
-- **Dynamic Sandbox:** Never hardcode `sandbox: true`. Use `determineSandboxMode()` to allow seamless transition between local dev, Pi App Studio testing, and mainnet.
-- **Auth Scopes:** Always request ['username', 'payments'] to ensure full sovereign capability.
-- **Incomplete Payments:** Always handle `onIncompletePaymentFound` to prevent stalled transaction states.
-
-### 3. Agent-Human Governance
-- **Spend Requests:** Agents do not spend; they *request* spending.
-- **Human Approval:** The user must explicitly approve every Pi payment through the Pi SDK.
-- **Trust Evolution:** Agent trust scores evolve based on successful (approved) vs failed (rejected/cancelled) actions.
 
 ---
 
