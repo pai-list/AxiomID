@@ -558,5 +558,10 @@
   "tier_advanced_tool": "Advanced Tool",
   "tier_advanced_infrastructure": "Infra",
   "tier_pro": "Pro",
-  "tier_sovereign": "Sovereign"
+  "tier_sovereign": "Sovereign",
+  "hero_create_your": "Create your",
+  "hero_ai_identity": "AI Identity",
+  "hero_desc": "Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign W3C DID, Passport, and live endpoint.",
+  "hero_cta_create": "Create My AI Agent",
+  "hero_cta_explore": "Explore the Protocol"
 }
