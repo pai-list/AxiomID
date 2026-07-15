@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   try {
     // Sandbox dev token only allowed in local development — never in production
     const sandboxToken = getSandboxDevToken();
-    if (isLocalDev && sandboxToken && accessToken === sandboxToken) {
+    if (isLocalDev && sandboxToken && sandboxToken.length > 0 && accessToken && accessToken.length > 0 && accessToken === sandboxToken) {
       verifiedStellarAddress = "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2";
       verifiedUsername = clientUsername ?? '';
     } else {

@@ -106,18 +106,45 @@ export async function PUT(
 
     // Create or reuse tags and link them
     const tagLinks: { skillId: string; tagId: string }[] = [];
-    for (const name of tagNames) {
-      const trimmed = name.trim();
-      if (!trimmed) continue;
-      const slugified = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const validTags = Array.from(
+      new Map(
+        tagNames
+          .map((name: string) => name.trim())
+          .filter(Boolean)
+          .map((name: string) => {
+            const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            return { name, slug };
+          })
+          .filter((t) => t.slug.length > 0)
+          .map((t) => [t.slug, t])
+      ).values()
+    );
 
-      let tag = await prisma.skillTag.findUnique({ where: { slug: slugified } });
-      if (!tag) {
-        tag = await prisma.skillTag.create({
-          data: { name: trimmed, slug: slugified },
+    if (validTags.length > 0) {
+      const slugs = validTags.map((t: { slug: string }) => t.slug);
+      let existingTags = await prisma.skillTag.findMany({
+        where: { slug: { in: slugs } }
+      });
+
+      const existingTagsMap = new Map(existingTags.map(t => [t.slug, t.id]));
+      const tagsToCreate = validTags.filter((t: { slug: string }) => !existingTagsMap.has(t.slug));
+
+      if (tagsToCreate.length > 0) {
+        // Create missing tags. We skip duplicates just in case there are concurrent creations.
+        await prisma.skillTag.createMany({
+          data: tagsToCreate,
+          skipDuplicates: true
+        });
+
+        // Refetch to get IDs for all valid tags
+        existingTags = await prisma.skillTag.findMany({
+          where: { slug: { in: slugs } }
         });
       }
-      tagLinks.push({ skillId: skill.id, tagId: tag.id });
+
+      for (const tag of existingTags) {
+        tagLinks.push({ skillId: skill.id, tagId: tag.id });
+      }
     }
 
     if (tagLinks.length > 0) {

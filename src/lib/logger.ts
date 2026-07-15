@@ -9,7 +9,7 @@ export const logger = {
   },
   info: (...args: unknown[]) => {
     if (!isTest && !isProd) {
-      console.log(...args);
+      console.info(...args);
     }
   },
   warn: (...args: unknown[]) => {

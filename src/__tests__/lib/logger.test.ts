@@ -4,7 +4,7 @@ describe('logger', () => {
   beforeEach(() => {
     jest.resetModules();
     jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'info').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
@@ -22,7 +22,7 @@ describe('logger', () => {
     logger.warn('test warn');
 
     expect(console.error).not.toHaveBeenCalled();
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.info).not.toHaveBeenCalled();
     expect(console.warn).not.toHaveBeenCalled();
   });
 
@@ -35,7 +35,7 @@ describe('logger', () => {
     logger.warn('prod warn');
 
     expect(console.error).toHaveBeenCalledWith('prod error');
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.info).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalledWith('prod warn');
   });
 
@@ -48,7 +48,7 @@ describe('logger', () => {
     logger.warn('dev warn');
 
     expect(console.error).toHaveBeenCalledWith('dev error');
-    expect(console.log).toHaveBeenCalledWith('dev info');
+    expect(console.info).toHaveBeenCalledWith('dev info');
     expect(console.warn).toHaveBeenCalledWith('dev warn');
   });
 });

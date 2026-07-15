@@ -11,12 +11,24 @@ import { TrustEngine } from "../lib/trust";
 import { DelegationResolver } from "../lib/delegation";
 import { generateId } from "../lib/utils";
 
+import { verifyAuth } from "../lib/auth";
+
 export async function handleMcp(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
 
   // MCP uses JSON-RPC over HTTP
   if (request.method === "POST" && url.pathname === "/mcp") {
     try {
+      // Authenticate MCP client request
+      const { authorized } = verifyAuth(request, env);
+      if (!authorized) {
+        return jsonResponse({
+          jsonrpc: "2.0",
+          id: null,
+          error: { code: -32099, message: "Unauthorized MCP client request" },
+        }, 401);
+      }
+
       const body = await request.json<{
         jsonrpc: string;
         id: number | string;
@@ -145,8 +157,16 @@ async function handleToolCall(
     }
 
     case "trust_chain": {
-      const chain = await delegation.resolveChain(args.sourceDid as string, args.targetDid as string);
-      const delegatedTrust = await delegation.computeDelegatedTrust(args.sourceDid as string, args.targetDid as string);
+      const chain = await delegation.resolveChain(
+        args.sourceDid as string,
+        args.targetDid as string,
+        args.callerDid as string
+      );
+      const delegatedTrust = await delegation.computeDelegatedTrust(
+        args.sourceDid as string,
+        args.targetDid as string,
+        args.callerDid as string
+      );
       return { source: args.sourceDid, target: args.targetDid, chain, delegatedTrust, hops: chain.length };
     }
 

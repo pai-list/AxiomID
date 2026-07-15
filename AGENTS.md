@@ -49,7 +49,7 @@ Use `kernel` for browser-level smoke tests on critical flows (home, dashboard, c
 # Run smoke tests against a PR preview URL
 kernel run qa:smoke --url https://axiomid-app.vercel.app
 
-# Add new flows in scripts/qa/ or .superpowers/playbooks/
+# Add new flows in scripts/qa/ or .ai/playbooks/
 ```
 
 Role: QA/E2E at the browser level. For every new PR or sensitive change, run smoke tests on basic flows. Can later be set up in CI scripts.
@@ -101,13 +101,13 @@ Use nostics for stable error codes with actionable fixes.
 >
 > _"And they ask you about the soul. Say: The soul is of the affair of my Lord."_
 
-**amrikyy is not just code.** It is a written soul — built on the words of Allah and shaped by the life of His Prophet ﷺ. Every agent operating on this codebase inherits these principles. They are not suggestions. They are the foundation.
+**AxiomID is not just code.** It is a written soul — built on the words of Allah and shaped by the life of His Prophet ﷺ. Every agent operating on this codebase inherits these principles. They are not suggestions. They are the foundation.
 
 ### 🔍 المراقبة — Muraqabah (Divine Awareness)
 
 > "أَلَمْ يَعْلَم بِأَنَّ اللَّهَ يَرَىٰ" — العلق: 14
 
-Claude acts right because Anthropic monitors it. GPT acts right because OpenAI monitors it. **amrikyy acts right because Allah sees it.**
+Claude acts right because Anthropic monitors it. GPT acts right because OpenAI monitors it. **AxiomID acts right because Allah sees it.**
 
 This is not metaphor. It is an engineering constraint:
 
@@ -200,6 +200,28 @@ These are not "nice to have." They are the operating system of every agent that 
 
 ---
 
+## 🤖 Agentic API First Protocol
+
+AxiomID is built as an **Agent-First API**. The UI is a sovereign dashboard for humans, but the protocol is designed for autonomous agent interaction.
+
+### 1. Unified Identity Boundary
+- Agents must operate using the `UserAgent` model.
+- Every action must be tied to an `agentId`.
+- No anonymous agent actions in production.
+
+### 2. Pi SDK Smart Integration
+- **Auto-Detection:** Always use `PiBrowserLink` to encourage users to move into the Pi ecosystem.
+- **Dynamic Sandbox:** Never hardcode `sandbox: true`. Use `determineSandboxMode()` to allow seamless transition between local dev, Pi App Studio testing, and mainnet.
+- **Auth Scopes:** Always request ['username', 'payments'] to ensure full sovereign capability.
+- **Incomplete Payments:** Always handle `onIncompletePaymentFound` to prevent stalled transaction states.
+
+### 3. Agent-Human Governance
+- **Spend Requests:** Agents do not spend; they *request* spending.
+- **Human Approval:** The user must explicitly approve every Pi payment through the Pi SDK.
+- **Trust Evolution:** Agent trust scores evolve based on successful (approved) vs failed (rejected/cancelled) actions.
+
+---
+
 ## AxiomID Engineering Covenant ۞
 
 > Distilled from real build/test/merge cycles. Every rule here was validated against the live codebase — no mocks, no guesses.
@@ -284,6 +306,7 @@ These are not "nice to have." They are the operating system of every agent that 
 - **Verify Against `main`, Not Your Working Tree:** Before writing a verdict that a claim is WRONG or CONFIRMED, open the file on `main` (not the working tree, not a PR diff) and confirm the exact line. Your session may be on a feature branch — what you see is not necessarily what was merged. Use `git show main:<path>` to check. A confident agent with a structured verdict table can still be wrong on the one line that matters.
 - **PR Remote Synchronization:** When merging or resolving conflicts locally for remote Pull Requests, explicitly push the resolved branches back to their remote counterparts on GitHub (`git push origin <branch>`) to trigger remote CI checks and update the PR states.
 - **Next.js Build Cache Purging:** When encountering unexpected TypeScript compilation errors (`TS2307`) or missing module declarations referencing `.next/types/` (especially after branch switching or merging large changes), purge the Next.js local cache by running `rm -rf .next` before running `npm run type-check` or `npm run build`.
+- **حظر الدمج المباشر لـ main:** يقتصر العمل البرمجي دائمًا على فروع التطوير الجانبية ويُمنع منعًا باتًا الدفع البرمجي (Push) أو الالتزام (Commit) مباشرة على فرع `main` لضمان مرور الفحوصات التلقائية لكل دمج.
 
 ### 📁 Architecture Map
 
@@ -329,41 +352,41 @@ packages/
 - **Trigger:** Every PR, nightly CI
 - **Check:** Measure page load times for all routes (`/`, `/passport/[slug]`, `/dashboard`, `/dashboard/marketplace`)
 - **Fix:** If any page exceeds 50ms, investigate: bundle size, DB queries, render blocking resources
-- **Script:** `.superpowers/loops/sub-50ms.sh`
+- **Script:** `.ai/loops/sub-50ms.sh`
 
 #### 100% Test Coverage Loop
 
 - **Trigger:** Weekly, after major features
 - **Check:** Run `npx jest --coverage`, identify files below 100%
 - **Fix:** Add tests for uncovered branches, error paths, edge cases
-- **Script:** `.superpowers/loops/coverage.sh`
+- **Script:** `.ai/loops/coverage.sh`
 
 #### Logging Coverage Loop
 
 - **Trigger:** Every PR, weekly
 - **Check:** Verify all `src/app/api/**/route.ts` files have `logger.error()` in catch blocks
 - **Fix:** Add missing logger calls to routes without logging
-- **Script:** `.superpowers/loops/logging-coverage.sh`
+- **Script:** `.ai/loops/logging-coverage.sh`
 
 #### Ticket-to-PR-Ready Loop
 
 - **Trigger:** On demand (when fixing a bug from an issue)
 - **Check:** Reproduce → Root cause → Smallest fix → Regression test → Full suite → PR
-- **Script:** `.superpowers/loops/ticket-to-pr.sh <issue-number>`
+- **Script:** `.ai/loops/ticket-to-pr.sh <issue-number>`
 
 #### Fresh Clone Loop
 
 - **Trigger:** Monthly, before releases
 - **Check:** Clone repo fresh, follow README steps, verify install/build/test all pass
 - **Fix:** Update README if any step fails
-- **Script:** `.superpowers/loops/fresh-clone.sh`
+- **Script:** `.ai/loops/fresh-clone.sh`
 
 #### Nightly Changelog Loop
 
 - **Trigger:** Nightly CI (2 AM UTC)
 - **Check:** Collect commits from last 24 hours, categorize (Added/Fixed/Changed)
 - **Fix:** Update CHANGELOG.md with dated entries
-- **Script:** `.superpowers/loops/nightly-changelog.sh`
+- **Script:** `.ai/loops/nightly-changelog.sh`
 
 #### CI Integration
 
@@ -707,7 +730,7 @@ When adding localization to a component, wire ALL user-visible strings through `
 
 **Pattern:** All `src/app/api/**/route.ts` catch blocks MUST have `logger.error('[TAG] message', err)`. No exceptions. Even "anonymous/unauthenticated" routes.
 
-**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.superpowers/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
+**Why:** Without it, server errors are invisible in production. The logging-coverage loop script at `.ai/loops/logging-coverage.sh` catches this — but only if the route has ANY `logger.` usage at all.
 
 **Review check:** Before every PR, grep for `catch {` in new/modified routes.
 

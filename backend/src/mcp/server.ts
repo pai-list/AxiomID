@@ -150,11 +150,12 @@ export function createMcpServer(env: Env): McpServer {
     {
       sourceDid: z.string().describe("Source DID"),
       targetDid: z.string().describe("Target DID"),
+      callerDid: z.string().describe("Caller DID demanding the resolution (required for IDOR check)"),
     },
-    async ({ sourceDid, targetDid }) => {
+    async ({ sourceDid, targetDid, callerDid }) => {
       try {
-        const chain = await delegation.resolveChain(sourceDid, targetDid);
-        const delegatedTrust = await delegation.computeDelegatedTrust(sourceDid, targetDid);
+        const chain = await delegation.resolveChain(sourceDid, targetDid, callerDid);
+        const delegatedTrust = await delegation.computeDelegatedTrust(sourceDid, targetDid, callerDid);
         return {
           content: [{
             type: "text" as const,
