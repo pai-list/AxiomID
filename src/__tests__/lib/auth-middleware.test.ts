@@ -30,6 +30,9 @@ global.fetch = mockFetch;
 import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
 
+let testTokenCounter = 0;
+const makeTestToken = (suffix: string) => "test-token-mock-" + suffix + "-" + (++testTokenCounter);
+
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
 function mockRequestWithHeader(headers: Record<string, string> = {}) {
@@ -47,6 +50,30 @@ function mockRequestWithHeader(headers: Record<string, string> = {}) {
     nextUrl: new URL("http://localhost/"),
   } as unknown as NextRequest; // ponytail: test mock — NextRequest-like object without full type
 }
+
+describe('makeTestToken (PR change: unique token generator for tests)', () => {
+  it('includes the provided suffix in the generated token', () => {
+    const token = makeTestToken('my-suffix');
+    expect(token).toContain('my-suffix');
+    expect(token.startsWith('test-token-mock-my-suffix-')).toBe(true);
+  });
+
+  it('generates a different token on each call, even with the same suffix', () => {
+    const tokenA = makeTestToken('dup');
+    const tokenB = makeTestToken('dup');
+    expect(tokenA).not.toBe(tokenB);
+  });
+
+  it('appends a numeric, monotonically increasing counter', () => {
+    const tokenA = makeTestToken('seq');
+    const tokenB = makeTestToken('seq');
+    const numA = Number(tokenA.split('-').pop());
+    const numB = Number(tokenB.split('-').pop());
+    expect(Number.isNaN(numA)).toBe(false);
+    expect(Number.isNaN(numB)).toBe(false);
+    expect(numB).toBeGreaterThan(numA);
+  });
+});
 
 describe('hashToken (PR change: exported)', () => {
   it('returns a 64-character hex string (SHA-256)', () => {
@@ -233,13 +260,14 @@ describe('requireAuth', () => {
   });
 
   it('returns error when user not found in database', async () => {
+    const token = makeTestToken('not-found');
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
     mockPrisma.user.findUnique.mockResolvedValue(null);
 
-    const req = mockRequestWithHeader({ authorization: 'Bearer test-token-not-found' });
+    const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
     const result = await requireAuth(req);
 
     expect(result.user).toBeNull();
@@ -568,6 +596,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         xp: 0,
         tier: 'Visitor',
       };
+      const token = makeTestToken('sandbox-chrome');
       mockFetch.mockResolvedValue({
         ok: true,
         json: async () => ({ uid: 'pi-sandbox-bypass', username: 'sandboxbypassuser' }),
@@ -576,7 +605,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
 
       // Chrome UA but SANDBOX_AUTH_BYPASS=true + localhost → isSandboxOrDev=true → Pi Browser check bypassed
       const req = mockRequestWithHeader({
-        authorization: 'Bearer sandbox-chrome-token',
+        authorization: `Bearer ${token}`,
         'user-agent': 'Mozilla/5.0 Chrome/120.0',
       });
 
