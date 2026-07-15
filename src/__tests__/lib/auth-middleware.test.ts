@@ -987,3 +987,88 @@ describe('requireAuth - missing branches', () => {
     expect(result.error).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// requireAuth — additional coverage (regression / boundary / negative cases)
+// ---------------------------------------------------------------------------
+describe('requireAuth - additional coverage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch.mockReset();
+    clearAuthCache();
+  });
+
+  it('returns "Pi token missing uid" when JWKS payload has no sub, without falling back to the Pi API', async () => {
+    const verifyPiTokenWithJwksMock = require('@/lib/auth-tokens').verifyPiTokenWithJwks as jest.Mock;
+    verifyPiTokenWithJwksMock.mockResolvedValueOnce({
+      username: 'no-sub-user',
+    });
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer jwks-missing-sub-token' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    const response = await result.error!.json();
+    expect(response.message).toBe('Pi token missing uid');
+    // JWKS path resolved (even without uid), so the online fallback must not run
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('falls through to normal Pi Browser auth flow when sandbox bypass is enabled but access token does not match the sandbox token', async () => {
+    const originalEnv = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+
+    const getSandboxDevTokenMock = require('@/lib/sandbox-token').getSandboxDevToken as jest.Mock;
+    getSandboxDevTokenMock.mockReturnValue('the-real-sandbox-token');
+
+    const mockUser = {
+      id: 'user-non-matching-sandbox',
+      walletAddress: '0xnomatch',
+      piUid: 'pi-no-match',
+      piUsername: 'nomatchuser',
+      did: null,
+      xp: 0,
+      tier: 'Visitor',
+    };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-no-match', username: 'nomatchuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as import('@/lib/auth-middleware').AuthenticatedUser);
+
+    // Token differs from the configured sandbox token, so the sandbox
+    // short-circuit must not fire — the request should go through the
+    // ordinary Pi Browser fallback flow instead.
+    const req = mockRequestWithHeader({ authorization: 'Bearer not-the-sandbox-token' });
+    const result = await requireAuth(req);
+
+    expect(result.error).toBeNull();
+    expect(result.user).toEqual(mockUser);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    process.env.SANDBOX_AUTH_BYPASS = originalEnv;
+  });
+
+  it('queries prisma.user.findUnique with the piUid returned by the Pi API', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'exact-uid-check', username: 'someuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-exact',
+      walletAddress: '0xexact',
+      piUid: 'exact-uid-check',
+      piUsername: 'someuser',
+      xp: 0,
+      tier: 'Visitor',
+    } as any); // ponytail: test mock — partial Prisma model
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer exact-uid-token' });
+    await requireAuth(req);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { piUid: 'exact-uid-check' } })
+    );
+  });
+});
