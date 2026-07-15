@@ -24,11 +24,25 @@ jest.mock('@/lib/auth-tokens', () => ({
   verifyPiTokenWithJwks: jest.fn().mockRejectedValue(new Error("JWKS verification not available in tests")),
 }));
 
+jest.mock('@/lib/sandbox-token', () => ({
+  getSandboxDevToken: jest.fn().mockReturnValue(undefined),
+}));
+
+jest.mock('@/lib/revocation-store', () => {
+  return {
+    isTokenRevoked: jest.fn().mockResolvedValue(false),
+    revokeToken: jest.fn().mockResolvedValue(undefined),
+  };
+});
+
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
+import { requireAuth, clearAuthCache, hashToken, type AuthenticatedUser } from '@/lib/auth-middleware';
 import { prisma } from '@/lib/prisma';
+import { getSandboxDevToken } from '@/lib/sandbox-token';
+import { isTokenRevoked } from '@/lib/revocation-store';
+import { verifyPiTokenWithJwks } from '@/lib/auth-tokens';
 
 let testTokenCounter = 0;
 const makeTestToken = (suffix: string) => "test-token-mock-" + suffix + "-" + (++testTokenCounter);
@@ -133,7 +147,7 @@ describe('clearAuthCache (PR change: selective invalidation)', () => {
       ok: true,
       json: async () => ({ uid: 'pi-selective', username: 'selectiveuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
 
@@ -171,7 +185,7 @@ describe('clearAuthCache (PR change: selective invalidation)', () => {
       ok: true,
       json: async () => ({ uid: 'pi-multi', username: 'multiuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const reqA = mockRequestWithHeader({ authorization: `Bearer ${tokenA}` });
     const reqB = mockRequestWithHeader({ authorization: `Bearer ${tokenB}` });
@@ -288,7 +302,7 @@ describe('requireAuth', () => {
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: 'Bearer test-token-success' });
     const result = await requireAuth(req);
@@ -311,7 +325,7 @@ describe('requireAuth', () => {
       ok: true,
       json: async () => ({ uid: 'pi-user-123', username: 'testuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: 'Bearer cache-test-token' });
 
@@ -339,7 +353,7 @@ describe('requireAuth', () => {
       piUsername: 'testuser',
       xp: 100,
       tier: 'Citizen',
-    } as any); // ponytail: test mock — partial Prisma model
+    } as unknown as AuthenticatedUser);
 
     const req1 = mockRequestWithHeader({ authorization: 'Bearer valid-token-1' });
     const result1 = await requireAuth(req1);
@@ -385,6 +399,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
   });
 
   it('returns UNAUTHORIZED error for a revoked token without calling Pi API', async () => {
+    jest.mocked(isTokenRevoked).mockResolvedValueOnce(true);
     const revokedToken = 'revocation-store-test-token-unique-abc';
     await revokeToken(revokedToken);
 
@@ -413,7 +428,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
       ok: true,
       json: async () => ({ uid: 'pi-revocation-test', username: 'revocationtestuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${validToken}` });
     const result = await requireAuth(req);
@@ -438,7 +453,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
       ok: true,
       json: async () => ({ uid: 'pi-cache-bypass', username: 'cachebypassuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: `Bearer ${token}` });
     const result1 = await requireAuth(req);
@@ -447,6 +462,7 @@ describe('requireAuth — revocation check (PR change: uses revocation-store)', 
 
     // Now revoke the token — even though it's cached, it should be blocked
     await revokeToken(token);
+    jest.mocked(isTokenRevoked).mockResolvedValueOnce(true);
     mockFetch.mockReset();
 
     const result2 = await requireAuth(req);
@@ -512,7 +528,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-1', username: 'pibrowseruser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer pi-browser-ua-token',
@@ -540,7 +556,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-2', username: 'minepiuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer minepi-ua-token',
@@ -568,7 +584,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-ua-test-3', username: 'piappuser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     const req = mockRequestWithHeader({
       authorization: 'Bearer piapp-ua-token',
@@ -601,7 +617,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
         ok: true,
         json: async () => ({ uid: 'pi-sandbox-bypass', username: 'sandboxbypassuser' }),
       });
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
       // Chrome UA but SANDBOX_AUTH_BYPASS=true + localhost → isSandboxOrDev=true → Pi Browser check bypassed
       const req = mockRequestWithHeader({
@@ -663,7 +679,7 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
       ok: true,
       json: async () => ({ uid: 'pi-null-url', username: 'nullurluser' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any); // ponytail: test mock — partial Prisma model
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
 
     // Manually build a request with null nextUrl and a Pi Browser UA
     const req = {
@@ -685,5 +701,407 @@ describe('requireAuth — Pi Browser user-agent enforcement (PR change)', () => 
     // With Pi Browser UA it should proceed normally and succeed
     expect(result.error).toBeNull();
     expect(result.user).toEqual(mockUser);
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// requireAuth - missing branches (PR change: full coverage)
+// ---------------------------------------------------------------------------
+describe('requireAuth - missing branches', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch.mockReset();
+    clearAuthCache();
+    jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('expires cached user', async () => {
+    jest.useFakeTimers();
+
+    const mockUser = {
+      id: 'user-expire-cache',
+      walletAddress: '0xexpire',
+      piUid: 'pi-expire',
+      piUsername: 'expireuser',
+      xp: 0,
+      tier: 'Visitor',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-expire', username: 'expireuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer expire-token' });
+
+    const result1 = await requireAuth(req);
+    expect(result1.user).toEqual(mockUser);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    jest.advanceTimersByTime(6 * 60 * 1000);
+
+    mockFetch.mockClear();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-expire', username: 'expireuser' }),
+    });
+
+    const result2 = await requireAuth(req);
+    expect(result2.user).toEqual(mockUser);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('cleans up expired entries when cache size limit is reached', async () => {
+    jest.useFakeTimers();
+
+    const mockUser = {
+      id: 'user-limit',
+      walletAddress: '0xlimit',
+      piUid: 'pi-limit',
+      piUsername: 'limituser',
+      xp: 0,
+      tier: 'Visitor',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-limit', username: 'limituser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    const req1 = mockRequestWithHeader({ authorization: 'Bearer token-1' });
+    await requireAuth(req1);
+
+    jest.advanceTimersByTime(6 * 60 * 1000);
+
+    for (let i = 2; i <= 1001; i++) {
+      const req = mockRequestWithHeader({ authorization: `Bearer token-${i}` });
+      await requireAuth(req);
+    }
+
+    const req1002 = mockRequestWithHeader({ authorization: 'Bearer token-1002' });
+    await requireAuth(req1002);
+  });
+
+  it('handles isTokenRevoked rejection', async () => {
+    jest.mocked(isTokenRevoked).mockRejectedValueOnce(new Error('DB connection failed'));
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer some-token' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    expect(result.error!.status).toBe(401);
+  });
+
+  it('skips sandbox bypass in production even if SANDBOX_AUTH_BYPASS is true', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+    process.env.NODE_ENV = 'production';
+
+    try {
+      jest.mocked(getSandboxDevToken).mockReturnValue('sandbox-dev-token');
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      const req = mockRequestWithHeader({ authorization: 'Bearer sandbox-dev-token' });
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeDefined();
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  it('resolves sandbox user when SANDBOX_AUTH_BYPASS is true and token matches', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+    process.env.NODE_ENV = 'development';
+
+    try {
+      jest.mocked(getSandboxDevToken).mockReturnValue('sandbox-dev-token');
+
+      const sandboxUser = {
+        id: 'sandbox-id',
+        walletAddress: '0xsandbox',
+        piUid: 'sandbox-developer',
+        piUsername: 'sandboxuser',
+        did: null,
+        xp: 100,
+        tier: 'Developer',
+      };
+
+      mockPrisma.user.findUnique.mockResolvedValue(sandboxUser as unknown as AuthenticatedUser);
+
+      const req = mockRequestWithHeader({ authorization: 'Bearer sandbox-dev-token' });
+      const result = await requireAuth(req);
+
+      expect(result.user).toEqual(sandboxUser);
+      expect(result.error).toBeNull();
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  it('falls through if sandbox user is not found in db', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+    process.env.NODE_ENV = 'development';
+
+    try {
+      jest.mocked(getSandboxDevToken).mockReturnValue('sandbox-dev-token');
+
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      const req = mockRequestWithHeader({ authorization: 'Bearer sandbox-dev-token' });
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeDefined();
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  it('resolves pi user using JWKS successfully', async () => {
+    const mockUser = {
+      id: 'jwks-user-id',
+      walletAddress: '0xjwks',
+      piUid: 'jwks-uid',
+      piUsername: 'jwksusername',
+      did: null,
+      xp: 10,
+      tier: 'Visitor',
+    };
+
+    const verifyPiTokenWithJwksMock = jest.mocked(verifyPiTokenWithJwks);
+    verifyPiTokenWithJwksMock.mockResolvedValueOnce({
+      sub: 'jwks-uid',
+      username: 'jwksusername',
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer valid-jwks-token' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toEqual(mockUser);
+    expect(result.error).toBeNull();
+  });
+
+  it('resolves pi user using JWKS but without username or pi_username', async () => {
+    const mockUser = {
+      id: 'jwks-no-username',
+      walletAddress: '0xjwks2',
+      piUid: 'jwks-uid-2',
+      piUsername: null,
+      did: null,
+      xp: 10,
+      tier: 'Visitor',
+    };
+
+    jest.mocked(verifyPiTokenWithJwks).mockResolvedValueOnce({
+      sub: 'jwks-uid-2',
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer valid-jwks-token-no-username' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toEqual(mockUser);
+    expect(result.error).toBeNull();
+  });
+
+  it('resolves pi user using fallback API without username', async () => {
+    const mockUser = {
+      id: 'fallback-no-username',
+      walletAddress: '0xfallback',
+      piUid: 'pi-fallback-uid',
+      piUsername: null,
+      xp: 0,
+      tier: 'Visitor',
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-fallback-uid' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    jest.mocked(verifyPiTokenWithJwks).mockRejectedValueOnce(new Error('fail jwks'));
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer fallback-token' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toEqual(mockUser);
+    expect(result.error).toBeNull();
+  });
+
+  it('allows non-Pi-Browser UA when SANDBOX_AUTH_BYPASS=true but loopback host is 127.0.0.1', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+
+    try {
+      const req = {
+        headers: {
+          get: (name: string) => name.toLowerCase() === 'authorization' ? 'Bearer somesandboxtoken' : 'Mozilla',
+        },
+        nextUrl: new URL("http://127.0.0.1/"),
+      } as unknown as NextRequest;
+
+      mockFetch.mockRejectedValue(new Error('Network'));
+
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeDefined();
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+    }
+  });
+
+  it('allows non-Pi-Browser UA when SANDBOX_AUTH_BYPASS=true but loopback host is ::1', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+
+    try {
+      const req = {
+        headers: {
+          get: (name: string) => name.toLowerCase() === 'authorization' ? 'Bearer somesandboxtoken' : 'Mozilla',
+        },
+        nextUrl: new URL("http://[::1]/"),
+      } as unknown as NextRequest;
+
+      mockFetch.mockRejectedValue(new Error('Network'));
+
+      const result = await requireAuth(req);
+      expect(result.error).toBeDefined();
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+    }
+  });
+
+  it('resolves pi user using JWKS with pi_username instead of username', async () => {
+    const mockUser = {
+      id: 'jwks-pi-username',
+      walletAddress: '0xjwks3',
+      piUid: 'jwks-uid-3',
+      piUsername: 'jwkspiuser',
+      did: null,
+      xp: 10,
+      tier: 'Visitor',
+    };
+
+    jest.mocked(verifyPiTokenWithJwks).mockResolvedValueOnce({
+      sub: 'jwks-uid-3',
+      pi_username: 'jwkspiuser',
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer valid-jwks-token-pi-username' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toEqual(mockUser);
+    expect(result.error).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requireAuth — additional coverage (regression / boundary / negative cases)
+// ---------------------------------------------------------------------------
+describe('requireAuth - additional coverage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFetch.mockReset();
+    clearAuthCache();
+  });
+
+  it('returns "Pi token missing uid" when JWKS payload has no sub, without falling back to the Pi API', async () => {
+    jest.mocked(verifyPiTokenWithJwks).mockResolvedValueOnce({
+      username: 'no-sub-user',
+    });
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer jwks-missing-sub-token' });
+    const result = await requireAuth(req);
+
+    expect(result.user).toBeNull();
+    expect(result.error).toBeDefined();
+    const response = await result.error!.json();
+    expect(response.message).toBe('Pi token missing uid');
+    // JWKS path resolved (even without uid), so the online fallback must not run
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('falls through to normal Pi Browser auth flow when sandbox bypass is enabled but access token does not match the sandbox token', async () => {
+    const originalBypass = process.env.SANDBOX_AUTH_BYPASS;
+    process.env.SANDBOX_AUTH_BYPASS = 'true';
+
+    try {
+      jest.mocked(getSandboxDevToken).mockReturnValue('the-real-sandbox-token');
+
+      const mockUser = {
+        id: 'user-non-matching-sandbox',
+        walletAddress: '0xnomatch',
+        piUid: 'pi-no-match',
+        piUsername: 'nomatchuser',
+        did: null,
+        xp: 0,
+        tier: 'Visitor',
+      };
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ uid: 'pi-no-match', username: 'nomatchuser' }),
+      });
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as AuthenticatedUser);
+
+      // Token differs from the configured sandbox token, so the sandbox
+      // short-circuit must not fire — the request should go through the
+      // ordinary Pi Browser fallback flow instead.
+      const req = mockRequestWithHeader({ authorization: 'Bearer not-the-sandbox-token' });
+      const result = await requireAuth(req);
+
+      expect(result.error).toBeNull();
+      expect(result.user).toEqual(mockUser);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    } finally {
+      process.env.SANDBOX_AUTH_BYPASS = originalBypass;
+    }
+  });
+
+  it('queries prisma.user.findUnique with the piUid returned by the Pi API', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'exact-uid-check', username: 'someuser' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'user-exact',
+      walletAddress: '0xexact',
+      piUid: 'exact-uid-check',
+      piUsername: 'someuser',
+      xp: 0,
+      tier: 'Visitor',
+    } as unknown as AuthenticatedUser);
+
+    const req = mockRequestWithHeader({ authorization: 'Bearer exact-uid-token' });
+    await requireAuth(req);
+
+    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { piUid: 'exact-uid-check' } })
+    );
   });
 });
