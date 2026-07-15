@@ -28,15 +28,15 @@ export function splitRevenue(amount: number, fee?: number): Record<RevenueSplitK
   if (!Number.isFinite(treasuryFee) || treasuryFee < 0 || treasuryFee > 1) {
     throw new Error('fee must be a finite number in [0, 1]');
   }
-  const afterFee = amount * (1 - treasuryFee)
-  const authorShare = Math.round(afterFee * REVENUE_SPLIT.authorShare * 100) / 100
-  const stakersShare = Math.round(afterFee * REVENUE_SPLIT.stakersShare * 100) / 100
-  const protocolShare = Math.round(afterFee * REVENUE_SPLIT.protocolShare * 100) / 100
-  const rounded = authorShare + stakersShare + protocolShare
-  const residual = Math.round((afterFee - rounded) * 100) / 100
+  const afterFeeInCents = Math.round(amount * (1 - treasuryFee) * 100);
+  const authorShareInCents = Math.round(afterFeeInCents * REVENUE_SPLIT.authorShare);
+  const stakersShareInCents = Math.round(afterFeeInCents * REVENUE_SPLIT.stakersShare);
+  const protocolShareInCents = Math.round(afterFeeInCents * REVENUE_SPLIT.protocolShare);
+  const roundedInCents = authorShareInCents + stakersShareInCents + protocolShareInCents;
+  const residualInCents = afterFeeInCents - roundedInCents;
   return {
-    authorShare: authorShare + residual,
-    stakersShare,
-    protocolShare,
+    authorShare: (authorShareInCents + residualInCents) / 100,
+    stakersShare: stakersShareInCents / 100,
+    protocolShare: protocolShareInCents / 100,
   }
 }
