@@ -2,7 +2,7 @@
 // SOUL: Muraqabah — every staged file is checked honestly
 const config = {
   "*.{ts,tsx,js,jsx,mjs}": [
-    "eslint --fix --report-unused-disable-directives --max-warnings 0",
+    "eslint --fix --report-unused-disable-directives --max-warnings 0 --no-warn-ignored",
   ],
 };
 
