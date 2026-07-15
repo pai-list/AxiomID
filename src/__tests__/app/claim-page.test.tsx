@@ -13,6 +13,7 @@
 import React from "react";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 import ClaimPage from "@/app/claim/page";
+import "jest-location-mock";
 
 // Mock pi-native-features so handleVerify proceeds without Pi Browser
 jest.mock("@/lib/pi-native-features", () => ({
@@ -102,6 +103,7 @@ function defaultWalletCtx(overrides: Partial<ReturnType<typeof useWallet>> = {})
     clearWalletLogs: jest.fn(),
     logout: jest.fn(),
     disconnectWallet: jest.fn(),
+    connectDemo: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   } as ReturnType<typeof useWallet>;
 }
@@ -685,5 +687,229 @@ describe("ClaimPage — Back button navigation (prevStep)", () => {
   it("disables the Back button on step 1", () => {
     render(<ClaimPage />);
     expect(screen.getByText("Back").closest("button")).toBeDisabled();
+  });
+});
+
+// ─── PR change: handleDemoConnect / "Try Demo Mode" button on step 1 ───────
+describe("ClaimPage — handleDemoConnect (PR change: demo mode)", () => {
+  it("renders 'Try Demo Mode' button on step 1 when not connected and not in Pi Browser", () => {
+    render(<ClaimPage />);
+    expect(screen.getByText("Try Demo Mode")).toBeInTheDocument();
+  });
+
+  it("does not render 'Try Demo Mode' button when isPiBrowser is true", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ isPiBrowser: true }));
+    render(<ClaimPage />);
+    expect(screen.queryByText("Try Demo Mode")).toBeNull();
+  });
+
+  it("does not render 'Try Demo Mode' button once the wallet is already connected", () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
+    render(<ClaimPage />);
+    expect(screen.queryByText("Try Demo Mode")).toBeNull();
+  });
+
+  it("calls connectDemo and shows a Connected badge when Try Demo Mode is clicked", async () => {
+    const connectDemo = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ connectDemo }));
+    render(<ClaimPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Try Demo Mode"));
+    });
+
+    expect(connectDemo).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByText("Connected").length).toBeGreaterThan(0);
+  });
+
+  it("clears any existing connectError when Try Demo Mode is clicked", async () => {
+    const connectWallet = jest.fn().mockResolvedValue(false);
+    const connectDemo = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ connectWallet, connectDemo }));
+    render(<ClaimPage />);
+
+    // First produce a connect error via a failed real connect attempt
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT PI WALLET"));
+    });
+    expect(screen.getByText("Connection failed")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Try Demo Mode"));
+    });
+
+    expect(screen.queryByText("Connection failed")).toBeNull();
+  });
+});
+
+// ─── PR change: "Try Demo Mode" button inside the Pi-Browser-required modal ───
+describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change)", () => {
+  afterEach(() => {
+    window.location.assign("http://localhost/");
+  });
+
+  it("shows a second 'Try Demo Mode' button inside the modal and connects via demo mode when clicked", async () => {
+    // Force a mainnet hostname so determineSandboxMode() is false, and stay
+    // out of the Pi Browser so handleConnect opens the browser-required modal.
+    window.location.assign("https://axiomid.app/");
+    const connectDemo = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ connectDemo }));
+    render(<ClaimPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT PI WALLET"));
+    });
+    expect(screen.getByText("Pi Browser Required")).toBeInTheDocument();
+
+    // Two "Try Demo Mode" buttons are now on screen: one from ConnectStep,
+    // one from the modal itself. Find the modal's button by its distinct styling.
+    const demoButtons = screen
+      .getAllByText("Try Demo Mode")
+      .map((el) => el.closest("button"));
+    const modalDemoButton = demoButtons.find((btn) =>
+      btn?.className.includes("bg-neon-green/10")
+    );
+    expect(modalDemoButton).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(modalDemoButton as HTMLButtonElement);
+    });
+
+    expect(connectDemo).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
+    expect(screen.getAllByText("Connected").length).toBeGreaterThan(0);
+  });
+
+  it("closes the modal when 'Got it' is clicked without calling connectDemo", async () => {
+    window.location.assign("https://axiomid.app/");
+    const connectDemo = jest.fn().mockResolvedValue(undefined);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ connectDemo }));
+    render(<ClaimPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT PI WALLET"));
+    });
+    expect(screen.getByText("Pi Browser Required")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Got it"));
+
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
+    expect(connectDemo).not.toHaveBeenCalled();
+  });
+});
+
+// ─── PR change: handleConnect simplified — relies solely on checkPiBrowser() ───
+describe("ClaimPage — handleConnect Pi Browser fallback detection (PR change)", () => {
+  afterEach(() => {
+    delete (window as unknown as { Pi?: unknown }).Pi;
+  });
+
+  it("skips the browser-required modal and calls connectWallet when window.Pi is set, even if isPiBrowser context state is still false", async () => {
+    (window as unknown as { Pi?: unknown }).Pi = {};
+    const connectWallet = jest.fn().mockResolvedValue(true);
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ isPiBrowser: false, connectWallet }));
+    render(<ClaimPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("CONNECT PI WALLET"));
+    });
+
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
+    expect(connectWallet).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── PR change: handleVerify short-circuits using the already-known user.kycStatus ───
+describe("ClaimPage — handleVerify short-circuits when user.kycStatus is already VERIFIED (PR change)", () => {
+  const verifiedUser: import("@/app/context/wallet-types").User = {
+    ...connectedUser,
+    kycStatus: "VERIFIED",
+    trustScore: 92,
+  };
+
+  it("completes verification immediately without calling the /api/pi/kya/verify fetch", async () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: verifiedUser }));
+    render(<ClaimPage />);
+    fireEvent.click(screen.getByText("Continue"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("START VERIFICATION"));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("VERIFICATION COMPLETE")).not.toBeNull();
+    });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("uses the user's existing trustScore (not a fetched value) for the trust score display", async () => {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ user: verifiedUser }));
+    render(<ClaimPage />);
+    fireEvent.click(screen.getByText("Continue"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("START VERIFICATION"));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("VERIFICATION COMPLETE")).not.toBeNull();
+    });
+
+    fireEvent.click(screen.getByText("Continue"));
+    expect(screen.getByText("92")).toBeInTheDocument();
+  });
+});
+
+// ─── PR change: handleDeploy bypasses createAgent/activateAgent for demo users ───
+describe("ClaimPage — handleDeploy bypasses agent calls for demo users (PR change)", () => {
+  const demoUser: import("@/app/context/wallet-types").User = {
+    ...connectedUser,
+    id: "demo-user-id",
+  };
+
+  async function navigateToStep3(overrides: Partial<ReturnType<typeof useWallet>> = {}) {
+    mockUseWallet.mockReturnValue(defaultWalletCtx({ ...overrides }));
+    render(<ClaimPage />);
+
+    fireEvent.click(screen.getByText("Continue"));
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("START VERIFICATION"));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("VERIFICATION COMPLETE")).not.toBeNull();
+    });
+
+    fireEvent.click(screen.getByText("Continue"));
+  }
+
+  it("does not call createAgent or activateAgent, and still shows AGENT ACTIVATED, when user.id is 'demo-user-id'", async () => {
+    const createAgent = jest.fn();
+    const activateAgent = jest.fn();
+    await navigateToStep3({ user: demoUser, createAgent, activateAgent });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("ACTIVATE AGENT"));
+    });
+
+    expect(createAgent).not.toHaveBeenCalled();
+    expect(activateAgent).not.toHaveBeenCalled();
+    expect(screen.getByText("AGENT ACTIVATED")).toBeInTheDocument();
+    expect(mockToastSuccess).toHaveBeenCalledWith("Agent deployed successfully");
+  });
+
+  it("still calls createAgent and activateAgent for a regular (non-demo) user id", async () => {
+    const createAgent = jest.fn().mockResolvedValue(true);
+    const activateAgent = jest.fn().mockResolvedValue(true);
+    // connectedUser.id === "user-1", not "demo-user-id"
+    await navigateToStep3({ user: connectedUser, createAgent, activateAgent });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("ACTIVATE AGENT"));
+    });
+
+    expect(createAgent).toHaveBeenCalledTimes(1);
+    expect(activateAgent).toHaveBeenCalledTimes(1);
   });
 });
