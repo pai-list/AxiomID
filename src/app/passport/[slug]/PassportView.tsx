@@ -67,15 +67,15 @@ export function PassportView() {
   // Identity is still being built
   if (passport && passport.jobStatus && passport.jobStatus !== "COMPLETED" && passport.jobStatus !== "ACTIVE") {
       return (
-         <div className="w-full max-w-lg flex flex-col items-center text-center p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
-             <div className="w-16 h-16 rounded-full border-4 border-electric-blue border-t-transparent animate-spin mx-auto mb-6" />
-             <h2 className="text-2xl font-bold font-mono text-white mb-2">Preparing your AI...</h2>
-             <p className="text-zinc-400 font-mono text-sm mb-8">Status: {passport.jobStatus}</p>
-             <div className="space-y-2 text-xs font-mono text-left bg-black/30 p-4 rounded-xl w-full">
-                 <div className="flex items-center gap-2 text-zinc-500"><CheckCircle2 className="w-3 h-3" /> Reserving Domain</div>
+         <div className="w-full max-w-lg flex flex-col items-center text-center p-8 bento-card-2026 glass-card relative overflow-hidden">
+             <div className="relative mb-6"><div className="w-20 h-20 rounded-full border border-electric-blue/30 absolute -inset-2 animate-ping" /><div className="w-16 h-16 rounded-full border-4 border-electric-blue border-t-transparent animate-spin relative z-10" /></div>
+             <h2 className="text-2xl font-bold font-mono text-text-primary mb-2">Preparing your AI...</h2>
+             <p className="text-text-secondary font-mono text-sm mb-8">Status: {passport.jobStatus}</p>
+             <div className="space-y-2 text-xs font-mono text-left bg-surface-deep/50 border border-border p-4 rounded-xl w-full">
+                 <div className="flex items-center gap-2 text-text-muted"><CheckCircle2 className="w-3 h-3" /> Reserving Domain</div>
                  <div className="flex items-center gap-2 text-emerald-400 animate-pulse"><Loader2 className="w-3 h-3 animate-spin" /> Provisioning Identity Engine</div>
-                 <div className="flex items-center gap-2 text-zinc-700"> Generating DID Document</div>
-                 <div className="flex items-center gap-2 text-zinc-700"> Issuing Sovereign Passport</div>
+                 <div className="flex items-center gap-2 text-text-faint"> Generating DID Document</div>
+                 <div className="flex items-center gap-2 text-text-faint"> Issuing Sovereign Passport</div>
              </div>
          </div>
       );
@@ -97,7 +97,7 @@ export function PassportView() {
           </div>
           <h2 className="text-2xl font-bold text-surface mb-4">{t('passport_not_found')}</h2>
           <p className="text-subtle mb-8">{error.message}</p>
-          <Link href="/claim" className="btn-primary text-xs">
+          <Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
             {t('create_your_passport')}
           </Link>
         </div>
@@ -127,7 +127,7 @@ export function PassportView() {
             <AgentQR did={passport.did} />
             <button
               onClick={handleShare}
-              className="btn-primary text-xs flex items-center gap-2 px-4 py-2"
+              className="btn-primary text-xs flex items-center gap-2 px-6 py-2.5 rounded-full hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 10.742l4.639-2.32m0 0a3 3 0 114.12 4.119l-4.64 2.32m0 0a3 3 0 11-4.119-4.12l4.64-2.32z" />
@@ -140,7 +140,7 @@ export function PassportView() {
             <p className="text-xs text-faint mb-4">
               {t('passport_verified_by')}
             </p>
-            <Link href="/claim" className="btn-primary text-xs">
+            <Link href="/claim" className="btn-primary text-xs rounded-full px-6 py-2.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
               {t('create_your_passport')}
             </Link>
           </div>

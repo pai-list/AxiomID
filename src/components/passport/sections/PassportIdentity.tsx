@@ -33,28 +33,28 @@ export function PassportIdentity({
     <>
       {/* Name + DID */}
       <div className="text-center">
-        <h3 className="text-lg font-bold font-mono" style={{ color: 'var(--text-primary)' }}>{username}</h3>
+        <h3 className="text-lg font-bold font-mono text-text-primary">{username}</h3>
         <div className="flex items-center justify-center gap-2 mt-1">
-          <p className="text-[10px] font-mono break-all" style={{ color: 'var(--text-muted)' }}>{did}</p>
-          <button type="button" onClick={() => copyToClipboard(did)} className="hover:text-surface" style={{ color: 'var(--text-muted)' }} aria-label="Copy DID"><Copy className="w-3.5 h-3.5" /></button>
+          <p className="text-[10px] font-mono break-all text-text-muted">{did}</p>
+          <button type="button" onClick={() => copyToClipboard(did)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all" aria-label="Copy DID"><Copy className="w-3.5 h-3.5" /></button>
         </div>
       </div>
 
       {/* Wallet */}
-      <div className="w-full rounded-lg px-3 py-2 border" style={{ background: 'var(--bg-card)', borderColor: 'var(--card-border)' }}>
-        <span className="text-[9px] font-mono block" style={{ color: 'var(--text-muted)' }}>{t('label_wallet')}</span>
+      <div className="w-full rounded-lg px-3 py-2 border bento-card-2026 glass-card">
+        <span className="text-[9px] font-mono block text-text-muted">{t('label_wallet')}</span>
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-neon-green font-mono">{shortAddress}</span>
-          {displayAddress && <button type="button" onClick={() => copyToClipboard(displayAddress)} className="hover:text-surface" style={{ color: 'var(--text-muted)' }} aria-label="Copy Wallet Address"><Copy className="w-3.5 h-3.5" /></button>}
+          <span className="text-[11px] text-neon-green font-mono animate-pulse-glow">{shortAddress}</span>
+          {displayAddress && <button type="button" onClick={() => copyToClipboard(displayAddress)} className="text-text-muted hover:text-primary hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all" aria-label="Copy Wallet Address"><Copy className="w-3.5 h-3.5" /></button>}
         </div>
       </div>
 
       {/* Agent info */}
       {agentName && (
-        <div className="w-full rounded-lg px-3 py-2 border" style={{ background: 'var(--bg-card)', borderColor: 'var(--card-border)' }}>
-          <span className="text-[9px] font-mono block" style={{ color: 'var(--text-muted)' }}>{t('label_agent')}</span>
+        <div className="w-full rounded-lg px-3 py-2 border bento-card-2026 glass-card">
+          <span className="text-[9px] font-mono block text-text-muted">{t('label_agent')}</span>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-mono" style={{ color: 'var(--text-primary)' }}>{agentName}</span>
+            <span className="text-[11px] font-mono text-text-primary">{agentName}</span>
             <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${
               agentStatus?.toUpperCase() === "ACTIVE"
                 ? "bg-neon-green/10 text-neon-green border border-neon-green/20"

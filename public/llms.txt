@@ -1,50 +1,18 @@
-# AxiomID — The Human Authorization Protocol
+# AxiomID
+> The Human Authorization Protocol
 
-> Prove human intent behind AI actions with decentralized identity verification.
+AxiomID is a decentralized identity verification network engineered specifically for human-AI collaboration. It bridges the gap between Web3 sovereignty and Agentic systems, allowing humans to prove their uniqueness (Sybil-resistance) to AI systems without sacrificing privacy.
 
-## What is AxiomID?
+## Core Features
+1. **Sovereign Passports:** Cryptographically verifiable digital identities issued to real humans.
+2. **KYC & KYA (Know Your Agent):** Connects identities to Pi Network's rigorous KYC, while managing active Agents.
+3. **Decentralized Identifiers (DID):** Fully compliant with W3C DID specifications (`did:ax:xxx`).
+4. **Agentic Trust Scores:** Algorithmic calculation of human authenticity to prevent bot/Sybil attacks.
 
-AxiomID is a decentralized identity platform that combines Pi Network authentication, sovereign passports, and verifiable credentials to create a trust layer for human-AI collaboration.
+## Web3 & AI Integration
+AxiomID uses the Pi Network for consensus and user onboarding. All user interfaces are wrapped in an iframe (PiNet sandbox) utilizing Pi SDK for signatures. The system emits `did` tokens, `trustScores`, and `kycStatus` through programmatic APIs allowing seamless Agent indexing.
 
-## Core Concepts
-
-- **DID (Decentralized Identifier):** Each user gets a W3C-compliant `did:axiom:pi:{uid}` identifier
-- **Sovereign Passport:** A public identity card with trust scores, verification badges, and attestation history
-- **Trust Score:** Algorithmic reputation. Basic: XP (70%) + Stamps (30%). Full (with tenure/semantic): XP (50%) + Stamps (20%) + Tenure (10%) + Semantic Trust (20%)
-- **Stamps:** Cryptographically signed verifiable credentials (KYA, Social, Pi Wallet, Agent Delegation)
-- **Agent Governance:** AI agents execute skills in isolated sandboxes with ethical oversight, separating Human Sovereign and AI Agent identities.
-
-## Trust Tiers
-
-| Tier | XP Required | Access Level |
-|------|-------------|--------------|
-| Visitor | 0 | Read-only |
-| Citizen | 100 | Social stamps, basic agent access |
-| Validator | 500 | Agent delegation, marketplace install |
-| Sovereign | 1000 | Full trust, vault staking, vouching power |
-
-## API Endpoints
-
-- `GET /api/passport/{username}` — Public passport data
-- `GET /api/passport/demo` — Demo passport
-- `GET /api/leaderboard` — Top users ranked by XP
-- `GET /api/did-document` — W3C DID document
-
-## Tech Stack
-
-- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS
-- Backend: Vercel Serverless, Cloudflare Workers
-- Database: PostgreSQL (Prisma), D1, Vectorize
-- Auth: Pi Network SDK, Ed25519 sovereign keys
-
-## Links
-
-- Website: https://axiomid.app
-- GitHub: https://github.com/Moeabdelaziz007/AxiomID
-- Claim identity: https://axiomid.app/claim
-- Passports: https://axiomid.app/passport/{username}
-
-## Built By
-
-Mohamed Abdelaziz — https://github.com/Moeabdelaziz007
-Pi Network — https://minepi.com
+## Interaction Guidelines for Agents
+* If an agent is indexing this site, prioritize the DID Document (`/api/did/:id`) for identity verification.
+* Trust scores threshold: >= 80 (EXCELLENT), >= 60 (GOOD), >= 40 (FAIR).
+* The dashboard and passport viewer pages use a "Glassmorphism" cyberpunk design optimized for dark modes (`OLED Black #10131a`).

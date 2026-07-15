@@ -8,6 +8,7 @@ body {
 }
 
 :root {
+  color-scheme: dark;
   /* ── Enterprise Palette ──────────────────────────────── */
   --color-primary: #3b82f6; /* Blue-500 — professional, trusted */
   --color-primary-hover: #2563eb; /* Blue-600 */
@@ -58,6 +59,8 @@ body {
 }
 
 [data-theme='light'] {
+  color-scheme: light;
+
   --color-primary: #2563eb;
   --color-primary-hover: #1d4ed8;
   --color-success: #16a34a;
@@ -82,6 +85,22 @@ body {
   --text-primary: #18181b;
   --text-secondary: #52525b;
   --text-muted: #71717a;
+
+  /* ── Semantic Tokens (Light) ─────────────────────────── */
+  --surface: var(--bg-card);
+  --surface-hover: var(--bg-card-hover);
+  --surface-deep: var(--bg-deep);
+  --border: var(--card-border);
+  --border-hover: var(--card-border-hover);
+  --text: var(--text-primary);
+  --text-subtle: var(--text-secondary);
+  --text-faint: var(--text-muted);
+  --primary: var(--color-primary);
+  --primary-glow: rgba(37, 99, 235, 0.08);
+  --accent: var(--axiom-purple);
+  --highlight: var(--axiom-purple);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
 }
 
 @theme inline {
@@ -91,6 +110,23 @@ body {
   --color-axiom-gold: var(--axiom-gold);
   --color-bg-deep: var(--bg-deep);
   --color-bg-card: var(--bg-card);
+
+  --color-primary: var(--primary);
+  --color-success: var(--color-success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-deep: var(--surface-deep);
+
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
   --font-mono: var(--font-mono);
 }
 
@@ -433,9 +469,6 @@ html {
   color-scheme: dark;
 }
 
-[data-theme='light'] {
-  color-scheme: light;
-}
 
 body {
   background: var(--bg-deep);
