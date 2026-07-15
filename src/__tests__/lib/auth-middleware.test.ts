@@ -931,7 +931,7 @@ describe('requireAuth - missing branches', () => {
         get: (name: string) => name.toLowerCase() === 'authorization' ? 'Bearer somesandboxtoken' : 'Mozilla',
       },
       nextUrl: new URL("http://127.0.0.1/"),
-    } as any;
+    } as unknown as import('next/server').NextRequest;
 
     mockFetch.mockRejectedValue(new Error('Network'));
 
