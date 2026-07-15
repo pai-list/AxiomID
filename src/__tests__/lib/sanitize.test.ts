@@ -31,6 +31,21 @@ describe("Sanitize library", () => {
       };
       expect(safeJsonStringify(throwingObj)).toBeNull();
     });
+
+    it("returns null for BigInt serialization which throws in JSON.stringify", () => {
+      const obj = { value: BigInt(10) };
+      expect(safeJsonStringify(obj)).toBeNull();
+    });
+
+    it("respects toJSON methods on objects", () => {
+      const obj = {
+        data: "secret",
+        toJSON() {
+          return { data: "public" };
+        }
+      };
+      expect(safeJsonStringify(obj)).toBe('{"data":"public"}');
+    });
   });
 
   describe("canonicalize", () => {
@@ -43,6 +58,7 @@ describe("Sanitize library", () => {
       expect(canonicalize("hello")).toBe("hello");
       expect(canonicalize(true)).toBe(true);
       expect(canonicalize(undefined)).toBe(undefined);
+      expect(canonicalize(undefined)).toBeUndefined();
     });
 
     it("sorts object keys", () => {
