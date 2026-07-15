@@ -371,3 +371,65 @@ describe("signAgentAttestationCredential", () => {
     expect(vc.proof.proofValue).toMatch(/^[0-9a-f]+$/i);
   });
 });
+
+describe("signCredential branches (RSA and error paths)", () => {
+  let rsaPrivateKey: string;
+
+  beforeAll(() => {
+    const crypto = require("crypto");
+    const { privateKey } = crypto.generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+    rsaPrivateKey = privateKey;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("successfully signs with RS256 algorithm and rsa key type", () => {
+    const originalKey = process.env.ISSUER_PRIVATE_KEY;
+
+    try {
+      process.env.ISSUER_PRIVATE_KEY = rsaPrivateKey + "\n# RSA";
+
+      mockCreateIssuerDid.mockReturnValue("did:axiom:rsa-issuer");
+
+      const vc = signSocialCredential(
+        "user-id",
+        "did:axiom:user123",
+        "twitter",
+        "@alice",
+        "pi:uid-abc"
+      );
+
+      expect(vc.proof.type).toBe("RsaSignature2018");
+      expect(vc.proof.proofValue).toBeTruthy();
+    } finally {
+      process.env.ISSUER_PRIVATE_KEY = originalKey;
+    }
+  });
+
+  it("throws when algorithm and key type mismatch", () => {
+    const originalKey = process.env.ISSUER_PRIVATE_KEY;
+
+    try {
+      process.env.ISSUER_PRIVATE_KEY = rsaPrivateKey + '\n# Ed25519';
+
+      mockCreateIssuerDid.mockReturnValue("did:axiom:mismatch-issuer");
+
+    expect(() =>
+      signSocialCredential(
+        "user-id",
+        "did:axiom:user123",
+        "twitter",
+        "@alice",
+        "pi:uid-abc"
+      )
+      ).toThrow(/Key type rsa doesn't match expected algorithm EdDSA/);
+    } finally {
+      process.env.ISSUER_PRIVATE_KEY = originalKey;
+    }
+  });
+});
