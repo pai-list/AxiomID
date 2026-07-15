@@ -243,8 +243,7 @@ export function checkPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent;
   if (/Pi Browser|minepi|PiApp/i.test(ua)) return true;
-  const win = window as unknown as { Pi?: unknown };
-  if (win.Pi) return true;
+  // win.Pi check removed to prevent false positives in regular browsers when SDK is loaded
   try {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";
