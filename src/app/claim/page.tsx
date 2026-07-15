@@ -74,7 +74,7 @@ export default function ClaimPage() {
   const [copied, setCopied] = useState(false);
   const closeBrowserModal = () => { setCopied(false); setShowBrowserModal(false); };
 
-  const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, piAccessToken } = useWallet();
+  const { user, connectWallet, isConnecting, isPiBrowser, createAgent, activateAgent, piAccessToken, connectDemo } = useWallet();
   const { language } = useLanguage();
 
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
@@ -96,10 +96,7 @@ export default function ClaimPage() {
 
   const handleConnect = async () => {
     setConnectError(null);
-    // ponytail: Real-time Pi Browser check — isPiBrowser from context may lag
-    // behind actual SDK availability (polling interval). Check window.Pi
-    // directly to catch the case where SDK loaded but state hasn't updated yet.
-    const actuallyInPiBrowser = isPiBrowser || (typeof window !== "undefined" && !!window.Pi) || checkPiBrowser();
+    const actuallyInPiBrowser = isPiBrowser || checkPiBrowser();
     if (!actuallyInPiBrowser && !determineSandboxMode()) {
       setShowBrowserModal(true);
       return;
@@ -112,30 +109,41 @@ export default function ClaimPage() {
     }
   };
 
+  const handleDemoConnect = async () => {
+    setConnectError(null);
+    await connectDemo();
+    setWalletConnected(true);
+  };
+
   const handleVerify = async () => {
     setIsVerifying(true);
     try {
-      // 1. Real Pi KYC check
-      const kyaRes = await fetch("/api/pi/kya/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(piAccessToken ? { Authorization: `Bearer ${piAccessToken}` } : {}),
-        },
-        body: JSON.stringify({ accessToken: piAccessToken }),
-      });
+      if (user?.kycStatus === "VERIFIED") {
+        setVerificationItems({ kyc: true, payment: true });
+        setVerifiedTrustScore(user.trustScore ?? null);
+        setVerified(true);
+      } else {
+        const kyaRes = await fetch("/api/pi/kya/verify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(piAccessToken ? { Authorization: `Bearer ${piAccessToken}` } : {}),
+          },
+          body: JSON.stringify({ accessToken: piAccessToken }),
+        });
 
-      if (kyaRes.ok) {
-        const kyaData = await kyaRes.json();
+        if (kyaRes.ok) {
+          const kyaData = await kyaRes.json();
 
-        if (kyaData.kycStatus === "VERIFIED") {
-          setVerificationItems({ kyc: true, payment: true });
-          if (typeof kyaData.computedTrustScore === "number") {
-            setVerifiedTrustScore(kyaData.computedTrustScore);
+          if (kyaData.kycStatus === "VERIFIED") {
+            setVerificationItems({ kyc: true, payment: true });
+            if (typeof kyaData.computedTrustScore === "number") {
+              setVerifiedTrustScore(kyaData.computedTrustScore);
+            }
+            setVerified(true);
+          } else {
+            setVerificationItems((prev) => ({ ...prev, kyc: true }));
           }
-          setVerified(true);
-        } else {
-          setVerificationItems((prev) => ({ ...prev, kyc: true }));
         }
       }
     } catch (err) {
@@ -149,12 +157,13 @@ export default function ClaimPage() {
   const handleDeploy = async (name: string) => {
     setIsDeploying(true);
     try {
-      const created = await createAgent(name);
+      const isDemo = user?.id === "demo-user-id";
+      const created = isDemo || await createAgent(name);
       if (!created) {
         toast.error(t("Agent creation failed", "فشل إنشاء الوكيل"));
         return;
       }
-      const activated = await activateAgent();
+      const activated = isDemo || await activateAgent();
       if (activated) {
         setDeployed(true);
         toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
@@ -314,6 +323,7 @@ export default function ClaimPage() {
                       isConnecting={isConnecting}
                       isPiBrowser={isPiBrowser}
                       connectError={connectError}
+                      onDemoConnect={handleDemoConnect}
                     />
                   )}
 
@@ -470,6 +480,16 @@ export default function ClaimPage() {
                     className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-colors"
                   >
                     {t("Got it", "فهمت")}
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      closeBrowserModal();
+                      await handleDemoConnect();
+                    }}
+                    className="w-full py-3 px-4 rounded-xl bg-neon-green/10 hover:bg-neon-green/20 text-neon-green font-semibold text-sm border border-neon-green/20 transition-colors"
+                  >
+                    {t("Try Demo Mode", "تجربة وضع العرض التوضيحي")}
                   </button>
                 </div>
               </div>

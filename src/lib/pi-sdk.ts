@@ -240,11 +240,11 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
 
 export function checkPiBrowser(): boolean {
   if (typeof window === "undefined") return false;
-  const win = window as unknown as { Pi?: unknown };
-  if (win.Pi) return true;
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent;
   if (/Pi Browser|minepi|PiApp/i.test(ua)) return true;
+  const win = window as unknown as { Pi?: unknown };
+  if (win.Pi) return true;
   try {
     if (window.self !== window.top) {
       const referrer = document.referrer || "";

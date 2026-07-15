@@ -303,6 +303,7 @@ describe('pi-sdk', () => {
 
     it('returns true when window.Pi is defined', () => {
       g.window = { Pi: {} };
+      g.navigator = { userAgent: '' };
       expect(checkPiBrowser()).toBe(true);
     });
 
