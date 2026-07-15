@@ -212,7 +212,7 @@ AxiomID is built as an **Agent-First API**. The UI is a sovereign dashboard for 
 ### 2. Pi SDK Smart Integration
 - **Auto-Detection:** Always use `PiBrowserLink` to encourage users to move into the Pi ecosystem.
 - **Dynamic Sandbox:** Never hardcode `sandbox: true`. Use `determineSandboxMode()` to allow seamless transition between local dev, Pi App Studio testing, and mainnet.
-- **Auth Scopes:** Always request `['username', 'payments', 'wallet_address']` to ensure full sovereign capability.
+- **Auth Scopes:** Always request ['username', 'payments'] to ensure full sovereign capability.
 - **Incomplete Payments:** Always handle `onIncompletePaymentFound` to prevent stalled transaction states.
 
 ### 3. Agent-Human Governance
