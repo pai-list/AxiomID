@@ -910,7 +910,7 @@ describe('requireAuth - missing branches', () => {
       ok: true,
       json: async () => ({ uid: 'pi-fallback-uid' }),
     });
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as import('@/lib/auth-middleware').AuthenticatedUser);
 
     const verifyPiTokenWithJwksMock = require('@/lib/auth-tokens').verifyPiTokenWithJwks as jest.Mock;
     verifyPiTokenWithJwksMock.mockRejectedValueOnce(new Error('fail jwks'));
