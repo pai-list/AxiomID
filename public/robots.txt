@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Allow: /llms.txt
 Allow: /api/did/
+Disallow: /api/
+Disallow: /dashboard/
 
 Sitemap: https://axiomid.app/sitemap.xml
