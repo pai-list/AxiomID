@@ -156,7 +156,7 @@ describe('POST /api/pi/kya/verify', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null, payments: [], kycStatus: 'PENDING', kycVerifiedAt: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -226,6 +226,182 @@ describe('POST /api/pi/kya/verify', () => {
       false,
       now,
     );
+  });
+
+  it('queries the user with only RELEASED payments (take 1) for the fallback check (PR change)', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: true,
+      walletAddress: 'GABC...',
+      username: 'testuser',
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null, payments: [],
+    });
+    (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    await POST(req);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { piUid: 'pi-123' },
+      include: { stamps: true, payments: { where: { status: 'RELEASED' }, take: 1 } },
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PR change: kycVerified fallback logic — a user can be treated as VERIFIED
+// even when the Pi API reports kyc_verified:false, provided they already have
+// a RELEASED payment on file or an existing VERIFIED kycStatus in the DB.
+// ---------------------------------------------------------------------------
+
+describe('POST /api/pi/kya/verify — kycVerified fallback logic (PR change)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequireAuth.mockResolvedValue({
+      error: null,
+      user: { id: 'user-1', piUid: 'pi-123', piUsername: 'testuser', walletAddress: 'pi:pi-123' },
+    });
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 99, resetAt: Date.now() + 60000 });
+  });
+
+  function mockTransactionCapturingUserUpdate(userUpdateMock: jest.Mock) {
+    (prisma.$transaction as jest.Mock).mockImplementationOnce(async (fn: any) =>
+      fn({
+        stamp: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({}),
+        },
+        user: { update: userUpdateMock },
+        xpLedger: { create: jest.fn().mockResolvedValue({}) },
+        action: {
+          findFirst: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({}),
+        },
+      })
+    );
+  }
+
+  it('treats the user as VERIFIED when the Pi API says false but a RELEASED payment exists on file', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: 'GABC...',
+      username: 'testuser',
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      payments: [{ id: 'pay-1', status: 'RELEASED' }],
+      kycStatus: 'PENDING', kycVerifiedAt: null,
+    });
+    const userUpdateMock = jest.fn().mockResolvedValue({ xp: 200 });
+    mockTransactionCapturingUserUpdate(userUpdateMock);
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('VERIFIED');
+    // First tx.user.update call persists the KYC status write.
+    expect(userUpdateMock.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        data: expect.objectContaining({ kycStatus: 'VERIFIED', kycProvider: 'pi_network' }),
+      })
+    );
+    // Since the fallback flags the user as verified, a fresh kycVerifiedAt Date is set.
+    expect(userUpdateMock.mock.calls[0][0].data.kycVerifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('treats the user as VERIFIED when the Pi API says false but user.kycStatus is already VERIFIED', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: 'GABC...',
+      username: 'testuser',
+    });
+    const existingVerifiedAt = new Date('2026-01-01T00:00:00.000Z');
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      payments: [],
+      kycStatus: 'VERIFIED', kycVerifiedAt: existingVerifiedAt,
+    });
+    const userUpdateMock = jest.fn().mockResolvedValue({ xp: 200 });
+    mockTransactionCapturingUserUpdate(userUpdateMock);
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('VERIFIED');
+    // The pre-existing kycVerifiedAt must be preserved rather than overwritten.
+    expect(userUpdateMock.mock.calls[0][0].data.kycVerifiedAt).toBe(existingVerifiedAt);
+  });
+
+  it('returns PENDING and clears kycVerifiedAt when Pi API says false, no RELEASED payments, and kycStatus is not VERIFIED', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: null,
+      username: 'testuser',
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      payments: [], kycStatus: 'PENDING', kycVerifiedAt: null,
+    });
+    const userUpdateMock = jest.fn().mockResolvedValue({ xp: 0 });
+    mockTransactionCapturingUserUpdate(userUpdateMock);
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('PENDING');
+    expect(userUpdateMock.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ data: expect.objectContaining({ kycStatus: 'PENDING', kycVerifiedAt: null }) })
+    );
+    // Only the KYC status write happens — no stamp/XP/action side effects since kycVerified is false.
+    expect(userUpdateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not create a complete_kyc stamp when the user is verified only via the payments fallback but a stamp already exists', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: 'GABC...',
+      username: 'testuser',
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 200, tier: 'Citizen', stamps: [], lastActive: null,
+      payments: [{ id: 'pay-1', status: 'RELEASED' }],
+      kycStatus: 'PENDING', kycVerifiedAt: null,
+    });
+    const stampCreateMock = jest.fn();
+    (prisma.$transaction as jest.Mock).mockImplementationOnce(async (fn: any) =>
+      fn({
+        stamp: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'stamp-1', type: 'complete_kyc' }),
+          create: stampCreateMock,
+        },
+        user: { update: jest.fn().mockResolvedValue({ xp: 200 }) },
+        xpLedger: { create: jest.fn().mockResolvedValue({}) },
+        action: {
+          findFirst: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({}),
+        },
+      })
+    );
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('VERIFIED');
+    expect(stampCreateMock).not.toHaveBeenCalled();
   });
 });
 

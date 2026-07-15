@@ -82,6 +82,27 @@ describe('pi-sdk', () => {
       delete g.window.Pi;
     });
 
+    // PR change: connectPi now also requests the "wallet_address" scope in
+    // addition to "username" and "payments" so the Pi wallet address can be
+    // resolved without a separate round trip.
+    it('requests the wallet_address scope in addition to username and payments (PR change)', async () => {
+      const token = makeMockToken('wallet-scope-token');
+      const mockAuthenticate = jest.fn().mockResolvedValue({
+        user: { uid: 'ws-uid', username: 'wsuser', name: 'Wallet Scope User', stellarAddress: 'GSTELLAR' },
+        accessToken: token,
+      });
+      g.window = g.window || {};
+      g.window.Pi = { authenticate: mockAuthenticate };
+
+      await connectPi();
+
+      const [scopes] = mockAuthenticate.mock.calls[0];
+      expect(scopes).toEqual(["username", "payments", "wallet_address"]);
+      expect(scopes).toContain('wallet_address');
+
+      delete g.window.Pi;
+    });
+
     it('throws when window.Pi.authenticate returns no user', async () => {
       g.window = g.window || {};
       g.window.Pi = {
