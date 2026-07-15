@@ -354,4 +354,169 @@ describe('pi-sdk', () => {
       expect(checkPiBrowser()).toBe(false);
     });
   });
+
+  // PR change: ensurePiInitialized now defers to the sandbox parent's
+  // postMessage (by passing sandbox: false to Pi.init()) whenever the page is
+  // loaded inside a Pi sandbox iframe, instead of always using
+  // determineSandboxMode(). This avoids the SDK receiving conflicting
+  // sandbox=true + Prod=true signals. isPiSandboxIframe() itself is not
+  // exported, so its behavior is exercised indirectly through the value
+  // passed to Pi.init().
+  //
+  // Both `loadPiSdk()` and the top of `ensurePiInitialized()` special-case
+  // `NODE_ENV === "test"`, short-circuiting before Pi.init() is ever called.
+  // These tests therefore run with NODE_ENV temporarily set to
+  // "development" so the real init path (and the new sandbox-detection
+  // logic) executes. `isInitialized` is module-scoped, so each test resets
+  // the module registry and re-imports pi-sdk to get a clean instance.
+  describe('ensurePiInitialized — sandbox iframe detection', () => {
+    const originalWindow = g.window;
+    const originalNavigator = g.navigator;
+    const originalDocument = g.document;
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      jest.resetModules();
+      process.env = { ...originalEnv, NODE_ENV: 'development' };
+    });
+
+    afterEach(() => {
+      g.window = originalWindow;
+      g.navigator = originalNavigator;
+      g.document = originalDocument;
+      process.env = originalEnv;
+    });
+
+    it('uses determineSandboxMode() when not inside an iframe (window.self === window.top)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: '' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('overrides sandbox to false when loaded inside a sandbox.minepi.com iframe, even if determineSandboxMode() would return true', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      const selfRef = {};
+      const topRef = {};
+      g.window = {
+        Pi: { init: initMock },
+        self: selfRef,
+        top: topRef,
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: false });
+    });
+
+    it('overrides sandbox to false for a sandbox.minepi.com subdomain referrer (e.g. foo.sandbox.minepi.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://foo.sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: false });
+    });
+
+    it('does not override sandbox when inside an iframe with a non-sandbox referrer (e.g. minepi.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('does not override sandbox for a lookalike domain referrer (sandbox.minepi.com.attacker.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com.attacker.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('does not treat an iframe with an empty referrer as a sandbox iframe', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: '' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('falls back to determineSandboxMode() without throwing when window.top access throws (cross-origin restriction)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      const winObj: Record<string, unknown> = {
+        Pi: { init: initMock },
+        location: { hostname: 'app.example.com', search: '' },
+      };
+      Object.defineProperty(winObj, 'self', { get: () => ({}), configurable: true });
+      Object.defineProperty(winObj, 'top', {
+        get: () => {
+          throw new Error('cross-origin access blocked');
+        },
+        configurable: true,
+      });
+      g.window = winObj as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await expect(ensurePiInitialized()).resolves.toBeDefined();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+  });
 });

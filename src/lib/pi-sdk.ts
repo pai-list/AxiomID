@@ -164,6 +164,28 @@ export function determineSandboxMode(): boolean {
   return false;
 }
 
+/**
+ * Returns `true` when the current page is loaded in a Pi sandbox iframe.
+ * The sandbox parent sends a postMessage to the SDK that sets internal
+ * state (Prod: true).  If we also pass sandbox: true to Pi.init(), the
+ * two signals conflict and the SDK discards the connection.
+ *
+ * When this returns true, ensurePiInitialized should pass sandbox: false
+ * to Pi.init() and let the parent's postMessage drive the SDK's mode.
+ */
+function isPiSandboxIframe(): boolean {
+  if (typeof window === "undefined" || typeof document === "undefined") return false;
+  try {
+    if (window.self === window.top) return false;
+    const referrer = document.referrer || "";
+    if (!referrer) return false;
+    const host = safeGetHostname(referrer);
+    return host === "sandbox.minepi.com" || host.endsWith(".sandbox.minepi.com");
+  } catch {
+    return false;
+  }
+}
+
 export async function ensurePiInitialized(pushLog?: (msg: string) => void): Promise<unknown> {
   if (typeof window === "undefined") return null;
   const win = window as unknown as { Pi?: { init: (args: { version: string; sandbox: boolean }) => void } };
@@ -187,9 +209,12 @@ export async function ensurePiInitialized(pushLog?: (msg: string) => void): Prom
   if (!isInitialized) {
     try {
       pushLog?.("Initializing Pi SDK v2.0...");
+      // ponytail: defer to the sandbox parent's postMessage when in an iframe
+      // so the SDK doesn't receive conflicting sandbox=true + Prod=true signals.
+      const sandbox = isPiSandboxIframe() ? false : determineSandboxMode();
       piInstance.init({
         version: "2.0",
-        sandbox: determineSandboxMode(),
+        sandbox,
       });
       isInitialized = true;
       pushLog?.("Pi SDK initialized successfully.");
