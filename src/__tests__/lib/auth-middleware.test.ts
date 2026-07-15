@@ -811,7 +811,7 @@ describe('requireAuth - missing branches', () => {
       tier: 'Developer',
     };
 
-    mockPrisma.user.findUnique.mockResolvedValue(sandboxUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(sandboxUser as unknown as import('@/lib/auth-middleware').AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: 'Bearer sandbox-dev-token' });
     const result = await requireAuth(req);
