@@ -6,6 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter";
 import { getClientIp } from "@/lib/ip";
 import { createUserDid } from "@/lib/did";
 import { calculateTrustScore, TOTAL_STAMPS } from "@/lib/trust";
+import { requireAuth } from "@/lib/auth-middleware";
 
 interface VerifyUser {
   id: string;
@@ -76,6 +77,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const auth = await requireAuth(_request);
+  if (auth.error) return auth.error;
+
   const { slug } = await params;
   const parsedParams = SlugParamSchema.safeParse({ slug });
   if (!parsedParams.success) {

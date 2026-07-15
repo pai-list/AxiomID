@@ -6,10 +6,10 @@
 import { timingSafeEqual } from "node:crypto";
 import type { Env } from "./types";
 
-export const PUBLIC_ROUTES = ["/health", "/status", "/api/trust/", "/api/truth/", "/api/skills"];
+export const PUBLIC_ROUTES = ["/health", "/status", "/api/truth/", "/api/skills"];
 
-const PUBLIC_EXACT = new Set(["/health", "/status", "/api/skills"]);
-const PUBLIC_PREFIXES = ["/api/trust/", "/api/truth/"];
+export const PUBLIC_EXACT = new Set(["/health", "/status", "/api/skills"]);
+export const PUBLIC_PREFIXES = ["/api/truth/"];
 
 /**
  * Constant-time string comparison to prevent timing attacks.
