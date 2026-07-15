@@ -51,14 +51,18 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { piUid: auth.user.piUid },
-      include: { stamps: true },
+      include: { stamps: true, payments: { where: { status: 'RELEASED' }, take: 1 } },
     });
 
     if (!user) {
       return apiError('NOT_FOUND', 'User not found');
     }
 
-    const kycStatus = kycResult.kycVerified ? 'VERIFIED' : 'PENDING';
+    // A user is verified if either:
+    // 1. The Pi API returns kyc_verified: true
+    // 2. They have at least one RELEASED payment in our database (which implies Pi KYC)
+    const kycVerified = kycResult.kycVerified || user.payments.length > 0;
+    const kycStatus = kycVerified ? 'VERIFIED' : 'PENDING';
 
     const stampsToScore = user.stamps.map(s => ({
       type: s.type as string,
@@ -77,11 +81,11 @@ export async function POST(request: NextRequest) {
           data: {
             kycStatus,
             kycProvider: 'pi_network',
-            kycVerifiedAt: kycResult.kycVerified ? new Date() : null,
+            kycVerifiedAt: kycVerified ? new Date() : null,
           },
         });
 
-        if (kycResult.kycVerified) {
+        if (kycVerified) {
           const existingStamp = await tx.stamp.findUnique({
             where: { user_stamp_unique: { userId: user.id, type: 'complete_kyc' } },
           });
