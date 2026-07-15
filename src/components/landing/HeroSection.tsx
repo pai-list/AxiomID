@@ -61,7 +61,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
             </a>
             <a
               href="/docs"
-              className="text-xs sm:text-sm font-mono text-zinc-300 hover:text-white transition-colors flex items-center gap-2 px-4 py-3 focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none rounded"
+              className="text-xs sm:text-sm font-mono text-subtle hover:text-surface transition-colors flex items-center gap-2 px-4 py-3 border border-glass hover:border-glass-hover rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
             >
               <Shield className="w-4 h-4 opacity-70" />
               Explore the Protocol

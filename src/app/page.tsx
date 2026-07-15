@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import TrustTiers from "@/components/TrustTiers";
 import StatsBar from "@/components/StatsBar";
 import InteractiveShowcase from "@/components/landing/InteractiveShowcase";
+import InteractiveCommandDemo from "@/components/landing/InteractiveCommandDemo";
 
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection, { SectionHeader } from "@/components/landing/FeaturesSection";
@@ -51,6 +52,11 @@ export default async function Home() {
         {/* Interactive Showcase Section */}
         <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
           <InteractiveShowcase />
+        </div>
+
+        {/* Interactive Command Demo */}
+        <div className="w-full max-w-6xl px-4 sm:px-6 mt-16 sm:mt-24 z-10">
+          <InteractiveCommandDemo />
         </div>
 
         <FeaturesSection t={t} />
