@@ -23,6 +23,10 @@ jest.mock('@/lib/pi-kyc', () => ({
   verifyKycServerSide: jest.fn(),
 }));
 
+jest.mock('@/lib/pi-verify', () => ({
+  verifyWithPiVerify: jest.fn(),
+}));
+
 jest.mock('@/lib/trust-score', () => ({
   computeTrustScore: jest.fn().mockReturnValue(45),
 }));
@@ -64,12 +68,14 @@ jest.mock('@/lib/prisma', () => ({
 import { POST } from '@/app/api/pi/kya/verify/route';
 import { requireAuth } from '@/lib/auth-middleware';
 import { verifyKycServerSide } from '@/lib/pi-kyc';
+import { verifyWithPiVerify } from '@/lib/pi-verify';
 import { computeTrustScore } from '@/lib/trust-score';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 const mockRequireAuth = requireAuth as jest.Mock;
 const mockVerifyKyc = verifyKycServerSide as jest.Mock;
+const mockVerifyWithPiVerify = verifyWithPiVerify as jest.Mock;
 const mockComputeTrust = computeTrustScore as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 
@@ -155,6 +161,7 @@ describe('POST /api/pi/kya/verify', () => {
       walletAddress: null,
       username: 'testuser',
     });
+    mockVerifyWithPiVerify.mockResolvedValue({ verified: false, uid: 'pi-123', provider: 'pi_verify' });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
@@ -166,6 +173,28 @@ describe('POST /api/pi/kya/verify', () => {
 
     expect(res.status).toBe(200);
     expect(data.kycStatus).toBe('PENDING');
+    expect(mockVerifyWithPiVerify).toHaveBeenCalledWith('pi-123', 'valid-token');
+  });
+
+  it('returns KYC verified when PiVerify confirms KYC', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: null,
+      username: 'testuser',
+    });
+    mockVerifyWithPiVerify.mockResolvedValue({ verified: true, uid: 'pi-123', provider: 'pi_verify' });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
+    });
+    (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('VERIFIED');
   });
 
   it('returns 500 on Pi API failure', async () => {
