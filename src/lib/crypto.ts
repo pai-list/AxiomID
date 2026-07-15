@@ -33,6 +33,11 @@ export function encryptToken(plaintext: string): string {
 }
 
 
+export function hashPiUid(uid: string): string {
+  const salt = process.env.PI_TOKEN_ENCRYPTION_KEY || 'default-salt-do-not-use';
+  return crypto.createHash('sha256').update(`${uid}:${salt}`).digest('hex');
+}
+
 export function getIssuerPrivateKey(): { key: string; alg: string } {
   const key = process.env.ISSUER_PRIVATE_KEY;
   if (!key) throw new Error("ISSUER_PRIVATE_KEY not set");

@@ -6,7 +6,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
-import { encryptToken } from '@/lib/crypto';
+import { encryptToken, hashPiUid } from '@/lib/crypto';
 import { createPiDid } from '@/lib/did';
 import { getSandboxDevToken } from '@/lib/sandbox-token';
 
@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
           walletAddress,
           stellarAddress: verifiedStellarAddress,
           piAccessToken: encryptToken(accessToken),
+          kycUidHash: hashPiUid(verifiedUid),
           lastActive: new Date(),
           ...(needsDidRepair && { did: piDid, didMethod: 'did:axiom' }),
         },
@@ -156,6 +157,7 @@ export async function POST(request: NextRequest) {
           piUid: verifiedUid,
           piUsername: verifiedUsername,
           piAccessToken: encryptToken(accessToken),
+          kycUidHash: hashPiUid(verifiedUid),
           did: piDid,
           didMethod: 'did:axiom',
           tier: 'Visitor',
