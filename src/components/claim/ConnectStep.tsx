@@ -79,7 +79,7 @@ export function ConnectStep({
         <div className="mt-4">
           <button
             onClick={onDemoConnect}
-            className="w-full max-w-sm mx-auto py-3 px-4 rounded-xl bg-glass border border-glass-hover text-subtle font-mono text-sm hover:bg-glass-hover transition-colors flex items-center justify-center gap-2"
+            className="w-full max-w-sm mx-auto py-3 px-4 rounded-xl bg-glass border border-glass-hover text-subtle font-mono text-sm hover:bg-glass-hover transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-green focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <span className="w-3 h-3 rounded-full bg-neon-green/60 animate-pulse" />
             {t("Try Demo Mode", "تجربة وضع العرض التوضيحي")}
