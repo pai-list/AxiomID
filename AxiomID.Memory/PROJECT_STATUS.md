@@ -1,7 +1,7 @@
 # AxiomID — Project Status & Knowledge Base
 
 > **The single source of truth for the AxiomID project.**
-> Updated: 2026-07-07 | Version: 0.1.2
+> Updated: 2026-07-15 | Version: 0.1.2
 
 ---
 
@@ -18,19 +18,19 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 | Metric | Value |
 |--------|-------|
 | **Version** | 0.1.2 |
-| **Test Files** | 168 |
-| **Test Cases** | ~2,800+ (`it()` + `test()` blocks) |
-| **Test Lines** | ~38,900 |
-| **E2E Files** | 14 (Playwright) |
-| **E2E Lines** | ~2,400 |
+| **Test Files** | 180 |
+| **Test Cases** | 3,541 (passing, +1 from `it()`+`test()` blocks) |
+| **Test Lines** | ~39,500+ |
+| **E2E Files** | 15 (Playwright) |
+| **E2E Lines** | ~2,500 |
 | **API Route Dirs** | 27 |
 | **Prisma Models** | 25 |
 | **Tech Stack** | Next.js 16, React 19, Prisma 6, Tailwind 4, Framer Motion 12 |
 | **Database** | PostgreSQL (Prisma) + D1 (edge) + Vectorize (semantic) |
 | **Auth** | Pi Network SDK + Ed25519 sovereign keys |
 | **CI/CD** | GitHub Actions → Vercel |
-| **Open PRs** | 3 (#292 MVP bugs, #293 CI fixes, #296 knowledge base) |
-| **Open Issues** | 6 (#153, #221-#225) |
+| **Open PRs** | 14 (see section 4) |
+| **Open Issues** | 5 (#153, #222-#225) — #221 closed |
 
 ---
 
@@ -78,22 +78,78 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 - 7 partially correct files updated
 - 4 mostly fine files verified
 
+### RTA Phase 7 — Complete ✅ (Jul 14)
+11 PRs merged in a single session:
+- #314: CHANGELOG SemVer fix, #317: decision-history, #318: root cleanup
+- #319: .gitignore, #320: .superpowers → .ai, #321: archive iqra-core
+- #322: CONTRIBUTING.md, #323: npm workspaces, #324: OpenAPI spec
+- #325: reference standards, PR-H: PR hygiene fix
+- Plus: #326 (security), #328 (sanitize tests), #330 (N+1 perf), #331 (health typing)
+
+### PR #341: README Badges ✅ (Jul 15)
+- Project status badges (tests, TypeScript strict, SOUL compliance)
+- API route listing in README matrix
+
+### PR #343, #345: Test Coverage ✅ (Jul 15)
+- Full Tiers utility test suite (119 lines, negative XP cases)
+- Comprehensive Catalog schema test suite (196 lines, all card/link schemas)
+
+### PR #344 Closed ❌ (Jul 15)
+- Superseded by three new focused PRs (#346, #347, #348)
+
+### PR #342 Closed ❌ (Jul 15)
+- 0 files changed — empty commit, tree identical to parent
+
+### PR #346: Dead Code Cleanup 🔄 OPEN (Jul 15)
+- 24 files deleted (HeroDemo, 8 skeletons, 15 unused hooks)
+- CI green (was failing — fixed HeroDemo mock refs in home-page + passport-hero tests)
+
+### PR #347: Pi Verification Fallback 🔄 OPEN (Jul 15)
+- KYC fallback: check RELEASED payments if Pi API returns false
+- wallet_address scope added to authenticate()
+- Full E2E payment lifecycle test
+
+### PR #348: AGENTS.md Rebrand 🔄 OPEN (Jul 15)
+- amrikyy → AxiomID rebranding in SOUL Protocol section
+- New Agentic API First Protocol section added
+
+### Security PRs (Jules) 🔄 OPEN
+- #337: Hardcoded secrets in e2e + auth-middleware tests
+- #339: Auth bypass + sandbox vulnerabilities
+- #338: Trust delegation IDOR ✅ rebased (Jul 15)
+- #340: Mass credential IDOR ✅ rebased (Jul 15, approved by human)
+
+### Coverage PRs (Jules) 🔄 OPEN
+- #332: Sanitize library ✅ rebased (Jul 15)
+- #333: Trust.ts fallbacks
+- #334: Auth-middleware 100%
+- #335: vc.ts RSA branches
+- #336: Tiers library ✅ rebased (Jul 15, .idea/workspace.xml stripped)
+
+### Refactor PRs (Jules) 🔄 OPEN
+- #327: console.log → console.info
+- #329: Diagnostics error logging (needs human approval)
+
 ---
 
 ## 4. What's In Progress
 
 | Task | Status | Branch |
 |------|--------|--------|
-| E2E Test Execution | Pending | `fix/phase6-knowledge-base` |
-| Issue Backlog Triage | Pending | — |
+| Dead Code Cleanup (#346) | Agent Review | `feat/dead-code-cleanup` |
+| Pi Verification Fallback (#347) | Agent Review | `feat/pi-verification-fallback` |
+| AGENTS.md Rebrand (#348) | Agent Review | `feat/agents-md-rebrand` |
+| Security PRs (#337→#339→#338→#340) | Merge after CI (all rebased) | Various Jules branches |
+| Coverage PRs (#336→#335→#334→#333→#332) | Merge after CI (332, 336 rebased) | Various Jules branches |
 
 ---
 
 ## 5. What's Planned
 
 ### Near-term
-- **E2E Execution:** Run full Playwright suite (14 files, 156+ tests)
-- **Issue Backlog:** Triage #221-#225, #153
+- **Security Group Merge:** #337 → #339 → #338 (rebase) → #340 (rebase)
+- **Refactor Group Merge:** #327, #329
+- **Coverage Group Merge:** #336 (rebase) → #335 → #334 → #333 → #332 (rebase)
 
 ### Medium-term
 - **Zod Validation:** Add to `/api/agent/public` (CodeRabbit request)
@@ -291,12 +347,11 @@ npx playwright test   # E2E (requires build first)
 ## 11. Open Issues
 
 | # | Title | Status | Priority |
-|---|-------|--------|----------|
+|:---|:-------|:-------|:--------|
 | #225 | Unify DID format to single path | Open | Medium |
 | #224 | Zod validation for auth routes | Open | Medium |
 | #223 | Verify Pi Network txid regex | Open | Low |
 | #222 | POST /api/pi/payment/complete coverage | Open | Low |
-| #221 | passportUrl never saved to DB | **Fixed in PR #290** | — |
 | #153 | Production performance benchmarks | Open | Low |
 
 ---

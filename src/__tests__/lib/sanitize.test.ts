@@ -22,6 +22,30 @@ describe("Sanitize library", () => {
       const largeObj = { data: "x".repeat(10005) };
       expect(safeJsonStringify(largeObj)).toBeNull();
     });
+
+    it("returns null when JSON.stringify throws an error", () => {
+      const throwingObj = {
+        get val() {
+          throw new Error("Serialization error");
+        },
+      };
+      expect(safeJsonStringify(throwingObj)).toBeNull();
+    });
+
+    it("returns null for BigInt serialization which throws in JSON.stringify", () => {
+      const obj = { value: BigInt(10) };
+      expect(safeJsonStringify(obj)).toBeNull();
+    });
+
+    it("respects toJSON methods on objects", () => {
+      const obj = {
+        data: "secret",
+        toJSON() {
+          return { data: "public" };
+        }
+      };
+      expect(safeJsonStringify(obj)).toBe('{"data":"public"}');
+    });
   });
 
   describe("canonicalize", () => {
@@ -32,6 +56,9 @@ describe("Sanitize library", () => {
     it("returns primitives as-is", () => {
       expect(canonicalize(42)).toBe(42);
       expect(canonicalize("hello")).toBe("hello");
+      expect(canonicalize(true)).toBe(true);
+      expect(canonicalize(undefined)).toBe(undefined);
+      expect(canonicalize(undefined)).toBeUndefined();
     });
 
     it("sorts object keys", () => {
@@ -43,6 +70,18 @@ describe("Sanitize library", () => {
         y: [3, 4],
         z: { a: 1, b: 2 },
       });
+    });
+
+    it("handles empty objects and arrays", () => {
+      expect(canonicalize({})).toEqual({});
+      expect(canonicalize([])).toEqual([]);
+    });
+
+    it("canonicalizes objects within arrays without altering array order", () => {
+      expect(canonicalize([{ b: 2, a: 1 }, { d: 4, c: 3 }])).toEqual([
+        { a: 1, b: 2 },
+        { c: 3, d: 4 },
+      ]);
     });
   });
 });

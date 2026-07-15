@@ -17,6 +17,8 @@ interface MutableGlobals {
 
 const g = global as unknown as MutableGlobals;
 
+const makeMockToken = (prefix: string) => `${prefix}-${Math.random().toString(36).substring(2)}`;
+
 describe('pi-sdk', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -34,9 +36,10 @@ describe('pi-sdk', () => {
     });
 
     it('returns PiAuthResult on successful auth via window.Pi', async () => {
+      const token = makeMockToken('token-abc');
       const mockAuthenticate = jest.fn().mockResolvedValue({
         user: { uid: 'uid-123', username: 'piuser', name: 'Pi User', stellarAddress: 'GSTELLAR' },
-        accessToken: 'token-abc',
+        accessToken: token,
       });
       g.window = g.window || {};
       g.window.Pi = { authenticate: mockAuthenticate };
@@ -47,7 +50,7 @@ describe('pi-sdk', () => {
         expect.arrayContaining(["username", "payments"]),
         expect.any(Function)
       );
-      expect(result.token).toBe('token-abc');
+      expect(result.token).toBe(token);
       expect(result.user.uid).toBe('uid-123');
       expect(result.user.username).toBe('piuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
@@ -56,9 +59,10 @@ describe('pi-sdk', () => {
     });
 
     it('uses window.Pi.authenticate when available (Pi Browser)', async () => {
+      const token = makeMockToken('pb-token');
       const mockAuthenticate = jest.fn().mockResolvedValue({
         user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User', stellarAddress: 'GSTELLAR' },
-        accessToken: 'pb-token',
+        accessToken: token,
       });
       g.window = g.window || {};
       g.window.Pi = { authenticate: mockAuthenticate };
@@ -70,7 +74,7 @@ describe('pi-sdk', () => {
         expect.any(Function)
       );
       expect(mockAuthenticate).toHaveBeenCalled();
-      expect(result.token).toBe('pb-token');
+      expect(result.token).toBe(token);
       expect(result.user.uid).toBe('pb-uid');
       expect(result.user.username).toBe('pbuser');
       expect(result.stellarAddress).toBe('GSTELLAR');
@@ -81,7 +85,7 @@ describe('pi-sdk', () => {
     it('throws when window.Pi.authenticate returns no user', async () => {
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
 
       await expect(connectPi()).rejects.toThrow('no user data received');
@@ -104,11 +108,12 @@ describe('pi-sdk', () => {
     });
 
     it('calls pushLog with user name on successful Pi Browser auth', async () => {
+      const token = makeMockToken('pb-token');
       g.window = g.window || {};
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'pb-uid', username: 'pbuser', name: 'Pi Browser User' },
-          accessToken: 'pb-token',
+          accessToken: token,
         }),
       };
       const pushLog = jest.fn();
@@ -132,7 +137,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid', username: 'debuguser', name: 'Debug User' },
-          accessToken: 'debug-token',
+          accessToken: makeMockToken('debug-token'),
         }),
       };
       const pushLog = jest.fn();
@@ -150,7 +155,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid2', username: 'debuguser2', name: 'Debug User 2' },
-          accessToken: 'debug-token-2',
+          accessToken: makeMockToken('debug-token-2'),
         }),
       };
       const pushLog = jest.fn();
@@ -168,7 +173,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid3', username: 'debuguser3', name: 'Debug User 3' },
-          accessToken: 'debug-token-3',
+          accessToken: makeMockToken('debug-token-3'),
         }),
       };
       const pushLog = jest.fn();
@@ -188,7 +193,7 @@ describe('pi-sdk', () => {
       g.window.Pi = {
         authenticate: jest.fn().mockResolvedValue({
           user: { uid: 'debug-uid4', username: 'debuguser4', name: 'Debug User 4' },
-          accessToken: 'debug-token-4',
+          accessToken: makeMockToken('debug-token-4'),
         }),
       };
       const pushLog = jest.fn();
@@ -207,7 +212,7 @@ describe('pi-sdk', () => {
       // "[DEBUG] PiSdkError: {code} - {message}" instead of the old "Auth error:" prefix.
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
       const pushLog = jest.fn();
 
@@ -225,7 +230,7 @@ describe('pi-sdk', () => {
     it('emits [DEBUG] Authentication failed log when no user is returned', async () => {
       g.window = g.window || {};
       g.window.Pi = {
-        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: 'tok' }),
+        authenticate: jest.fn().mockResolvedValue({ user: null, accessToken: makeMockToken('tok') }),
       };
       const pushLog = jest.fn();
 
@@ -347,6 +352,171 @@ describe('pi-sdk', () => {
       g.navigator = { userAgent: '' };
       g.document = { referrer: 'invalid-scheme://foo' };
       expect(checkPiBrowser()).toBe(false);
+    });
+  });
+
+  // PR change: ensurePiInitialized now defers to the sandbox parent's
+  // postMessage (by passing sandbox: false to Pi.init()) whenever the page is
+  // loaded inside a Pi sandbox iframe, instead of always using
+  // determineSandboxMode(). This avoids the SDK receiving conflicting
+  // sandbox=true + Prod=true signals. isPiSandboxIframe() itself is not
+  // exported, so its behavior is exercised indirectly through the value
+  // passed to Pi.init().
+  //
+  // Both `loadPiSdk()` and the top of `ensurePiInitialized()` special-case
+  // `NODE_ENV === "test"`, short-circuiting before Pi.init() is ever called.
+  // These tests therefore run with NODE_ENV temporarily set to
+  // "development" so the real init path (and the new sandbox-detection
+  // logic) executes. `isInitialized` is module-scoped, so each test resets
+  // the module registry and re-imports pi-sdk to get a clean instance.
+  describe('ensurePiInitialized — sandbox iframe detection', () => {
+    const originalWindow = g.window;
+    const originalNavigator = g.navigator;
+    const originalDocument = g.document;
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      jest.resetModules();
+      process.env = { ...originalEnv, NODE_ENV: 'development' };
+    });
+
+    afterEach(() => {
+      g.window = originalWindow;
+      g.navigator = originalNavigator;
+      g.document = originalDocument;
+      process.env = originalEnv;
+    });
+
+    it('uses determineSandboxMode() when not inside an iframe (window.self === window.top)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: '' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('overrides sandbox to false when loaded inside a sandbox.minepi.com iframe, even if determineSandboxMode() would return true', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      const selfRef = {};
+      const topRef = {};
+      g.window = {
+        Pi: { init: initMock },
+        self: selfRef,
+        top: topRef,
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: false });
+    });
+
+    it('overrides sandbox to false for a sandbox.minepi.com subdomain referrer (e.g. foo.sandbox.minepi.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://foo.sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: false });
+    });
+
+    it('does not override sandbox when inside an iframe with a non-sandbox referrer (e.g. minepi.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('does not override sandbox for a lookalike domain referrer (sandbox.minepi.com.attacker.com)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com.attacker.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('does not treat an iframe with an empty referrer as a sandbox iframe', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      g.window = {
+        Pi: { init: initMock },
+        self: {},
+        top: {},
+        location: { hostname: 'app.example.com', search: '' },
+      } as unknown as MutableGlobals['window'];
+      g.document = { referrer: '' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await ensurePiInitialized();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
+    });
+
+    it('falls back to determineSandboxMode() without throwing when window.top access throws (cross-origin restriction)', async () => {
+      process.env.NEXT_PUBLIC_PI_SANDBOX = 'true';
+      const initMock = jest.fn();
+      const winObj: Record<string, unknown> = {
+        Pi: { init: initMock },
+        location: { hostname: 'app.example.com', search: '' },
+      };
+      Object.defineProperty(winObj, 'self', { get: () => ({}), configurable: true });
+      Object.defineProperty(winObj, 'top', {
+        get: () => {
+          throw new Error('cross-origin access blocked');
+        },
+        configurable: true,
+      });
+      g.window = winObj as unknown as MutableGlobals['window'];
+      g.document = { referrer: 'https://sandbox.minepi.com/parent' };
+      g.navigator = { userAgent: '' };
+
+      const { ensurePiInitialized } = await import('@/lib/pi-sdk');
+      await expect(ensurePiInitialized()).resolves.toBeDefined();
+
+      expect(initMock).toHaveBeenCalledWith({ version: '2.0', sandbox: true });
     });
   });
 });

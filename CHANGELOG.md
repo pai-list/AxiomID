@@ -6,10 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `wallet_address` scope to Pi SDK authenticate() for full sovereign capability (#347)
+- KYC verification fallback via payment history — RELEASED payments imply KYC (#347)
+- Full E2E payment lifecycle test: auth→create agent→spend request→approve→complete (#347)
+- Agentic API First Protocol section in AGENTS.md (identity boundary, Pi SDK rules, human governance) (#348)
+- Project status badges in README — test count, TypeScript strict, SOUL compliance (#341)
+- Comprehensive Catalog schema test suite — 196 lines, all Card/LinkItem/Button schemas (#345)
+- Full Tiers utility test suite — 119 lines, negative XP, score rounding edge cases (#343)
+- README API route listing matrix (#341)
+
 ### Fixed
 - Footer version display — hardcoded `v0.1.0` replaced with `NEXT_PUBLIC_APP_VERSION` env var
 - Dashboard data disconnect — dashboard now fetches skills from `/api/skills` (live) instead of static `skills.json`
 - `console.error` → `logger.error` in 8 files (claim, status, onboarding, marketplace, InteractivePassportCard, RouteErrorPage, passport/error)
+- HeroDemo mock references in home-page.test.tsx + passport-hero.test.tsx after dead code deletion (#346)
+- CHANGELOG SemVer violation — 1.0.0 → 0.0.1 (#314)
+
+### Changed
+- CI test count: 3,541 passing (was ~2,800)
+- amrikyy → AxiomID rebranding in AGENTS.md SOUL Protocol section (#348)
+
+### Removed
+- 24 dead files: HeroDemo.tsx, 8 skeleton components, 15 unused custom hooks (#346)
+- 11 RTA Phase 7 cleanup artifacts — closed PRs, old knowledge base files (#314-#325)
+
+### Security
+- Dependency vulnerabilities resolved and hardcoded secrets removed from test mocks (#326)
+- Hardcoded secrets in e2e and auth-middleware tests — resolved (#337)
+- Authentication bypass and sandbox vulnerabilities — resolved (#339)
 
 - Package version synced to 0.1.2
 

@@ -4,7 +4,7 @@
  */
 
 import type { Env } from "./lib/types";
-import { verifyAuth, safeCompare, jsonResponse, errorResponse, PUBLIC_ROUTES, rateLimitHeaders } from "./lib/auth";
+import { verifyAuth, safeCompare, jsonResponse, errorResponse, PUBLIC_EXACT, PUBLIC_PREFIXES, rateLimitHeaders } from "./lib/auth";
 import { KVHelper } from "./db/kv";
 import { D1Helper } from "./db/d1";
 import { RateLimiter } from "./lib/rate-limiter";
@@ -207,6 +207,12 @@ export class Router {
       const slug = path.split("/api/skills/")[1].replace("/install", "");
       const body = await request.json<{ userDid?: string; version?: string }>();
       if (!body.userDid) return errorResponse("Missing userDid");
+      
+      // Prevent arbitrary userDid spoofing
+      if (agentId && agentId !== body.userDid) {
+        return errorResponse("Unauthorized: Agent ID mismatch", 403);
+      }
+
       const result = await this.skills.installSkill(slug, body.userDid, body.version);
       return jsonResponse({ success: result.success, data: result, timestamp: Date.now() });
     }
@@ -218,7 +224,7 @@ export class Router {
         return errorResponse("Missing skillSlug, action, or userDid");
       }
       try {
-        const result = await this.dispatcher.dispatch(body);
+        const result = await this.dispatcher.dispatch(body, agentId);
         return jsonResponse({ success: true, data: result, timestamp: Date.now() });
       } catch (err) {
         return errorResponse(err instanceof Error ? err.message : "Dispatch failed", 500);
@@ -229,7 +235,7 @@ export class Router {
   }
 
   private isPublicRoute(path: string): boolean {
-    return PUBLIC_ROUTES.some((p) => path.startsWith(p));
+    return PUBLIC_EXACT.has(path) || PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix));
   }
 
   private async handleHeartbeat(agentId: string): Promise<Response> {

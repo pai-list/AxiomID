@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { diagnostics } from '@/diagnostics/catalog';
+import { logger } from '@/lib/logger';
 
 export type ErrorCode =
   | 'VALIDATION_ERROR'
@@ -100,9 +101,12 @@ export function apiError(code: ErrorCode, message: string, details?: unknown, he
   try {
     // The fn may return a promise; swallow any rejection so it never surfaces
     // as an unhandled rejection and never breaks the response path.
-    Promise.resolve(REPORT_DIAGNOSTIC[code](message)).catch(() => {});
-  } catch {
+    Promise.resolve(REPORT_DIAGNOSTIC[code](message)).catch((err) => {
+      logger.error('[DIAGNOSTICS] Async diagnostic reporting failed', err);
+    });
+  } catch (err) {
     // Diagnostics are best-effort; never break the response path
+    logger.error('[DIAGNOSTICS] Sync diagnostic reporting failed', err);
   }
 
   return NextResponse.json({ error: message, code, details }, { status, headers });

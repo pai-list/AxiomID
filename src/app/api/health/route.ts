@@ -11,6 +11,13 @@ interface ServiceCheck {
   latencyMs: number;
 }
 
+interface HealthResponse {
+  status: "healthy" | "degraded";
+  uptime: number;
+  services: ServiceCheck[];
+  timestamp: string;
+}
+
 async function checkDatabase(): Promise<ServiceCheck> {
   const start = Date.now();
   try {
@@ -103,14 +110,15 @@ export async function GET(request: NextRequest) {
 
     const services = [db, stellar, pi, workersAI];
     const allOnline = services.every((s) => s.status === "ONLINE");
-    const anyOffline = services.some((s) => s.status === "OFFLINE");
 
-    return apiSuccess({
-      status: allOnline ? "healthy" : anyOffline ? "degraded" : "degraded",
+    const responsePayload: HealthResponse = {
+      status: allOnline ? "healthy" : "degraded",
       uptime: 100,
       services,
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    return apiSuccess(responsePayload);
   } catch (error) {
     logger.error("[HEALTH API] Health check failed:", error);
     return apiError("INTERNAL_ERROR", "Health check failed");

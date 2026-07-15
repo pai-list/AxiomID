@@ -5,6 +5,8 @@ import { CredentialStatusQuerySchema } from "@/lib/validators";
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from "@/lib/ip";
 import { logger } from "@/lib/logger";
+import { requireAuth } from "@/lib/auth-middleware";
+import { isAdmin } from "@/lib/admin";
 
 /**
  * Returns the credential status for a subject identified by DID.
@@ -12,6 +14,10 @@ import { logger } from "@/lib/logger";
  * The credential is considered revoked if the subject's KYC status is rejected.
  */
 export async function GET(request: NextRequest) {
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
+  const { user: callerUser } = auth;
+
   const ip = getClientIp(request);
   const rateLimit = await checkRateLimit(`credential-status:${ip}`, RATE_LIMITS.anonymous);
   if (!rateLimit.allowed) {
@@ -69,6 +75,10 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return apiError("NOT_FOUND", "Subject not found");
+    }
+
+    if (callerUser.id !== user.id && !isAdmin(callerUser)) {
+      return apiError("FORBIDDEN", "You are not authorized to view this credential status");
     }
 
     const revoked = user.kycStatus === "REJECTED";

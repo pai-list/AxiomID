@@ -43,8 +43,8 @@ tui.json
 # gemini CLI (local tool config)
 .gemini/
 
-# superpowers (local workflow scripts)
-.superpowers/
+# ai agent tooling
+.ai/
 
 # typescript
 *.tsbuildinfo
@@ -82,3 +82,4 @@ portless.json
 axiomidrules
 task.md
 .devin/
+.idea/

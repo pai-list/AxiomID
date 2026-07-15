@@ -23,6 +23,10 @@ jest.mock('@/lib/pi-kyc', () => ({
   verifyKycServerSide: jest.fn(),
 }));
 
+jest.mock('@/lib/pi-verify', () => ({
+  verifyWithPiVerify: jest.fn(),
+}));
+
 jest.mock('@/lib/trust-score', () => ({
   computeTrustScore: jest.fn().mockReturnValue(45),
 }));
@@ -64,12 +68,14 @@ jest.mock('@/lib/prisma', () => ({
 import { POST } from '@/app/api/pi/kya/verify/route';
 import { requireAuth } from '@/lib/auth-middleware';
 import { verifyKycServerSide } from '@/lib/pi-kyc';
+import { verifyWithPiVerify } from '@/lib/pi-verify';
 import { computeTrustScore } from '@/lib/trust-score';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 const mockRequireAuth = requireAuth as jest.Mock;
 const mockVerifyKyc = verifyKycServerSide as jest.Mock;
+const mockVerifyWithPiVerify = verifyWithPiVerify as jest.Mock;
 const mockComputeTrust = computeTrustScore as jest.Mock;
 const mockCheckRateLimit = checkRateLimit as jest.Mock;
 
@@ -128,7 +134,7 @@ describe('POST /api/pi/kya/verify', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -155,8 +161,9 @@ describe('POST /api/pi/kya/verify', () => {
       walletAddress: null,
       username: 'testuser',
     });
+    mockVerifyWithPiVerify.mockResolvedValue({ verified: false, uid: 'pi-123', provider: 'pi_verify' });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -166,6 +173,28 @@ describe('POST /api/pi/kya/verify', () => {
 
     expect(res.status).toBe(200);
     expect(data.kycStatus).toBe('PENDING');
+    expect(mockVerifyWithPiVerify).toHaveBeenCalledWith('pi-123', 'valid-token');
+  });
+
+  it('returns KYC verified when PiVerify confirms KYC', async () => {
+    mockVerifyKyc.mockResolvedValue({
+      uid: 'pi-123',
+      kycVerified: false,
+      walletAddress: null,
+      username: 'testuser',
+    });
+    mockVerifyWithPiVerify.mockResolvedValue({ verified: true, uid: 'pi-123', provider: 'pi_verify' });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
+    });
+    (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+    const req = mockPostRequest({ accessToken: 'valid-token' });
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.kycStatus).toBe('VERIFIED');
   });
 
   it('returns 500 on Pi API failure', async () => {
@@ -205,7 +234,7 @@ describe('POST /api/pi/kya/verify', () => {
     });
     const now = new Date();
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', lastActive: now,
+      id: 'user-1', xp: 0, tier: 'Visitor', lastActive: now, payments: [],
       stamps: [
         { type: 'connect_twitter', xpAwarded: 10, createdAt: now },
         { type: 'daily_pow', xpAwarded: 5, createdAt: now },
@@ -248,7 +277,7 @@ describe('POST /api/pi/kya/verify — idempotency (existing stamp)', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
   });
@@ -332,7 +361,7 @@ describe('POST /api/pi/kya/verify — action hash-chain (PR change)', () => {
       username: 'testuser',
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
   });
@@ -448,7 +477,7 @@ describe('POST /api/pi/kya/verify — tier recalculation (PR change)', () => {
   it('updates tier when calculateTier returns a different tier from user.tier', async () => {
     // User is Visitor (xp=0, Citizen threshold=100) → after +200 XP → xp=200 → Citizen (tier changes)
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], lastActive: null,
+      id: 'user-1', xp: 0, tier: 'Visitor', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
@@ -485,7 +514,7 @@ describe('POST /api/pi/kya/verify — tier recalculation (PR change)', () => {
   it('does not make a second user.update when tier has not changed', async () => {
     // User is Citizen (xp=100) → after +200 XP → xp=300 → still Citizen (no tier change)
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-      id: 'user-1', xp: 100, tier: 'Citizen', stamps: [], lastActive: null,
+      id: 'user-1', xp: 100, tier: 'Citizen', stamps: [], payments: [], lastActive: null,
     });
     (prisma.user.update as jest.Mock).mockResolvedValue({});
 
