@@ -6,15 +6,6 @@ export interface PiVerifyResult {
   provider: 'pi_verify';
 }
 
-export class PiVerifyError extends Error {
-  public readonly code: string;
-  constructor(code: string, message: string) {
-    super(message);
-    this.name = 'PiVerifyError';
-    this.code = code;
-  }
-}
-
 function getApiKey(): string | undefined {
   return process.env.PI_VERIFY_API_KEY;
 }
@@ -57,15 +48,16 @@ export async function verifyWithPiVerify(piUid: string, accessToken: string): Pr
 
     if (!response.ok) {
       const body = await response.text().catch(() => 'unable to read body');
-      logger.error(`[PI-VERIFY] API returned ${response.status}: ${body}`);
+      logger.error('[PI-VERIFY] API returned %s: %s', response.status, body);
       return { verified: false, uid: piUid, provider: 'pi_verify' };
     }
 
-    const data = await response.json() as { verified: boolean };
-    return { verified: data.verified === true, uid: piUid, provider: 'pi_verify' };
+    const raw = (await response.json()) as unknown;
+    const verified = typeof raw === 'object' && raw !== null && 'verified' in raw && (raw as Record<string, unknown>).verified === true;
+    return { verified, uid: piUid, provider: 'pi_verify' };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logger.error(`[PI-VERIFY] Request failed: ${msg}`);
+    logger.error('[PI-VERIFY] Request failed: %s', msg);
     return { verified: false, uid: piUid, provider: 'pi_verify' };
   }
 }

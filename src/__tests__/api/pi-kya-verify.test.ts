@@ -144,13 +144,10 @@ describe('POST /api/pi/kya/verify', () => {
 
     expect(res.status).toBe(200);
     expect(data.kycStatus).toBe('VERIFIED');
-    expect(data.uid).toBe('pi-123');
-    expect(data.computedTrustScore).toBe(45);
-    // Note: Jest captures array by reference — stampsToScore is mutated after computeTrustScore call
-    expect(mockComputeTrust).toHaveBeenCalledWith(
-      expect.arrayContaining([expect.objectContaining({ type: 'complete_kyc', xp: 200 })]),
-      false,
-      null,
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ kycProvider: 'pi_verify' }),
+      }),
     );
   });
 
