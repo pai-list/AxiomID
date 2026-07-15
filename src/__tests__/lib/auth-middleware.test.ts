@@ -887,7 +887,7 @@ describe('requireAuth - missing branches', () => {
       sub: 'jwks-uid-2',
     });
 
-    mockPrisma.user.findUnique.mockResolvedValue(mockUser as any);
+    mockPrisma.user.findUnique.mockResolvedValue(mockUser as unknown as import('@/lib/auth-middleware').AuthenticatedUser);
 
     const req = mockRequestWithHeader({ authorization: 'Bearer valid-jwks-token-no-username' });
     const result = await requireAuth(req);
