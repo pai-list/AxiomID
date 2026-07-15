@@ -487,7 +487,7 @@ export default function ClaimPage() {
                       closeBrowserModal();
                       await handleDemoConnect();
                     }}
-                    className="w-full py-3 px-4 rounded-xl bg-neon-green/10 hover:bg-neon-green/20 text-neon-green font-semibold text-sm border border-neon-green/20 transition-colors"
+                    className="w-full py-3 px-4 rounded-xl bg-neon-green/10 hover:bg-neon-green/20 text-neon-green font-semibold text-sm border border-neon-green/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-green focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                   >
                     {t("Try Demo Mode", "تجربة وضع العرض التوضيحي")}
                   </button>
