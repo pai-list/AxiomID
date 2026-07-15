@@ -112,13 +112,13 @@ export default function InteractiveCommandDemo() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <span className="text-[10px] font-mono text-electric-blue uppercase tracking-[0.2em]">
-            Try It Live
+            {t("Try It Live", "جربه مباشرة")}
           </span>
           <h2 className="text-xl sm:text-2xl font-sans font-bold mt-1">
-            Agent Command Loop
+            {t("Agent Command Loop", "حلقة أوامر العميل")}
           </h2>
           <p className="text-sm text-subtle font-sans mt-1 max-w-md">
-            Click each step to simulate the sovereign identity claim flow.
+            {t("Click each step to simulate the sovereign identity claim flow.", "انقر فوق كل خطوة لمحاكاة تدفق مطالبة الهوية السيادية.")}
           </p>
         </div>
 
