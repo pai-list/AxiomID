@@ -43,9 +43,32 @@ describe('splitRevenue', () => {
     expect(result.protocolShare).toBe(0);
   });
 
+  it('validates inputs', () => {
+    expect(() => splitRevenue(-1)).toThrow('amount must be a non-negative finite number');
+    expect(() => splitRevenue(NaN)).toThrow('amount must be a non-negative finite number');
+    expect(() => splitRevenue(Infinity)).toThrow('amount must be a non-negative finite number');
+    expect(() => splitRevenue(100, -0.1)).toThrow('fee must be a finite number in [0, 1]');
+    expect(() => splitRevenue(100, 1.5)).toThrow('fee must be a finite number in [0, 1]');
+    expect(() => splitRevenue(100, NaN)).toThrow('fee must be a finite number in [0, 1]');
+  });
+
   it('accepts custom fee', () => {
     const result = splitRevenue(100, 0.2);
-    expect(result.authorShare).toBeCloseTo(56, 0);
+    expect(result.authorShare).toBe(56);
+    expect(result.stakersShare).toBe(16);
+    expect(result.protocolShare).toBe(8);
+  });
+
+  it('conserves total after fee', () => {
+    const result = splitRevenue(100);
+    const total = result.authorShare + result.stakersShare + result.protocolShare;
+    expect(total).toBe(90);
+  });
+
+  it('handles small amounts with residual conservation', () => {
+    const result = splitRevenue(0.15);
+    const total = result.authorShare + result.stakersShare + result.protocolShare;
+    expect(total).toBe(0.14);
   });
 });
 

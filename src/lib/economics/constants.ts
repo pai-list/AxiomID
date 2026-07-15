@@ -21,11 +21,22 @@ export const PAYMENT_PURPOSE = {
 export type PaymentPurpose = (typeof PAYMENT_PURPOSE)[keyof typeof PAYMENT_PURPOSE]
 
 export function splitRevenue(amount: number, fee?: number): Record<RevenueSplitKey, number> {
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw new Error('amount must be a non-negative finite number');
+  }
   const treasuryFee = fee ?? PI_TREASURY_FEE
+  if (!Number.isFinite(treasuryFee) || treasuryFee < 0 || treasuryFee > 1) {
+    throw new Error('fee must be a finite number in [0, 1]');
+  }
   const afterFee = amount * (1 - treasuryFee)
+  const authorShare = Math.round(afterFee * REVENUE_SPLIT.authorShare * 100) / 100
+  const stakersShare = Math.round(afterFee * REVENUE_SPLIT.stakersShare * 100) / 100
+  const protocolShare = Math.round(afterFee * REVENUE_SPLIT.protocolShare * 100) / 100
+  const rounded = authorShare + stakersShare + protocolShare
+  const residual = Math.round((afterFee - rounded) * 100) / 100
   return {
-    authorShare: Math.round(afterFee * REVENUE_SPLIT.authorShare * 100) / 100,
-    stakersShare: Math.round(afterFee * REVENUE_SPLIT.stakersShare * 100) / 100,
-    protocolShare: Math.round(afterFee * REVENUE_SPLIT.protocolShare * 100) / 100,
+    authorShare: authorShare + residual,
+    stakersShare,
+    protocolShare,
   }
 }

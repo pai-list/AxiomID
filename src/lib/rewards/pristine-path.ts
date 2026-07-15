@@ -26,7 +26,8 @@ export function computeReward(
   pathUses: number,
 ): number {
   const { multiplier } = evaluatePath(pathUses)
-  return Math.round(baseXp * multiplier)
+  const result = Math.round(baseXp * multiplier)
+  return result === 0 ? 0 : result
 }
 
 export function buildPathKey(...segments: string[]): PathKey {

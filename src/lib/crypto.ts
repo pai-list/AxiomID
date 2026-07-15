@@ -34,7 +34,8 @@ export function encryptToken(plaintext: string): string {
 
 
 export function hashPiUid(uid: string): string {
-  const salt = process.env.PI_TOKEN_ENCRYPTION_KEY || 'default-salt-do-not-use';
+  const salt = process.env.PI_TOKEN_ENCRYPTION_KEY;
+  if (!salt) throw new Error('PI_TOKEN_ENCRYPTION_KEY is required to hash Pi UIDs');
   return crypto.createHash('sha256').update(`${uid}:${salt}`).digest('hex');
 }
 
