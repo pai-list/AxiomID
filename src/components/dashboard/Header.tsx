@@ -50,7 +50,7 @@ export function Header({ pathname, navItems }: HeaderProps) {
                 ID
               </span>
             </Link>
-            <div className="w-px h-6 bg-white/10 hidden sm:block" />
+            <div className="w-px h-6 bg-glass-hover hidden sm:block" />
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: "var(--text-primary)" }}>
                 {t("dashboard_title")}
@@ -68,7 +68,7 @@ export function Header({ pathname, navItems }: HeaderProps) {
 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono transition-colors duration-200 ${
                    pathname === href
                      ? "text-neon-green bg-neon-green/10 shadow-[0_0_12px_rgba(34,197,94,0.05)] border border-neon-green/20"
-                     : "text-subtle hover:text-surface hover:bg-white/5 border border-transparent"
+                     : "text-subtle hover:text-surface hover:bg-glass border border-transparent"
                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
