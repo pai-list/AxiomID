@@ -70,6 +70,28 @@ describe('splitRevenue', () => {
     const total = result.authorShare + result.stakersShare + result.protocolShare;
     expect(total).toBe(0.14);
   });
+
+  it('boundary: fee of 0 skips the treasury cut entirely', () => {
+    const result = splitRevenue(100, 0);
+    expect(result.authorShare).toBe(70);
+    expect(result.stakersShare).toBe(20);
+    expect(result.protocolShare).toBe(10);
+  });
+
+  it('boundary: fee of 1 (100%) leaves nothing to split', () => {
+    const result = splitRevenue(100, 1);
+    expect(result.authorShare).toBe(0);
+    expect(result.stakersShare).toBe(0);
+    expect(result.protocolShare).toBe(0);
+  });
+
+  it('negative case: rejects negative fee even when amount is valid', () => {
+    expect(() => splitRevenue(50, -0.0001)).toThrow('fee must be a finite number in [0, 1]');
+  });
+
+  it('negative case: rejects -Infinity amount', () => {
+    expect(() => splitRevenue(-Infinity)).toThrow('amount must be a non-negative finite number');
+  });
 });
 
 describe('PI_TREASURY_FEE', () => {

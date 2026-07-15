@@ -75,6 +75,17 @@ describe('computeReward', () => {
   it('returns 0 for 0 base XP', () => {
     expect(computeReward(0, 0)).toBe(0);
   });
+
+  it('boundary: Math.round rounds an exact .5 result up (stale multiplier of 0.5)', () => {
+    // 1 * 0.5 = 0.5 → rounds up to 1 (Math.round rounds half away from zero for positives)
+    expect(computeReward(1, 9)).toBe(1);
+    // 3 * 0.5 = 1.5 → rounds up to 2
+    expect(computeReward(3, 9)).toBe(2);
+  });
+
+  it('regression: negative base XP still applies the multiplier and rounds', () => {
+    expect(computeReward(-100, 0)).toBe(-200);
+  });
 });
 
 describe('buildPathKey', () => {
