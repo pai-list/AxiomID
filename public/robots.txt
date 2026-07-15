@@ -2,12 +2,18 @@ User-agent: GPTBot
 Allow: /
 Allow: /llms.txt
 Allow: /api/did-document
+Disallow: /api/
+Disallow: /dashboard/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /api/
+Disallow: /dashboard/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /api/
+Disallow: /dashboard/
 
 User-agent: Bytespider
 Disallow: /
@@ -19,6 +25,3 @@ User-agent: *
 Allow: /llms.txt
 Allow: /.well-known/
 Allow: /api/did-document
-Disallow: /api/agent/sign
-Disallow: /api/oauth2/
-Disallow: /dashboard/
