@@ -383,7 +383,7 @@ The agent's `openidentity.md`:
 
 ```yaml
 ---
-version: 0.1
+version: "0.1"
 id: did:axiom:z6Mkabc123
 name: "Alice's Assistant"
 description: "A personal AI assistant operated by Alice"

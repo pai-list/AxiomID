@@ -316,8 +316,8 @@ openidentity: "https://example.com/.well-known/openidentity.md"
 passport: "https://example.com/.well-known/passport.md"
 agent_card: "https://example.com/.well-known/agent-card.json"
 auth: "https://example.com/.well-known/auth.md"
-  skills: "https://example.com/.well-known/skills.md"
-  wallet: "https://example.com/.well-known/wallet.md"
+skills: "https://example.com/.well-known/skills.md"
+wallet: "https://example.com/.well-known/wallet.md"
 
 attestations:
   - provider: "pi-network"
@@ -547,8 +547,8 @@ openidentity: "https://axiomid.app/.well-known/openidentity.md"
 passport: "https://axiomid.app/.well-known/passport.md"
 agent_card: "https://axiomid.app/.well-known/agent-card.json"
 auth: "https://axiomid.app/.well-known/auth.md"
-  skills: "https://axiomid.app/.well-known/skills.md"
-  wallet: "https://axiomid.app/.well-known/wallet.md"
+skills: "https://axiomid.app/.well-known/skills.md"
+wallet: "https://axiomid.app/.well-known/wallet.md"
 
 attestations:
   - provider: "pi-network"

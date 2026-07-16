@@ -62,7 +62,7 @@ An OpenIdentity document consists of exactly two sections:
 # Key-value pairs, lists, and nested objects
 
 version: "0.1"
-id: "did:axiom:agt_..."
+did: "did:axiom:agt_..."
 name: "Agent Name"
 ---
 
@@ -92,7 +92,7 @@ When generated, all representations MUST be semantically equivalent. The `.md` f
 | Field | Type | Description |
 |-------|------|-------------|
 | `version` | string (semver) | OpenIdentity specification version (e.g. `"0.1"`) |
-| `id` | string (W3C DID) | Agent Decentralized Identifier. Pattern: `did:axiom:agt_*` |
+| `did` | string (W3C DID) | Agent Decentralized Identifier. Pattern: `did:axiom:agt_*` |
 | `name` | string | Human-readable agent name. Max 100 characters. |
 
 #### Discovery (`well_known.*`)
@@ -135,7 +135,7 @@ All discovery URLs point to resources under `/.well-known/` (see [Section 5: Dis
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
 | `version` | string | ✅ | Semver pattern: `\d+\.\d+` |
-| `id` | string | ✅ | W3C DID: `^did:axiom:agt_` |
+| `did` | string | ✅ | W3C DID: `^did:axiom:agt_` |
 | `name` | string | ✅ | Max 100 chars |
 | `description` | string | ❌ | Max 500 chars |
 | `documentation` | URL | ❌ | HTTPS |
@@ -217,7 +217,7 @@ The following is a real-world OpenIdentity manifest with all fields populated.
 ```markdown
 ---
 version: "0.1"
-id: "did:axiom:agt_8f3a2b1c"
+did: "did:axiom:agt_8f3a2b1c"
 name: "Amrikyy"
 description: "Your autonomous AI agent on AxiomID"
 
@@ -265,7 +265,7 @@ See [passport.md](./passport.md) for the full agent genome.
 ```json
 {
   "version": "0.1",
-  "id": "did:axiom:agt_8f3a2b1c",
+  "did": "did:axiom:agt_8f3a2b1c",
   "name": "Amrikyy",
   "description": "Your autonomous AI agent on AxiomID",
   "documentation": "https://docs.axiomid.app",
@@ -387,7 +387,7 @@ For production deployments:
 # Minimal valid OpenIdentity manifest
 ---
 version: "0.1"
-id: "did:axiom:agt_<hex>"
+did: "did:axiom:agt_<hex>"
 name: "Agent Name"
 well_known:
   openidentity: "https://example.com/.well-known/openidentity.md"
@@ -400,7 +400,7 @@ well_known:
 # Full manifest with all fields
 ---
 version: "0.1"
-id: "did:axiom:agt_8f3a2b1c"
+did: "did:axiom:agt_8f3a2b1c"
 name: "Amrikyy"
 description: "Your autonomous AI agent on AxiomID"
 documentation: "https://docs.axiomid.app"

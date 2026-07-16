@@ -6,7 +6,7 @@
   "type": "object",
   "version": "0.1",
 
-  "definitions": {
+  "$defs": {
     "url": {
       "type": "string",
       "format": "uri",
@@ -26,69 +26,88 @@
       "type": "object",
       "properties": {
         "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+        "did": { "$ref": "#/$defs/did" },
         "name": { "type": "string", "maxLength": 100 },
         "description": { "type": "string", "maxLength": 500 },
-        "did": { "$ref": "#/definitions/did" },
-        "passport": { "$ref": "#/definitions/url" },
-        "identity": { "$ref": "#/definitions/url" },
-        "auth": { "$ref": "#/definitions/url" },
-        "skills": { "$ref": "#/definitions/url" },
-        "wallet": { "$ref": "#/definitions/url" },
-        "mcp": { "$ref": "#/definitions/url" },
-        "a2a": { "$ref": "#/definitions/url" },
-        "memory": { "$ref": "#/definitions/url" },
-        "publicKeys": { "$ref": "#/definitions/url" },
-        "kya": { "$ref": "#/definitions/url" },
-        "trust": { "$ref": "#/definitions/url" },
-        "created": { "$ref": "#/definitions/iso8601" },
-        "updated": { "$ref": "#/definitions/iso8601" }
+        "documentation": { "$ref": "#/$defs/url" },
+        "image": { "$ref": "#/$defs/url" },
+        "well_known": {
+          "type": "object",
+          "properties": {
+            "openidentity": { "$ref": "#/$defs/url" },
+            "passport": { "$ref": "#/$defs/url" },
+            "agent_card": { "$ref": "#/$defs/url" },
+            "auth": { "$ref": "#/$defs/url" },
+            "skills": { "$ref": "#/$defs/url" },
+            "wallet": { "$ref": "#/$defs/url" }
+          },
+          "required": ["openidentity", "passport", "agent_card"]
+        },
+        "attestations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "provider": { "type": "string" },
+              "type": { "type": "string" },
+              "status": { "type": "string", "enum": ["verified", "pending", "unverified"] },
+              "verified_at": { "$ref": "#/$defs/iso8601" }
+            },
+            "required": ["provider", "type"]
+          }
+        },
+        "created_at": { "$ref": "#/$defs/iso8601" },
+        "updated_at": { "$ref": "#/$defs/iso8601" }
       },
-      "required": ["version", "did", "passport", "created", "updated"],
-      "additionalProperties": true
+      "required": ["version", "did", "name", "well_known"]
     },
 
     "passport": {
       "type": "object",
       "properties": {
         "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+        "did": { "$ref": "#/$defs/did" },
         "name": { "type": "string", "maxLength": 100 },
-        "did": { "$ref": "#/definitions/did" },
-        "publicId": { "type": "string", "pattern": "^ag_" },
         "description": { "type": "string", "maxLength": 500 },
+        "publicId": { "type": "string", "pattern": "^ag_" },
         "status": { "type": "string", "enum": ["active", "paused", "inactive", "sleeping"] },
         "owner": {
           "type": "object",
           "properties": {
             "name": { "type": "string" },
-            "did": { "$ref": "#/definitions/did" }
+            "did": { "$ref": "#/$defs/did" }
           },
           "required": ["did"]
         },
-        "kya": {
-          "type": "object",
-          "properties": {
-            "provider": { "type": "string" },
-            "status": { "type": "string", "enum": ["verified", "pending", "unverified"] },
-            "level": { "type": "integer", "minimum": 0, "maximum": 5 }
-          }
-        },
+        "openidentity": { "$ref": "#/$defs/url" },
+        "passport": { "$ref": "#/$defs/url" },
+        "agent_card": { "$ref": "#/$defs/url" },
+        "auth": { "$ref": "#/$defs/url" },
+        "skills": { "$ref": "#/$defs/url" },
+        "wallet": { "$ref": "#/$defs/url" },
         "capabilities": {
-          "type": "object",
-          "properties": {
-            "streaming": { "type": "boolean" },
-            "pushNotifications": { "type": "boolean" }
-          }
-        },
-        "trustProvider": { "type": "string" },
-        "attestations": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
               "type": { "type": "string" },
+              "endpoint": { "$ref": "#/$defs/url" },
+              "version": { "type": "string" }
+            },
+            "required": ["type", "endpoint"]
+          }
+        },
+        "attestations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
               "provider": { "type": "string" },
-              "status": { "type": "string", "enum": ["verified", "pending", "unverified"] }
-            }
+              "type": { "type": "string" },
+              "status": { "type": "string", "enum": ["verified", "pending", "unverified"] },
+              "verified_at": { "$ref": "#/$defs/iso8601" }
+            },
+            "required": ["provider", "type"]
           }
         },
         "credentials": {
@@ -97,33 +116,30 @@
             "type": "object",
             "properties": {
               "type": { "type": "string" },
-              "credentialStatus": { "$ref": "#/definitions/url" }
+              "credentialStatus": { "$ref": "#/$defs/url" }
             }
           }
         },
         "links": {
           "type": "object",
           "properties": {
-            "identity": { "$ref": "#/definitions/url" },
-            "auth": { "$ref": "#/definitions/url" },
-            "skills": { "$ref": "#/definitions/url" },
-            "wallet": { "$ref": "#/definitions/url" },
-            "mcp": { "$ref": "#/definitions/url" },
-            "a2a": { "$ref": "#/definitions/url" },
-            "memory": { "$ref": "#/definitions/url" },
-            "publicKeys": { "$ref": "#/definitions/url" }
+            "website": { "$ref": "#/$defs/url" },
+            "github": { "$ref": "#/$defs/url" },
+            "twitter": { "$ref": "#/$defs/url" },
+            "discord": { "$ref": "#/$defs/url" },
+            "farcaster": { "$ref": "#/$defs/url" }
           }
         },
-        "created": { "$ref": "#/definitions/iso8601" },
-        "updated": { "$ref": "#/definitions/iso8601" }
+        "created_at": { "$ref": "#/$defs/iso8601" },
+        "updated_at": { "$ref": "#/$defs/iso8601" }
       },
-      "required": ["version", "name", "did", "publicId", "owner", "created", "updated"],
+      "required": ["version", "did", "name", "owner", "created_at", "updated_at"],
       "additionalProperties": true
     }
   },
 
   "oneOf": [
-    { "$ref": "#/definitions/openidentity" },
-    { "$ref": "#/definitions/passport" }
+    { "$ref": "#/$defs/openidentity" },
+    { "$ref": "#/$defs/passport" }
   ]
 }
