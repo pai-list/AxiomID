@@ -65,9 +65,9 @@ interface AgentDirectory {
   total: number;
 }
 
-function buildAgentUrl(subdomain: string | null): string {
-  if (subdomain) return `https://${subdomain}.axiomid.app`;
-  return "https://axiomid.app";
+function buildAgentUrl(agent: AgentWithSkills): string {
+  if (agent.subdomain) return `https://${agent.subdomain}.axiomid.app`;
+  return `https://axiomid.app/agent/${agent.publicId}`;
 }
 
 function buildAgentCard(agent: AgentWithSkills): AgentCard {
@@ -84,7 +84,7 @@ function buildAgentCard(agent: AgentWithSkills): AgentCard {
   const card: AgentCard = {
     name: agent.name,
     description: agent.description ?? "",
-    url: buildAgentUrl(agent.subdomain),
+    url: buildAgentUrl(agent),
     version: "1.0.0",
     capabilities: { streaming: false, pushNotifications: false },
     securitySchemes: {
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       undefined,
       {
         "Retry-After": String(
-          Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+          Math.max(1, Math.ceil((rateLimit.resetAt - Date.now()) / 1000))
         ),
       }
     );
@@ -136,6 +136,7 @@ export async function GET(request: NextRequest) {
   try {
     const agents = await prisma.userAgent.findMany({
       where: { status: "ACTIVE", discoverable: true },
+      take: 1000,
       include: {
         installedSkills: {
           where: { status: "active" },

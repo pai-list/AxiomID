@@ -136,6 +136,8 @@ model UserAgent {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status, discoverable])
 }
 
 enum AgentStatus {
