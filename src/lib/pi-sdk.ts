@@ -96,6 +96,7 @@ function safeGetHostname(urlStr: string): string {
 
 export function determineSandboxMode(): boolean {
   if (typeof window === "undefined" || !window.location) return false;
+  if ((window as unknown as { __E2E_NO_SANDBOX__?: boolean }).__E2E_NO_SANDBOX__ === true) return false;
 
   // 1. Configuration-driven: NEXT_PUBLIC_PI_NETWORK=testnet|mainnet
   //    Canonical way to set the network. Independent of hostname.
