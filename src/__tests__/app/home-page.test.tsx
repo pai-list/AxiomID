@@ -53,6 +53,15 @@ jest.mock("@/components/landing/InteractiveShowcase", () => ({
   default: () => <div data-testid="interactive-showcase-stub" />,
 }));
 
+// InteractiveCommandDemo (PR addition) is a "use client" component with its
+// own internal state/animation logic, covered separately in
+// InteractiveCommandDemo.test.tsx. It is stubbed here so this suite only
+// asserts that page.tsx wires it into the page.
+jest.mock("@/components/landing/InteractiveCommandDemo", () => ({
+  __esModule: true,
+  default: () => <div data-testid="interactive-command-demo-stub" />,
+}));
+
 const mockHeaders = headers as unknown as jest.Mock;
 
 function mockAcceptLanguage(value: string | null) {
@@ -118,6 +127,19 @@ describe("Home — rendering with English (default) language", () => {
     render(await Home());
     expect(screen.getByTestId("interactive-showcase-stub")).toBeInTheDocument();
     expect(screen.getByTestId("trust-tiers-stub")).toBeInTheDocument();
+  });
+
+  it("renders the InteractiveCommandDemo section (PR addition)", async () => {
+    render(await Home());
+    expect(screen.getByTestId("interactive-command-demo-stub")).toBeInTheDocument();
+  });
+
+  it("renders InteractiveCommandDemo after InteractiveShowcase in document order", async () => {
+    render(await Home());
+    const showcase = screen.getByTestId("interactive-showcase-stub");
+    const commandDemo = screen.getByTestId("interactive-command-demo-stub");
+    // DOCUMENT_POSITION_FOLLOWING (4) means commandDemo comes after showcase
+    expect(showcase.compareDocumentPosition(commandDemo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("renders the new hero headline", async () => {

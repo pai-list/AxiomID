@@ -1,11 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { determineSandboxMode } from "@/lib/pi-sdk";
 import { useLanguage } from "@/app/context/language-context";
 
 export function DevModeBanner() {
-  const isSandbox = determineSandboxMode();
+  const [mounted, setMounted] = useState(false);
   const { language } = useLanguage();
+
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 0);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isSandbox = determineSandboxMode();
   if (!isSandbox) return null;
 
   return (

@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="space-y-6 p-8">
+    <div className="space-y-6 p-8 animate-fadeIn">
       <div className="bento-card p-8">
         <div className="h-8 bg-white/5 rounded animate-pulse mb-4" />
         <div className="h-4 bg-white/5 rounded animate-pulse w-3/4" />

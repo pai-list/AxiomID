@@ -8,6 +8,23 @@ import {
 test.describe("Claim Flow", () => {
   test.beforeEach(async ({ page }) => {
     await mockPiSDK(page, { isPiBrowser: false });
+    await page.route("**/api/auth/pi", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          userId: "pi-uid-123",
+          piUsername: "piuser",
+          walletAddress: "pi:pi-uid-123",
+          stellarAddress: "GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2",
+          tier: "Citizen",
+          xp: 0,
+          trustScore: 0,
+          kycStatus: "NOT_STARTED",
+          createdAt: new Date().toISOString(),
+        }),
+      })
+    );
   });
 
   test("step 1 shows connect button and Pi Browser warning for non-Pi", async ({ page }) => {
@@ -39,6 +56,9 @@ test.describe("Claim Flow", () => {
   });
 
   test("Pi Browser modal has role=dialog and can be closed", async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __E2E_NO_SANDBOX__?: boolean }).__E2E_NO_SANDBOX__ = true;
+    });
     await page.goto("/claim");
     await page.getByRole("button", { name: /connect pi wallet/i }).click();
 
@@ -54,7 +74,7 @@ test.describe("Claim Flow", () => {
     await mockPiSDK(page, { isPiBrowser: true });
     await page.goto("/claim");
 
-    await page.getByRole("button", { name: /connect pi wallet/i }).click();
+    // Automatically authenticated inside Pi Browser on mount, wait for Connected state
     await expect(page.locator("text=Connected").first()).toBeVisible({ timeout: 10000 });
 
     const continueBtn = page.getByRole("button", { name: /continue/i });
@@ -76,7 +96,6 @@ test.describe("Claim Flow", () => {
     );
     await page.goto("/claim");
 
-    await page.getByRole("button", { name: /connect pi wallet/i }).click();
     await expect(page.locator("text=Connected").first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: /continue/i }).click();
     await expect(page.getByRole("heading", { name: /know your agent/i })).toBeVisible();
@@ -96,7 +115,6 @@ test.describe("Claim Flow", () => {
     );
     await page.goto("/claim");
 
-    await page.getByRole("button", { name: /connect pi wallet/i }).click();
     await expect(page.locator("text=Connected").first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: /continue/i }).click();
     await expect(page.getByRole("heading", { name: /know your agent/i })).toBeVisible();
@@ -120,7 +138,6 @@ test.describe("Claim Flow", () => {
     );
     await page.goto("/claim");
 
-    await page.getByRole("button", { name: /connect pi wallet/i }).click();
     await expect(page.locator("text=Connected").first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: /continue/i }).click();
     await page.getByRole("button", { name: /start verification/i }).click();

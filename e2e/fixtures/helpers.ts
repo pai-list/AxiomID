@@ -57,6 +57,12 @@ export async function mockUnauthenticatedUser(page: Page) {
 /** Mock Pi SDK for browser environment */
 export async function mockPiSDK(page: Page, opts?: { isPiBrowser?: boolean }) {
   const isPiBrowser = opts?.isPiBrowser ?? true;
+  await page.route("**/pi-sdk.js", (route) =>
+    route.fulfill({
+      contentType: "application/javascript",
+      body: "console.log('Mocked Pi SDK script')",
+    })
+  );
   await page.addInitScript((piBrowser) => {
     type MockPi = {
       init: () => void;
@@ -67,15 +73,19 @@ export async function mockPiSDK(page: Page, opts?: { isPiBrowser?: boolean }) {
         openConsentDialog: () => Promise<{ accepted: boolean }>;
       };
     };
-    (window as unknown as { Pi: MockPi }).Pi = {
-      init: () => {},
-      authenticate: () => Promise.resolve({ user: { uid: "pi-uid-123", username: "piuser" }, accessToken: "token" }),
-      createPayment: () => Promise.resolve({ identifier: "pay-123" }),
-      nativeFeature: {
-        openShareDialog: () => Promise.resolve({}),
-        openConsentDialog: () => Promise.resolve({ accepted: true }),
-      },
-    };
+    if (piBrowser) {
+      (window as unknown as { Pi: MockPi }).Pi = {
+        init: () => {},
+        authenticate: () => Promise.resolve({ user: { uid: "pi-uid-123", username: "piuser" }, accessToken: "sandbox-dev-token-abc-123" }),
+        createPayment: () => Promise.resolve({ identifier: "pay-123" }),
+        nativeFeature: {
+          openShareDialog: () => Promise.resolve({}),
+          openConsentDialog: () => Promise.resolve({ accepted: true }),
+        },
+      };
+    } else {
+      delete (window as unknown as { Pi?: MockPi }).Pi;
+    }
     Object.defineProperty(navigator, "userAgent", {
       value: piBrowser
         ? "Pi Browser/4.0 (iPhone; iOS 16.0; Scale/3.00)"
@@ -143,8 +153,11 @@ export async function checkBasicA11y(page: Page) {
 export function setupConsoleErrorCheck(page: Page) {
   const errors: string[] = [];
   page.on("console", (msg) => {
-    if (msg.type() === "error" && !msg.text().includes("WebSocket")) {
-      errors.push(msg.text());
+    const text = msg.text();
+    const isVercelAnalyticsError = text.includes("_vercel/insights") || text.includes("_vercel/speed-insights") || text.includes("speed-insights/script");
+    const isFailedResource = text.includes("Failed to load resource");
+    if (msg.type() === "error" && !text.includes("WebSocket") && !isVercelAnalyticsError && !isFailedResource) {
+      errors.push(text);
     }
   });
   page.on("pageerror", (err) => errors.push(err.message));

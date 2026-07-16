@@ -50,9 +50,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   });
   const [error, setError] = useState<string | null>(null);
   // ponytail: isPiBrowser must be reactive — in Pi Browser, window.Pi loads
-  // asynchronously after React mounts. A one-time useState check sets it to
-  // false permanently, blocking the entire connect flow.
-  const [isPiBrowser, setIsPiBrowser] = useState(() => checkPiBrowser());
+  // asynchronously after React mounts. Initialize to false to prevent SSR
+  // hydration mismatches, then verify on client side.
+  const [isPiBrowser, setIsPiBrowser] = useState(false);
   const [piAccessToken, setPiAccessToken] = useState<string | null>(() => {
     return getLocalStorageItem("pi_access_token");
   });
@@ -63,11 +63,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // ponytail: Poll for Pi SDK availability after mount. In Pi Browser, the SDK
   // script loads asynchronously — window.Pi isn't available on first render.
-  // Without this, isPiBrowser stays false and the connect flow is blocked.
   // Consolidated: this effect ONLY updates isPiBrowser. The initRef effect
   // below handles SDK init + authentication on detection.
   useEffect(() => {
-    if (isPiBrowser) return;
+    if (checkPiBrowser()) {
+      setTimeout(() => setIsPiBrowser(true), 0);
+      return;
+    }
     let attempts = 0;
     const interval = setInterval(() => {
       attempts++;
@@ -79,7 +81,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
     }, 200);
     return () => clearInterval(interval);
-  }, [isPiBrowser]);
+  }, []);
 
   useEffect(() => {
     // 1. Compare current user with previous state (stored in ref)
@@ -124,20 +126,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     window.addEventListener("unhandledrejection", handleUnhandledRejection);
 
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      const registerSW = async () => {
+      const manageSW = async () => {
         try {
-          const reg = await navigator.serviceWorker.getRegistration();
-          if (!reg) {
-            await navigator.serviceWorker.register("/sw.js");
+          if (process.env.NODE_ENV === "production") {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (!reg) {
+              await navigator.serviceWorker.register("/sw.js");
+            }
+          } else {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+              await registration.unregister();
+            }
           }
         } catch (err) {
-          logger.error("Service worker registration failed:", err);
+          logger.error("Service worker management failed:", err);
         }
       };
       if (document.readyState === "complete") {
-        registerSW();
+        manageSW();
       } else {
-        window.addEventListener("load", registerSW);
+        window.addEventListener("load", manageSW);
       }
     }
 
@@ -240,7 +249,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     initPiSdk();
 
     if (checkPiBrowser()) {
-      authenticate();
+      setTimeout(() => {
+        setIsPiBrowser(true);
+        authenticate();
+      }, 0);
       return;
     }
 

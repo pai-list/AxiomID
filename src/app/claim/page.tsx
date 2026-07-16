@@ -412,6 +412,7 @@ export default function ClaimPage() {
             />
             {/* Content Container */}
             <motion.div
+              role="dialog"
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}

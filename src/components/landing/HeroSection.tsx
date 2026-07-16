@@ -21,21 +21,20 @@ export default function HeroSection({ t }: HeroSectionProps) {
           <div className="space-y-2">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.1]">
               <span className="block animate-slide-up" style={{ animationDelay: "0.1s" }}>
-                Create your
+                {t("hero_create_your")}
               </span>
               <span
                 className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up"
                 style={{ animationDelay: "0.2s" }}
               >
-                AI Identity
+                {t("hero_ai_identity")}
               </span>
             </h1>
             <p
               className="text-sm sm:text-base text-zinc-200 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4"
               style={{ animationDelay: "0.3s" }}
             >
-              Establish a cryptographically verified identity for your autonomous agents. One click to deploy a sovereign
-              W3C DID, Passport, and live endpoint.
+              {t("hero_desc")}
             </p>
           </div>
 
@@ -48,7 +47,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
               className="btn-primary py-4 px-8 text-sm sm:text-base group relative overflow-hidden w-full sm:w-auto font-mono tracking-wider shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                Create My AI Agent
+                {t("hero_cta_create")}
                 <svg
                   className="w-4 h-4 group-hover:translate-x-1 transition-transform"
                   fill="none"
@@ -61,10 +60,10 @@ export default function HeroSection({ t }: HeroSectionProps) {
             </a>
             <a
               href="/docs"
-              className="text-xs sm:text-sm font-mono text-zinc-300 hover:text-white transition-colors flex items-center gap-2 px-4 py-3 focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none rounded"
+              className="text-xs sm:text-sm font-mono text-subtle hover:text-surface transition-colors flex items-center gap-2 px-4 py-3 border border-glass hover:border-glass-hover rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
             >
               <Shield className="w-4 h-4 opacity-70" />
-              Explore the Protocol
+              {t("hero_cta_explore")}
             </a>
           </div>
 
