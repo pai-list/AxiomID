@@ -6,6 +6,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { DevModeBanner } from '@/components/DevModeBanner';
 
+jest.mock('@/app/context/language-context', () => ({
+  useLanguage: () => ({ language: 'en', setLanguage: jest.fn(), t: (k: string) => k }),
+}));
+
 jest.mock('@/lib/pi-sdk', () => ({
   determineSandboxMode: jest.fn(),
 }));
