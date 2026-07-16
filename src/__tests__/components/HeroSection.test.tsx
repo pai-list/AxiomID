@@ -37,8 +37,8 @@ describe("HeroSection — rendering", () => {
 
   it("renders the static hero headline", () => {
     render(<HeroSection t={makeT()} />);
-    expect(screen.getByText("Create your")).toBeInTheDocument();
-    expect(screen.getByText("AI Identity")).toBeInTheDocument();
+    expect(screen.getByText("hero_create_your")).toBeInTheDocument();
+    expect(screen.getByText("hero_ai_identity")).toBeInTheDocument();
   });
 
   it("renders the HeroCards child component", () => {
@@ -50,7 +50,7 @@ describe("HeroSection — rendering", () => {
 describe("HeroSection — primary CTA", () => {
   it("renders a link to /claim with the expected label", () => {
     render(<HeroSection t={makeT()} />);
-    const cta = screen.getByText("Create My AI Agent").closest("a");
+    const cta = screen.getByRole("link", { name: /hero_cta_create/i });
     expect(cta).toHaveAttribute("href", "/claim");
   });
 });
@@ -58,38 +58,38 @@ describe("HeroSection — primary CTA", () => {
 describe("HeroSection — secondary CTA (PR change)", () => {
   it("renders a link to /docs with the expected label", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link).toHaveAttribute("href", "/docs");
   });
 
   it("applies the theme-aware text-subtle / text-surface hover classes", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link).toHaveClass("text-subtle", "hover:text-surface");
   });
 
   it("applies the border-glass pill treatment with rounded-xl corners", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link).toHaveClass("border", "border-glass", "hover:border-glass-hover", "rounded-xl");
   });
 
   it("no longer uses the old plain zinc text color or bare rounded class", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link.className).not.toContain("text-zinc-300");
     expect(link.className.split(/\s+/)).not.toContain("rounded");
   });
 
   it("keeps the focus-visible ring classes for accessibility", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link).toHaveClass("focus-visible:ring-2", "focus-visible:ring-electric-blue", "focus-visible:outline-none");
   });
 
   it("renders the Shield icon inside the secondary CTA", () => {
     render(<HeroSection t={makeT()} />);
-    const link = screen.getByRole("link", { name: /explore the protocol/i });
+    const link = screen.getByRole("link", { name: /hero_cta_explore/i });
     expect(link.querySelector("svg")).not.toBeNull();
   });
 });
