@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useWallet } from "../context/wallet-context";
 import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
 import { useLanguage } from "../context/language-context";
-import { Fingerprint, Zap, Bot, Terminal, Store } from "lucide-react";
+import { Fingerprint, Zap, Brain, Wallet, Code2, LayoutDashboard, Settings } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 
 import { TabPanel } from "@/components/dashboard/TabPanel";
@@ -29,12 +29,12 @@ export const dynamic = 'force-dynamic';
 type TabId = "home" | "identity" | "skills" | "wallet" | "memory" | "settings";
 
 const TABS: { id: TabId; icon: typeof Fingerprint; label: string }[] = [
-  { id: "home", icon: Zap, label: "Home" },
+  { id: "home", icon: LayoutDashboard, label: "Home" },
   { id: "identity", icon: Fingerprint, label: "Identity" },
-  { id: "skills", icon: Store, label: "Skills" },
-  { id: "wallet", icon: Zap, label: "Wallet" },
-  { id: "memory", icon: Bot, label: "Memory" },
-  { id: "settings", icon: Terminal, label: "Settings" },
+  { id: "skills", icon: Code2, label: "Skills" },
+  { id: "wallet", icon: Wallet, label: "Wallet" },
+  { id: "memory", icon: Brain, label: "Memory" },
+  { id: "settings", icon: Settings, label: "Settings" },
 ];
 
 export default function Dashboard() {
