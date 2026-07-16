@@ -164,8 +164,8 @@ export default function Dashboard() {
       ) : (
         /* AUTHENTICATED VIEW */
         <>
-          {/* TAB NAVIGATION */}
-          <nav className="flex items-center gap-1.5 mb-6 overflow-x-auto no-scrollbar px-1" role="tablist" aria-label="Dashboard sections">
+          {/* TAB NAVIGATION — desktop top bar */}
+          <nav className="flex items-center gap-1.5 mb-6 overflow-x-auto no-scrollbar px-1 max-md:hidden" role="tablist" aria-label="Dashboard sections">
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -180,24 +180,42 @@ export default function Dashboard() {
           </nav>
 
           {/* TAB CONTENT */}
-          <TabPanel id="home" activeTab={activeTab}>
-            <HomeTab user={user} levelProgress={levelProgress} agentStatus={agentStatus} daysActive={daysActive} />
-          </TabPanel>
-          <TabPanel id="identity" activeTab={activeTab}>
-            <IdentityTab user={user} claimAction={claimAction} claimKya={claimKya} connectWallet={connectWallet} />
-          </TabPanel>
-          <TabPanel id="skills" activeTab={activeTab}>
-            <SkillsTab />
-          </TabPanel>
-          <TabPanel id="wallet" activeTab={activeTab}>
-            <WalletTab />
-          </TabPanel>
-          <TabPanel id="memory" activeTab={activeTab}>
-            <MemoryTab />
-          </TabPanel>
-          <TabPanel id="settings" activeTab={activeTab}>
-            <SettingsTab />
-          </TabPanel>
+          <div className="pb-20 md:pb-0">
+            <TabPanel id="home" activeTab={activeTab}>
+              <HomeTab user={user} levelProgress={levelProgress} agentStatus={agentStatus} daysActive={daysActive} />
+            </TabPanel>
+            <TabPanel id="identity" activeTab={activeTab}>
+              <IdentityTab user={user} claimAction={claimAction} claimKya={claimKya} connectWallet={connectWallet} />
+            </TabPanel>
+            <TabPanel id="skills" activeTab={activeTab}>
+              <SkillsTab />
+            </TabPanel>
+            <TabPanel id="wallet" activeTab={activeTab}>
+              <WalletTab />
+            </TabPanel>
+            <TabPanel id="memory" activeTab={activeTab}>
+              <MemoryTab />
+            </TabPanel>
+            <TabPanel id="settings" activeTab={activeTab}>
+              <SettingsTab />
+            </TabPanel>
+          </div>
+
+          {/* TAB NAVIGATION — mobile bottom bar */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md" style={{ background: 'color-mix(in srgb, var(--bg-card) 95%, transparent)', borderColor: 'var(--card-border)', paddingBottom: 'env(safe-area-inset-bottom)' }} role="tablist" aria-label="Dashboard sections">
+            <div className="flex items-center justify-around py-1 px-1">
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button key={tab.id} role="tab" aria-selected={isActive} onClick={() => setActiveTab(tab.id)}
+                    className={`flex flex-col items-center gap-0.5 px-2 py-1.5 min-h-[48px] rounded-lg text-[10px] font-mono transition-all flex-1 max-w-[64px] ${isActive ? "text-neon-green" : "text-faint hover:text-subtle"}`}>
+                    <tab.icon className="w-5 h-5" />
+                    <span className="truncate w-full text-center leading-tight">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </>
       )}
 
