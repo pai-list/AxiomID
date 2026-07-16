@@ -1,4 +1,4 @@
-import { encryptToken, getIssuerPrivateKey } from '../../lib/crypto';
+import { encryptToken, getIssuerPrivateKey, hashPiUid } from '../../lib/crypto';
 import crypto from 'crypto';
 
 describe('crypto.ts', () => {
@@ -123,6 +123,68 @@ describe('crypto.ts', () => {
       // 63 lowercase hex chars → Buffer.from ignores the trailing incomplete nibble → 31 bytes
       process.env.PI_TOKEN_ENCRYPTION_KEY = '0'.repeat(62) + 'f'; // 63 chars
       expect(() => encryptToken('some-token')).toThrow('Token encryption failed: PI_TOKEN_ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
+    });
+  });
+
+  describe('hashPiUid', () => {
+    it('throws when PI_TOKEN_ENCRYPTION_KEY is not set', () => {
+      delete process.env.PI_TOKEN_ENCRYPTION_KEY;
+      expect(() => hashPiUid('some-pi-uid')).toThrow('PI_TOKEN_ENCRYPTION_KEY is required to hash Pi UIDs');
+    });
+
+    it('throws when PI_TOKEN_ENCRYPTION_KEY is an empty string (falsy)', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = '';
+      expect(() => hashPiUid('some-pi-uid')).toThrow('PI_TOKEN_ENCRYPTION_KEY is required to hash Pi UIDs');
+    });
+
+    it('returns a 64-character hex string (sha256 digest)', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+      const hash = hashPiUid('pi-uid-123');
+      expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    });
+
+    it('matches a manually computed sha256("uid:salt") digest', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = 'test-salt-value';
+      const expected = crypto.createHash('sha256').update('pi-uid-123:test-salt-value').digest('hex');
+      expect(hashPiUid('pi-uid-123')).toBe(expected);
+    });
+
+    it('is deterministic for the same uid and salt', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+      const first = hashPiUid('same-uid');
+      const second = hashPiUid('same-uid');
+      expect(first).toBe(second);
+    });
+
+    it('produces different hashes for different uids under the same salt', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+      const hashA = hashPiUid('uid-a');
+      const hashB = hashPiUid('uid-b');
+      expect(hashA).not.toBe(hashB);
+    });
+
+    it('produces different hashes for the same uid under different salts', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = 'salt-one';
+      const first = hashPiUid('same-uid');
+      process.env.PI_TOKEN_ENCRYPTION_KEY = 'salt-two';
+      const second = hashPiUid('same-uid');
+      expect(first).not.toBe(second);
+    });
+
+    it('does not use a colon-delimiter collision between uid and salt boundaries', () => {
+      // "ab" + ":" + "c" should differ from "a" + ":" + "bc" — the delimiter must
+      // not allow two different (uid, salt) pairs to collide on the same input string.
+      process.env.PI_TOKEN_ENCRYPTION_KEY = 'c';
+      const first = hashPiUid('ab');
+      process.env.PI_TOKEN_ENCRYPTION_KEY = 'bc';
+      const second = hashPiUid('a');
+      expect(first).not.toBe(second);
+    });
+
+    it('produces a stable, non-empty digest for an empty uid string', () => {
+      process.env.PI_TOKEN_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+      const hash = hashPiUid('');
+      expect(hash).toMatch(/^[0-9a-f]{64}$/);
     });
   });
 

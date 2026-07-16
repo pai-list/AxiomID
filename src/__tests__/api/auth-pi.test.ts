@@ -19,6 +19,7 @@ jest.mock('@/lib/rate-limiter', () => ({
 
 import { POST } from '@/app/api/auth/pi/route';
 import { prisma } from '@/lib/prisma';
+import { hashPiUid } from '@/lib/crypto';
 
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -532,5 +533,163 @@ describe('POST /api/auth/pi — sandbox dev token bypass (PR change)', () => {
     expect(global.fetch).not.toHaveBeenCalled();
     expect(mockPrisma.user.update).toHaveBeenCalled();
     expect(data.stellarAddress).toBe('GD5TJZNKPNFSSXN7XF26NNDAOVDN57S7LNJ6FSL2X5D62N676572N4Y2');
+  });
+});
+
+describe('POST /api/auth/pi — kycUidHash persistence (PR change)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    global.fetch = jest.fn();
+  });
+
+  it('stores a kycUidHash derived from the verified uid when creating a new user', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'pi-uid-123', username: 'testuser' }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockImplementation(async (args: any) => ({
+      id: 'user-1',
+      walletAddress: args.data.walletAddress,
+      stellarAddress: args.data.stellarAddress,
+      piUid: args.data.piUid,
+      piUsername: args.data.piUsername,
+      xp: args.data.xp,
+      tier: args.data.tier,
+      did: args.data.did,
+      didMethod: args.data.didMethod,
+      kycStatus: 'NONE',
+      agent: null,
+    } as any));
+
+    const req = mockRequest({
+      accessToken: 'valid-token',
+      uid: 'pi-uid-123',
+      username: 'testuser',
+    });
+
+    await POST(req);
+
+    const expectedHash = hashPiUid('pi-uid-123');
+    expect(mockPrisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kycUidHash: expectedHash,
+        }),
+      })
+    );
+  });
+
+  it('stores a kycUidHash derived from the verified uid when updating an existing user', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ uid: 'existing-uid', username: 'updated' }),
+    });
+
+    mockPrisma.user.findUnique.mockResolvedValue({
+      id: 'existing-user',
+      piUid: 'existing-uid',
+      did: 'did:axiom:pi:existing-uid',
+      didMethod: 'did:axiom',
+      agent: null,
+    } as any);
+
+    mockPrisma.user.update.mockResolvedValue({
+      id: 'existing-user',
+      walletAddress: 'pi:existing-uid',
+      stellarAddress: null,
+      piUid: 'existing-uid',
+      piUsername: 'updated',
+      xp: 100,
+      tier: 'Citizen',
+      did: 'did:axiom:pi:existing-uid',
+      kycStatus: 'VERIFIED',
+      agent: null,
+    } as any);
+
+    const req = mockRequest({
+      accessToken: 'new-token',
+      uid: 'existing-uid',
+      username: 'updated',
+    });
+
+    await POST(req);
+
+    const expectedHash = hashPiUid('existing-uid');
+    expect(mockPrisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kycUidHash: expectedHash,
+        }),
+      })
+    );
+  });
+
+  it('produces different kycUidHash values for different verified uids', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ uid: 'uid-one', username: 'user-one' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockImplementation(async (args: any) => ({
+      id: 'u1',
+      ...args.data,
+      agent: null,
+      kycStatus: 'NONE',
+    } as any));
+
+    await POST(mockRequest({ accessToken: 'token-1', uid: 'uid-one', username: 'user-one' }));
+    const firstCallHash = mockPrisma.user.create.mock.calls[0][0].data.kycUidHash;
+
+    jest.clearAllMocks();
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ uid: 'uid-two', username: 'user-two' }),
+    });
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.user.create.mockImplementation(async (args: any) => ({
+      id: 'u2',
+      ...args.data,
+      agent: null,
+      kycStatus: 'NONE',
+    } as any));
+
+    await POST(mockRequest({ accessToken: 'token-2', uid: 'uid-two', username: 'user-two' }));
+    const secondCallHash = mockPrisma.user.create.mock.calls[0][0].data.kycUidHash;
+
+    expect(firstCallHash).not.toBe(secondCallHash);
+  });
+
+  it('returns INTERNAL_ERROR when PI_TOKEN_ENCRYPTION_KEY is unset (encryptToken/hashPiUid cannot run)', async () => {
+    const originalKey = process.env.PI_TOKEN_ENCRYPTION_KEY;
+    delete process.env.PI_TOKEN_ENCRYPTION_KEY;
+
+    try {
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({ uid: 'pi-uid-no-key', username: 'testuser' }),
+      });
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+
+      const req = mockRequest({
+        accessToken: 'valid-token',
+        uid: 'pi-uid-no-key',
+        username: 'testuser',
+      });
+
+      const res = await POST(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(500);
+      expect(data.code).toBe('INTERNAL_ERROR');
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    } finally {
+      if (originalKey === undefined) {
+        delete process.env.PI_TOKEN_ENCRYPTION_KEY;
+      } else {
+        process.env.PI_TOKEN_ENCRYPTION_KEY = originalKey;
+      }
+    }
   });
 });
