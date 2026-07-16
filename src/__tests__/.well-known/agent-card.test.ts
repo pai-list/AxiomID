@@ -6,7 +6,7 @@
  * Serves the A2A AgentCard directory for agent discovery.
  */
 
-import { GET } from "@/app/.well-known/agent-card.json/route";
+import { GET } from "@/app/.well-known/agent-card/route";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -132,7 +132,7 @@ describe("GET /.well-known/agent-card.json", () => {
     const response = await GET(createRequest());
     const body = await response.json();
 
-    expect(body.agents[0].url).toBe("https://axiomid.app/agent/ag_mock1");
+    expect(body.agents[0].url).toBe("https://axiomid.app");
   });
 
   it("should filter out non-discoverable agents", async () => {
