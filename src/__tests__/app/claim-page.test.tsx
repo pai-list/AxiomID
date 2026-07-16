@@ -759,7 +759,9 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
     await act(async () => {
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
-    expect(screen.getByText("Pi Browser Required")).toBeInTheDocument();
+    // Both ConnectStep and the modal render "Pi Browser Required"
+    // ConnectStep + modal = exactly 2
+    expect(screen.getAllByText("Pi Browser Required").length).toBe(2);
 
     // Two "Try Demo Mode" buttons are now on screen: one from ConnectStep,
     // one from the modal itself. Find the modal's button by its distinct styling.
@@ -789,11 +791,14 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
     await act(async () => {
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
-    expect(screen.getByText("Pi Browser Required")).toBeInTheDocument();
+    // Both ConnectStep and the modal render "Pi Browser Required"
+    // ConnectStep + modal = exactly 2
+    expect(screen.getAllByText("Pi Browser Required").length).toBe(2);
 
     fireEvent.click(screen.getByText("Got it"));
 
-    expect(screen.queryByText("Pi Browser Required")).toBeNull();
+    // Modal is closed; only ConnectStep's warning remains
+    expect(screen.getAllByText("Pi Browser Required").length).toBe(1);
     expect(connectDemo).not.toHaveBeenCalled();
   });
 });
