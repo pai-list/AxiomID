@@ -136,7 +136,6 @@ export async function GET(request: NextRequest) {
   try {
     const agents = await prisma.userAgent.findMany({
       where: { status: "ACTIVE", discoverable: true },
-      orderBy: { lastActive: "desc" },
       take: 1000,
       include: {
         installedSkills: {
