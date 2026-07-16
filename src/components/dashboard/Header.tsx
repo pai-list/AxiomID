@@ -16,6 +16,13 @@ interface HeaderProps {
   navItems: NavItem[];
 }
 
+/**
+ * Renders the dashboard header with branding, navigation, and header actions.
+ *
+ * @param pathname - The current path used to identify the active navigation item
+ * @param navItems - The navigation items displayed in the header
+ * @returns The dashboard header element
+ */
 export function Header({ pathname, navItems }: HeaderProps) {
   const { t } = useLanguage();
 

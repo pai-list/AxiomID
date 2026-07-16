@@ -13,6 +13,13 @@ interface HeaderProps {
   showWallet?: boolean;
 }
 
+/**
+ * Renders the site header with branding, navigation controls, and optional wallet actions.
+ *
+ * @param showBack - Whether to display the back navigation control.
+ * @param showWallet - Whether to display the wallet control.
+ * @returns The rendered site header.
+ */
 export default function Header({ showBack = false, showWallet = false }: HeaderProps) {
   const { t, language } = useLanguage();
   const { connectWallet, isConnecting } = useWallet();

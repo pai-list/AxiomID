@@ -15,6 +15,16 @@ interface HeaderActionsProps {
   isConnecting?: boolean;
 }
 
+/**
+ * Renders header navigation controls with optional back, appearance, and wallet actions.
+ *
+ * @param showBack - Whether to display a link back to the home page.
+ * @param showWallet - Whether to display wallet-related actions.
+ * @param minimal - Whether to hide the language and theme toggles.
+ * @param onConnect - Optional callback invoked when the connect action is selected.
+ * @param isConnecting - Optional override for the wallet connection state.
+ * @returns The header actions navigation.
+ */
 export function HeaderActions({ showBack, showWallet, minimal, onConnect, isConnecting: externalConnecting }: HeaderActionsProps) {
   const { user, connectWallet, isConnecting: walletConnecting, logout } = useWallet();
   const { t } = useLanguage();

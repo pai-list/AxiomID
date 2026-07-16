@@ -37,6 +37,9 @@ const TABS: { id: TabId; icon: typeof Fingerprint; label: string }[] = [
   { id: "settings", icon: Settings, label: "Settings" },
 ];
 
+/**
+ * Renders the dashboard, including wallet connection, onboarding, navigation, and authenticated tab content.
+ */
 export default function Dashboard() {
   const { t } = useLanguage();
   const {
