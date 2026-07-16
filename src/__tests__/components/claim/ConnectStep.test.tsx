@@ -70,7 +70,8 @@ describe("ConnectStep — basic rendering", () => {
 
   it("renders 'Connected' badge when walletConnected is true", () => {
     render(<ConnectStep {...defaultProps({ walletConnected: true })} />);
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    // Badge text + fallback paragraph when no walletAddress
+    expect(screen.getAllByText("Connected").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders 'Connected' badge and truncated wallet address when user has a walletAddress", () => {
