@@ -31,32 +31,12 @@ import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import InteractiveCommandDemo from "@/components/landing/InteractiveCommandDemo";
 
-describe("InteractiveCommandDemo — missing `t` helper (regression)", () => {
-  it("throws a ReferenceError because `t` is never imported or defined", () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    expect(() => render(<InteractiveCommandDemo />)).toThrow(/t is not defined/);
-    consoleErrorSpy.mockRestore();
-  });
-});
-
-describe("InteractiveCommandDemo — command loop (with `t` polyfilled as a workaround)", () => {
+describe("InteractiveCommandDemo — command loop", () => {
   let scrollIntoViewMock: jest.Mock;
 
   beforeAll(() => {
-    // Work around the missing-`t`-import bug (see file header) so the rest
-    // of the component's logic can be exercised. `t` is referenced as a
-    // free identifier inside the module, so assigning it on the global
-    // object makes it resolvable without touching the component's source.
-    (global as unknown as { t: (en: string, ar: string) => string }).t = (en: string) => en;
-
-    // jsdom does not implement scrollIntoView; the component calls it on
-    // every log update via a ref effect.
     scrollIntoViewMock = jest.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
-  });
-
-  afterAll(() => {
-    delete (global as unknown as { t?: unknown }).t;
   });
 
   beforeEach(() => {
