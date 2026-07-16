@@ -388,11 +388,6 @@ id: did:axiom:z6Mkabc123
 name: "Alice's Assistant"
 description: "A personal AI assistant operated by Alice"
 
-kyc:
-  provider: pi-network
-  status: verified
-  verified_at: "2026-07-16T10:00:00Z"
-
 attestations:
   - provider: pi-network
     type: kyc

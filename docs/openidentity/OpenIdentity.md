@@ -116,14 +116,15 @@ All discovery URLs point to resources under `/.well-known/` (see [Section 5: Dis
 | `documentation` | URL | Link to full documentation |
 | `image` | URL | Avatar or OG image URL |
 
-#### Verification (optional)
+#### Attestations (optional)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `kyc` | object | KYC attestation from a trusted provider |
-| `kyc.provider` | string | Verification provider ID (e.g. `"pi-network"`) |
-| `kyc.status` | string | Verification status: `"verified"` \| `"pending"` \| `"unverified"` |
-| `kyc.verified_at` | ISO 8601 | When verification was completed |
+| `attestations` | array of objects | Verifiable claims from trust providers |
+| `attestations[].provider` | string | Verification provider ID (e.g. `"pi-network"`) |
+| `attestations[].type` | string | Attestation type (e.g. `"kyc"`, `"oauth"`) |
+| `attestations[].status` | string | Status: `"verified"` \| `"pending"` \| `"unverified"` |
+| `attestations[].verified_at` | ISO 8601 | When verification was completed |
 
 ---
 
@@ -145,10 +146,11 @@ All discovery URLs point to resources under `/.well-known/` (see [Section 5: Dis
 | `well_known.auth` | URL | ❌ | HTTPS |
 | `well_known.skills` | URL | ❌ | HTTPS |
 | `well_known.wallet` | URL | ❌ | HTTPS |
-| `kyc` | object | ❌ | See below |
-| `kyc.provider` | string | ❌ | Free-form |
-| `kyc.status` | string | ❌ | One of: `verified`, `pending`, `unverified` |
-| `kyc.verified_at` | ISO 8601 | ❌ | Pattern: `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z` |
+| `attestations` | array | ❌ | List of attestation objects |
+| `attestations[].provider` | string | ❌ | Provider ID (e.g. `pi-network`) |
+| `attestations[].type` | string | ❌ | Attestation type (e.g. `kyc`) |
+| `attestations[].status` | string | ❌ | One of: `verified`, `pending`, `unverified` |
+| `attestations[].verified_at` | ISO 8601 | ❌ | Pattern: `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z` |
 
 ### 3.2 JSON Schema
 
@@ -230,10 +232,11 @@ well_known:
   skills: "https://axiomid.app/.well-known/skills.md"
   wallet: "https://axiomid.app/.well-known/wallet.md"
 
-kyc:
-  provider: "pi-network"
-  status: "verified"
-  verified_at: "2026-07-16T10:00:00Z"
+attestations:
+  - provider: "pi-network"
+    type: "kyc"
+    status: "verified"
+    verified_at: "2026-07-16T10:00:00Z"
 ---
 
 # Amrikyy
@@ -275,11 +278,14 @@ See [passport.md](./passport.md) for the full agent genome.
     "skills": "https://axiomid.app/.well-known/skills.md",
     "wallet": "https://axiomid.app/.well-known/wallet.md"
   },
-  "kyc": {
-    "provider": "pi-network",
-    "status": "verified",
-    "verified_at": "2026-07-16T10:00:00Z"
-  }
+  "attestations": [
+    {
+      "provider": "pi-network",
+      "type": "kyc",
+      "status": "verified",
+      "verified_at": "2026-07-16T10:00:00Z"
+    }
+  ]
 }
 ```
 
@@ -316,7 +322,7 @@ MCP servers can reference their OpenIdentity manifest in server metadata. Before
 | **Document** | Verifiable Credentials | OpenIdentity manifest (`openidentity.md`) |
 | **Attestation** | Cryptographic proofs | KYC status reference |
 
-KYA is the verification protocol. OpenIdentity is where the result is published. The `kyc` field in the manifest references a KYA attestation; the actual proof is fetched and verified via the KYA protocol.
+KYA is the verification protocol. OpenIdentity is where the result is published. The `attestations[]` field in the manifest references KYA attestations; the actual proof is fetched and verified via the KYA protocol.
 
 ### 6.4 Summary
 
@@ -348,7 +354,7 @@ The `id` field contains a W3C DID. Runtimes SHOULD:
 
 ### 7.3 Attestation Verification
 
-When a `kyc` attestation is present, runtimes SHOULD:
+When an `attestation` is present, runtimes SHOULD:
 
 1. Verify the attestation provider's signature
 2. Check the `verified_at` timestamp for freshness
@@ -406,10 +412,11 @@ well_known:
   auth: "https://axiomid.app/.well-known/auth.md"
   skills: "https://axiomid.app/.well-known/skills.md"
   wallet: "https://axiomid.app/.well-known/wallet.md"
-kyc:
-  provider: "pi-network"
-  status: "verified"
-  verified_at: "2026-07-16T10:00:00Z"
+attestations:
+  - provider: "pi-network"
+    type: "kyc"
+    status: "verified"
+    verified_at: "2026-07-16T10:00:00Z"
 ---
 ```
 

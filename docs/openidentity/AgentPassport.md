@@ -199,18 +199,18 @@ owner:
 | `owner.did` | string | ❌ | Owner DID |
 | `owner.url` | URL | ❌ | Owner website or profile |
 
-### 4.4 KYA (Know Your Agent)
+### 4.4 Attestations (KYA)
+
+Verifiable claims from trust providers. The canonical form is `attestations[]`:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `kyc.provider` | string | ❌ | Verification provider (e.g., `pi-network`) |
-| `kyc.status` | string | ❌ | KYC status (`verified`, `pending`, `unverified`) |
-| `kyc.verified_at` | ISO 8601 | ❌ | When KYC was completed |
-| `kyc.level` | integer | ❌ | KYA verification level (0–5) |
-
-### 4.5 Attestations
-
-An array of verifiable claims from trust providers:
+| `attestations` | array | ❌ | List of attestation objects |
+| `attestations[].provider` | string | ❌ | Verification provider (e.g., `pi-network`) |
+| `attestations[].type` | string | ❌ | Attestation type (e.g., `kyc`, `oauth`) |
+| `attestations[].status` | string | ❌ | Status (`verified`, `pending`, `unverified`) |
+| `attestations[].verified_at` | ISO 8601 | ❌ | When verification was completed |
+| `attestations[].level` | integer | ❌ | KYA verification level (0–5) |
 
 ```yaml
 attestations:
@@ -316,14 +316,8 @@ openidentity: "https://example.com/.well-known/openidentity.md"
 passport: "https://example.com/.well-known/passport.md"
 agent_card: "https://example.com/.well-known/agent-card.json"
 auth: "https://example.com/.well-known/auth.md"
-skills: "https://example.com/.well-known/skills.md"
-wallet: "https://example.com/.well-known/wallet.md"
-
-kyc:
-  provider: "pi-network"
-  status: "verified"
-  verified_at: "2026-07-16T10:00:00Z"
-  level: 3
+  skills: "https://example.com/.well-known/skills.md"
+  wallet: "https://example.com/.well-known/wallet.md"
 
 attestations:
   - provider: "pi-network"
@@ -553,14 +547,8 @@ openidentity: "https://axiomid.app/.well-known/openidentity.md"
 passport: "https://axiomid.app/.well-known/passport.md"
 agent_card: "https://axiomid.app/.well-known/agent-card.json"
 auth: "https://axiomid.app/.well-known/auth.md"
-skills: "https://axiomid.app/.well-known/skills.md"
-wallet: "https://axiomid.app/.well-known/wallet.md"
-
-kyc:
-  provider: "pi-network"
-  status: "verified"
-  verified_at: "2026-07-16T10:00:00Z"
-  level: 3
+  skills: "https://axiomid.app/.well-known/skills.md"
+  wallet: "https://axiomid.app/.well-known/wallet.md"
 
 attestations:
   - provider: "pi-network"
@@ -828,7 +816,6 @@ See the `passport` definition in `openidentity.schema.json` for the complete sch
 | `xp` | ❌ | ❌ Optional |
 | `status` | ❌ | ❌ Optional |
 | Well-known URLs | ✅ Required (subset) | ❌ Optional (subset) |
-| `kyc` | ❌ | ❌ Optional |
 | `attestations` | ❌ | ❌ Optional |
 | `memory` | ❌ | ❌ Optional |
 | `capabilities` | ❌ Object (legacy) | ✅ Array (structured) |

@@ -63,11 +63,12 @@ capabilities:
   - mcp
   - skills
 
-# Verification
-kyc:
-  provider: pi-network
-  status: verified
-  verified_at: "2026-07-16T10:00:00Z"
+# Attestations (replaces single kyc object)
+attestations:
+  - provider: pi-network
+    type: kyc
+    status: verified
+    verified_at: "2026-07-16T10:00:00Z"
 ```
 
 ## Protocol Relationships
