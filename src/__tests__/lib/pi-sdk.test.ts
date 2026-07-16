@@ -303,6 +303,22 @@ describe('pi-sdk', () => {
 
     it('returns true when window.Pi is defined', () => {
       g.window = { Pi: {} };
+      g.navigator = { userAgent: '' };
+      expect(checkPiBrowser()).toBe(true);
+    });
+
+    // PR change: the navigator-undefined guard now runs before the window.Pi
+    // check (previously window.Pi was checked first). This means a defined
+    // window.Pi can no longer short-circuit past a missing `navigator`.
+    it('returns false when window.Pi is defined but navigator is undefined (PR change: navigator check now precedes window.Pi check)', () => {
+      g.window = { Pi: {} };
+      g.navigator = undefined;
+      expect(checkPiBrowser()).toBe(false);
+    });
+
+    it('returns true via window.Pi when navigator is defined but userAgent does not match Pi patterns', () => {
+      g.window = { Pi: {} };
+      g.navigator = { userAgent: 'Mozilla/5.0 (generic browser)' };
       expect(checkPiBrowser()).toBe(true);
     });
 
