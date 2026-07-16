@@ -6,8 +6,15 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { DevModeBanner } from '@/components/DevModeBanner';
 
+const mockSetLanguage = jest.fn();
+const mockT = jest.fn((k: string) => k);
+
 jest.mock('@/app/context/language-context', () => ({
-  useLanguage: () => ({ language: 'en', setLanguage: jest.fn(), t: (k: string) => k }),
+  useLanguage: () => ({
+    language: 'en',
+    setLanguage: mockSetLanguage,
+    t: mockT,
+  }),
 }));
 
 jest.mock('@/lib/pi-sdk', () => ({
