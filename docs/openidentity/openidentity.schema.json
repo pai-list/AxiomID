@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiomid.app/.well-known/openidentity.schema.json",
+  "title": "OpenIdentity",
+  "description": "JSON Schema for OpenIdentity documents — the open identity layer for AI agents",
+  "type": "object",
+  "version": "0.1",
+
+  "definitions": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "iso8601": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "did": {
+      "type": "string",
+      "pattern": "^did:axiom:"
+    },
+
+    "openidentity": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "did": { "$ref": "#/definitions/did" },
+        "passport": { "$ref": "#/definitions/url" },
+        "identity": { "$ref": "#/definitions/url" },
+        "auth": { "$ref": "#/definitions/url" },
+        "skills": { "$ref": "#/definitions/url" },
+        "wallet": { "$ref": "#/definitions/url" },
+        "mcp": { "$ref": "#/definitions/url" },
+        "a2a": { "$ref": "#/definitions/url" },
+        "memory": { "$ref": "#/definitions/url" },
+        "publicKeys": { "$ref": "#/definitions/url" },
+        "kya": { "$ref": "#/definitions/url" },
+        "trust": { "$ref": "#/definitions/url" },
+        "created": { "$ref": "#/definitions/iso8601" },
+        "updated": { "$ref": "#/definitions/iso8601" }
+      },
+      "required": ["version", "did", "passport", "created", "updated"],
+      "additionalProperties": true
+    },
+
+    "passport": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "did": { "$ref": "#/definitions/did" },
+        "publicId": { "type": "string", "pattern": "^ag_" },
+        "description": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["active", "paused", "inactive", "sleeping"] },
+        "owner": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "did": { "$ref": "#/definitions/did" }
+          },
+          "required": ["did"]
+        },
+        "kya": {
+          "type": "object",
+          "properties": {
+            "provider": { "type": "string" },
+            "status": { "type": "string", "enum": ["verified", "pending", "unverified"] },
+            "level": { "type": "integer", "minimum": 0, "maximum": 5 }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "streaming": { "type": "boolean" },
+            "pushNotifications": { "type": "boolean" }
+          }
+        },
+        "trustProvider": { "type": "string" },
+        "attestations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "provider": { "type": "string" },
+              "status": { "type": "string", "enum": ["verified", "pending", "unverified"] }
+            }
+          }
+        },
+        "credentials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "credentialStatus": { "$ref": "#/definitions/url" }
+            }
+          }
+        },
+        "links": {
+          "type": "object",
+          "properties": {
+            "identity": { "$ref": "#/definitions/url" },
+            "auth": { "$ref": "#/definitions/url" },
+            "skills": { "$ref": "#/definitions/url" },
+            "wallet": { "$ref": "#/definitions/url" },
+            "mcp": { "$ref": "#/definitions/url" },
+            "a2a": { "$ref": "#/definitions/url" },
+            "memory": { "$ref": "#/definitions/url" },
+            "publicKeys": { "$ref": "#/definitions/url" }
+          }
+        },
+        "created": { "$ref": "#/definitions/iso8601" },
+        "updated": { "$ref": "#/definitions/iso8601" }
+      },
+      "required": ["version", "name", "did", "publicId", "owner", "created", "updated"],
+      "additionalProperties": true
+    }
+  },
+
+  "oneOf": [
+    { "$ref": "#/definitions/openidentity" },
+    { "$ref": "#/definitions/passport" }
+  ]
+}
