@@ -113,6 +113,16 @@ describe("@axiomid/sdk", () => {
       await expect(sdk.verifyPassport("nonexistent")).rejects.toThrow(AxiomIDError);
     });
 
+    it("includes the piWalletAddress field on the returned passport", async () => {
+      fetchSpy.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockPassport,
+      });
+
+      const passport = await sdk.verifyPassport("pioneer.username");
+      expect(passport.piWalletAddress).toBe("GA123DEF");
+    });
+
     it("passes Authorization header when apiKey is set", async () => {
       const authedSdk = new AxiomSDK({ network: "mainnet", apiKey: "test-key" });
       fetchSpy.mockResolvedValueOnce({

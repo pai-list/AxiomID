@@ -597,3 +597,51 @@ describe("AxiomSDK – verifyPassport with null agent fields", () => {
     expect(passport.agentPublicKey).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// AxiomSDK – Passport field rename (stellarAddress -> piWalletAddress)
+// ---------------------------------------------------------------------------
+
+describe("AxiomSDK – Passport piWalletAddress field", () => {
+  let fetchSpy: jest.SpyInstance;
+  let sdk: AxiomSDK;
+
+  beforeEach(() => {
+    sdk = new AxiomSDK({ network: "mainnet" });
+    fetchSpy = jest.spyOn(global, "fetch");
+  });
+
+  afterEach(() => {
+    fetchSpy.mockRestore();
+  });
+
+  it("passes through the piWalletAddress field from the API response", async () => {
+    fetchSpy.mockResolvedValueOnce(mockOk(basePassport));
+
+    const passport = await sdk.verifyPassport("alice");
+
+    expect(passport.piWalletAddress).toBe("GA456DEF");
+  });
+
+  it("passes through an empty string piWalletAddress unchanged", async () => {
+    fetchSpy.mockResolvedValueOnce(mockOk({ ...basePassport, piWalletAddress: "" }));
+
+    const passport = await sdk.verifyPassport("alice");
+
+    expect(passport.piWalletAddress).toBe("");
+  });
+
+  it("does not synthesize piWalletAddress from a legacy stellarAddress field", async () => {
+    const legacyPassport: Record<string, unknown> = { ...basePassport };
+    delete legacyPassport.piWalletAddress;
+    legacyPassport.stellarAddress = "GA456DEF";
+    fetchSpy.mockResolvedValueOnce(mockOk(legacyPassport));
+
+    const passport = await sdk.verifyPassport("alice");
+
+    expect(passport.piWalletAddress).toBeUndefined();
+    expect((passport as unknown as Record<string, unknown>).stellarAddress).toBe(
+      "GA456DEF"
+    );
+  });
+});
