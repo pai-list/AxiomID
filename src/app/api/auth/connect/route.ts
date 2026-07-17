@@ -7,6 +7,7 @@ import { verifyState } from '@/lib/oauth-state';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 /**
  * Handle a wallet connection request and respond with connected user details or an error.
@@ -74,6 +75,30 @@ export async function POST(request: NextRequest) {
     });
 
     const tier = calculateTier(user.xp);
+    const isNewUser = user.createdAt.getTime() === user.updatedAt.getTime();
+
+    const posthog = getPostHogClient();
+    posthog.identify({
+      distinctId: user.id,
+      properties: {
+        wallet_address: user.walletAddress,
+        tier,
+        xp: user.xp,
+        kyc_status: existingUser?.kycStatus ?? null,
+      },
+    });
+    posthog.capture({
+      distinctId: user.id,
+      event: 'wallet_connected',
+      properties: {
+        is_new_user: isNewUser,
+        tier,
+        xp: user.xp,
+        has_did: !!existingUser?.did,
+        kyc_status: existingUser?.kycStatus ?? null,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess({
       userId: user.id,
@@ -82,7 +107,7 @@ export async function POST(request: NextRequest) {
       xp: user.xp,
       did: existingUser?.did ?? null,
       kycStatus: existingUser?.kycStatus ?? null,
-      isNewUser: user.createdAt.getTime() === user.updatedAt.getTime(),
+      isNewUser,
     });
   } catch (error) {
     logger.error('[WALLET-CONNECT] Database error:', error);

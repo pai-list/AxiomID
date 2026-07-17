@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import { useWallet } from "@/app/context/wallet-context";
 import { useLanguage } from "@/app/context/language-context";
 import Header from "@/components/Header";
@@ -83,7 +84,14 @@ export default function ClaimPage() {
   const nextStep = () => {
     if (currentStep < 3) {
       setDirection(1);
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev) => {
+        const next = prev + 1;
+        posthog.capture('identity_claim_step_completed', {
+          completed_step: prev,
+          next_step: next,
+        });
+        return next;
+      });
     }
   };
 
@@ -96,6 +104,7 @@ export default function ClaimPage() {
 
   const handleConnect = async () => {
     setConnectError(null);
+    posthog.capture('wallet_connect_initiated', { method: 'pi_wallet' });
     const actuallyInPiBrowser = isPiBrowser || checkPiBrowser();
     if (!actuallyInPiBrowser && !determineSandboxMode()) {
       setShowBrowserModal(true);
@@ -111,6 +120,7 @@ export default function ClaimPage() {
 
   const handleDemoConnect = async () => {
     setConnectError(null);
+    posthog.capture('wallet_connect_initiated', { method: 'demo' });
     await connectDemo();
     setWalletConnected(true);
   };
@@ -166,6 +176,7 @@ export default function ClaimPage() {
       const activated = isDemo || await activateAgent();
       if (activated) {
         setDeployed(true);
+        posthog.capture('agent_deployed', { agent_name: name });
         toast.success(t("Agent deployed successfully", "تم نشر وتفعيل الوكيل بنجاح"));
         confetti({
           particleCount: 150,

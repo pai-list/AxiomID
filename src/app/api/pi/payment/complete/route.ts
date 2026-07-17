@@ -8,6 +8,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { calculateTier } from '@/lib/tiers';
 import { requireAuth } from '@/lib/auth-middleware';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 export const maxDuration = 30;
 
@@ -146,6 +147,19 @@ export async function POST(request: NextRequest) {
 
       return { updatedPayment, updatedUser, newTier, newBalance };
     });
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: auth.user.id,
+      event: 'payment_completed',
+      properties: {
+        payment_id: paymentId,
+        amount_pi: payment.amount,
+        xp_earned: result.newBalance,
+        new_tier: result.newTier,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess({
       status: 'completed',

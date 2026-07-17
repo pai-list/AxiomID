@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import posthog from "posthog-js";
 import { toast } from "sonner";
 import { useWallet } from "../../context/wallet-context";
 import { motion } from "framer-motion";
@@ -205,6 +206,7 @@ export default function MarketplacePage() {
     if (!selectedSkill || selectedSkill.slug !== slug) {
       setSelectedSkill(null);
     }
+    posthog.capture('marketplace_skill_viewed', { skill_slug: slug });
     try {
       const token = typeof localStorage !== "undefined" ? localStorage.getItem("pi_access_token") : null;
       const headers: Record<string, string> = {};

@@ -6,6 +6,7 @@ import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { SlugParamSchema, SkillReviewCreateSchema } from "@/lib/validators";
 import { logger } from "@/lib/logger";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const auth = await requireAuth(req);
@@ -63,6 +64,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
         ratingCount: aggregation._count.rating,
       },
     });
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: auth.user.id,
+      event: 'skill_review_submitted',
+      properties: {
+        skill_slug: slug,
+        rating: rating,
+        has_review_text: !!review,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess(skillReview, 201);
   } catch (error) {

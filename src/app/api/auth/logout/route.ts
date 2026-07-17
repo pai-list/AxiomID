@@ -5,6 +5,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { requireAuth, clearAuthCache, hashToken } from '@/lib/auth-middleware';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 /**
  * Logs out the authenticated user and invalidates their cached access token.
@@ -35,6 +36,16 @@ export async function POST(request: NextRequest) {
     if (accessToken) {
       clearAuthCache(hashToken(accessToken));
     }
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: auth.user.id,
+      event: 'user_logged_out',
+      properties: {
+        wallet_address: auth.user.walletAddress,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess({ message: 'Logged out successfully' });
   } catch (error) {

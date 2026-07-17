@@ -5,6 +5,7 @@ import { apiError, apiSuccess, rateLimitHeaders } from '@/lib/errors';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/ip';
 import { requireAuth } from '@/lib/auth-middleware';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 /**
  * Installs a published skill into the authenticated user's agent.
@@ -144,6 +145,21 @@ export async function POST(
       });
     }
 
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user.id,
+      event: 'skill_installed',
+      properties: {
+        skill_slug: skill.slug,
+        skill_name: skill.name,
+        skill_tier: skill.tier,
+        skill_price_pi: skill.pricePi,
+        is_paid: skill.pricePi > 0,
+        skill_version: skill.version,
+      },
+    });
+    await posthog.flush();
+
     return apiSuccess({
       installed: true,
       skillSlug: skill.slug,
@@ -209,6 +225,18 @@ export async function DELETE(
         data: { installCount: { decrement: 1 } },
       }),
     ]);
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user.id,
+      event: 'skill_uninstalled',
+      properties: {
+        skill_slug: skill.slug,
+        skill_name: skill.name,
+        skill_tier: skill.tier,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess({
       uninstalled: true,
