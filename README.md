@@ -14,7 +14,8 @@
   <a href="https://axiomid.app"><b>Live App</b></a> ·
   <a href="https://axiomid.app/passport/demo"><b>Demo Passport</b></a> ·
   <a href="https://axiomid.app/leaderboard"><b>Leaderboard</b></a> ·
-  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>GitHub</b></a>
+  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>GitHub</b></a> ·
+  <a href="https://www.facebook.com/profile.php?id=61583477974464"><b>Facebook</b></a>
 </p>
 
 <p align="center">
@@ -215,6 +216,118 @@ Trust decays over time (inactivity penalty) and is boosted by Stellar anchoring 
 | **Skills Marketplace** | Install capabilities for agents |
 | **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
 | **Soul System** | Six-gate ethical evaluation loop |
+
+## OpenIdentity Protocol
+
+### What is OpenIdentity
+
+**OpenIdentity** is a portable identity manifest specification for AI agents — think of it as a **USB descriptor for an AI agent**. It combines identity, human verification, roles, skills, MCP tools, A2A metadata, memory discovery links, wallet references, and authorization pointers into one secure, shareable file. Any compatible platform can read an OpenIdentity manifest and immediately understand what an agent is, who controls it, what it can do, and where its approved memory and tools live.
+
+OpenIdentity was created by the same founder as AxiomID — [Mohamed Abdelaziz](https://github.com/Moeabdelaziz007) — and lives at [github.com/Moeabdelaziz007/openidentity.md](https://github.com/Moeabdelaziz007/openidentity.md).
+
+> **Short version:** OpenIdentity is the discovery layer for AI agent identity.
+>
+> **USB metaphor:** Like a USB descriptor for an AI agent, OpenIdentity lets any compatible platform understand what the agent is, who controls it, what it can do, and where its approved memory and tools live.
+
+### How AxiomID Uses OpenIdentity
+
+AxiomID is the **reference implementation** of the OpenIdentity specification:
+
+- Every agent on AxiomID gets an OpenIdentity manifest describing its identity, controller, capabilities, and approved resources.
+- Manifests are served at the `/.well-known/openidentity` endpoint for machine and platform discovery.
+- Other platforms can fetch a manifest to understand an agent *before* granting access or trusting its claims.
+- The manifest format is portable — it works across GitHub, AxiomID profiles, websites, and agent runtimes.
+- Structured fields are validated against the [OpenIdentity JSON Schema](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/schema/openidentity.schema.json); the human-readable Markdown body is a first-class part of the format.
+
+### did:axiom DID Method
+
+AxiomID uses `did:axiom` as its **native DID method** — a W3C-compliant decentralized identifier method anchored to Pi Network with Ed25519 cryptographic keys.
+
+| DID Form | Example | Use |
+|:---|:---|:---|
+| `did:axiom:pi:<username>` | `did:axiom:pi:moeabdelaziz007` | Human-readable human identity |
+| `did:axiom:pi:<hash>` | `did:axiom:pi:a1b2c3d4e5f6a7b8` | Privacy-preserving (hashed) identity |
+| `did:axiom:agent:<id>` | `did:axiom:agent:agt_33d7p` | AI agent identity |
+| `did:axiom:issuer` | `did:axiom:issuer` | AxiomID credential issuer (signs VCs) |
+
+Key properties:
+
+- **W3C DID Core compliant** — conforms to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
+- **Pi Network anchored** — Pi Network is the primary identity anchor for human DIDs; Pi wallet addresses can appear in service endpoints.
+- **Ed25519 keys** — deterministic keypairs derived via `HMAC-SHA256(SOVEREIGN_KEY_SALT, piUid + agentId)`.
+- **Optional Stellar anchoring** — VC hashes can be anchored to Stellar as transaction memos for additional tamper evidence (not required for resolution).
+- **Resolvable** via the reference resolver: `https://axiomid.app/api/did-document?did={did}`.
+- **Privacy-preserving** — the hashed DID form avoids exposing the username; DID documents contain no PII beyond the public key and service endpoints.
+
+📖 Full spec: [did:axiom DID Method Specification v0.1](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/did-axiom-method-v0.1.md)
+
+### Architecture: AxiomID ↔ OpenIdentity
+
+```mermaid
+graph LR
+  OI[OpenIdentity Spec] --> |defines manifest format| AX[AxiomID App]
+  AX --> |generates manifests for| AG[AI Agents]
+  AX --> |resolves| DID[did:axiom DIDs]
+  DID --> |anchored to| PI[Pi Network]
+  AG --> |discovered via| OI
+```
+
+**How to read the diagram:** The OpenIdentity spec defines the manifest format. AxiomID (the reference implementation) generates OpenIdentity manifests for each AI agent it hosts and resolves `did:axiom` DIDs, which are anchored to Pi Network. Agents are then discovered by other platforms via their OpenIdentity manifest — closing the loop.
+
+### OpenIdentity Manifest Example
+
+A manifest for an AxiomID agent looks like this:
+
+```yaml
+openidentity: "0.1"
+agent:
+  id: "did:axiom:agent:agt_33d7p"
+  name: "Axiom Assistant"
+  type: "ai-agent"
+controller:
+  human:
+    name: "Mohamed Abdelaziz"
+    verification: "https://axiomid.app/passport/moeabdelaziz007"
+capabilities:
+  roles: ["research", "workflow-automation"]
+  skills: ["identity-discovery", "memory-routing", "spend-request"]
+verification:
+  - type: "signed-claim"
+    url: "https://axiomid.app/.well-known/openidentity/axiom-assistant.json"
+mcp_tools:
+  - type: "mcp"
+    name: "axiom-tools"
+    url: "https://mcp.axiomid.app"
+discovery:
+  memory:
+    - label: "approved-public-memory"
+      uri: "https://axiomid.app/memory/index.json"
+      access: "public-read"
+wallets:
+  - type: "pi-wallet"
+    url: "https://axiomid.app/wallet/moeabdelaziz007"
+authorization:
+  authorization_url: "https://axiomid.app/api/auth/authorize"
+  scopes:
+    - "read:public-profile"
+    - "request:tool-access"
+links:
+  homepage: "https://axiomid.app"
+  axiomid_profile: "https://axiomid.app/agent/axiom-assistant"
+```
+
+> **Security note:** A manifest MUST NOT contain private keys, passwords, bearer tokens, API keys, wallet seed phrases, or other secrets. Sensitive resources are *referenced*, never embedded. Consumers MUST verify signatures, domains, and issuer trust before relying on claims — an unsigned manifest is a discovery hint, not proof of authority.
+
+See [`examples/`](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/examples) for minimal, standard, and full manifest examples.
+
+### OpenIdentity Links
+
+- 📦 **Spec repository:** [github.com/Moeabdelaziz007/openidentity.md](https://github.com/Moeabdelaziz007/openidentity.md)
+- 📖 **OpenIdentity v0.1 Specification:** [spec/openidentity-v0.1.md](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/openidentity-v0.1.md)
+- 🔑 **did:axiom DID Method Spec:** [spec/did-axiom-method-v0.1.md](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/did-axiom-method-v0.1.md)
+- 🧪 **Manifest examples:** [examples/](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/examples)
+- 🌐 **Frontend prototype:** [openidentity.md/frontend](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/frontend)
+- 🛠 **AxiomID app (reference implementation):** [axiomid.app](https://axiomid.app)
 
 ## Contributing
 
