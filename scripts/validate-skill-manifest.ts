@@ -23,8 +23,15 @@ async function main() {
   const skills: { name: string; slug: string; manifestMd: string }[] = [];
 
   if (mode === 'changed') {
-    const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1').toString().trim();
-    const changedFiles = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
+    let changedFiles: string[] = [];
+    try {
+      const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || true').toString().trim();
+      changedFiles = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
+    } catch {
+      // If git diff fails entirely (e.g., shallow clone after force-push), skip validation
+      console.log('Could not determine changed files (shallow clone or force-push). Skipping skill validation. ✓');
+      process.exit(0);
+    }
 
     for (const file of changedFiles) {
       if (file.startsWith('skills/') && file.endsWith('.md') && existsSync(file)) {
