@@ -120,6 +120,7 @@ model UserAgent {
 
   // Runtime
   lastActive    DateTime?
+  discoverable  Boolean   @default(false)
   lastHeartbeat DateTime?
   activeUntil   DateTime?
   memoryLimit   Int       @default(500) // max memory entries
@@ -135,6 +136,8 @@ model UserAgent {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status, discoverable])
 }
 
 enum AgentStatus {
