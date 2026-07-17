@@ -39,6 +39,14 @@ function typeText(
   });
 }
 
+interface LogRef {
+  cmdIndex: number; // -1 for non-command logs (initial message)
+  lineIndex: number; // -1 for input prompt lines
+  type: LogEntry["type"];
+  customEn?: string; // only for cmdIndex === -1
+  customAr?: string;
+}
+
 export default function InteractiveCommandDemo() {
   const { language } = useLanguage();
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
@@ -83,7 +91,7 @@ export default function InteractiveCommandDemo() {
   const [activeStep, setActiveStep] = useState(0);
   // Store log entries as references to command indices + line indices so they
   // re-resolve on language toggle, rather than caching static translated strings
-  const [logRefs, setLogRefs] = useState<Array<{ cmdIndex: number; lineIndex: number; type: LogEntry["type"] } | { cmdIndex: -1; lineIndex: -1; type: "output"; customEn: string; customAr: string }>>([
+  const [logRefs, setLogRefs] = useState<LogRef[]>([
     { cmdIndex: -1, lineIndex: -1, type: "output" as const, customEn: "AxiomID Agent Protocol v1.0 — interactive demo", customAr: "بروتوكول عميل AxiomID الإصدار 1.0 — عرض تجريبي تفاعلي" },
   ]);
   const [isRunning, setIsRunning] = useState(false);
@@ -105,11 +113,14 @@ export default function InteractiveCommandDemo() {
   }, [logRefs, currentOutput]);
 
   // Resolve log refs to display text based on current language
-  const resolveLog = (ref: typeof logRefs[number]): LogEntry => {
+  const resolveLog = (ref: LogRef): LogEntry => {
     if (ref.cmdIndex === -1) {
-      return { text: language === "en" ? ref.customEn : ref.customAr, type: ref.type };
+      return { text: language === "en" ? (ref.customEn ?? "") : (ref.customAr ?? ""), type: ref.type };
     }
     const cmd = COMMANDS[ref.cmdIndex];
+    if (ref.lineIndex === -1) {
+      return { text: `$ ${cmd.label}`, type: ref.type };
+    }
     const line = cmd.output[ref.lineIndex];
     return { text: line.text, type: line.type };
   };
@@ -128,7 +139,7 @@ export default function InteractiveCommandDemo() {
     const cmd = COMMANDS[index];
     setLogRefs((prev) => [...prev, { cmdIndex: index, lineIndex: -1, type: "input" as const }].slice(-100));
 
-    const outputRefs: Array<{ cmdIndex: number; lineIndex: number; type: LogEntry["type"] }> = [];
+    const outputRefs: LogRef[] = [];
     const outputLines: LogEntry[] = [];
     for (let li = 0; li < cmd.output.length; li++) {
       if (signal.aborted) break;
@@ -236,22 +247,19 @@ export default function InteractiveCommandDemo() {
         {/* Terminal body */}
         <div className="p-4 sm:p-6 font-mono text-xs leading-relaxed max-h-[400px] overflow-y-auto">
           {resolvedLogs.map((entry, i) => {
-            const displayText = entry.type === "input" && logRefs[i].cmdIndex >= 0
-              ? `$ ${COMMANDS[logRefs[i].cmdIndex].label}`
-              : entry.text;
             return (
             <div key={i} className="mb-1">
               {entry.type === "input" ? (
                 <div className="flex items-start gap-2">
                   <span className="text-neon-green shrink-0 select-none">$</span>
-                  <span className="text-white">{displayText.slice(2)}</span>
+                  <span className="text-white">{entry.text.slice(2)}</span>
                 </div>
               ) : entry.type === "success" ? (
-                <div className="ml-4 text-neon-green/90">{displayText}</div>
+                <div className="ml-4 text-neon-green/90">{entry.text}</div>
               ) : entry.type === "info" ? (
-                <div className="ml-4 text-electric-blue/80">{displayText}</div>
+                <div className="ml-4 text-electric-blue/80">{entry.text}</div>
               ) : (
-                <div className="ml-4 text-subtle">{displayText}</div>
+                <div className="ml-4 text-subtle">{entry.text}</div>
               )}
             </div>
             );
