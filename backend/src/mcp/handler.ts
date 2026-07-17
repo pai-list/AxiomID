@@ -109,9 +109,13 @@ export async function handleMcp(request: Request, env: Env): Promise<Response> {
 
   // MCP SSE endpoint for streaming
   if (request.method === "GET" && url.pathname === "/mcp") {
-    return new Response("AxiomID MCP Server - Use POST /mcp for JSON-RPC", {
-      headers: { "Content-Type": "text/plain" },
-    });
+    return new Response(
+      "AxiomID MCP Server v1.0 — Use POST /mcp for JSON-RPC\n" +
+      "Docs: https://github.com/Moeabdelaziz007/AxiomID/blob/main/docs/mcp-server.md\n" +
+      "Tools: did_resolve, did_create, trust_score, trust_delegate, trust_chain, " +
+      "presence_heartbeat, presence_status, skill_list, skill_install, harvest_query, harvest_result",
+      { headers: { "Content-Type": "text/plain" } },
+    );
   }
 
   return new Response("Not Found", { status: 404 });
