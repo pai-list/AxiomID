@@ -21,18 +21,10 @@
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
-  <img src="https://img.shields.io/badge/tests-3289%20passed-22c55e?style=flat-square" alt="Tests Passed" />
+  <img src="https://img.shields.io/badge/tests-3786%20passed-22c55e?style=flat-square" alt="Tests Passed" />
   <img src="https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square" alt="TypeScript Strict" />
   <img src="https://img.shields.io/badge/SOUL%20Protocol-compliant-emerald?style=flat-square" alt="SOUL Compliant" />
   <img src="https://img.shields.io/badge/status-closed%20beta-orange?style=flat-square" alt="Closed Beta" />
-  <img src="https://img.shields.io/badge/Vercel-deployed-000?style=flat-square&logo=vercel" alt="Vercel Deployed" />
-  <img src="https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react" alt="React 19" />
-  <img src="https://img.shields.io/badge/Prisma-6-2d3748?style=flat-square&logo=prisma" alt="Prisma 6" />
-  <img src="https://img.shields.io/badge/Pi%20Network-primary-8b5cf6?style=flat-square" alt="Pi Network" />
-  <img src="https://img.shields.io/badge/Virtual%20Protocol-agent-6366f1?style=flat-square" alt="Virtual Protocol" />
-  <img src="https://img.shields.io/badge/W3C-DID-005a9c?style=flat-square" alt="W3C DID" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/github/stars/Moeabdelaziz007/AxiomID?style=flat-square" alt="GitHub Stars" />
 </p>
 
 ---
@@ -51,59 +43,6 @@ AxiomID is a Next.js application that combines Pi Network authentication, passpo
 - **TrustChain** — append-only hash chain for all agent actions
 - **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
 - **Dual-Identity Governance** — explicit separation and cooperation of Human Sovereign and AI Agent nodes, verified via the protocol
-- **Virtual Protocol site verification** (merged) — on-chain agent identity anchoring
-- **PiVerify KYC integration** — external KYC stamp via PiVerify provider
-- **SBT (Soulbound Token) minting** for Tier 1 — non-transferable on-chain credential
-- **Dead code cleanup** — 24 files removed, reduced maintenance surface
-
-## Architecture
-
-```mermaid
-graph TB
-  subgraph "Pi Browser"
-    PA[Pi Auth SDK]
-  end
-  subgraph "AxiomID App"
-    LN[Landing Page]
-    CL[Claim Wizard]
-    PV[Passport Viewer]
-    DB[Dashboard]
-    EX[Explorer]
-    LB[Leaderboard]
-  end
-  subgraph "API Layer"
-    AUTH[Auth API]
-    PAY[Pi Payments]
-    SKL[Skills Market]
-    SR[Spend Request]
-    DID[DID Resolution]
-    TC[TrustChain]
-  end
-  subgraph "Data Layer"
-    PG[(PostgreSQL)]
-    D1[(Cloudflare D1)]
-    VZ[Vectorize]
-  end
-  subgraph "Identity Layer"
-    SOV[Ed25519 Sovereign Keys]
-    VC[Verifiable Credentials]
-    DIDDOC[DID Documents]
-  end
-  PA --> AUTH
-  AUTH --> PG
-  LN --> CL --> PA
-  CL --> PV
-  DB --> SKL
-  DB --> SR
-  SR --> PAY --> PA
-  AUTH --> SOV --> DIDDOC
-  SOV --> VC
-  DID --> DIDDOC
-  TC --> PG
-  SKL --> PG
-  VZ -.-> DB
-  D1 -.-> PG
-```
 
 ## Routes
 
@@ -172,7 +111,7 @@ graph TB
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
 | **State/Cache** | TanStack Query v5 (client-side cache) |
-| **CI/CD** | GitHub Actions → Vercel · 3270+ tests |
+| **CI/CD** | GitHub Actions → Vercel · 3786 tests |
 
 ## Quick start
 
@@ -212,8 +151,19 @@ npx wrangler deploy
 ```bash
 npm run lint       # 0 errors, 0 warnings
 npm run type-check # type check
-npm test           # 3270+ tests (some page tests need QueryClientProvider wrapper)
+npm test           # 3786 tests (some page tests need QueryClientProvider wrapper)
 ```
+
+## Developer Tooling
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| **portless** | Stable HTTPS `.localhost` URLs for Pi Browser testing | `portless axiomid next dev` → `https://axiomid.localhost` |
+| **emulate** | Local API emulators for deterministic CI tests | `npx emulate --service github` → `http://localhost:4001` |
+| **kernel** | Headless browser smoke tests on critical flows | `kernel run qa:smoke --url https://axiomid-app.vercel.app` |
+| **nostics** | Structured error codes with actionable fixes | Codes in `src/diagnostics/catalog.ts` |
+
+> See `AGENTS.md` → "Dev Tools" section for full documentation.
 
 ## Project structure
 
@@ -233,12 +183,12 @@ AxiomID.Memory/    # Knowledge base and design docs
 
 ## Trust Tiers
 
-| Tier | Price | XP | Features |
-|:---|:---|:---|:---|
-| 🟢 Visitor | Free | 0 | Limited read-only access |
-| 🔵 Citizen | Free | 100 | Social stamps, basic agent access |
-| 🟣 Validator | 25 PI | 500 | Agent delegation, marketplace install |
-| 👑 Sovereign | 100 PI | 1000 | Full trust, vault staking, vouching power |
+| Tier | XP | Access |
+|:---|:---:|:---|
+| **Visitor** | 0 | Limited. Basic read-only. |
+| **Citizen** | 100 | Social stamps, basic agent access. |
+| **Validator** | 500 | Agent delegation, marketplace install. |
+| **Sovereign** | 1000 | Full trust, vault staking, vouching power. |
 
 ## Trust Score
 
@@ -265,30 +215,6 @@ Trust decays over time (inactivity penalty) and is boosted by Stellar anchoring 
 | **Skills Marketplace** | Install capabilities for agents |
 | **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
 | **Soul System** | Six-gate ethical evaluation loop |
-
-## OpenIdentity Integration
-
-AxiomID integrates with [OpenIdentity](https://github.com/Moeabdelaziz007/openidentity.md) — a portable identity manifest for AI agents.
-
-| Feature | Status |
-|:---|:---|
-| `did:axiom` DID method | ✅ Specified (W3C-compliant, Pi Network anchored) |
-| OpenIdentity manifest | ✅ Supported |
-| `/.well-known/openidentity` | 🚧 Planned |
-| Agent card | ✅ A2A AgentCard endpoint |
-
-**Spec:** [did:axiom DID Method v0.1](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/did-axiom-method-v0.1.md)
-
-## Packages
-
-| Package | Version | Description |
-|:---|:---|:---|
-| `@axiomid/crypto` | 0.1.0 | Ed25519 key derivation, signing, verification |
-| `@axiomid/sdk` | 0.1.0 | Public API client — verify passports, resolve DIDs, query trust scores |
-
-```bash
-npm install @axiomid/sdk @axiomid/crypto
-```
 
 ## Contributing
 
@@ -351,10 +277,3 @@ Built with passion in Cairo, Egypt.
 <sub>Built with the belief that every human deserves a sovereign digital identity.</sub>
 
 </div>
-
-## Connect
-
-- 🌐 [axiomid.app](https://axiomid.app)
-- 📘 [Facebook Page](https://www.facebook.com/profile.php?id=61583477974464)
-- 🐦 [GitHub](https://github.com/Moeabdelaziz007/AxiomID)
-- 📋 [OpenIdentity Spec](https://github.com/Moeabdelaziz007/openidentity.md)

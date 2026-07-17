@@ -81,13 +81,10 @@ export default function InteractiveCommandDemo() {
   ];
 
   const [activeStep, setActiveStep] = useState(0);
-  const [logs, setLogs] = useState<LogEntry[]>(() => [
-    {
-      text: language === "en"
-        ? "AxiomID Agent Protocol v1.0 — interactive demo"
-        : "بروتوكول عميل AxiomID الإصدار 1.0 — عرض تجريبي تفاعلي",
-      type: "output" as const,
-    },
+  // Store log entries as references to command indices + line indices so they
+  // re-resolve on language toggle, rather than caching static translated strings
+  const [logRefs, setLogRefs] = useState<Array<{ cmdIndex: number; lineIndex: number; type: LogEntry["type"] } | { cmdIndex: -1; lineIndex: -1; type: "output"; customEn: string; customAr: string }>>([
+    { cmdIndex: -1, lineIndex: -1, type: "output" as const, customEn: "AxiomID Agent Protocol v1.0 — interactive demo", customAr: "بروتوكول عميل AxiomID الإصدار 1.0 — عرض تجريبي تفاعلي" },
   ]);
   const [isRunning, setIsRunning] = useState(false);
   const [currentOutput, setCurrentOutput] = useState<LogEntry[]>([]);
@@ -105,7 +102,19 @@ export default function InteractiveCommandDemo() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [logs, currentOutput]);
+  }, [logRefs, currentOutput]);
+
+  // Resolve log refs to display text based on current language
+  const resolveLog = (ref: typeof logRefs[number]): LogEntry => {
+    if (ref.cmdIndex === -1) {
+      return { text: language === "en" ? ref.customEn : ref.customAr, type: ref.type };
+    }
+    const cmd = COMMANDS[ref.cmdIndex];
+    const line = cmd.output[ref.lineIndex];
+    return { text: line.text, type: line.type };
+  };
+
+  const resolvedLogs = logRefs.map(resolveLog);
 
   const runCommand = async (index: number) => {
     if (isRunning || index > activeStep) return;
@@ -117,11 +126,15 @@ export default function InteractiveCommandDemo() {
     const signal = controller.signal;
 
     const cmd = COMMANDS[index];
-    setLogs((prev) => [...prev, { text: `$ ${cmd.label}`, type: "input" as const }].slice(-100));
+    setLogRefs((prev) => [...prev, { cmdIndex: index, lineIndex: -1, type: "input" as const }].slice(-100));
 
+    const outputRefs: Array<{ cmdIndex: number; lineIndex: number; type: LogEntry["type"] }> = [];
     const outputLines: LogEntry[] = [];
-    for (const line of cmd.output) {
+    for (let li = 0; li < cmd.output.length; li++) {
       if (signal.aborted) break;
+      const line = cmd.output[li];
+      const ref = { cmdIndex: index, lineIndex: li, type: line.type };
+      outputRefs.push(ref);
       const entry: LogEntry = { text: "", type: line.type };
       outputLines.push(entry);
       setCurrentOutput([...outputLines]);
@@ -144,7 +157,7 @@ export default function InteractiveCommandDemo() {
 
     if (!signal.aborted) {
       setCurrentOutput([]);
-      setLogs((prev) => [...prev, ...outputLines].slice(-100));
+      setLogRefs((prev) => [...prev, ...outputRefs].slice(-100));
       setActiveStep((prev) => Math.min(prev + 1, COMMANDS.length));
       setIsRunning(false);
     }
@@ -222,22 +235,27 @@ export default function InteractiveCommandDemo() {
 
         {/* Terminal body */}
         <div className="p-4 sm:p-6 font-mono text-xs leading-relaxed max-h-[400px] overflow-y-auto">
-          {logs.map((entry, i) => (
+          {resolvedLogs.map((entry, i) => {
+            const displayText = entry.type === "input" && logRefs[i].cmdIndex >= 0
+              ? `$ ${COMMANDS[logRefs[i].cmdIndex].label}`
+              : entry.text;
+            return (
             <div key={i} className="mb-1">
               {entry.type === "input" ? (
                 <div className="flex items-start gap-2">
                   <span className="text-neon-green shrink-0 select-none">$</span>
-                  <span className="text-white">{entry.text.slice(2)}</span>
+                  <span className="text-white">{displayText.slice(2)}</span>
                 </div>
               ) : entry.type === "success" ? (
-                <div className="ml-4 text-neon-green/90">{entry.text}</div>
+                <div className="ml-4 text-neon-green/90">{displayText}</div>
               ) : entry.type === "info" ? (
-                <div className="ml-4 text-electric-blue/80">{entry.text}</div>
+                <div className="ml-4 text-electric-blue/80">{displayText}</div>
               ) : (
-                <div className="ml-4 text-subtle">{entry.text}</div>
+                <div className="ml-4 text-subtle">{displayText}</div>
               )}
             </div>
-          ))}
+            );
+          })}
 
           {/* Current output streaming */}
           <AnimatePresence mode="popLayout">
