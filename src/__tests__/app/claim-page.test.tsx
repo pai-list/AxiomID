@@ -793,7 +793,10 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
 
     fireEvent.click(screen.getByText("Got it"));
 
-    expect(screen.queryByText("Pi Browser Required")).toBeNull();
+    // After closing the modal, the modal's "Got it" button should be gone.
+    // ConnectStep in the background may still render "Pi Browser Required" text,
+    // so we verify modal closure by checking the "Got it" button is no longer present.
+    expect(screen.queryByText("Got it")).toBeNull();
     expect(connectDemo).not.toHaveBeenCalled();
   });
 });
