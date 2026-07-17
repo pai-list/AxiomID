@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { useWallet } from "../context/wallet-context";
 import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
 import { useLanguage } from "../context/language-context";
@@ -90,9 +91,14 @@ export default function Dashboard() {
   };
 
   const handleCreateAgent = async (name?: string) => {
-    await createAgent(name || agentName || undefined);
+    const success = await createAgent(name || agentName || undefined);
     setAgentName("");
-    toast.success("Agent created successfully");
+    if (success) {
+      posthog.capture("agent_created", {
+        agent_name: name || agentName || undefined,
+      });
+      toast.success("Agent created successfully");
+    }
   };
 
   const agent = user?.agent;
@@ -107,14 +113,14 @@ export default function Dashboard() {
       {isLoading ? (
         <div className="space-y-6">
           <div className="bento-card p-8">
-            <div className="h-8 bg-white/5 rounded animate-pulse mb-4" />
-            <div className="h-4 bg-white/5 rounded animate-pulse w-3/4" />
+            <div className="h-8 bg-glass rounded animate-pulse mb-4" />
+            <div className="h-4 bg-glass rounded animate-pulse w-3/4" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="bento-card p-6">
-                <div className="h-6 bg-white/5 rounded animate-pulse mb-2" />
-                <div className="h-8 bg-white/5 rounded animate-pulse" />
+                <div className="h-6 bg-glass rounded animate-pulse mb-2" />
+                <div className="h-8 bg-glass rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -132,7 +138,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-white">{t("connect_wallet")}</h3>
-                      <p className="text-xs text-zinc-400 mt-1">{t("settings_wallet_prompt")}</p>
+                      <p className="text-xs text-faint mt-1">{t("settings_wallet_prompt")}</p>
                     </div>
                   </div>
                   <div className="pt-2">
@@ -153,9 +159,9 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="bento-card p-5 border border-white/5 bg-white/[0.01]">
-                <h4 className="text-xs font-bold font-mono text-zinc-400 uppercase tracking-widest mb-2">{t("showcase_title")}</h4>
-                <p className="text-xs text-zinc-500 leading-relaxed">{t("showcase_desc")}</p>
+              <div className="bento-card p-5 border border-glass bg-white/[0.01]">
+                <h4 className="text-xs font-bold font-mono text-faint uppercase tracking-widest mb-2">{t("showcase_title")}</h4>
+                <p className="text-xs text-faint leading-relaxed">{t("showcase_desc")}</p>
               </div>
             </div>
             <div className="md:col-span-5 flex justify-center relative">
@@ -173,7 +179,7 @@ export default function Dashboard() {
               const isActive = activeTab === tab.id;
               return (
                 <button key={tab.id} role="tab" aria-selected={isActive} onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-mono transition-all flex-shrink-0 ${isActive ? "bg-neon-green/20 text-neon-green shadow-[0_0_12px_rgba(16,185,129,0.1)]" : "text-subtle hover:text-surface hover:bg-white/5"}`}>
+                  className={`relative flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-mono transition-all flex-shrink-0 ${isActive ? "bg-neon-green/20 text-neon-green shadow-[0_0_12px_rgba(16,185,129,0.1)]" : "text-subtle hover:text-surface hover:bg-glass"}`}>
                   <tab.icon className="w-4 h-4" />
                   {tab.label}
                   {isActive && <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-gradient-to-r from-emerald-400 to-neon-green" />}
@@ -240,7 +246,11 @@ export default function Dashboard() {
             isConnecting={isConnecting} user={user} onConnect={connectWallet}
             onConnectDemo={connectDemo} onCreateAgent={handleCreateAgent}
             onSkip={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
-            onComplete={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
+            onComplete={() => {
+              try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {}
+              posthog.capture("onboarding_completed");
+              setShowOnboarding(false);
+            }}
             t={t} />
         )}
       </AnimatePresence>

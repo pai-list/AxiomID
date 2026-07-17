@@ -1,6 +1,6 @@
 # agents.txt — axiomid.app
-# Version: 2.0
-# Updated: 2026-06-21
+# Version: 2.1
+# Updated: 2026-07-16
 
 ## Identity
 - Name: AxiomID
@@ -32,6 +32,7 @@
 - /api/route.ts — API root discovery (JSON catalog)
 - /api/skills — Skills marketplace search
 - /api/passport/[slug] — Public passport viewer
+- /.well-known/agent-card.json — A2A AgentCard directory
 - /api/spend-request — Agentic spend request stream
 
 ## Agentic Endpoints
