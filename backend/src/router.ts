@@ -16,6 +16,8 @@ import { handleSearch, handleSearchSimilar } from "./routes/search";
 import { handleTruthAsk, handleDailyTruth } from "./routes/truth-rag";
 import { TrustEmbedder } from "./vectors/trust-embedder";
 import { generateId } from "./lib/utils";
+import { handleDidResolve } from "./routes/did";
+import { handleVcVerify } from "./routes/vc";
 
 export class Router {
   private kv: KVHelper;
@@ -83,6 +85,16 @@ export class Router {
 
     if (path === "/api/search/similar" && method === "GET") {
       return handleSearchSimilar(request, this.env);
+    }
+
+    // --- DID Resolution (public) ---
+    if (path.startsWith("/api/resolve/") && method === "GET") {
+      return handleDidResolve(request, this.env);
+    }
+
+    // --- VC Verification (public check endpoint) ---
+    if (path === "/api/vc/verify" && method === "POST") {
+      return handleVcVerify(request, this.env);
     }
 
     // --- Health ---
