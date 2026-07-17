@@ -133,7 +133,8 @@ export function validateManifest(manifest: unknown): manifest is OpenIdentityMan
   if (
     typeof controller.type !== "string" ||
     typeof controller.name !== "string" ||
-    typeof controller.verified !== "boolean"
+    (controller.verified !== undefined && typeof controller.verified !== "boolean") ||
+    (controller.url !== undefined && typeof controller.url !== "string")
   ) {
     return false;
   }
