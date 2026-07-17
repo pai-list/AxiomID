@@ -26,7 +26,7 @@ const TESTNET_BASE = "https://testnet.axiomid.app";
 const basePassport = {
   username: "alice",
   walletAddress: "GD5XABC",
-  stellarAddress: "GA456DEF",
+  piWalletAddress: "GA456DEF",
   did: "did:axiom:alice",
   tier: "Pioneer",
   xp: 100,

@@ -3,7 +3,7 @@ import { AxiomSDK, AxiomIDError } from "../client";
 const mockPassport = {
   username: "pioneer.username",
   walletAddress: "GD5TABC",
-  stellarAddress: "GA123DEF",
+  piWalletAddress: "GA123DEF",
   did: "did:axiom:pioneer.username",
   tier: "Sovereign",
   xp: 1250,
