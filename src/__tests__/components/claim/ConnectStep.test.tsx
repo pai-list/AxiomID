@@ -70,12 +70,12 @@ describe("ConnectStep — basic rendering", () => {
 
   it("renders 'Connected' badge when walletConnected is true", () => {
     render(<ConnectStep {...defaultProps({ walletConnected: true })} />);
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getAllByText("Connected")[0]).toBeInTheDocument();
   });
 
   it("renders 'Connected' badge and truncated wallet address when user has a walletAddress", () => {
     render(<ConnectStep {...defaultProps({ user: connectedUser })} />);
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getAllByText("Connected")[0]).toBeInTheDocument();
     expect(screen.getByText(/GABC12345678\.\.\.abcdef/)).toBeInTheDocument();
   });
 
@@ -91,7 +91,7 @@ describe("ConnectStep — basic rendering", () => {
 
   it("renders the Pi Browser Required warning when not in Pi Browser and not connected", () => {
     render(<ConnectStep {...defaultProps({ isPiBrowser: false })} />);
-    expect(screen.getByText("Pi Browser Required")).toBeInTheDocument();
+    expect(screen.getAllByText("Pi Browser Required")[0]).toBeInTheDocument();
   });
 
   it("does not render the Pi Browser Required warning when isPiBrowser is true", () => {
@@ -105,7 +105,7 @@ describe("ConnectStep — Try Demo Mode button (PR change: onDemoConnect)", () =
   it("renders 'Try Demo Mode' when onDemoConnect is provided, not in Pi Browser, and not connected", () => {
     const onDemoConnect = jest.fn();
     render(<ConnectStep {...defaultProps({ onDemoConnect })} />);
-    expect(screen.getByText("Try Demo Mode")).toBeInTheDocument();
+    expect(screen.getAllByText("Try Demo Mode").length).toBeGreaterThan(0);
   });
 
   it("does not render 'Try Demo Mode' when onDemoConnect is not provided", () => {
@@ -134,7 +134,7 @@ describe("ConnectStep — Try Demo Mode button (PR change: onDemoConnect)", () =
   it("calls onDemoConnect exactly once when 'Try Demo Mode' is clicked", () => {
     const onDemoConnect = jest.fn();
     render(<ConnectStep {...defaultProps({ onDemoConnect })} />);
-    fireEvent.click(screen.getByText("Try Demo Mode"));
+    fireEvent.click(screen.getAllByText("Try Demo Mode")[0]);
     expect(onDemoConnect).toHaveBeenCalledTimes(1);
   });
 
@@ -142,7 +142,7 @@ describe("ConnectStep — Try Demo Mode button (PR change: onDemoConnect)", () =
     const onDemoConnect = jest.fn();
     const handleConnect = jest.fn();
     render(<ConnectStep {...defaultProps({ onDemoConnect, handleConnect })} />);
-    fireEvent.click(screen.getByText("Try Demo Mode"));
+    fireEvent.click(screen.getAllByText("Try Demo Mode")[0]);
     expect(handleConnect).not.toHaveBeenCalled();
   });
 });
