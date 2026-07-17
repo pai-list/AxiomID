@@ -149,11 +149,11 @@ export default function RootLayout({
             Native <script> tag (not next/script) — no defer/async per Meticulous docs.
             Active in dev + Vercel preview only. */}
         {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
-          // eslint-disable-next-line @next/next/no-sync-scripts
-          <script
+          <Script
+            src="https://snippet.meticulous.ai/v1/meticulous.js"
             data-recording-token="vLG050AH1euDRiGTNmjgufmEM5grQe7SkNzEiGvl"
             data-is-production-environment="false"
-            src="https://snippet.meticulous.ai/v1/meticulous.js"
+            strategy="beforeInteractive"
           />
         )}
         <a href="#main-content" className="skip-link">

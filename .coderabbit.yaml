@@ -134,15 +134,15 @@ reviews:
     - path: "src/lib/trust-chain.ts"
       instructions: |
         Append-only, hash-chained event log.
-        - Every append must include prevHash linking to chain tip
-        - eventHash = sha256(prevHash + action + timestamp + intention)
-        - intention field is mandatory (SOUL protocol: Muraqabah)
+        - Every append must include parentHash linking to chain tip
+        - eventHash = sha256(parentHash + serializedAction)
+        - actionData includes type, xp, metadata, userId, and timestamp
         - No delete/update operations — only append
 
     - path: "src/lib/validators.ts"
       instructions: |
         Zod schemas for all inputs. Check:
-        - SpendRequestCreate: amount > 0, description <= 500 chars, expiresAt > now
+        - SpendRequestCreate: amount > 0, description <= 500 chars, context >= 100 chars
         - SpendRequestAction: status enum validation
         - No any types in schema outputs — use z.infer
 
