@@ -156,7 +156,11 @@ export function validateManifest(manifest: unknown): manifest is OpenIdentityMan
     for (const w of m.wallets) {
       if (typeof w !== "object" || w === null) return false;
       const wallet = w as Record<string, unknown>;
-      if (typeof wallet.type !== "string" || typeof wallet.address !== "string") {
+      if (
+        typeof wallet.type !== "string" ||
+        (wallet.address !== undefined && typeof wallet.address !== "string") ||
+        (wallet.url !== undefined && typeof wallet.url !== "string")
+      ) {
         return false;
       }
     }
