@@ -188,10 +188,10 @@ An agent runtime discovering a new agent SHOULD:
 
 1. Fetch `https://<target-domain>/.well-known/openidentity.md`
 2. Parse the YAML frontmatter
-3. Use the `id` to verify the agent's DID
+3. Use the `did` to verify the agent's DID
 4. Use `well_known.passport` to fetch the full genome
 5. Use `well_known.agent_card` for A2A interaction
-6. Verify `kyc` for trust attestation
+6. Verify `attestations` for trust attestation
 
 ### 4.3 Resource Index
 
@@ -345,7 +345,7 @@ All URLs in the OpenIdentity manifest MUST use HTTPS in production environments.
 
 ### 7.2 DID Verification
 
-The `id` field contains a W3C DID. Runtimes SHOULD:
+The `did` field contains a W3C DID. Runtimes SHOULD:
 
 1. Resolve the DID to a DID Document
 2. Extract the agent's public key(s) from the DID Document
