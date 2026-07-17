@@ -238,12 +238,9 @@ reviews:
       enabled: true
       config_file: ".eslintrc.json"
     biome:
-      enabled: false  # Using ESLint, not Biome
+      enabled: false
     gitleaks:
-      enabled: true   # Secret scanning
+      enabled: true
     semgrep:
-      enabled: true   # SAST
+      enabled: true
       config_file: ".semgrep.yml"
-
-# CodeRabbit supports inline diagram generation in review comments by default.
-# No separate top-level keys needed — instructions above handle this.
