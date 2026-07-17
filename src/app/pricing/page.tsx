@@ -273,12 +273,12 @@ export default async function PricingPage() {
               </ul>
 
               {/* CTA */}
-              <a
+              <Link
                 href="/claim"
-                className="mt-6 block text-center text-xs font-mono uppercase tracking-widest py-2.5 rounded-md border border-white/10 hover:border-white/30 hover:bg-white/[0.03] transition-colors text-white"
+                className="mt-6 block text-center text-xs font-mono uppercase tracking-widest py-2.5 rounded-md border border-white/10 hover:border-white/30 hover:bg-white/[0.03] transition-colors text-white focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
               >
                 {tt("Claim Passport →", "اطلب جوازك ←")}
-              </a>
+              </Link>
             </div>
           ))}
         </div>
