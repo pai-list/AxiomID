@@ -10,8 +10,11 @@ interface FooterProps {
 }
 
 /**
- * Shared Footer component for all AxiomID pages.
- * Supports standard navigation links and a minimal mode for legal/utility pages.
+ * Renders a localized footer with navigation links, version information, and copyright text.
+ *
+ * @param minimal - Whether to render the compact footer without navigation.
+ * @param copyright - Optional copyright text displayed in place of the default.
+ * @returns The rendered footer element.
  */
 export default function Footer({ minimal = false, copyright }: FooterProps) {
   const { t } = useLanguage();

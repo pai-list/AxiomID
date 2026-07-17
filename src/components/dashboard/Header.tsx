@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/app/context/language-context";
-import { useWallet } from "@/app/context/wallet-context";
 import type { Route } from "next";
-import dynamic from "next/dynamic";
-
-const PiBrowserBadge = dynamic(() => import("./PiBrowserBadge"), { ssr: false });
+import { HeaderActions } from "@/components/shared/HeaderActions";
 
 interface NavItem {
   href: Route;
@@ -22,14 +17,14 @@ interface HeaderProps {
 }
 
 /**
- * Renders the dashboard header with branding, navigation, wallet controls, and utility toggles.
+ * Renders the dashboard header with branding, navigation, and header actions.
  *
- * @param pathname - Current route path used to highlight the active navigation item.
- * @param navItems - Navigation entries to display in the header.
+ * @param pathname - The current path used to identify the active navigation item
+ * @param navItems - The navigation items displayed in the header
+ * @returns The dashboard header element
  */
 export function Header({ pathname, navItems }: HeaderProps) {
   const { t } = useLanguage();
-  const { user, connectWallet, isConnecting, isPiBrowser, logout } = useWallet();
 
   return (
     <header
@@ -76,23 +71,7 @@ className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono tra
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 font-mono">
-            <PiBrowserBadge isPiBrowser={isPiBrowser} user={user} />
-            {user ? (
-              <button onClick={() => logout()} className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                {t("logout")}
-              </button>
-            ) : (
-              <button onClick={connectWallet} disabled={isConnecting} className="btn-primary text-xs px-3 sm:px-4 py-2">
-                {isConnecting ? t("connecting") : t("connect")}
-              </button>
-            )}
-            <ThemeToggle />
-            <LanguageToggle />
-          </div>
+          <HeaderActions showWallet />
         </div>
       </div>
     </header>
