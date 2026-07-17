@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { useWallet } from "../../context/wallet-context";
 import { motion } from "framer-motion";
 import { Dna, Download, Star, Coins } from "lucide-react";
@@ -305,9 +306,15 @@ export default function MarketplacePage() {
         const data = await res.json();
         throw new Error(data?.message || data?.error || 'Install failed (' + res.status + ')');
       }
+      posthog.capture("skill_installed", {
+        skill_slug: skill.slug,
+        skill_name: skill.name,
+        price_pi: skill.pricePi,
+      });
       toast.success(t("marketplace_install_success"));
       openDetail(skill.slug);
     } catch (err) {
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       setError(err instanceof Error ? err.message : "Failed to install skill");
     } finally {
       setInstalling(false);
@@ -327,9 +334,14 @@ export default function MarketplacePage() {
         const data = await res.json();
         throw new Error(data?.message || data?.error || 'Uninstall failed (' + res.status + ')');
       }
+      posthog.capture("skill_uninstalled", {
+        skill_slug: skill.slug,
+        skill_name: skill.name,
+      });
       toast.success(t("marketplace_uninstall_success") || "Skill uninstalled successfully!");
       openDetail(skill.slug);
     } catch (err) {
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       setError(err instanceof Error ? err.message : "Failed to uninstall skill");
     } finally {
       setInstalling(false);
@@ -361,6 +373,11 @@ export default function MarketplacePage() {
       const savedReview = await res.json();
       const reviewObj = savedReview.data || savedReview;
       setReviews(prev => [reviewObj, ...prev]);
+      posthog.capture("skill_reviewed", {
+        skill_slug: selectedSkill.slug,
+        skill_name: selectedSkill.name,
+        rating: newRating,
+      });
       toast.success(t("marketplace_review_success") || "Review submitted successfully!");
       setNewReviewText("");
       setSelectedSkill(prev => {
