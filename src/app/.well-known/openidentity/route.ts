@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { OpenIdentityManifest } from "../../../lib/openidentity/generate-manifest";
 
 /**
  * GET /.well-known/openidentity
@@ -12,7 +13,7 @@ import { NextResponse } from "next/server";
  * per-user state) so it is safe to cache at the edge for an hour.
  */
 export async function GET() {
-  const manifest = {
+  const manifest: OpenIdentityManifest = {
     openidentity: "0.1",
     agent: {
       id: "did:axiom:agent:axiomid",
@@ -25,6 +26,7 @@ export async function GET() {
     controller: {
       type: "organization",
       name: "AxiomID",
+      verified: true,
       url: "https://axiomid.app",
     },
     capabilities: {
@@ -39,7 +41,7 @@ export async function GET() {
     wallets: [
       {
         type: "pi-network",
-        url: "https://axiomid.app",
+        address: "https://axiomid.app",
       },
     ],
     links: {

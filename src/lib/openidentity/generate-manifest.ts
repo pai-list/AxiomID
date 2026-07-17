@@ -22,6 +22,7 @@ export interface OpenIdentityManifest {
     type: string;
     name: string;
     verified: boolean;
+    url?: string;
   };
   verification?: {
     type: string;
