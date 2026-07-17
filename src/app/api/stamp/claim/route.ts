@@ -14,6 +14,7 @@ import { signSocialCredential } from "@/lib/vc";
 import { createUserDid } from "@/lib/did";
 import { calculateActionHash, GENESIS_HASH } from "@/lib/trust-chain";
 import { computeTrustScore } from "@/lib/trust-score";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 /**
  * Handle a stamp claim request by authenticating the user, validating input, signing stamp metadata,
@@ -163,6 +164,20 @@ export async function POST(request: NextRequest) {
 
       return { stamp, ledgerEntry, newTier, newBalance, computedTrustScore };
     });
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: authUser.id,
+      event: 'stamp_claimed',
+      properties: {
+        stamp_type: actionType,
+        xp_earned: actionDef.xp,
+        new_balance: result.newBalance,
+        tier: result.newTier,
+        trust_score: result.computedTrustScore,
+      },
+    });
+    await posthog.flush();
 
     return apiSuccess({
       stampId: result.stamp.id,

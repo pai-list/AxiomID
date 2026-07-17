@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { useWallet } from "../context/wallet-context";
 import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
 import { useLanguage } from "../context/language-context";
@@ -87,9 +88,14 @@ export default function Dashboard() {
   };
 
   const handleCreateAgent = async (name?: string) => {
-    await createAgent(name || agentName || undefined);
+    const success = await createAgent(name || agentName || undefined);
     setAgentName("");
-    toast.success("Agent created successfully");
+    if (success) {
+      posthog.capture("agent_created", {
+        agent_name: name || agentName || undefined,
+      });
+      toast.success("Agent created successfully");
+    }
   };
 
   const agent = user?.agent;
@@ -219,7 +225,11 @@ export default function Dashboard() {
             isConnecting={isConnecting} user={user} onConnect={connectWallet}
             onConnectDemo={connectDemo} onCreateAgent={handleCreateAgent}
             onSkip={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
-            onComplete={() => { try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {} setShowOnboarding(false); }}
+            onComplete={() => {
+              try { localStorage.setItem("axiom_onboarding_completed", "true"); } catch {}
+              posthog.capture("onboarding_completed");
+              setShowOnboarding(false);
+            }}
             t={t} />
         )}
       </AnimatePresence>
