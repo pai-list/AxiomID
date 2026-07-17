@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { getTranslation } from "@/i18n";
 import type { Language } from "@/app/context/language-context";
 
