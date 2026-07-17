@@ -29,21 +29,21 @@ export default function FeaturesSection({ t }: FeaturesSectionProps) {
             title: t("landing_step1_title"),
             desc: t("landing_step1_desc"),
             icon: <Fingerprint className="w-6 h-6 text-electric-blue" />,
-            badge: "W3C DID Standard",
+            badge: t("landing_badge_w3c"),
           },
           {
             step: "02",
             title: t("landing_step2_title"),
             desc: t("landing_step2_desc"),
             icon: <Shield className="w-6 h-6 text-axiom-purple" />,
-            badge: "ZKP Privacy Ready",
+            badge: t("landing_badge_zkp"),
           },
           {
             step: "03",
             title: t("landing_step3_title"),
             desc: t("landing_step3_desc"),
             icon: <Zap className="w-6 h-6 text-emerald-400" />,
-            badge: "Pi Network Compatible",
+            badge: t("landing_badge_pi"),
           },
         ].map((item) => (
           <div key={item.step} className="stitch-feature-card flex flex-col gap-4 cursor-default group relative z-10">

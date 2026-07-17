@@ -40,42 +40,41 @@ function typeText(
 }
 
 export default function InteractiveCommandDemo() {
-  const { language } = useLanguage();
-  const t = (en: string, ar: string) => (language === "en" ? en : ar);
+  const { t } = useLanguage();
 
   const COMMANDS = [
     {
       id: "connect",
       icon: Wallet,
-      label: t("connect wallet", "ربط المحفظة"),
+      label: t("command_connect"),
       output: [
-        { text: t("Pi SDK detected — initiating handshake...", "تم اكتشاف Pi SDK — بدء الاتصال..."), type: "info" as const },
-        { text: t("✓ Wallet connected: pi:8f3a...b2e1", "✓ تم ربط المحفظة: pi:8f3a...b2e1"), type: "success" as const },
-        { text: t("✓ Stellar address: GB7X...N4Y2", "✓ عنوان Stellar: GB7X...N4Y2"), type: "success" as const },
-        { text: t("Ready for verification step.", "جاهز لخطوة التحقق."), type: "output" as const },
+        { text: t("command_connect_output1"), type: "info" as const },
+        { text: t("command_connect_output2"), type: "success" as const },
+        { text: t("command_connect_output3"), type: "success" as const },
+        { text: t("command_connect_output4"), type: "output" as const },
       ],
     },
     {
       id: "verify",
       icon: Shield,
-      label: t("verify identity", "التحقق من الهوية"),
+      label: t("command_verify"),
       output: [
-        { text: t("Submitting KYC credentials to TrustChain...", "إرسال بيانات KYC إلى TrustChain..."), type: "info" as const },
-        { text: t("✓ Pi KYC: VERIFIED (level 3)", "✓ Pi KYC: تم التحقق (المستوى 3)"), type: "success" as const },
-        { text: t("✓ Trust score computed: 87/100", "✓ تم حساب درجة الثقة: 87/100"), type: "success" as const },
-        { text: t("Identity capsule sealed. Ready to deploy.", "تم إغلاق كبسولة الهوية. جاهز للنشر."), type: "output" as const },
+        { text: t("command_verify_output1"), type: "info" as const },
+        { text: t("command_verify_output2"), type: "success" as const },
+        { text: t("command_verify_output3"), type: "success" as const },
+        { text: t("command_verify_output4"), type: "output" as const },
       ],
     },
     {
       id: "deploy",
       icon: Rocket,
-      label: t("deploy agent", "نشر العميل"),
+      label: t("command_deploy"),
       output: [
-        { text: t("Generating sovereign agent keypair...", "توليد زوج مفاتيح العميل السيادي..."), type: "info" as const },
-        { text: t("✓ Agent passport minted on-chain", "✓ تم صك جواز سفر العميل على الشبكة"), type: "success" as const },
-        { text: t("✓ DID: did:axiom:a1b2...c3d4", "✓ المعرف الرقمي: did:axiom:a1b2...c3d4"), type: "success" as const },
-        { text: t("Agent Axiom Sentinel is now ACTIVE.", "العميل Axiom Sentinel نشط الآن."), type: "output" as const },
-        { text: t("→ View passport at axiomid.app/passport/a1b2...c3d4", "← عرض جواز السفر في axiomid.app/passport/a1b2...c3d4"), type: "info" as const },
+        { text: t("command_deploy_output1"), type: "info" as const },
+        { text: t("command_deploy_output2"), type: "success" as const },
+        { text: t("command_deploy_output3"), type: "success" as const },
+        { text: t("command_deploy_output4"), type: "output" as const },
+        { text: t("command_deploy_output5"), type: "info" as const },
       ],
     },
   ];
@@ -83,9 +82,7 @@ export default function InteractiveCommandDemo() {
   const [activeStep, setActiveStep] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>(() => [
     {
-      text: language === "en"
-        ? "AxiomID Agent Protocol v1.0 — interactive demo"
-        : "بروتوكول عميل AxiomID الإصدار 1.0 — عرض تجريبي تفاعلي",
+      text: t("command_initial_log"),
       type: "output" as const,
     },
   ]);
@@ -158,16 +155,13 @@ export default function InteractiveCommandDemo() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <span className="text-[10px] font-mono text-electric-blue uppercase tracking-[0.2em]">
-            {t("Try It Live", "جربه مباشرة")}
+            {t("command_try_live")}
           </span>
           <h2 className="text-xl sm:text-2xl font-sans font-bold mt-1">
-            {t("Agent Command Loop", "حلقة أوامر العميل")}
+            {t("command_agent_loop")}
           </h2>
           <p className="text-sm text-subtle font-sans mt-1 max-w-md">
-            {t(
-              "Click each step to simulate the sovereign identity claim flow.",
-              "انقر فوق كل خطوة لمحاكاة تدفق مطالبة الهوية السيادية."
-            )}
+            {t("command_subtitle")}
           </p>
         </div>
 
@@ -216,7 +210,7 @@ export default function InteractiveCommandDemo() {
             <div className="w-2.5 h-2.5 rounded-full bg-neon-green/60" />
           </div>
           <span className="text-[10px] font-mono text-subtle ml-2">
-            {t("agent-command-loop — bash", "حلقة-أوامر-العميل — bash")}
+            {t("command_terminal_title")}
           </span>
         </div>
 
@@ -291,21 +285,15 @@ export default function InteractiveCommandDemo() {
             >
               <div className="flex items-center gap-2 text-neon-green font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
-                {t(
-                  "Agent identity claim complete — your sovereign passport is active.",
-                  "اكتملت مطالبة هوية العميل - جواز سفرك السيادي نشط."
-                )}
+                {t("command_complete")}
               </div>
               <div className="mt-2 text-[10px] text-subtle">
-                {t(
-                  "→ This is what happens when you claim your identity on AxiomID.",
-                  "← هذا ما يحدث عندما تطالب بهويتك على AxiomID."
-                )}
+                {t("command_complete_sub")}
                 <Link
                   href="/claim"
                   className="ml-1 text-electric-blue hover:underline focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:ring-offset-2 focus-visible:outline-none transition-all rounded"
                 >
-                  {t("Try it for real", "جربه بشكل حقيقي")}
+                  {t("command_try_real")}
                 </Link>
               </div>
             </motion.div>
