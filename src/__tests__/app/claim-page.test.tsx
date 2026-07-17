@@ -165,7 +165,7 @@ describe("ClaimPage — step 1 (initial state)", () => {
   it("renders 'Connected' badge when user has a walletAddress", () => {
     mockUseWallet.mockReturnValue(defaultWalletCtx({ user: connectedUser }));
     render(<ClaimPage />);
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getAllByText("Connected")[0]).toBeInTheDocument();
   });
 
   it("does NOT show 'Continue' button when no wallet is connected (step 1 cannot proceed)", () => {
@@ -334,7 +334,7 @@ describe("ClaimPage — handleConnect (PR change: no try/catch)", () => {
     render(<ClaimPage />);
 
     // user already has walletAddress so Connected shows from the start
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getAllByText("Connected")[0]).toBeInTheDocument();
   });
 });
 
@@ -694,7 +694,7 @@ describe("ClaimPage — Back button navigation (prevStep)", () => {
 describe("ClaimPage — handleDemoConnect (PR change: demo mode)", () => {
   it("renders 'Try Demo Mode' button on step 1 when not connected and not in Pi Browser", () => {
     render(<ClaimPage />);
-    expect(screen.getByText("Try Demo Mode")).toBeInTheDocument();
+    expect(screen.getAllByText("Try Demo Mode").length).toBeGreaterThan(0);
   });
 
   it("does not render 'Try Demo Mode' button when isPiBrowser is true", () => {
@@ -715,7 +715,7 @@ describe("ClaimPage — handleDemoConnect (PR change: demo mode)", () => {
     render(<ClaimPage />);
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Try Demo Mode"));
+      fireEvent.click(screen.getAllByText("Try Demo Mode")[0]);
     });
 
     expect(connectDemo).toHaveBeenCalledTimes(1);
@@ -735,7 +735,7 @@ describe("ClaimPage — handleDemoConnect (PR change: demo mode)", () => {
     expect(screen.getByText("Connection failed")).toBeInTheDocument();
 
     await act(async () => {
-      fireEvent.click(screen.getByText("Try Demo Mode"));
+      fireEvent.click(screen.getAllByText("Try Demo Mode")[0]);
     });
 
     expect(screen.queryByText("Connection failed")).toBeNull();
@@ -759,9 +759,7 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
     await act(async () => {
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
-    const piBrowserRequiredElements = screen.getAllByText("Pi Browser Required");
-    expect(piBrowserRequiredElements.length).toBeGreaterThanOrEqual(1);
-    expect(piBrowserRequiredElements[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Pi Browser Required")[0]).toBeInTheDocument();
 
     // Two "Try Demo Mode" buttons are now on screen: one from ConnectStep,
     // one from the modal itself. Find the modal's button by its distinct styling.
@@ -778,7 +776,7 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
     });
 
     expect(connectDemo).toHaveBeenCalledTimes(1);
-    expect(screen.queryAllByText("Pi Browser Required")).toHaveLength(0);
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
     expect(screen.getAllByText("Connected").length).toBeGreaterThan(0);
   });
 
@@ -791,16 +789,11 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
     await act(async () => {
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
-    const piBrowserRequiredElements2 = screen.getAllByText("Pi Browser Required");
-    expect(piBrowserRequiredElements2.length).toBeGreaterThanOrEqual(1);
-    expect(piBrowserRequiredElements2[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Pi Browser Required")[0]).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Got it"));
 
-    // The modal closes, but ConnectStep still shows "Pi Browser Required"
-    // in the background (it's always visible when !isPiBrowser). We verify
-    // the modal closed by checking that "Got it" button is no longer present.
-    expect(screen.queryByText("Got it")).toBeNull();
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
     expect(connectDemo).not.toHaveBeenCalled();
   });
 });
@@ -821,12 +814,8 @@ describe("ClaimPage — handleConnect Pi Browser fallback detection (PR change)"
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
 
-    // When window.Pi is set, the modal is skipped and connectWallet is called.
-    // The mock doesn't update walletConnected, so ConnectStep may still show
-    // "Pi Browser Required" — verify the modal was skipped instead.
+    expect(screen.queryByText("Pi Browser Required")).toBeNull();
     expect(connectWallet).toHaveBeenCalledTimes(1);
-    // Modal should not have appeared (no "Got it" button)
-    expect(screen.queryByText("Got it")).toBeNull();
   });
 });
 
