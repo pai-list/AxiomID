@@ -25,7 +25,7 @@ async function main() {
   if (mode === 'changed') {
     let changedFiles: string[] = [];
     try {
-      const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null || true').toString().trim();
+      const diffOutput = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null').toString().trim();
       changedFiles = diffOutput ? diffOutput.split('\n').filter(Boolean) : [];
     } catch {
       // If git diff fails entirely (e.g., shallow clone after force-push), skip validation
