@@ -92,7 +92,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
             className="text-[11px] font-mono text-emerald-400/70 hover:text-emerald-400 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-400/10 hover:border-emerald-400/30 bg-emerald-400/[0.03]"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            {t("Start mining Pi free", "ابدأ تعدين Pi مجاناً")}
+            {t("start_mining_pi_free")}
             <svg
               className="w-3 h-3 opacity-50"
               fill="none"
