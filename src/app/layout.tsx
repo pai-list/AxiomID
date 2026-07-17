@@ -144,6 +144,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden`}
       >
+        {/* Meticulous session recorder — must be the first script to load so it
+            can instrument fetch/XHR before any other code runs.
+            Native <script> tag (not next/script) — no defer/async per Meticulous docs.
+            Active in dev + Vercel preview only. */}
+        {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script
+            data-recording-token="vLG050AH1euDRiGTNmjgufmEM5grQe7SkNzEiGvl"
+            data-is-production-environment="false"
+            src="https://snippet.meticulous.ai/v1/meticulous.js"
+          />
+        )}
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
