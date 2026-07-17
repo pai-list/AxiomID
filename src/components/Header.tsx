@@ -56,8 +56,8 @@ export default function Header({ showBack = false, showWallet = false }: HeaderP
           <Link href="/" className="group">
             <AxiomLogo />
           </Link>
-          <div className="w-px h-6 bg-white/10 hidden sm:block" />
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10">
+          <div className="w-px h-6 bg-glass-hover hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded bg-glass border border-glass-hover">
             <svg viewBox="0 0 100 100" className="w-4 h-4" fill="currentColor">
               <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="4" opacity="0.3"/>
               <text x="50" y="68" textAnchor="middle" fontSize="60" fontWeight="bold" fill="currentColor" fontFamily="serif">π</text>

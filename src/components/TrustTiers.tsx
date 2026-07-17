@@ -114,11 +114,11 @@ export default function TrustTiers() {
               <span className="text-[11px] font-mono block mb-2" style={{ color: tier.color }}>
                 {tier.xp} XP
               </span>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">{t(tier.descEn, tier.descAr)}</p>
+              <p className="text-[11px] text-faint leading-relaxed">{t(tier.descEn, tier.descAr)}</p>
 
               <div className="mt-3 flex justify-center">
                 <ChevronDown
-                  className="w-4 h-4 text-zinc-400 transition-transform duration-300"
+                  className="w-4 h-4 text-faint transition-transform duration-300"
                   style={{ transform: isExpanded ? "rotate(180deg)" : undefined }}
                 />
               </div>
@@ -132,7 +132,7 @@ export default function TrustTiers() {
                 aria-label={`${t(tier.nameEn, tier.nameAr)} perks`}
               >
                 {(language === "en" ? tier.perksEn : tier.perksAr).map((perk) => (
-                  <div key={perk} className="flex items-center gap-2 text-[10px] font-mono text-zinc-400">
+                  <div key={perk} className="flex items-center gap-2 text-[10px] font-mono text-faint">
                     <span className="w-1 h-1 rounded-full" style={{ backgroundColor: tier.color }} />
                     {perk}
                   </div>

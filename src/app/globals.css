@@ -55,6 +55,12 @@ body {
   --highlight: var(--axiom-purple);
   --warning: var(--color-warning);
   --danger: var(--color-danger);
+
+  /* ── Glass/overlay (theme-aware) ─────────────────────── */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.10);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-border-hover: rgba(255, 255, 255, 0.10);
 }
 
 [data-theme='light'] {
@@ -82,6 +88,12 @@ body {
   --text-primary: #18181b;
   --text-secondary: #52525b;
   --text-muted: #71717a;
+
+  /* ── Glass/overlay (theme-aware) ─────────────────────── */
+  --glass-bg: rgba(0, 0, 0, 0.05);
+  --glass-bg-hover: rgba(0, 0, 0, 0.10);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --glass-border-hover: rgba(0, 0, 0, 0.10);
 }
 
 @theme inline {
@@ -112,6 +124,12 @@ body {
 /* ── Background utilities (theme-aware) ───────────────── */
 .bg-surface-hover { background: var(--bg-card-hover); }
 .bg-surface-deep { background: var(--bg-deep); }
+
+/* ── Glass/overlay utilities (theme-aware) ────────────── */
+.bg-glass { background: var(--glass-bg); }
+.bg-glass-hover { background: var(--glass-bg-hover); }
+.border-glass { border-color: var(--glass-border); }
+.border-glass-hover { border-color: var(--glass-border-hover); }
 
 /* ── Text color utilities (theme-aware) ───────────────── */
 .text-primary-color { color: var(--color-primary); }
