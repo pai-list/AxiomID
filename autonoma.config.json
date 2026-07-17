@@ -1,0 +1,8 @@
+{
+  "clientId": "cmrp0htap01m501e9g5azqa4t",
+  "secretId": "356a81e9a3e3a7e0a109c8ecde7bc9f2da8fd58246260f1040be55fb24a0b7a17fa3ee94602a5d1caf6a5b1970406663",
+  "pairingCode": "S6CQ58G5",
+  "mcpEndpoint": "https://api.autonoma.app/v1/mcp/onboarding",
+  "project": "axiomid",
+  "framework": "nextjs"
+}
