@@ -118,6 +118,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  manifest: '/manifest.webmanifest',
   verification: process.env.GOOGLE_SITE_VERIFICATION
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }
     : undefined,
@@ -213,11 +214,22 @@ export default async function RootLayout({
                 "url": "https://axiomid.app",
                 "description": "Prove human intent behind AI actions with decentralized identity verification. Create your sovereign AI passport with Pi Network.",
                 "applicationCategory": "IdentityApplication",
+                "category": "Identity & Verification",
                 "operatingSystem": "Web",
+                "inLanguage": ["en", "ar"],
+                "isAccessibleForFree": true,
                 "offers": {
-                  "@type": "Offer",
-                  "price": "0",
-                  "priceCurrency": "USD"
+                  "@type": "AggregateOffer",
+                  "priceCurrency": "PI",
+                  "lowPrice": "0",
+                  "highPrice": "100",
+                  "offerCount": 4,
+                  "offers": [
+                    { "@type": "Offer", "name": "Visitor", "price": "0", "priceCurrency": "PI", "description": "Limited read-only access" },
+                    { "@type": "Offer", "name": "Citizen", "price": "0", "priceCurrency": "PI", "description": "Social stamps and basic agent access (100 XP)" },
+                    { "@type": "Offer", "name": "Validator", "price": "25", "priceCurrency": "PI", "description": "Agent delegation and marketplace install (500 XP)" },
+                    { "@type": "Offer", "name": "Sovereign", "price": "100", "priceCurrency": "PI", "description": "Full trust, vault staking, vouching power (1000 XP)" }
+                  ]
                 },
                 "creator": {
                   "@type": "Person",
