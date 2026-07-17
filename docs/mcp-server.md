@@ -160,7 +160,7 @@ Get the computed trust score for a DID.
 |-----------|------|----------|-------------|
 | `did` | `string` | Yes | The DID to check |
 
-Score is a weighted combination: 35% XP (activity), 25% stamps (delegation count), 25% delegation (inverse-square propagated), 15% dialectic (adversarial verification).
+Score is a weighted combination: 50% XP (activity from harvest queries + recency bonus), 20% stamps (attestations from delegations), 10% tenure (account age + consistency), 20% semantic (embedding similarity to truth corpus).
 
 #### `trust_delegate`
 
@@ -299,14 +299,18 @@ Returns plain-text: `"AxiomID MCP Server - Use POST /mcp for JSON-RPC"`. Useful 
                                           │  │  harvest)    │  │
                                           │  └──────┬───────┘  │
                                           │         │          │
-                                          │  ┌──────▼───────┐  │
-                                          │  │  D1 + KV     │  │
-                                          │  │  (storage)   │  │
-                                          │  └──────────────┘  │
-                                          └────────────────────┘
+                                           │  ┌──────▼───────┐  │
+                                           │  │  D1 (truth)  │  │
+                                           │  │  KV (cache)  │  │
+                                           │  │  PRESENCE_DO │  │
+                                           │  │  HARVEST_Q   │  │
+                                           │  │  SEARCH_VEC  │  │
+                                           │  │  AI (embeds) │  │
+                                           │  └──────────────┘  │
+                                           └────────────────────┘
 ```
 
-The MCP server is built with the `@modelcontextprotocol/sdk` and deployed as part of the AxiomID Cloudflare Worker. All state is stored in D1 (relational data) and KV (cached trust scores, rate limiter state).
+The MCP server is built with the `@modelcontextprotocol/sdk` and deployed as part of the AxiomID Cloudflare Worker. The worker binds to **D1** (truth-db, relational data), **KV** (trust score cache, rate limiter state), **PRESENCE_DO** (Durable Object for agent presence), **HARVEST_QUEUE** (async harvest processing), **SEARCH_VECTORS** (Vectorize index for semantic search), and **AI** (Workers AI embedding inference). Required secrets (`PERPLEXITY_API_KEY`, `MCP_SHARED_SECRET`, `SOVEREIGN_KEY_SALT`) must be provisioned with `wrangler secret put`.
 
 ---
 
@@ -343,10 +347,10 @@ AxiomID's trust engine uses physics-inspired mathematics for robust scoring:
 
 | Component | Weight | Method |
 |-----------|--------|--------|
-| **XP** | 35% | Activity from harvest queries + recency bonus |
-| **Stamps** | 25% | Attestations from delegations |
-| **Delegation** | 25% | Inverse-square law trust propagation + Boltzmann distribution |
-| **Dialectic** | 15% | Adversarial verification (thesis/antithesis/synthesis) |
+| **XP** | 50% | Activity from harvest queries + recency bonus |
+| **Stamps** | 20% | Attestations from delegations |
+| **Tenure** | 10% | Account age + consistency |
+| **Semantic** | 20% | Embedding similarity to truth corpus |
 
 Advanced trust computations available via internal APIs:
 - **PageRank** — recursive trust importance across the delegation graph
