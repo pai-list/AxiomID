@@ -17,6 +17,8 @@ import { handleTruthAsk, handleDailyTruth } from "./routes/truth-rag";
 import { handleGitHubWebhook } from "./routes/github-webhook";
 import { TrustEmbedder } from "./vectors/trust-embedder";
 import { generateId } from "./lib/utils";
+import { handleDidResolve } from "./routes/did";
+import { handleVcVerify } from "./routes/vc";
 
 export class Router {
   private kv: KVHelper;
@@ -100,6 +102,16 @@ export class Router {
         events: ["pull_request", "installation", "ping"],
         piReferral: "https://minepi.com/amrikyy",
       });
+    }
+
+    // --- DID Resolution (public) ---
+    if (path.startsWith("/api/resolve/") && method === "GET") {
+      return handleDidResolve(request, this.env);
+    }
+
+    // --- VC Verification (public check endpoint) ---
+    if (path === "/api/vc/verify" && method === "POST") {
+      return handleVcVerify(request, this.env);
     }
 
     // --- Health ---

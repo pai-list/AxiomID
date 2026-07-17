@@ -93,7 +93,7 @@ export default function StatsBar() {
         <div key={item.label} className="text-center p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
           <div className="flex items-center gap-2 mb-2 justify-center">
             <item.icon className={`w-3.5 h-3.5 ${item.color === 'electric-blue' ? 'text-electric-blue' : item.color}`} />
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{item.label}</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-faint">{item.label}</span>
           </div>
           {item.value !== null ? (
             <p className="text-2xl md:text-3xl font-bold font-mono text-zinc-100">
