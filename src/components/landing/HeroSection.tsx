@@ -86,7 +86,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
           style={{ animationDelay: "0.45s" }}
         >
           <a
-            href="https://minepi.com/invitation/Moeabdelaziz007"
+            href="https://minepi.com/amrikyy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[11px] font-mono text-emerald-400/70 hover:text-emerald-400 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-400/10 hover:border-emerald-400/30 bg-emerald-400/[0.03]"
@@ -102,6 +102,14 @@ export default function HeroSection({ t }: HeroSectionProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
+          </a>
+          <a
+            href="https://coinmarketcap.com/currencies/pi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono text-zinc-500 hover:text-zinc-400 transition-colors flex items-center gap-1 px-2 py-1.5"
+          >
+            📈 {t("Pi market data", "بيانات سوق Pi")}
           </a>
         </div>
 

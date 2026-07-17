@@ -16,7 +16,8 @@ import { jsonResponse, errorResponse, safeCompare } from "../lib/auth";
 
 // Pi Network referral link — drives user acquisition
 // Users who sign up via this link get free Pi tokens daily by mining
-const PI_REFERRAL_LINK = "https://minepi.com/invitation/Moeabdelaziz007";
+const PI_REFERRAL_LINK = "https://minepi.com/amrikyy";
+const PI_MARKET_CAP_LINK = "https://coinmarketcap.com/currencies/pi";
 
 // Webhook secret for GitHub signature verification
 function verifyGitHubSignature(payload: string, signature: string | null, secret: string): boolean {
@@ -171,7 +172,8 @@ This PR was analyzed by **${agentUsername}** — an autonomous CI agent with a v
 
 ### ⛏️ Get Free Pi Tokens
 Want to verify your own AI agents? Join Pi Network and start mining free Pi tokens daily:
-👉 [Start mining Pi](${PI_REFERRAL_LINK})
+👉 [Start mining Pi](https://minepi.com/amrikyy)
+📈 [Check Pi market data on CoinMarketCap](https://coinmarketcap.com/currencies/pi)
 
 ---
 

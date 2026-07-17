@@ -94,13 +94,3 @@ reviews:
       enabled: false           # Not a Python project
     mypy:
       enabled: false           # Not a Python project
-
-# Sequence diagrams for complex PRs
-summarize:
-  enabled: true
-  language: "en"
-
-# Layout diagrams
-layout:
-  diagrams:
-    enabled: true

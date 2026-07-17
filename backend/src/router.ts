@@ -98,7 +98,7 @@ export class Router {
         status: "active",
         webhook: "POST /webhook",
         events: ["pull_request", "installation", "ping"],
-        piReferral: "https://minepi.com/invitation/Moeabdelaziz007",
+        piReferral: "https://minepi.com/amrikyy",
       });
     }
 
