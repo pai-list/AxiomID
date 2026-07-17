@@ -821,8 +821,12 @@ describe("ClaimPage — handleConnect Pi Browser fallback detection (PR change)"
       fireEvent.click(screen.getByText("CONNECT PI WALLET"));
     });
 
-    expect(screen.queryAllByText("Pi Browser Required")).toHaveLength(0);
+    // When window.Pi is set, the modal is skipped and connectWallet is called.
+    // The mock doesn't update walletConnected, so ConnectStep may still show
+    // "Pi Browser Required" — verify the modal was skipped instead.
     expect(connectWallet).toHaveBeenCalledTimes(1);
+    // Modal should not have appeared (no "Got it" button)
+    expect(screen.queryByText("Got it")).toBeNull();
   });
 });
 
