@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import DOMPurify from "isomorphic-dompurify";
 import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
 import { SandboxProvider } from "./context/sandbox-provider";
@@ -14,6 +15,7 @@ import { Toaster } from "sonner";
 import InstallPWA from "@/components/pwa/InstallPWA";
 import DynamicThemeColor from "@/components/pwa/DynamicThemeColor";
 import SovereignSplash from "@/components/pwa/SovereignSplash";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Providers } from "./providers";
 
 // Preload fonts for better performance
@@ -179,7 +181,7 @@ export default async function RootLayout({
 
                 <Providers>
                   <MotionConfig reducedMotion="user">
-                    {children}
+                    <ErrorBoundary>{children}</ErrorBoundary>
                   </MotionConfig>
                 </Providers>
               </WalletProvider>
@@ -206,7 +208,7 @@ export default async function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: DOMPurify.sanitize(JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
                 "name": "AxiomID",
@@ -241,7 +243,7 @@ export default async function RootLayout({
                   "Pi Network Authentication",
                   "Verifiable Credentials"
                 ]
-              })
+              }), { ALLOW_TAGS: [] })
             }}
           />
        </body>
