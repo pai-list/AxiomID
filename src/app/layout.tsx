@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -134,13 +135,21 @@ export const metadata: Metadata = {
  *
  * @returns The application root element.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Detect language from Accept-Language header to prevent FOUC on RTL
+  const headerList = await headers();
+  const acceptLang = headerList.get("accept-language") || "";
+  const isArabic = acceptLang.toLowerCase().startsWith("ar") || 
+    acceptLang.toLowerCase().includes("ar,");
+  const lang = isArabic ? "ar" : "en";
+  const dir = isArabic ? "rtl" : "ltr";
+
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang={lang} dir={dir} className="scroll-smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden`}
       >

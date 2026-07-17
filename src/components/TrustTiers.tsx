@@ -79,26 +79,30 @@ export default function TrustTiers() {
   const t = (en: string, ar: string) => (language === "en" ? en : ar);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="list">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {tiers.map((tier) => {
         const isExpanded = expanded === tier.key;
         return (
           <div
             key={tier.key}
-            role="listitem"
-            className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-left"
+            className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04] cursor-pointer text-start"
             style={{
               borderColor: isExpanded ? `${tier.color}30` : undefined,
               boxShadow: isExpanded ? `0 0 20px ${tier.color}08` : undefined,
             }}
+            onClick={() => setExpanded(isExpanded ? null : tier.key)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setExpanded(isExpanded ? null : tier.key);
+              }
+            }}
+            tabIndex={0}
+            aria-expanded={isExpanded}
+            aria-controls={`tier-perks-${tier.key}`}
+            aria-label={`${t(tier.nameEn, tier.nameAr)} tier — ${tier.xp} XP — ${t(tier.descEn, tier.descAr)}`}
           >
-            <button
-              onClick={() => setExpanded(isExpanded ? null : tier.key)}
-              aria-expanded={isExpanded}
-              aria-controls={`tier-perks-${tier.key}`}
-              aria-label={`${t(tier.nameEn, tier.nameAr)} tier — ${tier.xp} XP — ${t(tier.descEn, tier.descAr)}`}
-              className="w-full text-left"
-            >
+            <div className="w-full text-start">
               <div
                 className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center border transition-all duration-300"
                 style={{
@@ -122,7 +126,7 @@ export default function TrustTiers() {
                   style={{ transform: isExpanded ? "rotate(180deg)" : undefined }}
                 />
               </div>
-            </button>
+            </div>
 
             {isExpanded && (
               <div
