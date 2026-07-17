@@ -797,7 +797,10 @@ describe("ClaimPage — Try Demo Mode from the browser-required modal (PR change
 
     fireEvent.click(screen.getByText("Got it"));
 
-    expect(screen.queryAllByText("Pi Browser Required")).toHaveLength(0);
+    // The modal closes, but ConnectStep still shows "Pi Browser Required"
+    // in the background (it's always visible when !isPiBrowser). We verify
+    // the modal closed by checking that "Got it" button is no longer present.
+    expect(screen.queryByText("Got it")).toBeNull();
     expect(connectDemo).not.toHaveBeenCalled();
   });
 });
