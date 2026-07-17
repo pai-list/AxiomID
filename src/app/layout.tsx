@@ -125,6 +125,7 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
     'apple-mobile-web-app-title': 'AxiomID',
     'mobile-web-app-capable': 'yes',
+    'virtual-protocol-site-verification': '02985324a1093a757f83d0d6ea4f33b5',
   },
 };
 
