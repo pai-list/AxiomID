@@ -644,4 +644,39 @@ describe("AxiomSDK – Passport piWalletAddress field", () => {
       "GA456DEF"
     );
   });
+
+  it("passes through a null piWalletAddress without throwing", async () => {
+    fetchSpy.mockResolvedValueOnce(
+      mockOk({ ...basePassport, piWalletAddress: null })
+    );
+
+    const passport = await sdk.verifyPassport("alice");
+
+    expect(passport.piWalletAddress).toBeNull();
+  });
+
+  it("passes through long/unusual piWalletAddress values unchanged (no truncation or mutation)", async () => {
+    const weirdAddress = `GA${"1".repeat(54)}`;
+    fetchSpy.mockResolvedValueOnce(
+      mockOk({ ...basePassport, piWalletAddress: weirdAddress })
+    );
+
+    const passport = await sdk.verifyPassport("alice");
+
+    expect(passport.piWalletAddress).toBe(weirdAddress);
+    expect(passport.piWalletAddress).toHaveLength(56);
+  });
+
+  it("does not leak piWalletAddress into the getTrustScore projection", async () => {
+    fetchSpy.mockResolvedValueOnce(mockOk(basePassport));
+
+    const trustScore = await sdk.getTrustScore("did:axiom:alice");
+
+    expect(trustScore).toEqual({
+      did: basePassport.did,
+      score: basePassport.trustScore,
+      tier: basePassport.tier,
+    });
+    expect(trustScore).not.toHaveProperty("piWalletAddress");
+  });
 });

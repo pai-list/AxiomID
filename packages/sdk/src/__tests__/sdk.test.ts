@@ -123,6 +123,17 @@ describe("@axiomid/sdk", () => {
       expect(passport.piWalletAddress).toBe("GA123DEF");
     });
 
+    it("does not fall back to a legacy stellarAddress field for piWalletAddress", async () => {
+      const { piWalletAddress, ...rest } = mockPassport;
+      fetchSpy.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ...rest, stellarAddress: piWalletAddress }),
+      });
+
+      const passport = await sdk.verifyPassport("pioneer.username");
+      expect(passport.piWalletAddress).toBeUndefined();
+    });
+
     it("passes Authorization header when apiKey is set", async () => {
       const authedSdk = new AxiomSDK({ network: "mainnet", apiKey: "test-key" });
       fetchSpy.mockResolvedValueOnce({

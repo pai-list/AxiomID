@@ -97,4 +97,23 @@ describe("@axiomid/crypto package.json", () => {
       "@types/node": expect.any(String),
     });
   });
+
+  it("has the expected scoped package name and a semver-formatted version", () => {
+    expect(pkg.name).toBe("@axiomid/crypto");
+    expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it("regression: no longer points main/types at the legacy source entrypoint", () => {
+    // Prior to this PR, main/types pointed directly at "src/index.ts". Guard
+    // against accidentally reverting the publishable dist/ configuration.
+    expect(pkg.main).not.toBe("src/index.ts");
+    expect(pkg.types).not.toBe("src/index.ts");
+    expect(pkg.main).not.toMatch(/\.ts$/);
+    expect(pkg.types).not.toMatch(/\.ts$/);
+  });
+
+  it("regression: private is strictly the boolean false, not a truthy/string value", () => {
+    expect(pkg.private).not.toBe(true);
+    expect(typeof pkg.private).toBe("boolean");
+  });
 });
