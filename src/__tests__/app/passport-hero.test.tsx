@@ -42,10 +42,10 @@ jest.mock("@/components/landing/InteractiveShowcase", () => ({
 jest.mock("@/i18n", () => ({
   getTranslation: (_lang: string, key: string) => {
     const translations: Record<string, string> = {
-      landing_headline_en: "Create your",
-      landing_headline_rules_en: "AI Identity",
+      landing_headline_en: "Portable Identity",
+      landing_headline_rules_en: "for AI Agents",
       landing_tagline: "Establish a cryptographically verified identity",
-      landing_pi_badge: "Backed by Pi Network",
+      landing_pi_badge: "OpenIdentity Protocol",
       landing_how_it_works: "How it works",
       landing_three_steps: "Three steps to sovereignty",
       landing_step1_title: "Create Identity",
@@ -72,20 +72,20 @@ function LandingPageWrapper() {
           <div className="md:col-span-7 space-y-6 sm:space-y-8 animate-fade-in text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">Backed by Pi Network</span>
+              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-semibold uppercase">OpenIdentity Protocol</span>
             </div>
             <div className="space-y-2">
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
-                <span className="block animate-slide-up">Create your</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up">AI Identity</span>
+                <span className="block animate-slide-up">Portable Identity</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-emerald-400 to-axiom-purple animate-slide-up">for AI Agents</span>
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-zinc-400 max-w-xl mx-auto md:mx-0 animate-slide-up leading-relaxed mt-4">
                 Establish a cryptographically verified identity for your autonomous agents.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 animate-slide-up justify-center md:justify-start">
-              <a href="/claim" className="btn-primary py-4 px-8 text-sm sm:text-base font-mono tracking-wider">Create My AI Agent</a>
-              <a href="/docs" className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors">Explore the Protocol</a>
+              <a href="/claim" className="btn-primary py-4 px-8 text-sm sm:text-base font-mono tracking-wider">Get Started</a>
+              <a href="/docs" className="text-xs sm:text-sm font-mono text-zinc-400 hover:text-white transition-colors">Read the Spec</a>
             </div>
           </div>
           <div className="md:col-span-5 flex items-center justify-center">
@@ -104,18 +104,18 @@ function LandingPageWrapper() {
 describe("Landing page — Stitch hero", () => {
   it("renders the main heading", () => {
     render(<LandingPageWrapper />);
-    expect(screen.getByText(/create your/i)).toBeInTheDocument();
-    expect(screen.getByText(/ai identity/i)).toBeInTheDocument();
+    expect(screen.getByText(/portable identity/i)).toBeInTheDocument();
+    expect(screen.getByText(/for ai agents/i)).toBeInTheDocument();
   });
 
   it("renders the primary CTA button", () => {
     render(<LandingPageWrapper />);
-    expect(screen.getByText(/create my ai agent/i)).toBeInTheDocument();
+    expect(screen.getByText(/get started/i)).toBeInTheDocument();
   });
 
   it("renders the protocol link", () => {
     render(<LandingPageWrapper />);
-    expect(screen.getByText(/explore the protocol/i)).toBeInTheDocument();
+    expect(screen.getByText(/read the spec/i)).toBeInTheDocument();
   });
 
   it("renders the Header component", () => {

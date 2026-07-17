@@ -11,6 +11,13 @@
  * asserted synchronously.
  */
 
+jest.mock("@/app/context/language-context", () => ({
+  useLanguage: () => ({
+    t: (key: string) => require("@/i18n/en.json")[key] || key,
+    language: "en",
+  }),
+}));
+
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import InteractiveShowcase from "@/components/landing/InteractiveShowcase";

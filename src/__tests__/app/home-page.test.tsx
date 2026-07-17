@@ -144,25 +144,25 @@ describe("Home — rendering with English (default) language", () => {
 
   it("renders the new hero headline", async () => {
     render(await Home());
-    expect(screen.getByText("Create your")).toBeInTheDocument();
-    expect(screen.getByText("AI Identity")).toBeInTheDocument();
+    expect(screen.getByText("Portable Identity")).toBeInTheDocument();
+    expect(screen.getByText("for AI Agents")).toBeInTheDocument();
   });
 
   it("renders the primary CTA linking to /claim", async () => {
     render(await Home());
-    const cta = screen.getByText("Create My AI Agent").closest("a");
+    const cta = screen.getByText("Get Started").closest("a");
     expect(cta).toHaveAttribute("href", "/claim");
   });
 
   it("renders the secondary CTA linking to /docs", async () => {
     render(await Home());
-    const secondaryCta = screen.getByText("Explore the Protocol").closest("a");
+    const secondaryCta = screen.getByText("Read the Spec").closest("a");
     expect(secondaryCta).toHaveAttribute("href", "/docs");
   });
 
   it("renders the translated pi badge text", async () => {
     render(await Home());
-    expect(screen.getByText("Live on Pi Network Testnet")).toBeInTheDocument();
+    expect(screen.getByText("OpenIdentity Protocol")).toBeInTheDocument();
   });
 
   it("renders the three-step 'How It Works' section using translated strings", async () => {
@@ -187,7 +187,7 @@ describe("Home — rendering with Arabic language", () => {
 
   it("renders the Arabic pi badge translation", async () => {
     render(await Home());
-    expect(screen.getByText("مباشر على شبكة Pi التجريبية")).toBeInTheDocument();
+    expect(screen.getByText("بروتوكول OpenIdentity")).toBeInTheDocument();
   });
 
   it("renders the Arabic 'How It Works' section title", async () => {

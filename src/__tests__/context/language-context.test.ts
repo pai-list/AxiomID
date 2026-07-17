@@ -481,8 +481,8 @@ describe('translations — landing page keys (PR change)', () => {
   });
 
   // Spot-check specific EN values
-  it('landing_pi_badge EN is "Live on Pi Network Testnet"', () => {
-    expect(en['landing_pi_badge']).toBe('Live on Pi Network Testnet');
+  it('landing_pi_badge EN is "OpenIdentity Protocol"', () => {
+    expect(en['landing_pi_badge']).toBe('OpenIdentity Protocol');
   });
 
   it('landing_headline_en EN is "Your Identity."', () => {

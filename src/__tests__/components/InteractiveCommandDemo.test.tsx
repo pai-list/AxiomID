@@ -27,6 +27,16 @@
  * jest.setup.js to render children directly without animation delays.
  */
 
+jest.mock("@/app/context/language-context", () => ({
+  useLanguage: () => ({
+    t: (key: string) => {
+      const en = require("@/i18n/en.json");
+      return en[key] || key;
+    },
+    language: "en",
+  }),
+}));
+
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import InteractiveCommandDemo from "@/components/landing/InteractiveCommandDemo";
