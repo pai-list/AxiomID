@@ -20,7 +20,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
   if (minimal) {
     return (
       <footer 
-        className="w-full border-t py-6 px-6 text-[10px] font-mono text-center mt-12 bg-[#10131a]" 
+        className="w-full border-t py-6 px-6 text-[10px] font-mono text-center mt-12 bg-surface-deep" 
         style={{ borderColor: 'var(--card-border)', color: 'var(--text-secondary)' }}
       >
         {copyright || defaultCopy}
@@ -34,7 +34,7 @@ export default function Footer({ minimal = false, copyright }: FooterProps) {
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mt-16 sm:mt-24 py-8 border-t text-[11px] font-mono z-10 gap-6 px-4 sm:px-6 mx-auto bg-[#10131a] transition-colors duration-300"
+      className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mt-16 sm:mt-24 py-8 border-t text-[11px] font-mono z-10 gap-6 px-4 sm:px-6 mx-auto bg-surface-deep transition-colors duration-300"
       style={{ borderColor: 'var(--card-border)', color: 'var(--text-primary)' }}
     >
       <div className="flex flex-col items-center md:items-start gap-1 text-center md:text-left" style={{ color: 'var(--text-secondary)' }}>

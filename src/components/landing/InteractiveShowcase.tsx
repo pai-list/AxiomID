@@ -57,7 +57,7 @@ export default function InteractiveShowcase() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                 <div className="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-electric-blue/20 via-axiom-purple/20 to-emerald-400/20 z-0" />
                 
-                <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 relative z-10 hover:border-electric-blue/50 transition-colors">
+                <div className="bg-surface-deep border border-white/10 rounded-2xl p-6 relative z-10 hover:border-electric-blue/50 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-electric-blue/20 text-electric-blue flex items-center justify-center font-bold font-mono text-sm mb-4 border border-electric-blue/50">Q3</div>
                   <h4 className="font-bold text-white mb-2 font-mono">{t("showcase_roadmap_q3_title")}</h4>
                   <ul className="text-xs text-zinc-400 space-y-2 font-mono">
@@ -67,7 +67,7 @@ export default function InteractiveShowcase() {
                   </ul>
                 </div>
 
-                <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 relative z-10 hover:border-axiom-purple/50 transition-colors transform md:-translate-y-4 shadow-xl">
+                <div className="bg-surface-deep border border-white/10 rounded-2xl p-6 relative z-10 hover:border-axiom-purple/50 transition-colors transform md:-translate-y-4 shadow-xl">
                   <div className="w-8 h-8 rounded-full bg-axiom-purple/20 text-axiom-purple flex items-center justify-center font-bold font-mono text-sm mb-4 border border-axiom-purple/50">Q4</div>
                   <h4 className="font-bold text-white mb-2 font-mono">{t("showcase_roadmap_q4_title")}</h4>
                   <ul className="text-xs text-zinc-400 space-y-2 font-mono">
@@ -77,7 +77,7 @@ export default function InteractiveShowcase() {
                   </ul>
                 </div>
 
-                <div className="bg-[#101217] border border-white/10 rounded-2xl p-6 relative z-10 hover:border-emerald-400/50 transition-colors">
+                <div className="bg-surface-deep border border-white/10 rounded-2xl p-6 relative z-10 hover:border-emerald-400/50 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-emerald-400/20 text-emerald-400 flex items-center justify-center font-bold font-mono text-sm mb-4 border border-emerald-400/50">Q1</div>
                   <h4 className="font-bold text-white mb-2 font-mono">{t("showcase_roadmap_q1_title")}</h4>
                   <ul className="text-xs text-zinc-400 space-y-2 font-mono">
@@ -105,7 +105,7 @@ export default function InteractiveShowcase() {
                 <p className="text-sm text-zinc-400 font-mono leading-relaxed">
                   {t("showcase_arch_desc_before")}<span className="text-electric-blue">{t("showcase_arch_desc_highlight")}</span>{t("showcase_arch_desc_after")}
                 </p>
-                <div className="bg-[#101217] rounded-xl p-4 border border-white/10 font-mono text-[10px] sm:text-xs text-zinc-300 overflow-x-auto shadow-inner">
+                <div className="bg-surface-deep rounded-xl p-4 border border-white/10 font-mono text-[10px] sm:text-xs text-zinc-300 overflow-x-auto shadow-inner">
                   <pre className="text-emerald-400">await</pre> <span className="text-blue-400">engine</span>.<span className="text-yellow-200">execute</span>(jobId);<br/><br/>
                   <span className="text-zinc-500">{"// Event Sourced Transition Pipeline"}</span><br/>
                   <span className="text-white">IdentityCreated</span> <span className="text-zinc-600">→</span> <span className="text-white">DomainReserved</span> <span className="text-zinc-600">→</span> <br/>
@@ -116,16 +116,16 @@ export default function InteractiveShowcase() {
               <div className="flex-1 flex justify-center">
                 <div className="relative w-64 h-64">
                    <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/20 to-axiom-purple/20 rounded-full blur-3xl animate-pulse" />
-                   <div className="absolute inset-4 border border-white/10 rounded-full flex items-center justify-center bg-[#101217]/50 backdrop-blur-md">
+                   <div className="absolute inset-4 border border-white/10 rounded-full flex items-center justify-center bg-surface-deep/50 backdrop-blur-md">
                      <TerminalSquare className="w-12 h-12 text-zinc-500" />
                    </div>
-                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#101217] border border-electric-blue rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-surface-deep border border-electric-blue rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                      <Fingerprint className="w-5 h-5 text-electric-blue" />
                    </div>
-                   <div className="absolute bottom-4 right-4 w-12 h-12 bg-[#101217] border border-emerald-400 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                   <div className="absolute bottom-4 right-4 w-12 h-12 bg-surface-deep border border-emerald-400 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.3)]">
                      <Zap className="w-5 h-5 text-emerald-400" />
                    </div>
-                   <div className="absolute bottom-4 left-4 w-12 h-12 bg-[#101217] border border-axiom-purple rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                   <div className="absolute bottom-4 left-4 w-12 h-12 bg-surface-deep border border-axiom-purple rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                      <Search className="w-5 h-5 text-axiom-purple" />
                    </div>
                 </div>

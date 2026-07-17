@@ -201,7 +201,7 @@ export default function InteractiveCommandDemo() {
       </div>
 
       {/* Terminal */}
-      <div className="rounded-2xl border border-glass bg-black/60 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-2xl border border-glass bg-surface-deep backdrop-blur-sm overflow-hidden">
         {/* Terminal header */}
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-glass bg-black/40">
           <div className="flex items-center gap-1.5">
