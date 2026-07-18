@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Shield } from "lucide-react";
 import HeroCards from "./HeroCards";
 
@@ -65,13 +66,13 @@ export default function HeroSection({ t }: HeroSectionProps) {
                 </svg>
               </span>
             </a>
-            <a
+            <Link
               href="/docs"
               className="text-xs sm:text-sm font-mono text-subtle hover:text-surface transition-colors flex items-center gap-2 px-4 py-3 border border-glass hover:border-glass-hover rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none"
             >
               <Shield className="w-4 h-4 opacity-70" />
               {t("hero_cta_explore")}
-            </a>
+            </Link>
           </div>
 
           <div
@@ -136,13 +137,13 @@ export default function HeroSection({ t }: HeroSectionProps) {
               </svg>
             </span>
           </a>
-          <a
+          <Link
             href="/docs"
             className="text-xs sm:text-sm font-mono text-subtle hover:text-surface transition-colors flex items-center gap-2 px-5 py-3 border border-glass hover:border-glass-hover rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:outline-none w-full sm:w-auto justify-center"
           >
             <Shield className="w-4 h-4 opacity-70" />
             {t("hero_cta_explore")}
-          </a>
+          </Link>
         </div>
 
         {/* Pi Network referral — free Pi tokens for new users */}
@@ -174,7 +175,7 @@ export default function HeroSection({ t }: HeroSectionProps) {
             rel="noopener noreferrer"
             className="text-[10px] font-mono text-zinc-500 hover:text-zinc-400 transition-colors flex items-center gap-1 px-2 py-1.5"
           >
-            📈 {t("Pi market data", "بيانات سوق Pi")}
+            📈 {t("pi_market_data")}
           </a>
         </div>
 
@@ -218,6 +219,6 @@ export default function HeroSection({ t }: HeroSectionProps) {
           <HeroCards />
         </div>
       </div>
-    </section>
+    </div>
   );
 }
