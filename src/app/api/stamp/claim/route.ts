@@ -15,6 +15,7 @@ import { createUserDid } from "@/lib/did";
 import { calculateActionHash, GENESIS_HASH } from "@/lib/trust-chain";
 import { computeTrustScore } from "@/lib/trust-score";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { getActionUseCount, computePristineMultiplier } from "@/lib/rewards/pristine-path";
 
 /**
  * Handle a stamp claim request by authenticating the user, validating input, signing stamp metadata,
@@ -55,6 +56,10 @@ export async function POST(request: NextRequest) {
   if (!actionDef) {
     return apiError("VALIDATION_ERROR", `Unknown stamp type: ${actionType}`);
   }
+
+  const pristineUses = await getActionUseCount(authUser.id, actionType);
+  const { multiplier: pristineMul } = computePristineMultiplier(pristineUses, actionType);
+  const xpAwarded = Math.round(actionDef.xp * pristineMul);
 
   try {
     const existing = await prisma.stamp.findUnique({
@@ -98,7 +103,7 @@ export async function POST(request: NextRequest) {
           userId: authUser.id,
           type: actionType,
           provider,
-          xpAwarded: actionDef.xp,
+          xpAwarded,
           metadata: finalMetadata,
         },
       });
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
       const actionTimestamp = new Date();
       const actionHash = calculateActionHash(parentHash, {
         type: actionType,
-        xp: actionDef.xp,
+        xp: xpAwarded,
         metadata: finalMetadata,
         userId: authUser.id,
         timestamp: actionTimestamp,
@@ -123,7 +128,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: authUser.id,
           type: actionType,
-          xp: actionDef.xp,
+          xp: xpAwarded,
           metadata: finalMetadata,
           timestamp: actionTimestamp,
           hash: actionHash,
@@ -131,11 +136,11 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const newBalance = user.xp + actionDef.xp;
+      const newBalance = user.xp + xpAwarded;
       const ledgerEntry = await tx.xpLedger.create({
         data: {
           userId: authUser.id,
-          amount: actionDef.xp,
+          amount: xpAwarded,
           reason: "stamp_claim",
           reference: JSON.stringify({ stampId: stamp.id }),
           balance: newBalance,
@@ -171,7 +176,7 @@ export async function POST(request: NextRequest) {
       event: 'stamp_claimed',
       properties: {
         stamp_type: actionType,
-        xp_earned: actionDef.xp,
+        xp_earned: xpAwarded,
         new_balance: result.newBalance,
         tier: result.newTier,
         trust_score: result.computedTrustScore,
@@ -181,7 +186,7 @@ export async function POST(request: NextRequest) {
 
     return apiSuccess({
       stampId: result.stamp.id,
-      xpEarned: actionDef.xp,
+      xpEarned: xpAwarded,
       newBalance: result.newBalance,
       tier: result.newTier,
       ledgerEntryId: result.ledgerEntry.id,
