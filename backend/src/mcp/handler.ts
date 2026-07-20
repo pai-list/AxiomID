@@ -82,6 +82,41 @@ export async function handleMcp(request: Request, env: Env): Promise<Response> {
         const params = body.params as { name: string; arguments: Record<string, unknown> };
         const { name, arguments: args } = params;
 
+        // SECURITY: Verify caller owns the agentId for agent-scoped tools.
+        // The caller's authenticated identity (from verifyAuth) must match
+        // the agentId in the tool arguments. This prevents cross-agent access.
+        const agentScopedTools = new Set([
+          "presence_heartbeat",
+          "presence_status",
+          "skill_install",
+          "memory_read",
+          "memory_write",
+          "memory_search",
+        ]);
+
+        if (agentScopedTools.has(name)) {
+          const callerAgentId = (args.agentId as string) || (args.userDid as string) || undefined;
+          if (callerAgentId) {
+            // Extract caller identity from auth context
+            const authResult = verifyAuth(request, env);
+            if (!authResult.authorized) {
+              return jsonResponse({
+                jsonrpc: "2.0",
+                id: body.id,
+                error: { code: -32099, message: "Unauthorized: agent-scoped tool requires auth" },
+              }, 401);
+            }
+            // The caller's agentId (from auth) must match the requested agentId
+            if (authResult.agentId && authResult.agentId !== callerAgentId) {
+              return jsonResponse({
+                jsonrpc: "2.0",
+                id: body.id,
+                error: { code: -32098, message: "Forbidden: agentId mismatch — caller does not own this agent" },
+              }, 403);
+            }
+          }
+        }
+
         // Route to appropriate handler
         const result = await handleToolCall(name, args, env);
         return jsonResponse({

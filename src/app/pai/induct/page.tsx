@@ -136,8 +136,7 @@ export default function InductPage() {
         </button>
       </div>
 
-      <main style={{ background: 'var(--bg-deepest)', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
-        {/* Hero Section */}
+      {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center relative z-10 pt-14">
           <div className="container-pai text-center">
             <ParticleField count={30} color="rgba(57,255,20,0.1)" />

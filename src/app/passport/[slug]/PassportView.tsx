@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { AgentPassport } from "@/components/AgentPassport";
-import { AgentQR } from "@/components/AgentQR";
+import { PassportQR } from "@/components/PassportQR";
 import Link from "next/link";
 import { useLanguage } from "../../context/language-context";
 import { sharePassport } from "@/lib/pi-native-features";
