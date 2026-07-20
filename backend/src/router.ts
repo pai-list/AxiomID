@@ -13,6 +13,7 @@ import { SkillsMarketplace } from "./routes/skills";
 import { AgentDispatcher } from "./routes/agent-dispatch";
 import { handleMcp } from "./mcp/handler";
 import { handleSearch, handleSearchSimilar } from "./routes/search";
+import { handleAgentSearch, handleAgentSimilar } from "./routes/agent-discovery-search";
 import { handleTruthAsk, handleDailyTruth } from "./routes/truth-rag";
 import { TrustEmbedder } from "./vectors/trust-embedder";
 import { generateId } from "./lib/utils";
@@ -83,6 +84,15 @@ export class Router {
 
     if (path === "/api/search/similar" && method === "GET") {
       return handleSearchSimilar(request, this.env);
+    }
+
+    // --- Agent Discovery (semantic search via Vectorize + Workers AI) ---
+    if (path === "/api/agents/search" && method === "GET") {
+      return handleAgentSearch(request, this.env);
+    }
+
+    if (path === "/api/agents/similar" && method === "GET") {
+      return handleAgentSimilar(request, this.env);
     }
 
     // --- Health ---
