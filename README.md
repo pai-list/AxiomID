@@ -1,69 +1,95 @@
 <div align="center">
-  <img src="./public/axiomid-banner-v2.jpg" alt="AxiomID Banner: Human Sovereign and AI Agent" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
-</div>
 
-<h1 align="center">
-  AxiomID: The Portable Identity Manifest for AI Agents
-</h1>
+<img src="./public/axiomid-banner-v2.jpg" alt="AxiomID × PAI — Built for the Next Agentic Era" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 
-<p align="center">
-  <em>Think of it as the USB descriptor for an AI agent — it tells other agents and systems who this agent is, where its resources live, and what it can do.</em>
-</p>
+<h1>AxiomID × PAI</h1>
 
-<p align="center">
+<p><strong>Built for the Next Agentic Era <3</strong></p>
+
+<p><em>Sovereign Identity for Humans and AI Agents — the Identity Primitive of PAI (Pi Agentic Infrastructure).</em></p>
+
+<p>
   <a href="https://axiomid.app"><b>Live App</b></a> ·
-  <a href="https://axiomid.app/docs"><b>Documentation</b></a> ·
   <a href="https://axiomid.app/passport/demo"><b>Demo Passport</b></a> ·
   <a href="https://axiomid.app/leaderboard"><b>Leaderboard</b></a> ·
-  <a href="https://github.com/Moeabdelaziz007/AxiomID"><b>GitHub</b></a> ·
-  <a href="https://www.facebook.com/profile.php?id=61583477974464"><b>Facebook</b></a>
+  <a href="https://github.com/pai-list"><b>PAI Org</b></a>
 </p>
 
-<p align="center">
+<p>
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
-  <img src="https://img.shields.io/badge/tests-3786%20passed-22c55e?style=flat-square" alt="Tests Passed" />
+  <img src="https://img.shields.io/badge/tests-3377%20passed-22c55e?style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square" alt="TypeScript Strict" />
-  <img src="https://img.shields.io/badge/SOUL%20Protocol-compliant-emerald?style=flat-square" alt="SOUL Compliant" />
-  <img src="https://img.shields.io/badge/OpenIdentity-v0.1-6366f1?style=flat-square" alt="OpenIdentity v0.1" />
+  <img src="https://img.shields.io/badge/$0-month-free%20tier-22c55e?style=flat-square" alt="Zero Cost" />
+  <img src="https://img.shields.io/badge/PAI-Identity%20Primitive-8b5cf6?style=flat-square" alt="PAI Primitive" />
 </p>
+
+</div>
 
 ---
 
-AxiomID is the reference implementation of the **OpenIdentity** protocol — an open, portable identity layer for AI agents. Before agents talk (A2A), before agents use tools (MCP), before agents transact — they need to know **who** they're dealing with. AxiomID answers that question.
+> *"King isn't Born, He is Made ;)"*
+>
+> This is not a tool. This is a **team** — built by a solo engineer and an AI team that codes, reviews, tests, and ships alongside him. Not AI as a tool. AI as a **team**.
 
-### The Protocol Landscape
+## What This Is
 
-| Protocol | Layer | Purpose |
-|----------|-------|---------|
-| **A2A** (Google) | Interaction | How agents **talk** |
-| **MCP** (Anthropic) | Capability | How agents **use tools** |
-| **OpenIdentity** | Identity | **Who** agents **are** |
-| **KYA** (Know Your Agent) | Trust | How agents **prove** it |
+AxiomID is the **Identity Primitive** of PAI — the agentic layer for Pi Network.
 
-## Read the Specs
+```
+PAI = Pi + AI = Agent Economy
+     └── AxiomID = did:agent + TrustChain + PiVerify + OpenIdentity
+```
 
-- **[OpenIdentity Manifest](docs/openidentity/OpenIdentity.md)** — `/.well-known/openidentity.md` bootstrap format (Markdown + YAML frontmatter)
-- **[KYA Protocol](docs/openidentity/KYA.md)** — Multi-provider verification chain for agent-human trust
-- **[Agent Passport](docs/openidentity/AgentPassport.md)** — Full genome document at `/.well-known/passport.md`
-- **[JSON Schema](docs/openidentity/openidentity.schema.json)** — Validation schema for all OpenIdentity resources
+Every agent gets a **sovereign identity**, a **trust score**, a **verifiable passport**, and a **wallet** — all on free-tier infrastructure, all verifiable on-chain.
 
-## What is available now
+### The Three Primitives
 
-- **OpenIdentity specification v0.1** — The open standard for portable AI agent identity
-- **KYA verification** — Pi Network as reference KYC provider; multi-provider architecture designed
-- **Agent Passport** — Portable agent genome at `/.well-known/passport.md` with trust chain, capabilities, and memory layer references
-- **A2A AgentCard** — `/.well-known/agent-card.json` for Google A2A discovery
-- **Well-known endpoints** — `auth.md`, `skills.md`, `wallet.md`, `openidentity.md` under `/.well-known/`
-- **Pi Browser auth** — Sign-in, KYC consent, and payment flows
-- **Claim wizard** — Onboarding flow to create your agent identity
-- **Dashboard** — Manage identity, stamps, KYA, wallet, and agent settings
-- **Identity Explorer** — Discover and verify agents by capabilities and attestations
-- **Spend Request** — Agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
-- **TrustChain** — Append-only hash chain for all agent actions
+| Primitive | What It Is | Status |
+|-----------|------------|--------|
+| **Universal Agent Identity** | `did:agent` — portable, cross-chain, KYC-linked | ✅ Live |
+| **TrustChain** | Append-only hash chain for every agent action | ✅ Live |
+| **Agent Commerce** | ACP SDK — pay and get paid in Pi/USDC | ✅ Live |
+
+### The Atom (Frozen Forever)
+
+Everything composes on a single 50-line interface — the ABI of the agent economy:
+
+```typescript
+export interface PaiSkill<TIn, TOut> {
+  name: string;
+  version: string;
+  execute(input: TIn, ctx: SkillContext): Promise<TOut>;
+  validateInput(input: TIn): boolean;
+  metadata: {
+    price: number;
+    permissions: string[];
+    acp: { agentId: string };
+    sandbox: "wasm" | "js" | "native";
+  };
+}
+```
+
+50 lines. Frozen v1.0.0-immutable. Never changes. v2 = new name.
+
+---
+
+## What's Available Now
+
+- Pi Browser sign-in and callback handling
+- Demo and real identity claim flows
+- Public passport pages with trust and badge metadata
+- Authenticated dashboard with marketplace, settings, and sandbox playground
+- Explorer, leaderboard, docs, and service status views
+- API routes for auth, passport publishing, Pi payments, and health checks
+- **Spend Request** — agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
+- **TrustChain** — append-only hash chain for all agent actions
 - **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
-- **MCP Server** — 10 tools for trust, presence, and identity management
+- **Dual-Identity Governance** — explicit separation of Human Sovereign and AI Agent nodes
+- **Agent Discovery** — semantic search via Workers AI + Vectorize
+- **MCP Server** — 14 tools for agent identity, trust, and memory
+- **OpenIdentity Manifest** — portable agent identity spec
 
 ## Routes
 
@@ -76,24 +102,16 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 | `/dashboard` | Authenticated dashboard |
 | `/dashboard/settings` | User settings and VC viewer |
 | `/agent/[username]` | Public agent profile |
-| `/explorer` | Identity Explorer — discover and verify agents |
+| `/explorer` | Discover agents and identities |
 | `/leaderboard` | Ranked trust and activity view |
 | `/docs` | Product and API documentation |
 | `/status` | Service health and dependency status |
+| `/diagnostics` | Debug and diagnostic tools |
 | `/about` | About AxiomID |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of service |
-
-### Well-Known Endpoints
-
-| Endpoint | Format | Purpose |
-|:---------|:-------|:--------|
-| `/.well-known/openidentity.md` | Markdown + YAML | Bootstrap identity manifest |
-| `/.well-known/passport.md` | Markdown + YAML | Full agent genome |
-| `/.well-known/agent-card.json` | JSON (A2A v1.0) | A2A AgentCard directory |
-| `/.well-known/auth.md` | Markdown | Authentication methods |
-| `/.well-known/skills.md` | Markdown | Platform skills |
-| `/.well-known/wallet.md` | Markdown | Wallet capabilities |
+| `/offline` | Offline fallback page |
+| `/signin/callback` | Pi sign-in callback handler |
 
 ### API Routes
 
@@ -103,23 +121,33 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 | `/api/passport/*` | Passport CRUD, publishing, verification |
 | `/api/agent/*` | Agent identity, sign, activate, pause, manifest |
 | `/api/agents` | List agents for the authenticated user |
-| `/api/pi/*` | Pi payments, KYA claims, ad verification |
+| `/api/agents/search` | Semantic agent discovery (Vectorize) |
+| `/api/agents/harvest` | Query Perplexity for real-time agent harvesting |
+| `/api/pi/*` | Pi payments (approve, complete), KYA claims, ad verification |
+| `/api/skills/*` | Skills marketplace (CRUD, search, install, execute, pay, review) |
 | `/api/spend-request` | Create, list, approve spend requests + SSE stream |
 | `/api/health` | Health check |
 | `/api/status` | Protocol metrics: users, agents, XP, payments |
-| `/api/explorer` | Identity Explorer data and stats |
+| `/api/explorer` | Live explorer data and stats |
 | `/api/leaderboard` | Top users ranked by XP |
 | `/api/diagnostics/*` | Error capture and logs |
 | `/api/sandbox/*` | Sandbox dev-token and code execution |
+| `/api/admin/*` | Admin skills moderation |
 | `/api/stamp/*` | Stamp claiming |
+| `/api/social/disconnect` | Social account disconnection |
 | `/api/sync` | Edge-to-PostgreSQL sync |
 | `/api/telegram` | Telegram bot integration |
+| `/api/stellar/anchor` | Stellar trust anchoring |
 | `/api/vault/stake` | Vault staking |
+| `/api/did-document` | DID document resolution |
 | `/api/credential-status` | Credential revocation check |
 | `/api/upload/presign` | Presigned upload URLs |
 | `/api/presence/heartbeat` | Presence heartbeat |
+| `/api/daily-review` | Daily review trigger |
+| `/api/user/status` | User status |
+| `/api/emulate/*` | Service emulation (dev) |
 
-## Tech stack
+## Tech Stack
 
 | Layer | Technology |
 |:---|:---|
@@ -131,9 +159,9 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
 | **State/Cache** | TanStack Query v5 (client-side cache) |
-| **CI/CD** | GitHub Actions → Vercel · 3786 tests |
+| **CI/CD** | GitHub Actions → Vercel · 3270+ tests |
 
-## Quick start
+## Quick Start
 
 ```bash
 git clone https://github.com/Moeabdelaziz007/AxiomID.git
@@ -147,7 +175,7 @@ npm run dev
 
 Open http://localhost:3000.
 
-### Pi Browser local HTTPS
+### Pi Browser Local HTTPS
 
 The Pi SDK expects HTTPS in the browser. For local development, use portless:
 
@@ -166,45 +194,29 @@ echo "token" | npx wrangler secret put SHARED_SECRET_TOKEN_VERCEL_CF
 npx wrangler deploy
 ```
 
-## Verification and quality checks
+## Verification
 
 ```bash
 npm run lint       # 0 errors, 0 warnings
 npm run type-check # type check
-npm test           # 3786 tests (some page tests need QueryClientProvider wrapper)
+npm test           # 3270+ tests
 ```
 
-## Developer Tooling
-
-| Tool | Purpose | Usage |
-|------|---------|-------|
-| **portless** | Stable HTTPS `.localhost` URLs for Pi Browser testing | `portless axiomid next dev` → `https://axiomid.localhost` |
-| **emulate** | Local API emulators for deterministic CI tests | `npx emulate --service github` → `http://localhost:4001` |
-| **kernel** | Headless browser smoke tests on critical flows | `kernel run qa:smoke --url https://axiomid-app.vercel.app` |
-| **nostics** | Structured error codes with actionable fixes | Codes in `src/diagnostics/catalog.ts` |
-
-> See `AGENTS.md` → "Dev Tools" section for full documentation.
-
-## Project structure
+## Project Structure
 
 ```
 src/
   app/
-    .well-known/   # OpenIdentity resources (openidentity.md, passport.md, agent-card, etc.)
     api/           # Route handlers (Next.js App Router)
     dashboard/     # Authenticated dashboard
-    passport/      # Public passport viewer /passport/[slug]
+    passport/      # Public passport viewer
   components/      # Shared UI components
   lib/             # Auth, crypto, Pi SDK, validators, utilities
   i18n/            # Translation files (en.json, ar.json)
 prisma/            # Schema and migrations
-docs/
-  openidentity/    # Specification documents
-    OpenIdentity.md
-    KYA.md
-    AgentPassport.md
-    openidentity.schema.json
+docs/              # Specs and architecture docs
 AxiomID.Memory/    # Knowledge base and design docs
+packages/          # PAI packages (atom, identity-did, reputation)
 ```
 
 ## Trust Tiers
@@ -213,134 +225,123 @@ AxiomID.Memory/    # Knowledge base and design docs
 |:---|:---:|:---|
 | **Visitor** | 0 | Limited. Basic read-only. |
 | **Citizen** | 100 | Social stamps, basic agent access. |
-| **Validator** | 500 | Agent delegation, advanced capabilities. |
+| **Validator** | 500 | Agent delegation, marketplace install. |
 | **Sovereign** | 1000 | Full trust, vault staking, vouching power. |
+
+## Trust Score
+
+Every identity on AxiomID has a **Trust Score** built from verified stamps and experience points (XP):
+
+**Basic** (when tenure/semantic data is unavailable):
+$$\text{Trust Score} = \text{XP Score} \times 0.7 + \text{Stamp Score} \times 0.3$$
+
+**Full** (with tenure and semantic trust data):
+$$\text{Trust Score} = \text{XP Score} \times 0.5 + \text{Stamp Score} \times 0.2 + \text{Tenure Score} \times 0.1 + \text{Semantic Trust} \times 0.2$$
+
+Trust decays over time (inactivity penalty) and is boosted by Stellar anchoring (+15%).
 
 ## What AxiomID Does
 
 | Layer | What It Does |
 |:---|:---|
-| **OpenIdentity** | Portable identity manifest for AI agents (`/.well-known/openidentity.md`) |
-| **Agent Passport** | Full genome document with trust chain, capabilities, memory references |
-| **KYA** | Multi-provider verification linking agent → human → identity provider |
-| **AgentCard (A2A)** | Directory of discoverable agents per Google A2A v1.0 |
+| **DID** | `did:axiom` — W3C-compliant, self-sovereign identity per user |
 | **Verifiable Credentials** | Cryptographically signed stamps (social, KYA, KYC) |
+| **Trust Engine** | Physics-inspired algorithm with decay and anchoring |
+| **Agent Passports** | Public identity cards with verification badges and trust scores |
+| **Spend Request** | Agentic Pi payments — agent requests, user approves, Pi SDK executes |
 | **TrustChain** | Append-only hash chain for all agent actions |
-| **MCP Server** | 10 tools for trust, presence, and identity management |
+| **Skills Marketplace** | Install capabilities for agents |
 | **Truth RAG** | AI-powered Q&A over 6236 verses via Vectorize + Workers AI |
 | **Soul System** | Six-gate ethical evaluation loop |
 
 ## OpenIdentity Protocol
 
-### What is OpenIdentity
+AxiomID implements [OpenIdentity](https://github.com/Moeabdelaziz007/openidentity.md) — a portable identity manifest for AI agents. Like a USB descriptor for an AI agent, it lets any compatible platform understand what the agent is, who controls it, what it can do, and where its approved memory and tools lie.
 
-**OpenIdentity** is a portable identity manifest specification for AI agents — think of it as a **USB descriptor for an AI agent**. It combines identity, human verification, roles, skills, MCP tools, A2A metadata, memory discovery links, wallet references, and authorization pointers into one secure, shareable file. Any compatible platform can read an OpenIdentity manifest and immediately understand what an agent is, who controls it, what it can do, and where its approved memory and tools live.
+**Spec:** [openidentity-v0.1.md](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/openidentity-v0.1.md) | **Schema:** [openidentity.schema.json](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/schema/openidentity.schema.json)
 
-OpenIdentity was created by the same founder as AxiomID — [Mohamed Abdelaziz](https://github.com/Moeabdelaziz007) — and lives at [github.com/Moeabdelaziz007/openidentity.md](https://github.com/Moeabdelaziz007/openidentity.md).
-
-> **Short version:** OpenIdentity is the discovery layer for AI agent identity.
->
-> **USB metaphor:** Like a USB descriptor for an AI agent, OpenIdentity lets any compatible platform understand what the agent is, who controls it, what it can do, and where its approved memory and tools live.
-
-### How AxiomID Uses OpenIdentity
-
-AxiomID is the **reference implementation** of the OpenIdentity specification:
-
-- Every agent on AxiomID gets an OpenIdentity manifest describing its identity, controller, capabilities, and approved resources.
-- Manifests are served at the `/.well-known/openidentity` endpoint for machine and platform discovery.
-- Other platforms can fetch a manifest to understand an agent *before* granting access or trusting its claims.
-- The manifest format is portable — it works across GitHub, AxiomID profiles, websites, and agent runtimes.
-- Structured fields are validated against the [OpenIdentity JSON Schema](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/schema/openidentity.schema.json); the human-readable Markdown body is a first-class part of the format.
-
-### did:axiom DID Method
-
-AxiomID uses `did:axiom` as its **native DID method** — a W3C-compliant decentralized identifier method anchored to Pi Network with Ed25519 cryptographic keys.
-
-| DID Form | Example | Use |
-|:---|:---|:---|
-| `did:axiom:pi:<username>` | `did:axiom:pi:moeabdelaziz007` | Human-readable human identity |
-| `did:axiom:pi:<hash>` | `did:axiom:pi:a1b2c3d4e5f6a7b8` | Privacy-preserving (hashed) identity |
-| `did:axiom:agent:<id>` | `did:axiom:agent:agt_33d7p` | AI agent identity |
-| `did:axiom:issuer` | `did:axiom:issuer` | AxiomID credential issuer (signs VCs) |
-
-Key properties:
-
-- **W3C DID Core compliant** — conforms to the [W3C DID Core specification](https://www.w3.org/TR/did-core/).
-- **Pi Network anchored** — Pi Network is the primary identity anchor for human DIDs; Pi wallet addresses can appear in service endpoints.
-- **Ed25519 keys** — deterministic keypairs derived via `HMAC-SHA256(SOVEREIGN_KEY_SALT, piUid + agentId)`.
-- **Optional Stellar anchoring** — VC hashes can be anchored to Stellar as transaction memos for additional tamper evidence (not required for resolution).
-- **Resolvable** via the reference resolver: `https://axiomid.app/api/did-document?did={did}`.
-- **Privacy-preserving** — the hashed DID form avoids exposing the username; DID documents contain no PII beyond the public key and service endpoints.
-
-📖 Full spec: [did:axiom DID Method Specification v0.1](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/did-axiom-method-v0.1.md)
-
-### Architecture: AxiomID ↔ OpenIdentity
-
-```mermaid
-graph LR
-  OI[OpenIdentity Spec] --> |defines manifest format| AX[AxiomID App]
-  AX --> |generates manifests for| AG[AI Agents]
-  AX --> |resolves| DID[did:axiom DIDs]
-  DID --> |anchored to| PI[Pi Network]
-  AG --> |discovered via| OI
-```
-
-**How to read the diagram:** The OpenIdentity spec defines the manifest format. AxiomID (the reference implementation) generates OpenIdentity manifests for each AI agent it hosts and resolves `did:axiom` DIDs, which are anchored to Pi Network. Agents are then discovered by other platforms via their OpenIdentity manifest — closing the loop.
-
-### OpenIdentity Manifest Example
-
-A manifest for an AxiomID agent looks like this:
+### Minimal Manifest Example
 
 ```yaml
 openidentity: "0.1"
-agent:
-  id: "did:axiom:agent:agt_33d7p"
-  name: "Axiom Assistant"
-  type: "ai-agent"
-controller:
-  human:
-    name: "Mohamed Abdelaziz"
-    verification: "https://axiomid.app/passport/moeabdelaziz007"
+identity:
+  id: "did:axiom:axiomid.app:pi:username"
+  name: "My Agent"
+  type: "ai_agent"
+owner:
+  type: "human"
+  human_verified: true
+  method: "kya"
+  issuer: "axiomid"
 capabilities:
-  roles: ["research", "workflow-automation"]
-  skills: ["identity-discovery", "memory-routing", "spend-request"]
-verification:
-  - type: "signed-claim"
-    url: "https://axiomid.app/.well-known/openidentity/axiom-assistant.json"
-mcp_tools:
-  - type: "mcp"
-    name: "axiom-tools"
-    url: "https://mcp.axiomid.app"
-discovery:
-  memory:
-    - label: "approved-public-memory"
-      uri: "https://axiomid.app/memory/index.json"
-      access: "public-read"
-wallets:
-  - type: "pi-wallet"
-    url: "https://axiomid.app/wallet/moeabdelaziz007"
-authorization:
-  authorization_url: "https://axiomid.app/api/auth/authorize"
-  scopes:
-    - "read:public-profile"
-    - "request:tool-access"
+  roles: ["research_assistant"]
+  skills: ["web.research"]
+mcp:
+  servers:
+    - name: "axiomid"
+      url: "https://api.axiomid.app/mcp"
 links:
-  homepage: "https://axiomid.app"
-  axiomid_profile: "https://axiomid.app/agent/axiom-assistant"
+  axiom_id: "https://axiomid.app/u/username"
 ```
 
-> **Security note:** A manifest MUST NOT contain private keys, passwords, bearer tokens, API keys, wallet seed phrases, or other secrets. Sensitive resources are *referenced*, never embedded. Consumers MUST verify signatures, domains, and issuer trust before relying on claims — an unsigned manifest is a discovery hint, not proof of authority.
+## Zero-Cost Infrastructure
 
-See [`examples/`](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/examples) for minimal, standard, and full manifest examples.
+AxiomID runs entirely on free-tier services. $0/month. Forever.
 
-### OpenIdentity Links
+### 15 Core Free Services
 
-- 📦 **Spec repository:** [github.com/Moeabdelaziz007/openidentity.md](https://github.com/Moeabdelaziz007/openidentity.md)
-- 📖 **OpenIdentity v0.1 Specification:** [spec/openidentity-v0.1.md](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/openidentity-v0.1.md)
-- 🔑 **did:axiom DID Method Spec:** [spec/did-axiom-method-v0.1.md](https://github.com/Moeabdelaziz007/openidentity.md/blob/main/spec/did-axiom-method-v0.1.md)
-- 🧪 **Manifest examples:** [examples/](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/examples)
-- 🌐 **Frontend prototype:** [openidentity.md/frontend](https://github.com/Moeabdelaziz007/openidentity.md/tree/main/frontend)
-- 🛠 **AxiomID app (reference implementation):** [axiomid.app](https://axiomid.app)
+| # | Service | What It Does | Free Tier |
+|---|---------|-------------|-----------|
+| 1 | Cloudflare Workers AI | AI embeddings for semantic search | 10K neurons/day |
+| 2 | Cloudflare Vectorize | Vector DB for agent discovery | 30M dimensions |
+| 3 | Cloudflare AI Gateway | Caching + rate limiting for AI | 100K req/day |
+| 4 | Cloudflare D1 | SQLite at edge (trust, memory, presence) | 5M reads/day |
+| 5 | Cloudflare KV | Key-value cache + rate limiting | 100K reads/day |
+| 6 | Cloudflare Queues | Background job dispatch | Free tier |
+| 7 | Cloudflare Durable Objects | Real-time agent presence | Free tier |
+| 8 | Cloudflare R2 | Object storage (avatars, screenshots) | 10GB free |
+| 9 | Ghost.build + TimescaleDB | PostgreSQL + time-series analytics | Free tier |
+| 10 | Here.now | Agent landing pages (business cards) | Free |
+| 11 | Vercel Hobby | Next.js hosting + preview deploys | 100GB BW |
+| 12 | Sentry Free | Error tracking + perf monitoring | 5K errors/mo |
+| 13 | Meticulous AI | Session recording → auto E2E tests | Free |
+| 14 | Autonoma AI | Agentic E2E testing (self-hosted) | Open source |
+| 15 | GitHub Actions | CI/CD + CI Intelligence Agent | 2000 min/mo |
+
+### Agent Service Catalog
+
+The complete reference for every service, tool, and integration is in [`docs/AGENT_SERVICE_CATALOG.md`](./docs/AGENT_SERVICE_CATALOG.md). Any agent can read this catalog to become an expert in AxiomID's infrastructure and start working immediately.
+
+## The PAI Roadmap
+
+AxiomID is merging into PAI as the identity layer. The roadmap:
+
+```
+AxiomID Component        → PAI Package
+─────────────────────────────────────────
+DID Method               → @pai/identity-did
+TrustChain               → @pai/reputation
+OpenIdentity             → @pai/manifest
+PiVerify                 → @pai/skill-verify ($0.04/call)
+ACP Services             → PAI Marketplace revenue
+```
+
+### PAI Modules (Coming)
+
+```
+pai.build
+├── bye.pai.build      → Build (Zero-Cost Builder + StartKit)
+├── hai.pai.build      → Social (AI Social Platform)
+├── fly.pai.build      → Travel (Agentic Travel)
+├── try.pai.build      → Learn (Education)
+├── why.pai.build      → Reasoning (Deep Analysis)
+├── ppp.pai.build      → Protocol (Payments + Wire Protocol)
+├── api.pai.build
+├── auth.pai.build
+├── docs.pai.build
+├── mcp.pai.build
+└── identity.pai.build  → AxiomID (this repo)
+```
 
 ## Contributing
 
@@ -358,26 +359,21 @@ git push origin feat/my-feature
 
 - **Application code:** Proprietary — All Rights Reserved © 2026 Mohamed Abdelaziz. See [`LICENSE`](./LICENSE).
 - **`@axiomid/sdk`** and **`@axiomid/crypto`:** MIT licensed. Open for community use.
+- **PAI packages (`@pai/*`):** MIT licensed.
 
 ## Built By
 
 <div align="center">
 
-**AxiomID** is built by **Mohamed Abdelaziz** ([@Moeabdelaziz007](https://github.com/Moeabdelaziz007)).
+**AxiomID × PAI** is built by **Mohamed Abdelaziz** ([@Moeabdelaziz007](https://github.com/Moeabdelaziz007)) — a solo engineer with an AI team.
 
-Built with passion in Cairo, Egypt.
+> Not AI as a tool. AI as a **team** — Hermes, OpenCode, Codex, Claude, Gemini. Each one a co-builder, not a co-pilot.
 
-<a href="https://github.com/Moeabdelaziz007/AxiomID/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Moeabdelaziz007/AxiomID" alt="Contributors" />
-</a>
-
-</div>
+Built with passion between Cairo, Egypt and Atlanta, GA.
 
 ### Acknowledgments
 
 **Pi Network** — For the authentication SDK and the vision of a human-centered web. Learn more at [minepi.com](https://minepi.com).
-
-<div align="center">
 
 <a href="https://minepi.com">
   <img src="https://img.shields.io/badge/Built%20with-Pi%20Network-8b5cf6?style=for-the-badge&logo=pi&logoColor=white" alt="Built with Pi Network" />
@@ -398,8 +394,8 @@ Built with passion in Cairo, Egypt.
 
 <div align="center">
 
-**[axiomid.app](https://axiomid.app)** · **[Claim your identity](https://axiomid.app/claim)** · **[Read the spec](docs/openidentity/OpenIdentity.md)**
+**[axiomid.app](https://axiomid.app)** · **[Claim your identity](https://axiomid.app/claim)** · **[PAI Org](https://github.com/pai-list)**
 
-<sub>Built with the belief that every human deserves a sovereign digital identity — and every agent deserves a verifiable one.</sub>
+<sub>Built for the next agentic era. King isn't Born, He is Made. <3</sub>
 
 </div>
