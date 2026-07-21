@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import DOMPurify from "isomorphic-dompurify";
 import Script from "next/script";
 import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
@@ -221,7 +222,7 @@ export default function RootLayout({
                   "Pi Network Authentication",
                   "Verifiable Credentials"
                 ]
-              }), { ALLOW_TAGS: [] })
+              }), { ALLOWED_TAGS: [] })
             }}
           />
        </body>
