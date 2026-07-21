@@ -27,7 +27,7 @@ export default function HeroCards() {
               <h3 className="text-sm font-mono font-bold text-white tracking-wide">
                 {t("Human Passport", "جواز سفر بشري")}
               </h3>
-              <p className="text-[10px] font-mono text-zinc-500">did:axiom:usr_88f2x</p>
+              <p className="text-[10px] font-mono text-faint">did:axiom:usr_88f2x</p>
             </div>
           </div>
           <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -39,17 +39,17 @@ export default function HeroCards() {
           {/* Attributes */}
           <div className="grid grid-cols-2 gap-3 text-[10px] font-mono bg-white/[0.02] border border-white/[0.04] rounded-lg p-3">
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("Trust Score", "مستوى الثقة")}</span>
-              <span className="text-emerald-400 font-bold text-xs">98<span className="text-zinc-500 text-[10px] font-normal">/100</span></span>
+              <span className="text-faint block text-[9px] uppercase tracking-wider">{t("Trust Score", "مستوى الثقة")}</span>
+              <span className="text-emerald-400 font-bold text-xs">98<span className="text-faint text-[10px] font-normal">/100</span></span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("XP", "الخبرة")}</span>
+              <span className="text-faint block text-[9px] uppercase tracking-wider">{t("XP", "الخبرة")}</span>
               <span className="text-emerald-400 font-bold text-xs">2,450</span>
             </div>
           </div>
 
           {/* Key details */}
-          <ul className="space-y-2 text-[11px] font-mono text-zinc-400">
+          <ul className="space-y-2 text-[11px] font-mono text-faint">
             <li className="flex items-center gap-2">
               <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>{t("Verified Human Operator", "مشغل بشري تم التحقق منه")}</span>
@@ -77,7 +77,7 @@ export default function HeroCards() {
               <h3 className="text-sm font-mono font-bold text-white tracking-wide">
                 {t("Agent Passport", "جواز سفر الوكيل")}
               </h3>
-              <p className="text-[10px] font-mono text-zinc-500">did:axiom:agt_33d7p</p>
+              <p className="text-[10px] font-mono text-faint">did:axiom:agt_33d7p</p>
             </div>
           </div>
           <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider font-semibold bg-axiom-purple/10 text-axiom-purple border border-axiom-purple/20">
@@ -89,17 +89,17 @@ export default function HeroCards() {
           {/* Attributes */}
           <div className="grid grid-cols-2 gap-3 text-[10px] font-mono bg-white/[0.02] border border-white/[0.04] rounded-lg p-3">
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("Autonomy", "مستوى الاستقلالية")}</span>
-              <span className="text-axiom-purple font-bold text-xs">92<span className="text-zinc-500 text-[10px] font-normal">/100</span></span>
+              <span className="text-faint block text-[9px] uppercase tracking-wider">{t("Autonomy", "مستوى الاستقلالية")}</span>
+              <span className="text-axiom-purple font-bold text-xs">92<span className="text-faint text-[10px] font-normal">/100</span></span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">{t("UPTIME", "وقت التشغيل")}</span>
+              <span className="text-faint block text-[9px] uppercase tracking-wider">{t("UPTIME", "وقت التشغيل")}</span>
               <span className="text-emerald-400 font-bold text-xs">99.98%</span>
             </div>
           </div>
 
           {/* Key details */}
-          <ul className="space-y-2 text-[11px] font-mono text-zinc-400">
+          <ul className="space-y-2 text-[11px] font-mono text-faint">
             <li className="flex items-center gap-2">
               <Wallet className="w-3.5 h-3.5 text-axiom-purple" />
               <span>{t("Autonomous Pi Wallet", "محفظة Pi ذاتية التحكم")}</span>
