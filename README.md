@@ -23,7 +23,7 @@
   <a href="https://github.com/Moeabdelaziz007/AxiomID/actions"><img src="https://img.shields.io/github/actions/workflow/status/Moeabdelaziz007/AxiomID/ci.yml?branch=main&label=CI&style=flat-square" alt="CI" /></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square" alt="Next.js" />
   <img src="https://img.shields.io/badge/Pi%20Browser-supported-8b5cf6?style=flat-square" alt="Pi Browser" />
-  <img src="https://img.shields.io/badge/tests-3786%20passed-22c55e?style=flat-square" alt="Tests Passed" />
+  <img src="https://img.shields.io/badge/tests-3208%20cases-22c55e?style=flat-square" alt="Test Cases" />
   <img src="https://img.shields.io/badge/TypeScript-strict-blue?style=flat-square" alt="TypeScript Strict" />
   <img src="https://img.shields.io/badge/SOUL%20Protocol-compliant-emerald?style=flat-square" alt="SOUL Compliant" />
   <img src="https://img.shields.io/badge/OpenIdentity-v0.1-6366f1?style=flat-square" alt="OpenIdentity v0.1" />
@@ -123,7 +123,7 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 
 | Layer | Technology |
 |:---|:---|
-| **Frontend** | Next.js 16 · React 19 · Framer Motion 12 · Tailwind 4 |
+| **Frontend** | Next.js 16 · React 19 · Framer Motion 12 · Tailwind 4 · 30 pages |
 | **Backend** | Vercel Serverless · Cloudflare Workers |
 | **Database** | PostgreSQL (Prisma 6) · D1 (edge sync) · Vectorize (semantic search) |
 | **Cache** | Upstash Redis (rate limiting, session state) |
@@ -131,7 +131,7 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 | **Auth** | Pi Network SDK · Ed25519 sovereign keys · W3C DID |
 | **Storage** | Cloudflare KV · Vercel Blob |
 | **State/Cache** | TanStack Query v5 (client-side cache) |
-| **CI/CD** | GitHub Actions → Vercel · 3786 tests |
+| **CI/CD** | GitHub Actions → Vercel · 3,208 test cases across 187 files · 14 E2E files |
 
 ## Quick start
 
@@ -171,7 +171,7 @@ npx wrangler deploy
 ```bash
 npm run lint       # 0 errors, 0 warnings
 npm run type-check # type check
-npm test           # 3786 tests (some page tests need QueryClientProvider wrapper)
+npm test           # 3,208 test cases across 187 files (verified via grep it/test count)
 ```
 
 ## Developer Tooling

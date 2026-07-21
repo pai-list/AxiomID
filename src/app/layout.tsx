@@ -13,10 +13,18 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import InstallPWA from "@/components/pwa/InstallPWA";
 import DynamicThemeColor from "@/components/pwa/DynamicThemeColor";
-import DOMPurify from "isomorphic-dompurify";
 import SovereignSplash from "@/components/pwa/SovereignSplash";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Providers } from "./providers";
+
+/** Escape HTML special characters in JSON-LD structured data. */
+function escapeJsonLd(json: string): string {
+  return json
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/</g, "&lt;");
+}
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -209,7 +217,7 @@ export default async function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(JSON.stringify({
+              __html: escapeJsonLd(JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
                 "name": "AxiomID",
@@ -255,7 +263,7 @@ export default async function RootLayout({
                   "Pi Network Authentication",
                   "Verifiable Credentials"
                 ]
-              }), { ALLOWED_TAGS: [] })
+              })),
             }}
           />
        </body>
