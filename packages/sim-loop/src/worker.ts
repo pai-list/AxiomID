@@ -1,3 +1,4 @@
+/// <reference types="@cloudflare/workers-types" />
 /**
  * PAI SIM-LOOP — Simulation Loop on Cloudflare Free Tier
  *
@@ -11,6 +12,7 @@ export interface Env {
   AI: Ai;
   SIM_QUEUE: Queue<QueueMessage>;
   DB: D1Database;
+  SIMULATION_DO: DurableObjectNamespace;
   BROWSER?: Fetcher;
 }
 
@@ -104,9 +106,8 @@ export class SimulationDO implements DurableObject {
 
 export default {
   /** Cron Trigger fires every 12 hours → starts new simulation cycle */
-  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    const id = env.SIM_QUEUE.send({ iteration: 1, simulationId: "cron-cycle" });
-    ctx.waitUntil(id);
+  async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(env.SIM_QUEUE.send({ iteration: 1, simulationId: "cron-cycle" }));
   },
 
   /** HTTP entrypoint — create simulation via DO */
@@ -136,13 +137,12 @@ export default {
   async queue(
     batch: MessageBatch<QueueMessage>,
     env: Env,
-    ctx: ExecutionContext,
   ): Promise<void> {
     for (const msg of batch.messages) {
-      ctx.waitUntil(runIteration(msg.body, env, msg));
+      await runIteration(msg.body, env, msg);
     }
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler<Env, QueueMessage>;
 
 // ─── Loop Iteration: OBSERVE → REFLECT → EXECUTE → EVALUATE → RECORD ──
 

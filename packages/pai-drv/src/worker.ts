@@ -1,3 +1,4 @@
+/// <reference types="@cloudflare/workers-types" />
 /**
  * PAI-DRV — Google Drive clone on Cloudflare free tier
  * Worker: file storage with R2 (blobs) + D1 (metadata) + KV (sessions)
