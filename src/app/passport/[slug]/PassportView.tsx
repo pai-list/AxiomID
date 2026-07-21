@@ -124,7 +124,7 @@ export function PassportView() {
           </div>
  
           <div className="mt-8 flex flex-col items-center gap-3">
-            <AgentQR did={passport.did} />
+            <PassportQR did={passport.did} />
             <button
               onClick={handleShare}
               className="btn-primary text-xs flex items-center gap-2 px-4 py-2"
