@@ -1,82 +1,110 @@
 import {
+  GiteeApiClient,
+  GiteeWebhookHandler,
   WorkspaceSubscriberRegistry,
-  WorkspaceEvent,
   AgentSubscriber,
 } from '../subscriber-collaboration.js';
 
-async function runSubscriberTest() {
+async function runAllTests() {
   console.log('================================================================');
-  console.log('🤝 TESTING AGENT COLLABORATION (GITEE SUBSCRIBER PATTERN)');
+  console.log('🤝 TESTING REAL LIVE GITEE OPENAPI HTTP CLIENT & SUBSCRIBER MESH');
   console.log('================================================================\n');
 
-  const registry = new WorkspaceSubscriberRegistry();
+  let passed = 0;
+  let failed = 0;
 
-  // 1. Register Subagent A: Test Runner Agent
-  const testAgent: AgentSubscriber = {
-    agentId: 'agent-test-runner',
-    agentRole: 'TestRunnerAgent',
-    subscribedTopic: 'repo/code-changes',
-    notify: async (event: WorkspaceEvent) => {
-      console.log(`  🤖 [TestRunnerAgent]: Code mutated in ${event.payload.file}. Triggering parallel test suite...`);
-      return {
+  async function assertTest(name: string, fn: () => Promise<void>) {
+    try {
+      await fn();
+      console.log(`✅ [PASS] ${name}`);
+      passed++;
+    } catch (err: any) {
+      console.log(`❌ [FAIL] ${name}: ${err.message}`);
+      failed++;
+    }
+  }
+
+  // TEST 1: Live HTTP Fetch against Gitee OpenAPI Endpoint (openharmony/docs)
+  await assertTest('TEST 1: Real HTTP fetch from Gitee OpenAPI (openharmony/docs/subscribers)', async () => {
+    const client = new GiteeApiClient();
+    const subscribers = await client.fetchRepoSubscribers('openharmony', 'docs', { page: 1, perPage: 3 });
+
+    if (!Array.isArray(subscribers) || subscribers.length === 0) {
+      throw new Error('Expected non-empty subscribers array from live Gitee OpenAPI, got empty or non-array.');
+    }
+
+    const topUser = subscribers[0]!;
+    if (!topUser.login || !topUser.html_url) {
+      throw new Error(`Invalid Gitee subscriber format: ${JSON.stringify(topUser)}`);
+    }
+
+    console.log(`   └─ Live Gitee HTTP API Success! Fetched ${subscribers.length} real subscribers. Top Subscriber: @${topUser.login} (${topUser.html_url})`);
+  });
+
+  // TEST 2: Gitee Webhook Signature Verification & Event Parsing
+  await assertTest('TEST 2: Verify Gitee Webhook Token & Parse Payload', async () => {
+    const handler = new GiteeWebhookHandler();
+    const secret = 'axiomid_webhook_secret_99';
+
+    const isValidSecret = handler.verifyWebhookSecret(secret, 'axiomid_webhook_secret_99');
+    if (!isValidSecret) throw new Error('Valid webhook secret was rejected!');
+
+    const isInvalidSecret = handler.verifyWebhookSecret(secret, 'wrong_secret');
+    if (isInvalidSecret) throw new Error('Invalid webhook secret was accepted!');
+
+    const parsedEvent = handler.parseGiteeWebhookEvent('Push Hook', {
+      repository: { full_name: 'pai-list/AxiomID' },
+      sender: { login: 'Moeabdelaziz007' },
+      commits: [{ id: '122d45b9', message: 'fix(spec): validate spec examples' }],
+    });
+
+    if (parsedEvent.topic !== 'repo/pai-list/AxiomID' || parsedEvent.senderAgentId !== 'Moeabdelaziz007') {
+      throw new Error(`Parsed webhook payload mismatch: ${JSON.stringify(parsedEvent)}`);
+    }
+
+    console.log(`   └─ Webhook Parsed Successfully! Topic: ${parsedEvent.topic} | Sender: @${parsedEvent.senderAgentId}`);
+  });
+
+  // TEST 3: Multi-Agent Collaboration Mesh Broadcasting
+  await assertTest('TEST 3: Multi-Agent Collaboration Mesh Broadcasting', async () => {
+    const registry = new WorkspaceSubscriberRegistry();
+
+    const sub1: AgentSubscriber = {
+      agentId: 'agent-test-runner',
+      agentRole: 'TestRunnerAgent',
+      subscribedTopic: 'repo/code-changes',
+      notify: async (evt) => ({
         subscriberId: 'agent-test-runner',
         status: 'ACTION_TAKEN',
         actionSummary: 'Ran 20 unit tests — 100% PASS',
-      };
-    },
-  };
+      }),
+    };
 
-  // 2. Register Subagent B: Security Auditor Agent (IQRA Policy Agent)
-  const securityAgent: AgentSubscriber = {
-    agentId: 'agent-iqra-security',
-    agentRole: 'SecurityAuditorAgent',
-    subscribedTopic: 'repo/code-changes',
-    notify: async (event: WorkspaceEvent) => {
-      console.log(`  🛡️ [SecurityAuditorAgent]: Auditing ${event.payload.file} against IQRA Policy...`);
-      return {
-        subscriberId: 'agent-iqra-security',
-        status: 'ACTION_TAKEN',
-        actionSummary: 'Verified zero security violations & Divine Accountability clean',
-      };
-    },
-  };
+    registry.subscribe(sub1);
+    const responses = await registry.broadcast({
+      eventId: 'evt_1',
+      topic: 'repo/code-changes',
+      senderAgentId: 'DeveloperAgent',
+      eventType: 'FILE_MUTATED',
+      payload: { file: 'packages/sdk/src/subscriber-collaboration.ts' },
+      timestamp: Date.now(),
+    });
 
-  registry.subscribe(testAgent);
-  registry.subscribe(securityAgent);
+    if (responses.length === 0 || responses[0]!.status !== 'ACTION_TAKEN') {
+      throw new Error(`Broadcast failed: ${JSON.stringify(responses)}`);
+    }
 
-  // 3. Query Subscribers (Emulating Gitee GET /v5/repos/{owner}/{repo}/subscribers)
-  console.log('📋 Querying Active Subscribers for topic "repo/code-changes"...');
-  const activeSubscribers = registry.getSubscribers('repo/code-changes');
-  console.log(JSON.stringify(activeSubscribers, null, 2));
-
-  if (activeSubscribers.length !== 2) {
-    throw new Error(`Expected 2 subscribers, got ${activeSubscribers.length}`);
-  }
-
-  // 4. Simulate a workspace file mutation event broadcast
-  console.log('\n📡 Broadcasting "FILE_MUTATED" event from DeveloperAgent...');
-  const event: WorkspaceEvent = {
-    eventId: 'evt-1001',
-    topic: 'repo/code-changes',
-    senderAgentId: 'agent-developer-prime',
-    eventType: 'FILE_MUTATED',
-    payload: { file: 'packages/iqra-policy-agent/src/policy-engine.ts', linesAdded: 45 },
-    timestamp: Date.now(),
-  };
-
-  const responses = await registry.broadcast(event);
-
-  console.log('\n📬 Subscriber Agents Collaboration Responses:');
-  responses.forEach((resp) => {
-    console.log(`  • ${resp.subscriberId}: [${resp.status}] -> ${resp.actionSummary}`);
+    console.log(`   └─ Mesh Broadcast Success! ${responses.length} agent responded with ACTION_TAKEN.`);
   });
 
   console.log('\n================================================================');
-  console.log('✅ PASS: Gitee Subscriber Pattern successfully powers agent collaboration!');
+  console.log(`📊 TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);
   console.log('================================================================\n');
+
+  if (failed > 0) process.exit(1);
 }
 
-runSubscriberTest().catch((e) => {
+runAllTests().catch((e) => {
   console.error(e);
   process.exit(1);
 });
