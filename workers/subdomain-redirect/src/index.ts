@@ -3,9 +3,7 @@
  *
  * Routes *.axiomid.app to axiomid.app/passport/[subdomain]
  * Example: amrikyy.axiomid.app → axiomid.app/passport/amrikyy
- *
- * Ponytail: No new UI needed — the passport viewer already exists.
- * This worker is just DNS routing.
+ * Apex domain (axiomid.app/*) passes through to Vercel origin.
  */
 
 const PASSPORT_BASE = "https://axiomid.app/passport";
@@ -28,35 +26,41 @@ const worker = {
 };
 
 async function handleRequest(request: Request): Promise<Response> {
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
 
-    const url = new URL(request.url);
-    const hostname = url.hostname;
+  const url = new URL(request.url);
+  const hostname = url.hostname;
 
-    const parts = hostname.split(".");
-    if (parts.length !== 3 || parts[1] !== "axiomid" || parts[2] !== "app") {
-      return new Response("Not found", { status: 404, headers: CORS_HEADERS });
-    }
+  // Pass-through apex domain (axiomid.app) or www directly to origin (Vercel)
+  if (hostname === "axiomid.app" || hostname === "www.axiomid.app") {
+    return fetch(request);
+  }
 
-    const subdomain = parts[0].toLowerCase();
+  const parts = hostname.split(".");
+  if (parts.length !== 3 || parts[1] !== "axiomid" || parts[2] !== "app") {
+    // Non-matching subdomain: pass through to origin
+    return fetch(request);
+  }
 
-    if (RESERVED_SUBDOMAINS.has(subdomain)) {
-      return new Response(null, {
-        status: 301,
-        headers: { Location: "https://axiomid.app", ...CORS_HEADERS },
-      });
-    }
+  const subdomain = parts[0].toLowerCase();
 
-    if (!VALID_SUBDOMAIN.test(subdomain)) {
-      return new Response("Invalid subdomain", { status: 400, headers: CORS_HEADERS });
-    }
-
+  if (RESERVED_SUBDOMAINS.has(subdomain)) {
     return new Response(null, {
       status: 301,
-      headers: { Location: `${PASSPORT_BASE}/${subdomain}`, ...CORS_HEADERS },
+      headers: { Location: "https://axiomid.app", ...CORS_HEADERS },
     });
+  }
+
+  if (!VALID_SUBDOMAIN.test(subdomain)) {
+    return new Response("Invalid subdomain", { status: 400, headers: CORS_HEADERS });
+  }
+
+  return new Response(null, {
+    status: 301,
+    headers: { Location: `${PASSPORT_BASE}/${subdomain}`, ...CORS_HEADERS },
+  });
 }
 
 export default worker;
