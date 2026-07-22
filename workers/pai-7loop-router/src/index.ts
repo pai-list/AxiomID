@@ -1,6 +1,14 @@
 // ============================================================
 // PAI-7-LOOP: Feedback-Driven Self-Improving Router
 // Source: Kimi k2.6 gift — NOT mystical, pure control theory.
+// tsc: KVNamespace defined locally (workers-types loaded via wrangler build)
+
+// Cloudflare KV binding interface (resolved by wrangler at build/deploy time)
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+  delete(key: string): Promise<void>;
+}
 // Engineering: epsilon-greedy bandit + EMA weight updates
 // ============================================================
 

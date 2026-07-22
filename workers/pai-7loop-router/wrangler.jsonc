@@ -3,11 +3,11 @@
   "name": "pai-7loop-router",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-22",
+  "workers_dev": true,
   "kv_namespaces": [
     {
       "binding": "ROUTER_WEIGHTS",
-      "id": "REPLACE_WITH_REAL_KV_NAMESPACE_ID",
-      "preview_id": "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
+      "id": "09b948855402477aa2d990f3058925b6"
     }
   ]
 }
