@@ -163,13 +163,15 @@ Before every significant action, run the **PAI-Rehearse Mental Preflight**:
        Result: Optimal action selected before ANY API call is made.
 ```
 
-### Sacred Number Benchmark (3 vs 6 vs 9 vs 7 Topology)
-| Layers | Accuracy | Resilience | Latency P50 | Score |
-|:--|:--|:--|:--|:--|
-| 3 | 85.0% | 80.0% | 140ms | 7.5/10 |
-| 6 | 96.0% | 94.0% | 240ms | 9.2/10 |
-| **7 (Sovereign Heptad)** | **99.8%** | **99.5%** | **310ms** | **9.9/10 ✅** |
-| 9 | 99.1% | 97.0% | 520ms | 9.4/10 |
+### Pool Structure vs Simulation Loops
+- **7 Sovereign Pools:** Standardized organizational context structure for agent identity, ethics, tools, memory, routing, simulation, and changelogs.
+- **Iteration Hyperparameter:** The 7-step optimization limit $K=7$ is a standard hyperparameter for early stopping, avoiding infinite simulation recursion.
+
+| Topology Pools | Organizational Clarity | Resilience | Benchmark Status |
+|:--|:--|:--|:--|
+| 3 Pools | Minimalist | Basic | Incomplete context |
+| **7 Sovereign Pools** | **Optimal Abstraction** | **High** | **Canonical Spec ✅** |
+| 9 Pools | Over-engineered | Redundant | High token overhead |
 
 ---
 
