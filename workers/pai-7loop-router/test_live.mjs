@@ -47,11 +47,22 @@ console.log('TEST 1: POST /route (English code prompt)');
     `got: ${json.provider}`);
 }
 
-// ─── TEST 2: POST /route — Arabic prompt (should prefer MENA) ─────────────
+// ─── TEST 2: POST /route — Arabic prompt ──────────────────────────────────
 console.log('\nTEST 2: POST /route (Arabic prompt)');
 {
   const { status, json, latencyMs } = await req('POST', '/route', {
     prompt: 'اكتب دالة فيبوناتشي'
+  });
+  console.log(`  Latency: ${latencyMs}ms | Response:`, JSON.stringify(json));
+  assert('HTTP 200', status === 200, `got ${status}`);
+  assert('has provider', typeof json.provider === 'string');
+}
+
+// ─── TEST 2B: POST /route — Chinese prompt (zh language detection) ────────
+console.log('\nTEST 2B: POST /route (Chinese prompt - zh detection)');
+{
+  const { status, json, latencyMs } = await req('POST', '/route', {
+    prompt: '优化 DeepSeek R1 的 TypeScript 代码'
   });
   console.log(`  Latency: ${latencyMs}ms | Response:`, JSON.stringify(json));
   assert('HTTP 200', status === 200, `got ${status}`);
