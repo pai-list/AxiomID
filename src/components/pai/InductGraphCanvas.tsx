@@ -806,7 +806,6 @@ export function InductGraphCanvas({
           </div>
         )}
       </div>
-    </div>
   )
 }
 

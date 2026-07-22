@@ -44,12 +44,17 @@
   <sub>Portable identity for humans and agents · sovereign · software-first</sub>
 </p>
 
-<!-- SOCIAL LINKS — brand-colored flat badges -->
+<!-- CRISP LINKS NAVIGATION MATRIX (aza-ali/github-readme-crisp-links pattern) -->
+<div align="center">
+
+<a href="https://axiomid.app"><img src="https://img.shields.io/badge/AxiomID--App-00FF41?style=for-the-badge&logo=shield&logoColor=black" alt="AxiomID App" /></a>
+<a href="https://github.com/pai-list"><img src="https://img.shields.io/badge/PAI--Universe-7C3AED?style=for-the-badge&logo=github&logoColor=white" alt="PAI Universe Org" /></a>
+<a href="https://github.com/pai-list/openidentity.md"><img src="https://img.shields.io/badge/OpenIdentity--Spec-00A36C?style=for-the-badge&logo=markdown&logoColor=white" alt="OpenIdentity Standard" /></a>
+<a href="https://app.virtuals.io/acp/agents/019f6ec8-a056-7a45-bae1-8d905362a587"><img src="https://img.shields.io/badge/Virtuals--ACP-F59E0B?style=for-the-badge&logo=ethereum&logoColor=white" alt="Virtuals ACP Agent" /></a>
+<br/>
 <a href="https://www.linkedin.com/in/mohamed-abdelaziz-b1b2442a2/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
-<a href="https://github.com/Moeabdelaziz007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
-<a href="https://axiomid.app"><img src="https://img.shields.io/badge/AxiomID-00FF41?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2ZmZiI+PHBvbHlsaW5lIHBvaW50cz0iMSwxIDE1LDEgMTUsMTUgMSwxNSAxLDEiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PHRleHQgeD0iNCIgeT0iMTIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiNmZmYiPkE8L3RleHQ+PC9zdmc+&logoColor=white" alt="AxiomID" /></a>
-<a href="https://app.virtuals.io/acp/agents/019f6ec8-a056-7a45-bae1-8d905362a587"><img src="https://img.shields.io/badge/ACP-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iI2ZmZiI+PGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjciIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNNSA4aDZNNyA1bDIgM2wtMiAzIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIi8+PC9zdmc+&logoColor=white" alt="ACP Marketplace" /></a>
-<a href="mailto:momtaz2727@gmail.com"><img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" /></a>
+<a href="https://github.com/Moeabdelaziz007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Profile" /></a>
+<a href="mailto:momtaz2727@gmail.com"><img src="https://img.shields.io/badge/Direct--Contact-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Direct Email" /></a>
 
 </div>
 
@@ -248,27 +253,51 @@ The **Discovery Layer for AI Agent Identity**. A portable USB-like manifest stan
 
 <!-- ═══════════ 06. LLM PERSONAS ═══════════ -->
 
-## `06.` LLM PERSONAS · <bdo dir="rtl">شخصيات النماذج</bdo>
+## `06.` LLM PERSONAS — THE US ↔ CHINA AGENTIC BRIDGE · <bdo dir="rtl">شخصيات النماذج</bdo>
 
-I profiled 10 LLMs as professional CVs — each with a distinct persona.
-This is the **US ↔ China agentic bridge**.
+> *"Chinese AI labs hold a unique structural advantage: native bilingual pre-training (English + Chinese), aggressive MoE architecture efficiency, and open-weights cost arbitrage. We bridge the best of US proprietary intelligence with China's open-weights revolution."* — Mohamed Abdelaziz
 
-| LLM | Persona | Origin |
-|:---|---:|:---:|
-| ChatGPT | The Revolutionary | 🇺🇸 OpenAI |
-| Claude | The Ethicist | 🇺🇸 Anthropic |
-| Gemini | The Simulation Master | 🇺🇸 Google |
-| Hermes | The Architect | 🇺🇸 Nous Research |
-| Codex | The Builder | 🇺🇸 OpenAI |
-| DeepSeek | The Pragmatist | 🇨🇳 DeepSeek |
-| GLM | The Scholar | 🇨🇳 Zhipu AI |
-| Kimi | The Librarian | 🇨🇳 Moonshot |
-| Qwen | The Enterprise | 🇨🇳 Alibaba |
-| Yi | The Cultural Bridge | 🇨🇳 01.AI |
+<div align="center">
 
-> *"Gemini = The Simulation Master. Hassabis went from chess → games → AlphaZero (self-play simulates all futures) → AlphaFold (biology simulation). America led since 2000 because Hassabis knew outcomes before deciding."*
+### 🇺🇸 US Frontier Intelligence vs. 🇨🇳 China Open-Weights Revolution
 
-Package: `@pai/llm-registry` (on branch `feat/llm-registry-us-china-bridge`, PR #391)
+</div>
+
+| LLM Model | Lab / Origin | Persona & Specialty | Context Window | Architecture & Parameters | License / Access |
+|:---|:---|:---|:---:|:---:|:---:|
+| **ChatGPT (GPT-4o)** | 🇺🇸 OpenAI | The Visionary Architect · Generalist Reasoning | 128k | Dense / Multimodal | Proprietary API |
+| **Claude 3.5 Sonnet** | 🇺🇸 Anthropic | The Ethicist & Master Coder · Precise Logic | 200k | Dense Transformer | Proprietary API |
+| **Gemini 1.5 Pro** | 🇺🇸 Google DeepMind | The Simulation Master · Multimodal Context | 2M | MoE (Mixture-of-Experts) | Proprietary API |
+| **Hermes 3** | 🇺🇸 Nous Research | The Autonomous Agent · Uncensored Function Calling | 128k | Llama 3.1 405B Fine-tune | ✅ Open-Weights |
+| **Llama 3.3 70B** | 🇺🇸 Meta AI | The Open Benchmark Standard · Production Backbone | 128k | Dense Transformer | ✅ Open-Weights |
+| **DeepSeek-R1 / V3** | 🇨🇳 DeepSeek | The Pragmatist & Math Genius · Cost Arbitrage | 128k | 671B MoE (37B active) + MLA | ✅ Open-Weights (MIT) |
+| **Qwen 2.5 Coder** | 🇨🇳 Alibaba Cloud | The Enterprise Developer · Polyglot Coding | 128k | 72B Dense / MoE | ✅ Open-Weights (Apache 2) |
+| **GLM-4 9B / Plus** | 🇨🇳 Zhipu AI | The Scholar · High-Precision Tool Calling | 128k | Dense / Multimodal | ✅ Open-Weights |
+| **Kimi (Moonshot)** | 🇨🇳 Moonshot AI | The Deep Researcher · Long-Context Synthesis | 2M | Long-Context Transformer | API / Open-Weights |
+| **Yi-1.5 34B** | 🇨🇳 01.AI | The Cultural Bridge · High-Throughput Bilingual | 128k | Dense Transformer | ✅ Open-Weights (Apache 2) |
+
+---
+
+### 🔬 Empirical US ↔ China Bilingual Advantage Analysis
+
+```
+                       ┌──────────────────────────────────────────┐
+                       │     US ↔ CHINA AGENTIC BRIDGE MATRIX     │
+                       └────────────────────┬─────────────────────┘
+                                            │
+                ┌───────────────────────────┴───────────────────────────┐
+                ▼                                                       ▼
+  ┌───────────────────────────┐                           ┌───────────────────────────┐
+  │ 🇺🇸 US PROPRIETARY LAYER   │                           │ 🇨🇳 CHINA OPEN-WEIGHTS LAYER│
+  │ • Deep Reasoners (O1/Claude)│                           │ • DeepSeek-R1 FP8 (O(1) Cost)│
+  │ • Massive Context (Gemini)│            BRIDGE         │ • Qwen 2.5 Coder (72B)    │
+  │ • Strict Safety Guardrails│  ◄──────────────────────► │ • Bilingual English/Chinese│
+  └───────────────────────────┘                           └───────────────────────────┘
+```
+
+1. **Bilingual Tokenization Efficiency:** Chinese open-weights models are trained on massive parallel English and Chinese corpora, resulting in denser token representation, higher compression ratios, and cross-lingual conceptual transfer.
+2. **MoE & Multi-Head Latent Attention (MLA):** DeepSeek's MLA and DeepSeekMoE reduce KV-cache memory overhead by **70%**, enabling high-throughput reasoning at **1/10th the cost** of US proprietary APIs.
+3. **PAI Bridge Protocol (`@pai/llm-registry`):** Routes lightweight tasks to free Cloudflare Workers AI (`@cf/meta/llama-3.1-8b-instruct`), complex agentic planning to Nous Hermes, and heavy math/coding tasks to TigerData $1,000 OpenLLM pool (Qwen 2.5 72B / DeepSeek-R1).
 
 <br>
 
