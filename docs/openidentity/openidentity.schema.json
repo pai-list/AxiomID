@@ -10,7 +10,7 @@
     "url": {
       "type": "string",
       "format": "uri",
-      "pattern": "^https?://"
+      "pattern": "^(https?|wss?)://"
     },
     "iso8601": {
       "type": "string",
