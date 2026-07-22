@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pai-7loop-router",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-22",
+  "kv_namespaces": [
+    {
+      "binding": "ROUTER_WEIGHTS",
+      "id": "REPLACE_WITH_REAL_KV_NAMESPACE_ID",
+      "preview_id": "REPLACE_WITH_PREVIEW_KV_NAMESPACE_ID"
+    }
+  ]
+}
