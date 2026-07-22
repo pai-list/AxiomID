@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { cn } from '@/lib/utils'
 
 // Types for our graph data
 interface GraphNode {
   id: string
   label: string
+  name?: string
+  emoji?: string
   x: number
   y: number
   type: 'agent' | 'skill' | 'endpoint' | 'patch' | 'state'
@@ -52,6 +55,7 @@ const COLORS = {
   textMuted: '#6B6B7B',
   accent: '#39FF14',
   accentDim: 'rgba(57, 255, 20, 0.15)',
+  border: 'rgba(255, 255, 255, 0.08)',
   patchPending: '#FFA500',
   patchApproved: '#39FF14',
   patchRejected: '#FF6B6B',
@@ -77,14 +81,14 @@ export function InductGraphCanvas({
   initialState,
   onStateChange,
   className = '',
-  realMode = false,
+  realMode: initialRealMode = false,
   zeroLangPatches = [],
 }: InductGraphCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number | null>(null)
 
-  // State management with URL sync
+  const [realMode, setRealMode] = useState(initialRealMode)
   const [graphState, setGraphState] = useState<GraphState>(() => {
     if (typeof window !== 'undefined') {
       return loadStateFromURL() ?? defaultGraphState()

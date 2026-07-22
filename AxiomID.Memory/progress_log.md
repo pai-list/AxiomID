@@ -183,8 +183,13 @@
   - Upgraded Profile README Section 06 with empirical model data (DeepSeek-R1 FP8 MoE, Qwen 2.5 72B, Claude 3.5 Sonnet, Gemini 1.5 Pro, Llama 3.3 70B, Hermes 3) and bilingual tokenization analysis.
 - **Google Labs `design.md` & Google Stitch SDK Integration**:
   - Scaffolded `DESIGN.md` specification in `@pai/atom` (`pai-list/pai-atom`) matching Google Labs standard (`npx @google/design.md`) for AI coding agents.
-- **PAI-AAM: Agentic Application Model Specification**:
-  - Authored `PAI-AAM-SPECIFICATION.md` establishing a 4-layer zero-cost agentic application deployment model (inspired by AWS SAM & CNCF open-source patterns).
+- **PAI-SAAM: Serverless Agentic Application Model Specification**:
+  - Authored `PAI-SAAM-SPECIFICATION.md` establishing a 4-layer zero-cost agentic application deployment model (inspired by AWS SAM & CNCF open-source patterns).
+- **Pi Network KYC Verification & Official Statistics**:
+  - Official Pi Core Team statistics confirm **18.1 Million+ fully KYC-verified Pioneers** and **16.7 Million+ Mainnet Migrations** (Sources: [Pi Network Blog](https://minepi.com/blog), [Pi Developer Docs](https://github.com/pi-apps/pi-platform-docs)).
+- **Deep Research: Edge Computing + Cloud-Native + Blockchain (arXiv Literature Review)**:
+  - Audited peer-reviewed papers on arXiv.org (`arXiv:2410.05118`, `arXiv:2206.12888`, `arXiv:2512.04089`, `arXiv:2509.09400`).
+  - Formulated the **Edge-Cloud-Blockchain Continuum** combining WasmEdge sub-millisecond sandboxes, scale-to-zero serverless runtimes, and decentralized identity (W3C DID + Pi KYC).
 
 ---
 
