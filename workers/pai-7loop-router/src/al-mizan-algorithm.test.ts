@@ -1,10 +1,14 @@
-import { SevenLoopRouter } from './al-mizan-algorithm.js';
+import {
+  route,
+  detectLanguage,
+  updatePerformance,
+  REAL_PROVIDERS,
+  RouterConfig,
+} from './al-mizan-algorithm.js';
 
 console.log('================================================================');
-console.log('⚖️ TESTING AL-MIZAN MULTI-ARMED BANDIT ALGORITHM (NATIVE UNIT TEST)');
+console.log('⚖️ TESTING AL-MIZAN MULTI-ARMED BANDIT ALGORITHM (PURE FUNCTIONS)');
 console.log('================================================================\n');
-
-const router = new SevenLoopRouter();
 
 let passed = 0;
 let failed = 0;
@@ -19,33 +23,43 @@ function assert(condition: boolean, msg: string) {
   }
 }
 
-// TEST 1: Default Epsilon Greedy Selection
-const route1 = router.route('Write a TypeScript function');
-assert(route1.ok === true, 'Route returns OK status');
-assert(!!route1.provider, `Provider selected: ${route1.provider}`);
-assert(typeof route1.estimatedLatencyMs === 'number', `Latency estimated: ${route1.estimatedLatencyMs}ms`);
+// Exploitation-focused config for deterministic assertions (epsilon = 0)
+const exploitConfig: RouterConfig = {
+  epsilon: 0.0,
+  epsilonDecay: 0.99,
+  learningRate: 0.1,
+  maxBudget: 5.0,
+  preference: 'balanced',
+};
 
-// TEST 2: Chinese Language Classification
-const routeZH = router.route('优化 DeepSeek R1 的 TypeScript 代码');
-assert(routeZH.language === 'zh', 'Chinese language correctly classified as "zh"');
-assert(routeZH.provider === 'deepseek', 'DeepSeek provider selected for Chinese language task');
+let performanceScores = new Map<string, number>();
 
-// TEST 3: Feedback EMA Weight Update
-const beforeWeights = router.getWeights();
-router.recordFeedback({
-  timestamp: Date.now(),
-  provider: 'deepseek',
-  model: 'deepseek-chat',
-  latencyMs: 400,
-  costPer1M: 0.14,
+// TEST 1: Default Exploitation Route Selection
+const route1 = route('Write a TypeScript function', REAL_PROVIDERS, exploitConfig, performanceScores);
+assert(!!route1.provider, `Provider selected: ${route1.provider.name} (${route1.model})`);
+assert(typeof route1.simulatedLatency === 'number', `Latency estimated: ${route1.simulatedLatency}ms`);
+
+// TEST 2: Chinese Language Classification & Deterministic Routing
+const langZH = detectLanguage('优化 DeepSeek R1 的 TypeScript 代码');
+assert(langZH === 'zh', 'Chinese language correctly detected as "zh"');
+
+const routeZH = route('优化 DeepSeek R1 的 TypeScript 代码', REAL_PROVIDERS, exploitConfig, performanceScores);
+assert(routeZH.provider.id === 'deepseek-v3', `DeepSeek provider selected deterministically: ${routeZH.provider.name}`);
+
+// TEST 3: Feedback EMA Weight Update Function
+const beforeScore = performanceScores.get('deepseek-v3') ?? 0.5;
+performanceScores = updatePerformance(performanceScores, {
+  providerId: 'deepseek-v3',
+  actualLatency: 400,
+  actualCost: 0.14,
   success: true,
   userRating: 5,
-});
+}, 0.1);
 
-const afterWeights = router.getWeights();
+const afterScore = performanceScores.get('deepseek-v3') ?? 0;
 assert(
-  afterWeights['deepseek:deepseek-chat'] > 0.5,
-  `DeepSeek weight increased after 5-star rating (Weight: ${afterWeights['deepseek:deepseek-chat'].toFixed(4)})`
+  afterScore > beforeScore,
+  `DeepSeek score increased after 5-star rating (Before: ${beforeScore.toFixed(2)} -> After: ${afterScore.toFixed(4)})`
 );
 
 console.log('\n================================================================');
