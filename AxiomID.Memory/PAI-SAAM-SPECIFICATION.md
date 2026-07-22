@@ -1,7 +1,8 @@
-# ۞ PAI-SAAM: Serverless Agentic Application Model (SAAM) Specification v1.1
+# ۞ PAI-SAAM: Serverless Agentic Application Model (SAAM) Specification v1.2
 
 > **The Vercel & Cloudflare Architecture for the Agentic Era**  
-> **Target:** One-Click, 100% Zero-Cost Full-Stack Serverless Agent Deployment  
+> **Target:** One-Click, Cost-Optimized Full-Stack Serverless Agent Deployment  
+> **Model Strategy:** Intelligent Model Arbitrage (US Frontier ↔ China Open-Weights ↔ MENA Sovereign)  
 > **Foundational Alignment:** CNCF Open-Source Ecosystem (WasmEdge, Knative, WinterCG, OpenNext)  
 > **Governance Standard:** Soul & Conscience Substrate (IQRA Protocol)
 
@@ -11,7 +12,7 @@
 
 In Web 2.0, Vercel and Cloudflare revolutionized development through **Serverless Simplicity** (one-click deployment, scale-to-zero, sub-millisecond cold starts, zero infrastructure management). 
 
-**PAI-SAAM (Serverless Agentic Application Model)** brings this exact paradigm to the **Agentic Era**. SAAM defines a unified, declarative serverless blueprint for building, testing, rehearsing, and deploying full-stack autonomous AI agents across global edge runtimes at **$0 cost**.
+**PAI-SAAM (Serverless Agentic Application Model)** brings this exact paradigm to the **Agentic Era**. SAAM defines a unified, declarative serverless blueprint for building, testing, rehearsing, and deploying full-stack autonomous AI agents across global edge runtimes with **Intelligent Model Arbitrage** (leveraging developer credit tiers from Cloudflare, Alibaba 70M dev tokens, DeepSeek MoE, and Together AI).
 
 ---
 
