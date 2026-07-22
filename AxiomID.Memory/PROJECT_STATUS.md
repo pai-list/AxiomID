@@ -1,7 +1,7 @@
 # AxiomID — Project Status & Knowledge Base
 
 > **The single source of truth for the AxiomID project.**
-> Updated: 2026-07-17 | Version: 0.2.0
+> Updated: 2026-07-22 | Version: 0.3.0
 
 ---
 
@@ -17,7 +17,7 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.2.0 |
+| **Version** | 0.3.0 |
 | **Test Files** | 189 |
 | **Test Cases** | 3,289 (passing, `it()`+`test()` blocks) |
 | **Test Lines** | ~39,500+ |
@@ -29,12 +29,24 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 | **Database** | PostgreSQL (Prisma) + D1 (edge) + Vectorize (semantic) |
 | **Auth** | Pi Network SDK + Ed25519 sovereign keys |
 | **CI/CD** | GitHub Actions → Vercel |
-| **Open PRs** | 3 (#365, #364, #360) |
-| **Open Issues** | 8 (#153, #222-#225, #367, #368, #369) |
+| **Organization** | `pai-list` (19 repos) · `pai-bye` Enterprise |
+| **License Status**| 100% MIT Licensed across all 8 PAI repos |
 
 ---
 
 ## 3. What's Done
+
+### 2026-07-22 Governance & Infrastructure Milestone ✅
+- **8 MIT LICENSE Files Committed:** `axiomid-piverify`, `pai-website`, `pai-atom`, `pai-skills`, `pai-agent-kit`, `pai-cli`, `pai-mcp`, `pai-startkit`.
+- **Dependency Hardening:** Fixed malformed `package.json` keys & pinned `@cloudflare/workers-types` + `wrangler` + `agents` SDK.
+- **Vercel & Security Setup:** Pushed `vercel.json` for `pai-website` + updated `pai-mcp/README.md` badge to MIT.
+- **Org Metadata Unified:** Updated descriptions and homepage URLs for all 12 primary repos in `pai-list` org via GitHub API.
+- **Profile README Asset Repair (`Moeabdelaziz007`):** Repaired `avatar.svg` URL (`200 OK`) and updated license status to `✅ MIT`.
+- **Live Cloudflare Audit:** Audited 19 Workers, 10 D1 Databases, 4 KV Namespaces, and 18 Email Routing rules (`axiomid.app`).
+- **Token Delta Compression Engine & Scoped Memory (Phase 3):** Added `compressDeltaHistory` + `scopedSemanticStore` (`containerTag = user_${did}`) to `pai-agent-kit/src/framework-core.ts`.
+- **TigerData $1,000 Credit OpenLLM Tool (Phase 5):** Added `pai_td_openllm_infer` tool to `pai-mcp/src/index.ts` connecting TigerData OpenLLM heavy reasoning (Qwen 2.5 72B / Llama 3.1 70B).
+
+
 
 
 ### PR #288: Expert Auto-Labeler ✅
