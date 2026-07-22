@@ -41,6 +41,13 @@
       "command": "npx",
       "args": ["-y", "firecrawl-mcp"],
       "env": {}
+    },
+    "resend": {
+      "command": "npx",
+      "args": ["-y", "resend-mcp"],
+      "env": {
+        "RESEND_API_KEY": "re_123456789_placeholder"
+      }
     }
   }
 }

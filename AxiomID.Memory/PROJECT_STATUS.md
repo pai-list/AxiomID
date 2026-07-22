@@ -36,17 +36,15 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 ## 3. What's Done
 
-### 2026-07-22 Governance & Infrastructure Milestone ✅
-- **8 MIT LICENSE Files Committed:** `axiomid-piverify`, `pai-website`, `pai-atom`, `pai-skills`, `pai-agent-kit`, `pai-cli`, `pai-mcp`, `pai-startkit`.
-- **Dependency Hardening:** Fixed malformed `package.json` keys & pinned `@cloudflare/workers-types` + `wrangler` + `agents` SDK.
-- **Vercel & Security Setup:** Pushed `vercel.json` for `pai-website` + updated `pai-mcp/README.md` badge to MIT.
-- **Org Metadata Unified:** Updated descriptions and homepage URLs for all 12 primary repos in `pai-list` org via GitHub API.
-- **Profile README Asset Repair (`Moeabdelaziz007`):** Repaired `avatar.svg` URL (`200 OK`) and updated license status to `✅ MIT`.
-- **Al-Mizan 7-Loop Router Deployed:** Created `workers/pai-7loop-router` with KV binding `ROUTER_WEIGHTS` (`09b948855402477aa2d990f3058925b6`).
-- **18/18 E2E Tests Passing:** Verified router logic, EMA updates, $\epsilon$-greedy selection, and 400/404 validation via `test_live.mjs` on Cloudflare Worker runtime.
-- **Tesla Simulation Algorithm Formalized:** Clean O(n) Model-Based Preflight Engine (`Incubation` → `Construction` → `Virtual Testing` → `Refinement` → `Materialization`).
-- **Cloudflare MCP Integration:** Added official Cloudflare remote MCP servers (`cloudflare`, `cloudflare-docs`, `cloudflare-bindings`, `cloudflare-builds`, `cloudflare-observability`) + Firecrawl keyless MCP to `.mcp.json`.
-- **Obsidian Vault Topology Map:** Created `AxiomID.Memory/topology.md` detailing sovereign layers and multi-region provider mesh.
+### 2026-07-22 Zero-Trust Agentic Security & Collaboration Milestone ✅
+- **Open-Sourced Al-Mizan 7-Loop Cloudflare Worker:** Created `workers/pai-7loop-router/LICENSE` (MIT) & comprehensive REST API developer guide (`README.md`).
+- **210 Live KV Observations Verified:** Executed concurrent `seed_100_observations.mjs` populating 210 records to Cloudflare Worker runtime; verified totalObservations > 100 & live EMA weight convergence.
+- **IQRA Agentic Policy Agent (`@axiomid/iqra-policy-agent`):** Built eBPF-style runtime tool call firewall with declarative `AgenticNetworkPolicy` manifests & Divine Accountability Conscience Substrate. 5/5 real tests passing ($61\mu\text{s} - 345\mu\text{s}$).
+- **ModelScope & Gitee Chinese Code Ecosystem Researcher:** Built `scripts/chinese_repos_researcher.py` directly querying Alibaba ModelScope OpenAPI (`https://modelscope.cn/openapi/v1/models`) & Gitee.
+- **Agentic Workspace Subscriber Collaboration (`subscriber-collaboration.ts`):** Implemented Gitee Subscribers pattern (`GET /v5/repos/{owner}/{repo}/subscribers`) in `@axiomid/sdk`, enabling autonomous subagents (`TestRunnerAgent`, `SecurityAuditorAgent`) to react to workspace events without token-polling loops.
+- **DID Integrity Guard & Anti-Scam Engine (`@axiomid/did-integrity-guard`):** Built W3C DID validator, Sybil bot risk scoring engine (velocity/fan-out anomalies), and code clone plagiarism scanner (Gitee CopyCat algorithm + static backdoor analysis). 5/5 real tests passing with ZERO mocks.
+- **Resend MCP Integration:** Added `resend` server configuration to `.mcp.json` for automated waitlist processing & email notifications.
+
 
 
 
