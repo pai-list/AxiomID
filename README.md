@@ -63,6 +63,12 @@ AxiomID is the reference implementation of the **OpenIdentity** protocol — an 
 - **Spend Request** — Agentic Pi payments pipeline (agent requests, user approves, Pi SDK executes)
 - **TrustChain** — Append-only hash chain for all agent actions
 - **Truth RAG** — AI-powered Q&A over 6236 verses via Vectorize + Workers AI
+- **Al-Mizan 7-Loop Router (`workers/pai-7loop-router`)** — Open-source MIT Multi-Armed Bandit model router on Cloudflare Workers (210 live KV observations verified)
+- **IQRA Agentic Policy Agent (`@axiomid/iqra-policy-agent`)** — eBPF-style sub-millisecond tool execution firewall & Divine Accountability Conscience Substrate
+- **DID Integrity Guard (`@axiomid/did-integrity-guard`)** — W3C DID validator, Sybil scammer bot detector (velocity/fan-out anomalies), and Gitee CopyCat code clone scanner
+- **Subscriber Collaboration System (`packages/sdk/src/subscriber-collaboration.ts`)** — Decoupled subagent collaboration engine modeled after Gitee Subscribers API (`GET /v5/repos/{owner}/{repo}/subscribers`)
+- **ModelScope & Gitee Chinese Code Ecosystem Researcher (`scripts/chinese_repos_researcher.py`)** — Live query tool for Alibaba ModelScope OpenAPI & Gitee
+- **Resend MCP Integration** — Automated waitlist email delivery pipeline in `.mcp.json`
 - **MCP Server** — 10 tools for trust, presence, and identity management
 
 ## Routes
