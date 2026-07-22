@@ -119,6 +119,58 @@ async function runTests() {
     console.log(`   └─ Backdoor Threats Blocked: ${res.detectedThreats.join(' | ')}`);
   });
 
+  // TEST 6: Real WebCrypto Ed25519 Cryptographic Proof Verification
+  await assertTest('TEST 6: Real WebCrypto Ed25519 Signature Proof Verification', async () => {
+    const { publicKeyJwk, privateKeyJwk } = await didValidator.generateEd25519KeyPair();
+    const did = 'did:axiomid:z6MkpRealCryptoKey2026';
+    const created = '2026-07-22T20:00:00Z';
+    const proofPurpose = 'assertionMethod';
+    const canonicalPayload = `${did}:${created}:${proofPurpose}`;
+
+    const signatureBase64 = await didValidator.signEd25519Payload(privateKeyJwk, canonicalPayload);
+
+    const signedDoc: DidDocument = {
+      id: did,
+      verificationMethod: [
+        {
+          id: `${did}#key-1`,
+          type: 'Ed25519VerificationKey2020',
+          controller: did,
+          publicKeyJwk,
+        },
+      ],
+      proof: {
+        type: 'Ed25519Signature2020',
+        created,
+        verificationMethod: `${did}#key-1`,
+        proofPurpose,
+        proofValue: signatureBase64,
+      },
+    };
+
+    // Verify valid signature
+    const validRes = await didValidator.validateDidAsync(signedDoc);
+    if (!validRes.valid || !validRes.cryptoVerified || validRes.trustScore !== 100) {
+      throw new Error(`Expected valid Ed25519 crypto verification, got: ${JSON.stringify(validRes)}`);
+    }
+
+    // Verify tampered signature fails
+    const tamperedDoc: DidDocument = {
+      ...signedDoc,
+      proof: {
+        ...signedDoc.proof!,
+        proofValue: signatureBase64.slice(0, -4) + 'AAAA', // Tamper signature bytes
+      },
+    };
+
+    const invalidRes = await didValidator.validateDidAsync(tamperedDoc);
+    if (invalidRes.valid || invalidRes.cryptoVerified) {
+      throw new Error('Tampered signature passed verification!');
+    }
+
+    console.log(`   └─ WebCrypto Ed25519 Cryptography Verified! Valid Signature Trust Score: 100/100 | Tampered Signature Rejected: "${invalidRes.reason}"`);
+  });
+
   console.log('\n================================================================');
   console.log(`📊 TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);
   console.log('================================================================\n');

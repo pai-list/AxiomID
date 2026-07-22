@@ -27,6 +27,7 @@ export interface RouterConfig {
   learningRate: number;     // EMA alpha (0.1)
   maxBudget: number;        // Max $/1M input tokens
   preference: 'cheapest' | 'fastest' | 'balanced' | 'best-quality';
+  prngSeed?: number;        // Optional seed for 100% deterministic exploration testing
 }
 
 export interface RouterResult {
@@ -109,6 +110,16 @@ export function scoreProvider(
   return wC * costScore + wL * latencyScore + wT * taskScore + wLg * langScore;
 }
 
+// Mulberry32 deterministic PRNG generator
+export function createPRNG(seed: number): () => number {
+  return function() {
+    let t = (seed += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // ============================================================
 // STEP 4: SELECT — Epsilon-greedy explore/exploit
 // ============================================================
@@ -116,13 +127,16 @@ export function selectProvider(
   providers: Provider[],
   scores: Map<string, number>,
   epsilon: number,
+  prngSeed?: number,
 ): { provider: Provider; isExploration: boolean } {
   if (providers.length === 0) throw new Error('No providers available after filtering');
 
+  const rng = prngSeed !== undefined ? createPRNG(prngSeed) : Math.random;
+
   // EXPLORE (ε chance): random
-  if (Math.random() < epsilon) {
+  if (rng() < epsilon) {
     return {
-      provider: providers[Math.floor(Math.random() * providers.length)]!,
+      provider: providers[Math.floor(rng() * providers.length)]!,
       isExploration: true,
     };
   }
@@ -242,7 +256,7 @@ export function route(
     scores.set(p.id, 0.5 * staticScore + 0.5 * liveScore); // blend static + live
   }
 
-  const { provider, isExploration } = selectProvider(filtered, scores, config.epsilon);
+  const { provider, isExploration } = selectProvider(filtered, scores, config.epsilon, config.prngSeed);
   const fallbackChain = buildFallbackChain(filtered, scores);
 
   return {

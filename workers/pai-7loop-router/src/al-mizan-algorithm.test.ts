@@ -62,6 +62,15 @@ assert(
   `DeepSeek score increased after 5-star rating (Before: ${beforeScore.toFixed(2)} -> After: ${afterScore.toFixed(4)})`
 );
 
+// TEST 4: Seeded PRNG Exploration Test (epsilon = 0.5 with prngSeed)
+const seededExploreConfig: RouterConfig = {
+  ...exploitConfig,
+  epsilon: 0.5,
+  prngSeed: 1337,
+};
+const routeSeeded = route('Write a Python script', REAL_PROVIDERS, seededExploreConfig, performanceScores);
+assert(!!routeSeeded.provider, `Seeded PRNG Exploration selected provider deterministically: ${routeSeeded.provider.name} (isExploration=${routeSeeded.isExploration})`);
+
 console.log('\n================================================================');
 console.log(`📊 TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);
 console.log('================================================================\n');

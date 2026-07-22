@@ -1,3 +1,11 @@
+export interface DidProof {
+  type: 'Ed25519Signature2020' | 'Ed25519VerificationKey2020';
+  created: string;
+  verificationMethod: string;
+  proofPurpose: string;
+  proofValue: string; // Base64 or Hex signature bytes
+}
+
 export interface DidDocument {
   id: string;
   verificationMethod: {
@@ -5,8 +13,10 @@ export interface DidDocument {
     type: string;
     controller: string;
     publicKeyMultibase?: string;
+    publicKeyJwk?: JsonWebKey;
   }[];
   authentication?: string[];
+  proof?: DidProof;
   created?: string;
   revoked?: boolean;
 }
@@ -16,6 +26,7 @@ export interface DidValidationResult {
   did: string;
   reason?: string;
   trustScore: number; // 0 to 100
+  cryptoVerified?: boolean;
 }
 
 export interface SybilAgentBehavior {
