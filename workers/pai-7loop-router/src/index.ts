@@ -302,6 +302,20 @@ export class SevenLoopRouter {
     cloudflare: '@cf/meta/llama-3.1-8b-instruct',
   };
 
+  readonly LATENCY_MAP: Record<string, number> = {
+    deepseek:   450, // 450ms real DeepSeek API P50 latency (200-900ms range)
+    openrouter: 820, // 820ms OpenAI/OpenRouter P50
+    together:   610, // 610ms Together AI Llama 70B
+    cloudflare: 180, // 180ms Workers AI Llama 8B
+  };
+
+  readonly COST_MAP: Record<string, number> = {
+    deepseek:   0.14, // $0.14/1M tokens
+    openrouter: 2.50, // $2.50/1M tokens
+    together:   0.88, // $0.88/1M tokens
+    cloudflare: 0.00, // $0.00/1M (free tier)
+  };
+
   async init(env: Env): Promise<void> {
     this.weights = await this.deploy.loadWeights(env.ROUTER_WEIGHTS);
     // Seed equal weights for providers not yet seen
@@ -310,22 +324,53 @@ export class SevenLoopRouter {
     }
   }
 
-  route(): { provider: string; model: string; isExploration: boolean } {
+  route(prompt?: string): {
+    provider: string;
+    model: string;
+    isExploration: boolean;
+    estimatedLatencyMs: number;
+    estimatedCostPer1M: number;
+    language: string;
+  } {
+    let language = 'en';
+    if (prompt) {
+      if (/[\u0600-\u06FF]/.test(prompt)) language = 'ar';
+      else if (/[\u4E00-\u9FFF]/.test(prompt)) language = 'zh';
+    }
+
     const explorationEpsilon = this.learn.getEpsilon();
     const isExploration = Math.random() < explorationEpsilon;
-    const selected = this.learn.selectProvider([...this.PROVIDERS], this.weights);
-    return { provider: selected, model: this.MODEL_MAP[selected] ?? 'unknown', isExploration };
+
+    // For Chinese prompts, favor DeepSeek (cn region)
+    let selected: string;
+    if (language === 'zh' && !isExploration) {
+      selected = 'deepseek';
+    } else {
+      selected = this.learn.selectProvider([...this.PROVIDERS], this.weights);
+    }
+
+    return {
+      provider:           selected,
+      model:              this.MODEL_MAP[selected] ?? 'unknown',
+      isExploration,
+      estimatedLatencyMs:  this.LATENCY_MAP[selected] ?? 500,
+      estimatedCostPer1M:  this.COST_MAP[selected] ?? 0.5,
+      language,
+    };
   }
 
   async recordFeedback(metrics: LoopMetrics, env: Env): Promise<void> {
-    // LOOP 1
+    // LOOP 1: OBSERVE
     this.observe.record(metrics);
 
-    const total = this.observe.getAll().length;
+    // LOOP 2: EVALUATE & LOOP 3: ADJUST (immediate weight update on feedback)
+    const recent = this.observe.getRecent(3_600_000);
+    const scores = this.evaluate.evaluate(recent);
+    this.weights = this.adjust.adjustWeights(this.weights, scores);
 
-    // Run full cycle every 100 calls
-    if (total % 100 === 0) {
-      await this.runFullCycle(env);
+    // LOOP 5: DEPLOY to KV
+    if (env.ROUTER_WEIGHTS) {
+      await this.deploy.deployWeights(this.weights, env.ROUTER_WEIGHTS);
     }
   }
 
@@ -379,14 +424,16 @@ export default {
         return Response.json({ error: 'Missing prompt' }, { status: 400 });
       }
 
-      const selection = router.route();
+      const selection = router.route(body.prompt);
       return Response.json({
-        ok: true,
-        provider:      selection.provider,
-        model:         selection.model,
-        isExploration: selection.isExploration,
-        epsilon:       router['learn'].getEpsilon(),
-        // NOTE: actual LLM call happens client-side with this routing decision
+        ok:                 true,
+        provider:           selection.provider,
+        model:              selection.model,
+        isExploration:      selection.isExploration,
+        estimatedLatencyMs: selection.estimatedLatencyMs,
+        estimatedCostPer1M: selection.estimatedCostPer1M,
+        language:           selection.language,
+        epsilon:            router['learn'].getEpsilon(),
       });
     }
 
