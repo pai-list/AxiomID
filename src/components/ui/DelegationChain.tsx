@@ -3,15 +3,15 @@
 import { useState, useMemo, useEffect } from "react";
 import { LiquidButton } from "./LiquidButton";
 import {
-  ChevronDown,
-  ChevronRight,
+  ChevronDown as ChevronDownIcon,
+  ChevronRight as ChevronRightIcon,
   Shield,
-  ArrowRight,
+  ArrowRight as ArrowRightIcon,
   Users,
   User,
   Key,
-  XCircle,
-  RotateCcw,
+  XCircle as XCircleIcon,
+  RotateCcw as RotateCcwIcon,
   ExternalLink,
 } from "lucide-react";
 import { liquidClass, liquidTokens, type DelegationNode, type DelegationChain } from "@/lib/liquid-ui";
@@ -36,7 +36,7 @@ const nodeIcons = {
   principal: Users,
   delegation: Shield,
   agent: User,
-  revoked: XCircle,
+  revoked: XCircleIcon,
 };
 
 export function DelegationChain({
@@ -57,7 +57,7 @@ export function DelegationChain({
 
   const nodes = useMemo(() => {
     if (!chain) return [];
-    return chain.nodes.sort((a, b) => a.depth - b.depth);
+    return [...chain.nodes].sort((a: DelegationNode, b: DelegationNode) => a.depth - b.depth);
   }, [chain]);
 
   const maxDepth = useMemo(() => Math.max(...nodes.map((n) => n.depth), 0), [nodes]);
@@ -143,7 +143,7 @@ export function DelegationChain({
             "px-3 py-1.5 rounded-full text-xs font-mono font-semibold",
             "bg-white/10 border border-white/20 text-zinc-50"
           )}>
-            Scope: {chain.currentScope.join(", ") || "\u2014"}
+            Scope: {chain.currentScope?.join(", ") || "\u2014"}
           </span>
           <LiquidButton
             variant="ghost"
@@ -168,13 +168,13 @@ export function DelegationChain({
             { type: "principal", label: "Principal", icon: Users },
             { type: "delegation", label: "Delegation", icon: Shield },
             { type: "agent", label: "Agent", icon: User },
-          ].map(({ type, label, icon }) => (
+          ].map(({ type, label, icon: IconComponent }) => (
             <span key={type} className="flex items-center gap-2 text-sm text-zinc-400">
               <div className={liquidClass(
                 "w-3 h-3 rounded flex items-center justify-center",
                 nodeTypeStyles[type as keyof typeof nodeTypeStyles]
               )}>
-                <icon className="w-2 h-2" />
+                <IconComponent className="w-2 h-2" />
               </div>
               <span className="font-mono text-xs">{label}</span>
             </span>
@@ -399,7 +399,7 @@ function DelegationNodeCard({
           "bg-white/5 border border-white/10",
           "text-zinc-400 text-xs"
         )}>
-          Scope: {node.scope.join(", ") || "\u2014"}
+          Scope: {(node.scope || node.scopes)?.join(", ") || "\u2014"}
         </div>
 
         {/* Expiry */}
@@ -521,15 +521,15 @@ function NodeDetailPanel({
         <div className="p-4 space-y-4">
           <DetailSection title="Identity">
             <DetailRow label="Type" value={node.revokedAt ? "Revoked" : node.depth === 0 ? "Principal" : node.depth === 1 ? "Delegation" : "Agent"} />
-            <DetailRow label="Delegator DID" value={node.delegatorDid} mono />
-            <DetailRow label="Delegatee DID" value={node.delegateeDid} mono />
+            <DetailRow label="Delegator DID" value={node.delegatorDid ?? "\u2014"} mono />
+            <DetailRow label="Delegatee DID" value={node.delegateeDid ?? "\u2014"} mono />
             <DetailRow label="Depth" value={node.depth.toString()} mono />
           </DetailSection>
 
           <DetailSection title="Scope & Authority">
-            <DetailRow label="Scope" value={node.scope.join(", ") || "\u2014"} full />
+            <DetailRow label="Scope" value={(node.scope || node.scopes)?.join(", ") || "\u2014"} full />
             <DetailRow label="Parent Delegation" value={node.parentId || "None (root)"} mono />
-            <DetailRow label="Signature" value={`${node.signature.slice(0, 24)}...${node.signature.slice(-24)}`} mono />
+            <DetailRow label="Signature" value={node.signature ? `${node.signature.slice(0, 24)}...${node.signature.slice(-24)}` : "\u2014"} mono />
           </DetailSection>
 
           <DetailSection title="Lifecycle">

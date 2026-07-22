@@ -159,6 +159,12 @@ export function liquidClass(...classes: (string | undefined | false | null)[]): 
   return classes.filter(Boolean).join(" ");
 }
 
+export function getMagneticTransform(e: { clientX: number; clientY: number }, rect: { left: number; top: number; width: number; height: number }, strength = 0.3) {
+  const x = (e.clientX - rect.left - rect.width / 2) * strength;
+  const y = (e.clientY - rect.top - rect.height / 2) * strength;
+  return { x, y };
+}
+
 // Type for audit entries (used by ActionAudit)
 export interface AuditEntry {
   id: string;
@@ -215,6 +221,31 @@ export const buttonSizes = {
   lg: "px-7 py-3.5 text-lg",
   xl: "px-10 py-4.5 text-xl",
 } as const;
+
+export interface DelegationNode {
+  id: string;
+  name: string;
+  type: "principal" | "delegation" | "agent" | "revoked";
+  did: string;
+  depth: number;
+  scopes?: string[];
+  scope?: string[];
+  status?: string;
+  delegatorDid?: string;
+  delegateeDid?: string;
+  revokedAt?: string;
+  expiresAt?: string;
+  parentId?: string;
+  signature?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DelegationChain {
+  id: string;
+  rootDid: string;
+  nodes: DelegationNode[];
+  currentScope?: string[];
+}
 
 // Intent preview component props
 export interface IntentPreviewProps {

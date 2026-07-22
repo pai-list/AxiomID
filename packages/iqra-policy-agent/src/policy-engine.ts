@@ -94,7 +94,7 @@ export class IqraPolicyEngine {
    * Ethical Conscience Hard Filter (Divine Accountability & Destructive Call Guards)
    */
   private evaluateConscienceSubstrate(target: ToolCallTarget): Omit<PolicyEvaluationResult, 'latencyMicroseconds' | 'evaluatedAt'> {
-    const paramsStr = JSON.stringify(target.parameters).toLowerCase();
+    const paramsStr = JSON.stringify(target.parameters ?? {}).toLowerCase();
 
     // Guard 1: Destructive File Systems Operations (rm -rf /, DROP DATABASE, etc.)
     const destructivePatterns = [

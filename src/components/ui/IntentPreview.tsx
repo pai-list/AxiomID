@@ -43,8 +43,10 @@ export function IntentPreview({ isOpen, onClose, onConfirm, onCancel, actions, t
 
   const highestRisk = actions.reduce((max, a) => {
     const order = { low: 0, medium: 1, high: 2, critical: 3 };
-    return order[a.risk || "low"] > order[max] ? a.risk || "low" : max;
-  }, "low" as IntentAction["risk"]);
+    const currentRisk = a.risk ?? "low";
+    const maxRisk = max ?? "low";
+    return order[currentRisk] > order[maxRisk] ? currentRisk : maxRisk;
+  }, "low" as NonNullable<IntentAction["risk"]>);
 
   const allReversible = actions.every(a => a.reversible);
 

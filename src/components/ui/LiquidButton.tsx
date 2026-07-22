@@ -57,15 +57,15 @@ export const LiquidButton = forwardRef<HTMLButtonElement, LiquidButtonProps>(
       if (!magnetic || disabled || loading) return;
       const rect = buttonRef.current?.getBoundingClientRect();
       if (rect) {
-        setMagneticTransform(getMagneticTransform(e.clientX, e.clientY, rect));
+        const { x, y } = getMagneticTransform(e, rect);
+        setMagneticTransform(`translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`);
       }
       onMouseMove?.(e);
     };
 
-    const handleMouseLeave = () => {
-      if (!magnetic) return;
-      setMagneticTransform("");
-      onMouseLeave?.(e as any);
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (magnetic) setMagneticTransform("");
+      onMouseLeave?.(e);
     };
 
     const baseClasses = liquidClass(

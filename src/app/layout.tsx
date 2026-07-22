@@ -5,8 +5,12 @@ import DOMPurify from "isomorphic-dompurify";
 import Script from "next/script";
 import "./globals.css";
 import SovereignSplash from "@/components/pwa/SovereignSplash";
+import InstallPWA from "@/components/pwa/InstallPWA";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Providers } from "./providers";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "sonner";
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -163,22 +167,10 @@ export default async function RootLayout({
         </a>
         {/* Pi SDK loaded dynamically by loadPiSdk() in pi-sdk.ts — avoids overriding native Pi in Pi Browser */}
         <Script src="/register-sw.js" strategy="afterInteractive" />
-      <ThemeProvider>
-        <DynamicThemeColor />
         <SovereignSplash />
-        <LanguageProvider>
-          <SandboxProvider>
-            <WalletProvider>
-
-                <Providers>
-                  <MotionConfig reducedMotion="user">
-                    <ErrorBoundary>{children}</ErrorBoundary>
-                  </MotionConfig>
-                </Providers>
-              </WalletProvider>
-            </SandboxProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <Providers>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </Providers>
         <Analytics />
         <SpeedInsights />
          <Toaster

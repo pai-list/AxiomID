@@ -128,10 +128,11 @@ export const TiltCard = forwardRef<HTMLDivElement, TiltCardProps>(
     return (
       <div
         ref={ref}
-        onMouseMove={handleMove}
-        onMouseLeave={handleLeave}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={() => {
+          handleLeave();
+          setHovered(false);
+        }}
         style={{
           ...style,
           willChange: 'transform',
@@ -460,18 +461,4 @@ export const NeuralNetworkViz = forwardRef<HTMLDivElement, NeuralNetworkVizProps
 
 NeuralNetworkViz.displayName = 'NeuralNetworkViz'
 
-// ============================================
-// Export all
-// ============================================
-export type {
-  FadeInProps,
-  ScrollRevealProps,
-  ScaleInProps,
-  TiltCardProps,
-  ShimmerTextProps,
-  TypewriterProps,
-  ParticleFieldProps,
-  MorphingViewProps,
-  ScrollReveal,
-  NeuralNetworkVizProps,
-}
+// Components are individually exported above

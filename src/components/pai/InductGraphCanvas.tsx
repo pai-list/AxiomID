@@ -623,7 +623,7 @@ export function InductGraphCanvas({
     <div
       ref={containerRef}
       className={cn('relative w-full h-full bg-bg-deepest overflow-hidden', className)}
-      onKeyDown={handleKeyDown}
+      onKeyDown={(e) => handleKeyDown(e.nativeEvent)}
     >
       <canvas
         ref={canvasRef}
@@ -722,10 +722,10 @@ export function InductGraphCanvas({
                         {selectedNode.name} ({selectedNode.type.toUpperCase()})
                       </h3>
                       <p className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
-                        {selectedNode.metadata?.layer && `Layer: ${selectedNode.metadata.layer}`}
-                        {selectedNode.metadata?.trust && ` • Trust: ${selectedNode.metadata.trust}`}
-                        {selectedNode.metadata?.loop && ` • Loop: ${selectedNode.metadata.loop}`}
-                        {selectedNode.metadata?.role && ` • Role: ${selectedNode.metadata.role}`}
+                        {selectedNode.metadata?.layer ? `Layer: ${selectedNode.metadata.layer}` : ''}
+                        {selectedNode.metadata?.trust ? ` • Trust: ${selectedNode.metadata.trust}` : ''}
+                        {selectedNode.metadata?.loop ? ` • Loop: ${selectedNode.metadata.loop}` : ''}
+                        {selectedNode.metadata?.role ? ` • Role: ${selectedNode.metadata.role}` : ''}
                       </p>
                     </div>
                   </div>
