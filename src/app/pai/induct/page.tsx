@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { FadeIn, ScaleIn, TiltCard, ShimmerText, Typewriter, ParticleField, MorphingView, NeuralNetworkViz, ScrollReveal } from '@/components/effects'
+import { FadeIn, ScaleIn, TiltCard, ShimmerText, Typewriter, ParticleField, MorphingView, NeuralNetworkViz } from '@/components/effects'
+import { ScrollReveal } from '@/components/wow-moments'
 import { PAIShowcase } from '@/components/PAIShowcase'
 import PAITerminalDemo from '@/components/PAITerminalDemo'
 import InductGraphCanvas from '@/components/pai/InductGraphCanvas'
@@ -74,7 +75,7 @@ export default function InductPage() {
   const current = STATE_META[state]
 
   return (
-    <main style={{ background: 'var(--bg-deepest)', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--bg-deepest)', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
       {/* Mode toggle bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-4 p-3"
         style={{ background: 'rgba(10,10,15,0.9)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -136,7 +137,7 @@ export default function InductPage() {
         </button>
       </div>
 
-      <main style={{ background: 'var(--bg-deepest)', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-deepest)', minHeight: '100vh', color: 'var(--text-primary)', overflow: 'hidden' }}>
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center relative z-10 pt-14">
           <div className="container-pai text-center">
@@ -297,8 +298,7 @@ export default function InductPage() {
             </div>
           </div>
         </footer>
-      </main>
-    )
+      </div>
+    </div>
+  )
 }
-
-export default InductPage

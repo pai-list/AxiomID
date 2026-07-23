@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { cn } from '@/lib/utils'
 
 // Types for our graph data
 interface GraphNode {
   id: string
   label: string
+  name?: string
+  emoji?: string
   x: number
   y: number
   type: 'agent' | 'skill' | 'endpoint' | 'patch' | 'state'
@@ -52,6 +55,7 @@ const COLORS = {
   textMuted: '#6B6B7B',
   accent: '#39FF14',
   accentDim: 'rgba(57, 255, 20, 0.15)',
+  border: 'rgba(255, 255, 255, 0.08)',
   patchPending: '#FFA500',
   patchApproved: '#39FF14',
   patchRejected: '#FF6B6B',
@@ -77,14 +81,14 @@ export function InductGraphCanvas({
   initialState,
   onStateChange,
   className = '',
-  realMode = false,
+  realMode: initialRealMode = false,
   zeroLangPatches = [],
 }: InductGraphCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const animationRef = useRef<number | null>(null)
 
-  // State management with URL sync
+  const [realMode, setRealMode] = useState(initialRealMode)
   const [graphState, setGraphState] = useState<GraphState>(() => {
     if (typeof window !== 'undefined') {
       return loadStateFromURL() ?? defaultGraphState()
@@ -132,7 +136,7 @@ export function InductGraphCanvas({
       { id: 'skill-zerolang', label: 'ZeroLang', x: 750, y: 100, type: 'skill', color: '#EC4899', size: 10, metadata: { compiler: true } },
       { id: 'skill-tlsnotary', label: 'TLSNotary', x: 750, y: 150, type: 'skill', color: '#0EA5E9', size: 10, metadata: { verifiable: true } },
       { id: 'skill-tlsn', label: 'TLSN', x: 750, y: 200, type: 'skill', color: '#A855F7', size: 10, metadata: { verifiable: true } },
-    }
+    ]
 
     const edges: GraphEdge[] = [
       // Protocol layer connections
@@ -173,7 +177,7 @@ export function InductGraphCanvas({
       { id: 'e19', source: 'codex', target: 'skill-packnplay', type: 'trust', weight: 1 },
       { id: 'e20', source: 'alphazero', target: 'skill-zerolang', type: 'trust', weight: 1 },
       { id: 'e21', source: 'opencode', target: 'skill-tlsnotary', type: 'trust', weight: 1 },
-    }
+    ]
 
     return {
       nodes,
@@ -516,7 +520,8 @@ export function InductGraphCanvas({
         setIsPanning(true)
         setPanStart({ x: e.clientX, y: e.clientY })
       }
-    }, [graphState])
+    }
+  }, [graphState])
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect()
@@ -618,7 +623,7 @@ export function InductGraphCanvas({
     <div
       ref={containerRef}
       className={cn('relative w-full h-full bg-bg-deepest overflow-hidden', className)}
-      onKeyDown={handleKeyDown}
+      onKeyDown={(e) => handleKeyDown(e.nativeEvent)}
     >
       <canvas
         ref={canvasRef}
@@ -717,10 +722,10 @@ export function InductGraphCanvas({
                         {selectedNode.name} ({selectedNode.type.toUpperCase()})
                       </h3>
                       <p className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
-                        {selectedNode.metadata?.layer && `Layer: ${selectedNode.metadata.layer}`}
-                        {selectedNode.metadata?.trust && ` • Trust: ${selectedNode.metadata.trust}`}
-                        {selectedNode.metadata?.loop && ` • Loop: ${selectedNode.metadata.loop}`}
-                        {selectedNode.metadata?.role && ` • Role: ${selectedNode.metadata.role}`}
+                        {selectedNode.metadata?.layer ? `Layer: ${selectedNode.metadata.layer}` : ''}
+                        {selectedNode.metadata?.trust ? ` • Trust: ${selectedNode.metadata.trust}` : ''}
+                        {selectedNode.metadata?.loop ? ` • Loop: ${selectedNode.metadata.loop}` : ''}
+                        {selectedNode.metadata?.role ? ` • Role: ${selectedNode.metadata.role}` : ''}
                       </p>
                     </div>
                   </div>
@@ -805,7 +810,6 @@ export function InductGraphCanvas({
           </div>
         )}
       </div>
-    </div>
   )
 }
 

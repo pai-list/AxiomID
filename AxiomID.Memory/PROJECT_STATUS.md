@@ -1,7 +1,7 @@
 # AxiomID — Project Status & Knowledge Base
 
 > **The single source of truth for the AxiomID project.**
-> Updated: 2026-07-17 | Version: 0.2.0
+> Updated: 2026-07-22 | Version: 0.3.0
 
 ---
 
@@ -17,7 +17,7 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 
 | Metric | Value |
 |--------|-------|
-| **Version** | 0.2.0 |
+| **Version** | 0.3.0 |
 | **Test Files** | 189 |
 | **Test Cases** | 3,289 (passing, `it()`+`test()` blocks) |
 | **Test Lines** | ~39,500+ |
@@ -29,12 +29,24 @@ AxiomID is the **Human Authorization Protocol** for AI agents and humans. Pi Bro
 | **Database** | PostgreSQL (Prisma) + D1 (edge) + Vectorize (semantic) |
 | **Auth** | Pi Network SDK + Ed25519 sovereign keys |
 | **CI/CD** | GitHub Actions → Vercel |
-| **Open PRs** | 3 (#365, #364, #360) |
-| **Open Issues** | 8 (#153, #222-#225, #367, #368, #369) |
+| **Organization** | `pai-list` (19 repos) · `pai-bye` Enterprise |
+| **License Status**| 100% MIT Licensed across all 8 PAI repos |
 
 ---
 
 ## 3. What's Done
+
+### 2026-07-22 Zero-Trust Agentic Security & Collaboration Milestone ✅
+- **Open-Sourced Al-Mizan 7-Loop Cloudflare Worker:** Created `workers/pai-7loop-router/LICENSE` (MIT) & comprehensive REST API developer guide (`README.md`).
+- **210 Live KV Observations Verified:** Executed concurrent `seed_100_observations.mjs` populating 210 records to Cloudflare Worker runtime; verified totalObservations > 100 & live EMA weight convergence.
+- **IQRA Agentic Policy Agent (`@axiomid/iqra-policy-agent`):** Built eBPF-style runtime tool call firewall with declarative `AgenticNetworkPolicy` manifests & Divine Accountability Conscience Substrate. 5/5 real tests passing ($61\mu\text{s} - 345\mu\text{s}$).
+- **ModelScope & Gitee Chinese Code Ecosystem Researcher:** Built `scripts/chinese_repos_researcher.py` directly querying Alibaba ModelScope OpenAPI (`https://modelscope.cn/openapi/v1/models`) & Gitee.
+- **Agentic Workspace Subscriber Collaboration (`subscriber-collaboration.ts`):** Implemented Gitee Subscribers pattern (`GET /v5/repos/{owner}/{repo}/subscribers`) in `@axiomid/sdk`, enabling autonomous subagents (`TestRunnerAgent`, `SecurityAuditorAgent`) to react to workspace events without token-polling loops.
+- **DID Integrity Guard & Anti-Scam Engine (`@axiomid/did-integrity-guard`):** Built W3C DID validator, Sybil bot risk scoring engine (velocity/fan-out anomalies), and code clone plagiarism scanner (Gitee CopyCat algorithm + static backdoor analysis). 5/5 real tests passing with ZERO mocks.
+- **Resend MCP Integration:** Added `resend` server configuration to `.mcp.json` for automated waitlist processing & email notifications.
+
+
+
 
 
 ### PR #288: Expert Auto-Labeler ✅
