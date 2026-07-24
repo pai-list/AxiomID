@@ -89,3 +89,4 @@ task.md
 .devin/
 .idea/
 .env.local
+.env*
