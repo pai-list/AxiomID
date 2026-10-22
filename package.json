@@ -79,7 +79,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "undici": "^8.8.0"
+    "undici": "^8.12.3"
   },
   "engines": {
     "node": ">=20.0.0"
