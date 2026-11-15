@@ -3,17 +3,17 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    // Attempt upstream gspace telemetry with a short 2.5s timeout
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+  // Attempt upstream gspace telemetry with a short 2.5s timeout. The timer
+  // stays active through JSON body consumption so a stalled response body
+  // is aborted and we fall back promptly.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
 
+  try {
     const upstream = await fetch("https://gspace.axiomid.app/api/telemetry", {
       cache: "no-store",
       signal: controller.signal,
     }).catch(() => null);
-
-    clearTimeout(timer);
 
     if (upstream && upstream.ok) {
       const data = await upstream.json().catch(() => null);
@@ -25,6 +25,8 @@ export async function GET() {
     }
   } catch {
     // Upstream unavailable, proceed to local fallback
+  } finally {
+    clearTimeout(timer);
   }
 
   // Graceful sovereign fallback
