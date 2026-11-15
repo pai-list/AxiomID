@@ -167,26 +167,29 @@ export function DesktopIcons({ labels }: Props) {
                 </span>
               </a>
             ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  toast.info(label, {
-                    description: `${label} is in active development for the sovereign PAI universe.`,
-                  });
-                }}
+              <div
+                onClick={() =>
+                  toast.info(
+                    `${label} — ${
+                      labels.soon === "قريباً"
+                        ? "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم"
+                        : "Under active development — launching soon in AuraOS"
+                    }`,
+                  )
+                }
                 className="flex flex-col items-center gap-3 w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl transition-transform duration-200 group-hover:scale-105"
-                aria-label={`${label} (${labels.soon})`}
+                aria-label={label}
               >
                 <div className="rounded-2xl border border-white/10 bg-[#0f0f1a]/30 p-4 shadow-lg backdrop-blur-md group-hover:border-white/20">
                   {icon}
                 </div>
-                <span className="text-xs font-semibold text-white/80 drop-shadow-lg text-center flex flex-col items-center gap-0.5">
-                  <span>{label}</span>
+                <span className="text-xs font-semibold text-white/80 drop-shadow-lg text-center">
+                  {label}{" "}
                   <span className="rounded bg-white/10 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300">
                     {labels.soon}
                   </span>
                 </span>
-              </button>
+              </div>
             )}
           </div>
         );

@@ -52,7 +52,7 @@ export function DesktopTaskbar() {
       })
       .catch(() => {
         clearTimeout(timer);
-        if (alive) setCpu("98%");
+        if (alive) setCpu("—");
       });
 
     return () => {
@@ -116,8 +116,7 @@ export function DesktopTaskbar() {
         role="navigation"
         aria-label={t("aura_os")}
       >
-        <button
-          type="button"
+        <div
           onClick={() => setLauncherOpen(!launcherOpen)}
           className="relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-cyan-400/10 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           aria-label="Aura App Launcher"
@@ -129,7 +128,7 @@ export function DesktopTaskbar() {
           <svg viewBox="0 0 24 24" className="absolute h-4 w-4 text-cyan-400" aria-hidden="true">
             <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
           </svg>
-        </button>
+        </div>
 
         <div className="h-10 w-px bg-white/30" aria-hidden="true" />
         <span className="px-4 text-xs text-slate-400">{t("desktop_no_apps")}</span>
