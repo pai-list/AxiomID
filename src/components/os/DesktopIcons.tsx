@@ -1,3 +1,7 @@
+"use client";
+
+import { toast } from "sonner";
+
 type Gradient = [string, string];
 
 const PAIRS: Record<string, Gradient> = {
@@ -140,19 +144,49 @@ export function DesktopIcons({ labels }: Props) {
         const label = labels[id] ?? id;
         const soon = !href;
         return (
-          <div key={id} role="listitem" className={`flex w-28 flex-col items-center gap-3 rounded-xl p-4 transition-all duration-200 ${soon ? "opacity-30" : "hover:bg-cyan-400/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]"}`}>
+          <div
+            key={id}
+            role="listitem"
+            className={`group flex w-28 flex-col items-center gap-3 rounded-xl p-3 transition-all duration-200 ${
+              soon
+                ? "opacity-60 hover:opacity-100 hover:bg-white/5"
+                : "hover:bg-cyan-400/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]"
+            }`}
+          >
             {href ? (
-              <a href={href} className="flex flex-col items-center gap-3 rounded-xl text-cyan-400" aria-label={label}>
-                <div className="rounded-2xl border border-white/10 bg-[#0f0f1a]/30 p-4 shadow-lg backdrop-blur-md">{icon}</div>
-                <span className="text-xs font-semibold text-white drop-shadow-lg">{label}</span>
+              <a
+                href={href}
+                className="flex flex-col items-center gap-3 rounded-xl text-cyan-400 transition-transform duration-200 group-hover:scale-105"
+                aria-label={label}
+              >
+                <div className="rounded-2xl border border-white/10 bg-[#0f0f1a]/40 p-4 shadow-lg backdrop-blur-md group-hover:border-cyan-400/40">
+                  {icon}
+                </div>
+                <span className="text-xs font-semibold text-white drop-shadow-lg text-center">
+                  {label}
+                </span>
               </a>
             ) : (
-              <div className="flex flex-col items-center gap-3" aria-label={label}>
-                <div className="rounded-2xl border border-white/10 bg-[#0f0f1a]/30 p-4 shadow-lg backdrop-blur-md">{icon}</div>
-                <span className="text-xs font-semibold text-white drop-shadow-lg">
-                  {label} <span className="text-[10px] font-normal text-slate-500">{labels.soon}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  toast.info(label, {
+                    description: `${label} is in active development for the sovereign PAI universe.`,
+                  });
+                }}
+                className="flex flex-col items-center gap-3 w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl transition-transform duration-200 group-hover:scale-105"
+                aria-label={`${label} (${labels.soon})`}
+              >
+                <div className="rounded-2xl border border-white/10 bg-[#0f0f1a]/30 p-4 shadow-lg backdrop-blur-md group-hover:border-white/20">
+                  {icon}
+                </div>
+                <span className="text-xs font-semibold text-white/80 drop-shadow-lg text-center flex flex-col items-center gap-0.5">
+                  <span>{label}</span>
+                  <span className="rounded bg-white/10 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300">
+                    {labels.soon}
+                  </span>
                 </span>
-              </div>
+              </button>
             )}
           </div>
         );

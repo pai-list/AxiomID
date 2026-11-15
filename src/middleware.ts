@@ -7,8 +7,15 @@ const ROOT_DOMAIN = "axiomid.app";
 
 const RESERVED_SUBDOMAINS = new Set([
   "www", "api", "mail", "app", "admin", "dashboard",
-  "docs", "openid", "blog", "status", "cdn", "assets", "static", "build"
+  "docs", "openid", "blog", "status", "cdn", "assets", "static", "build",
+  "memory", "harness", "gspace", "skills", "earn", "hub", "auth",
+  "aip", "ppp", "mcp", "testnet"
 ]);
+
+const PRODUCTION_PREVIEW_ANCHOR = "axiomid-app-axiom-id.vercel.app";
+const VERCEL_PREVIEW_HOST =
+  process.env.VERCEL_PREVIEW_HOST ||
+  (process.env.VERCEL_URL ? process.env.VERCEL_URL.replace(/:\d+$/, "") : null);
 
 const CORS_ALLOWED_ORIGINS = [
   "https://axiomid.app",
@@ -16,7 +23,7 @@ const CORS_ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://axiomid.vercel.app",
-  "https://axiomid-app-axiom-id.vercel.app",
+  `https://${PRODUCTION_PREVIEW_ANCHOR}`,
   "https://app.minepi.com",
   "https://sandbox.minepi.com",
 ];
@@ -26,12 +33,10 @@ function isAllowedHost(host: string): boolean {
   if (plain === "localhost" || plain === "127.0.0.1") return true;
   if (plain === ROOT_DOMAIN || plain === `www.${ROOT_DOMAIN}`) return true;
   if (plain.endsWith(`.${ROOT_DOMAIN}`)) return true;
-  // Security hardening: .vercel.app hosts are NOT allowed (wildcard removed).
-  // Vercel preview deployments remain valid as CORS origins only
-  // (see CORS_ALLOWED_ORIGINS), never as request hosts.
-  // Exact exception: the production preview anchor used by the protocol-stubs
-  // worker for /api/og proxying (axiomid-app-axiom-id.vercel.app).
-  if (plain === "axiomid-app-axiom-id.vercel.app") return true;
+  // Security hardening: .vercel.app hosts are NOT allowed by default (wildcard removed).
+  // Dynamic preview host from Vercel environment or configured preview anchor:
+  if (VERCEL_PREVIEW_HOST && plain === VERCEL_PREVIEW_HOST) return true;
+  if (plain === PRODUCTION_PREVIEW_ANCHOR) return true;
   return false;
 }
 
@@ -43,8 +48,8 @@ function getAllowedOrigin(origin: string | null): string | null {
     if (host === ROOT_DOMAIN || host.endsWith(`.${ROOT_DOMAIN}`)) return origin;
     if (CORS_ALLOWED_ORIGINS.includes(origin)) return origin;
     if (host === "localhost" || host === "127.0.0.1") return origin;
-    // Security hardening: no .vercel.app wildcard — only the explicit
-    // production preview hosts in CORS_ALLOWED_ORIGINS are allowed.
+    if (VERCEL_PREVIEW_HOST && (host === VERCEL_PREVIEW_HOST || origin === `https://${VERCEL_PREVIEW_HOST}`)) return origin;
+    // Security hardening: no .vercel.app wildcard — only explicit or configured preview hosts are allowed.
   } catch {
     // invalid origin
   }

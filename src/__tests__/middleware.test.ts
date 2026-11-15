@@ -389,6 +389,26 @@ describe("middleware — reserved subdomains (PR change: 'build' added to RESERV
     expect(res.status).toBe(404);
   });
 
+  it("returns 404 for ecosystem reserved subdomains (memory, harness, skills, gspace, earn)", () => {
+    const ecosystemSubdomains = ["memory", "harness", "skills", "gspace", "earn", "hub", "auth", "aip", "ppp", "mcp", "testnet"];
+    for (const sub of ecosystemSubdomains) {
+      const req = makeRequest(`https://${sub}.axiomid.app/view`, {
+        headers: { host: `${sub}.axiomid.app` },
+      });
+      const res = middleware(req);
+      expect(res.status).toBe(404);
+    }
+  });
+
+  it("allows normal agent subdomain rewrite for non-reserved names like 'moe'", () => {
+    const req = makeRequest("https://moe.axiomid.app/profile", {
+      headers: { host: "moe.axiomid.app" },
+    });
+    const res = middleware(req);
+    expect(res.status).not.toBe(404);
+    expect(res.headers.get("x-middleware-rewrite")).toContain("/agent/moe");
+  });
+
   it("returns 404 for other pre-existing reserved subdomains (e.g. 'docs')", () => {
     const req = makeRequest("https://docs.axiomid.app/getting-started", {
       headers: { host: "docs.axiomid.app" },
