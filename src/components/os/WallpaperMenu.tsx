@@ -89,6 +89,7 @@ export function WallpaperMenu() {
   }, []);
 
   const thumbs = useMemo(() => {
+    if (typeof document === "undefined") return WALLPAPERS.map(() => "");
     return WALLPAPERS.map((w: Wallpaper) => {
       const c = document.createElement("canvas");
       c.width = 96;
@@ -141,7 +142,7 @@ export function WallpaperMenu() {
           style={{ height: ROW_H }}
         >
           <Image
-            src={thumbs[i]}
+            src={thumbs[i] || "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc5NicgaGVpZ2h0PSc1NCc+PHJlY3Qgd2lkdGg9Jzk2JyBoZWlnaHQ9JzU0JyBmaWxsPScjMGYwZjFhJy8+PC9zdmc+"}
             alt=""
             aria-hidden="true"
             width={64}

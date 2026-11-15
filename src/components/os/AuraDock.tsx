@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Wallet, Zap, Database, FileKey, LayoutGrid, ExternalLink, Sparkles, Cpu } from "lucide-react";
+import { Wallet, Zap, Database, FileKey, LayoutGrid, ExternalLink, Cpu } from "lucide-react";
 import { useLanguage } from "@/app/context/language-context";
 
-const LAUNCHERS = [
+export const LAUNCHERS = [
   { label: "Earn", href: "https://earn.axiomid.app", icon: Wallet },
   { label: "Skills", href: "https://skills.axiomid.app", icon: Zap },
   { label: "Memory", href: "https://memory.axiomid.app", icon: Database },

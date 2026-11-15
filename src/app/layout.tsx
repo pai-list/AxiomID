@@ -3,16 +3,10 @@ import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { WalletProvider } from "./context/wallet-context";
-import { SandboxProvider } from "./context/sandbox-provider";
-import { LanguageProvider } from "./context/language-context";
-import { ThemeProvider } from "./context/theme-context";
-import { MotionConfig } from "framer-motion";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import InstallPWA from "@/components/pwa/InstallPWA";
-import DynamicThemeColor from "@/components/pwa/DynamicThemeColor";
 import SovereignSplash from "@/components/pwa/SovereignSplash";
 import { FontLoader } from "@/components/FontLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -23,8 +17,7 @@ function escapeJsonLd(json: string): string {
   return json
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/</g, "&lt;");
+    .replace(/>/g, "&gt;");
 }
 
 // Preload fonts for better performance
@@ -188,23 +181,11 @@ export default async function RootLayout({
         </a>
         {/* Pi SDK loaded dynamically by loadPiSdk() in pi-sdk.ts — avoids overriding native Pi in Pi Browser */}
         <Script src="/register-sw.js" strategy="afterInteractive" />
-<ThemeProvider>
-          <DynamicThemeColor />
+        <Providers>
           <SovereignSplash />
-          <LanguageProvider>
-            <FontLoader />
-            <SandboxProvider>
-            <WalletProvider>
-
-                <Providers>
-                  <MotionConfig reducedMotion="user">
-                    <ErrorBoundary>{children}</ErrorBoundary>
-                  </MotionConfig>
-                </Providers>
-              </WalletProvider>
-            </SandboxProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+          <FontLoader />
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </Providers>
         <Analytics />
         <SpeedInsights />
          <Toaster

@@ -27,7 +27,11 @@ function fillGradient(
   const g = ctx.createLinearGradient(x0, y0, x1, y1);
   for (const [o, c] of stops) g.addColorStop(o, c);
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, Math.abs(x1 - x0) || 1, Math.abs(y1 - y0) || 1);
+  const canvasW = typeof ctx.canvas?.width === "number" ? ctx.canvas.width : 0;
+  const canvasH = typeof ctx.canvas?.height === "number" ? ctx.canvas.height : 0;
+  const width = Math.max(Math.abs(x1 - x0), canvasW, 1);
+  const height = Math.max(Math.abs(y1 - y0), canvasH, 1);
+  ctx.fillRect(x0, y0, width, height);
 }
 
 function drawAurora(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, seed: number) {

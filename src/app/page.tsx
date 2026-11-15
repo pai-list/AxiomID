@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { DesktopCanvas } from "@/components/os/DesktopCanvas";
 import { DesktopIcons } from "@/components/os/DesktopIcons";
 import { DesktopTaskbar } from "@/components/os/DesktopTaskbar";
+import { StatusBar } from "@/components/os/StatusBar";
 import { BrandStrip } from "@/components/os/BrandStrip";
 import { WallpaperMenu } from "@/components/os/WallpaperMenu";
 
@@ -56,8 +57,11 @@ export default async function Home() {
         aria-hidden="true"
       />
 
+      {/* Top status bar */}
+      <StatusBar />
+
       {/* Desktop icon grid */}
-      <div className="absolute left-6 top-6 z-10">
+      <div className="absolute left-6 top-14 z-10">
         <DesktopIcons labels={labels} />
       </div>
 

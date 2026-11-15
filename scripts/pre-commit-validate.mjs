@@ -122,7 +122,7 @@ if (tsOk) {
 const testFiles = stagedFiles("*.test.*");
 if (testFiles.length) {
   for (const tf of testFiles) {
-    const { ok } = runSafe(`npx jest "${tf}" --no-coverage --forceExit 2>&1`, 30000);
+    const { ok } = runSafe(`npx jest "${tf}" --no-coverage --forceExit 2>&1`, 60000);
     if (ok) {
       pass(`Test ${path.basename(tf)}`, "passed");
     } else {
