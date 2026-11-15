@@ -22,13 +22,8 @@ export function StatusBar() {
         const timeoutController = new AbortController();
         const timer = setTimeout(() => timeoutController.abort(), 3000);
         
-        let res = await fetch(GATEWAY_HEALTH_URL, { signal: timeoutController.signal }).catch(() => null);
+        const res = await fetch(GATEWAY_HEALTH_URL, { signal: timeoutController.signal }).catch(() => null);
         clearTimeout(timer);
-
-        // Fallback to local endpoint if gateway is unreachable
-        if (!res || !res.ok) {
-          res = await fetch("/llms.txt", { signal: controller.signal }).catch(() => null);
-        }
 
         setHealth(res && res.ok ? "ok" : "down");
       } catch (err: unknown) {
