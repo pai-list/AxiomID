@@ -16,6 +16,9 @@ type RouteHandler = (
   ctx: { params: Promise<{ path: string[] }> },
 ) => Response | Promise<Response>;
 
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type EmulatorHandlers = Record<HttpMethod, RouteHandler>;
+
 // Never expose the emulator surface in production. The emulator route is a
 // dev/preview-only tool; in production every method returns 404.
 const notFound = () => apiError("NOT_FOUND", "Not found");
@@ -35,9 +38,9 @@ const isEmulatorEnabled =
 // Lazily build the emulator handler. The @emulators/* packages are dev/preview
 // tooling and are imported dynamically only when the emulator is enabled, so
 // they are never pulled into the production route bundle.
-let handlerPromise: Promise<Record<string, RouteHandler>> | null = null;
+let handlerPromise: Promise<EmulatorHandlers> | null = null;
 
-async function buildEmulatorHandler(): Promise<Record<string, RouteHandler>> {
+async function buildEmulatorHandler(): Promise<EmulatorHandlers> {
   const { createEmulateHandler } = await import("@emulators/adapter-next");
   const github = await import("@emulators/github");
 
@@ -53,10 +56,17 @@ async function buildEmulatorHandler(): Promise<Record<string, RouteHandler>> {
     };
   }
 
-  return createEmulateHandler({ services });
+  const handlers = createEmulateHandler({ services });
+  return {
+    GET: handlers.GET,
+    POST: handlers.POST,
+    PUT: handlers.PUT,
+    PATCH: handlers.PATCH,
+    DELETE: handlers.DELETE,
+  };
 }
 
-function dispatch(method: string): RouteHandler {
+function dispatch(method: HttpMethod): RouteHandler {
   return async (req, ctx) => {
     if (!isEmulatorEnabled) return notFound();
     handlerPromise ??= buildEmulatorHandler().catch((err) => {
