@@ -117,7 +117,16 @@ export function DesktopTaskbar() {
         aria-label={t("aura_os")}
       >
         <div
+          tabIndex={0}
           onClick={() => setLauncherOpen(!launcherOpen)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setLauncherOpen((open) => !open);
+            } else if (e.key === "Escape") {
+              setLauncherOpen(false);
+            }
+          }}
           className="relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-cyan-400/10 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           aria-label="Aura App Launcher"
           aria-expanded={launcherOpen}

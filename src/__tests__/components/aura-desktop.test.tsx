@@ -4,10 +4,11 @@
  */
 
 import React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { DesktopCanvas } from "@/components/os/DesktopCanvas";
 import { DesktopTaskbar } from "@/components/os/DesktopTaskbar";
 import { DesktopIcons } from "@/components/os/DesktopIcons";
+import { BrandStrip } from "@/components/os/BrandStrip";
 import { WALLPAPERS } from "@/lib/wallpapers";
 import { useLanguage } from "@/app/context/language-context";
 
@@ -175,6 +176,30 @@ describe("DesktopCanvas — ambient particle engine", () => {
     expect(callLog.filter((c) => c === "fillRect").length).toBeGreaterThan(0);
     view.unmount();
   });
+
+  it("pauses animation when document is hidden and resumes when visible", () => {
+    const view = render(<DesktopCanvas />);
+    act(() => {
+      jest.advanceTimersByTime(50);
+    });
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    const pausedCount = callLog.length;
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+    expect(callLog.length).toBe(pausedCount);
+
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+      jest.advanceTimersByTime(50);
+    });
+    expect(callLog.length).toBeGreaterThan(pausedCount);
+    view.unmount();
+  });
 });
 
 describe("DesktopTaskbar — live clock and CPU telemetry", () => {
@@ -223,6 +248,43 @@ describe("DesktopTaskbar — live clock and CPU telemetry", () => {
     });
     expect(screen.getByRole("button").textContent).toMatch(/\d{2}:\d{2} (AM|PM)/);
     expect(screen.getByRole("navigation")).toBeInTheDocument();
+  });
+
+  it("toggles the Aura App Launcher with click, keyboard (Enter/Space/Escape), and outside mousedown", async () => {
+    render(<DesktopTaskbar />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    const launcher = screen.getByLabelText("Aura App Launcher");
+    expect(launcher).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.keyDown(launcher, { key: "Enter" });
+    expect(launcher).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("menu", { name: "PAI Ecosystem Launchers" })).toBeInTheDocument();
+
+    fireEvent.keyDown(launcher, { key: "Escape" });
+    expect(launcher).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.keyDown(launcher, { key: " " });
+    expect(launcher).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.mouseDown(document.body);
+    expect(launcher).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(launcher);
+    expect(launcher).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(screen.getByText("Plans"));
+    expect(launcher).toHaveAttribute("aria-expanded", "false");
+  });
+});
+describe("BrandStrip — self-contained SVG partner icons", () => {
+  it("renders inline data-URI partner icons without external image origins", () => {
+    render(<BrandStrip />);
+    const images = screen.getAllByRole("img");
+    expect(images).toHaveLength(4);
+    for (const img of images) {
+      expect(img.getAttribute("src")).toMatch(/^data:image\/svg\+xml/);
+    }
   });
 });
 describe("DesktopIcons — app launcher grid", () => {

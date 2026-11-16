@@ -68,12 +68,20 @@ export function DesktopCanvas() {
       w = canvas.width = window.innerWidth * dpr;
       h = canvas.height = window.innerHeight * dpr;
     };
+    const onVisibilityChange = () => {
+      cancelAnimationFrame(raf);
+      if (!document.hidden) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
     window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     raf = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
