@@ -25,6 +25,28 @@ export async function POST(request: NextRequest) {
   const user = auth.user;
 
   try {
+    const userKycStatus =
+      (user as { kycStatus?: string | null }).kycStatus ??
+      (
+        await prisma.user?.findUnique({
+          where: { id: user.id },
+          select: { kycStatus: true },
+        })
+      )?.kycStatus;
+
+    if (userKycStatus && userKycStatus !== "VERIFIED") {
+      const completedPayment = await prisma.piPayment?.findFirst({
+        where: { userId: user.id, status: "RELEASED" },
+        select: { id: true },
+      });
+      if (!completedPayment) {
+        return apiError(
+          "FORBIDDEN",
+          "KYC verification or completed activation payment is required to activate an agent",
+        );
+      }
+    }
+
     const agentDid = user.did ? `${user.did}:agent` : `did:axiom:pi:${user.piUsername || user.piUid || user.id}:agent`;
 
     const result = await prisma.$queryRaw<Array<{ id: string; publicId: string; status: string }>>`
