@@ -72,6 +72,7 @@ export default function ClaimPage() {
   const [verifiedTrustScore, setVerifiedTrustScore] = useState<number | null>(null);
   const [deployed, setDeployed] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [activationPaid, setActivationPaid] = useState(false);
   const [agentName, setAgentName] = useState("My Agent");
 
   const [connectError, setConnectError] = useState<string | null>(null);
@@ -188,10 +189,14 @@ export default function ClaimPage() {
       const isDemo = user?.id === "demo-user-id";
 
       // Real activation requires a Pi payment (proves KYC + powers the
-      // Developer Portal's final verification step). Demo mode skips it.
-      if (!isDemo && !(await payActivation(name))) {
-        toast.error(t("Payment failed — agent not activated", "فشل الدفع — لم يتم تفعيل الوكيل", "支付失败 — 代理未激活"));
-        return;
+      // Developer Portal's final verification step). Demo mode skips it, and
+      // a previously completed payment in this session is reused on retry.
+      if (!isDemo && !activationPaid) {
+        if (!(await payActivation(name))) {
+          toast.error(t("Payment failed — agent not activated", "فشل الدفع — لم يتم تفعيل الوكيل", "支付失败 — 代理未激活"));
+          return;
+        }
+        setActivationPaid(true);
       }
 
       const created = isDemo || await createAgent(name);

@@ -544,6 +544,26 @@ describe("ClaimPage — step 3 handleDeploy (agent activation)", () => {
     expect(mockToastSuccess).not.toHaveBeenCalled();
   });
 
+  it("does not charge a second activation payment when retrying after createAgent fails", async () => {
+    const createAgent = jest.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    const activateAgent = jest.fn().mockResolvedValue(true);
+    await navigateToStep3({ createAgent, activateAgent });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("ACTIVATE AGENT"));
+    });
+    expect(mockCreatePiPayment).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("AGENT ACTIVATED")).toBeNull();
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("ACTIVATE AGENT"));
+    });
+    expect(mockCreatePiPayment).toHaveBeenCalledTimes(1);
+    expect(createAgent).toHaveBeenCalledTimes(2);
+    expect(activateAgent).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("AGENT ACTIVATED")).toBeInTheDocument();
+  });
+
   it("renders an ENTER DASHBOARD link to /dashboard after successful deployment", async () => {
     await navigateToStep3();
 
