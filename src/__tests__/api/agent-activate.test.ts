@@ -14,6 +14,9 @@ jest.mock('@/lib/prisma', () => ({
     user: {
       findUnique: jest.fn(),
     },
+    piPayment: {
+      findFirst: jest.fn(),
+    },
     $queryRaw: jest.fn(),
     userAgent: {
       findUnique: jest.fn(),
@@ -158,5 +161,58 @@ describe('POST /api/agent/activate', () => {
 
     expect(res.status).toBe(500);
     expect(data.code).toBe('INTERNAL_ERROR');
+  });
+
+  it('returns 403 FORBIDDEN when user kycStatus is not VERIFIED and no RELEASED payment exists', async () => {
+    mockRequireAuth.mockResolvedValueOnce({
+      error: null,
+      user: {
+        id: 'mock-user-id',
+        walletAddress: '0xabc',
+        piUid: 'mock-pi-uid',
+        piUsername: 'mockuser',
+        kycStatus: 'PENDING',
+        xp: 0,
+        tier: 'Beginner',
+      },
+    });
+    (mockPrisma.piPayment.findFirst as jest.Mock).mockResolvedValueOnce(null);
+
+    const req = mockPostRequest({});
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(data.code).toBe('FORBIDDEN');
+    expect(mockPrisma.$queryRaw).not.toHaveBeenCalled();
+  });
+
+  it('activates agent when user kycStatus is PENDING but a RELEASED payment exists', async () => {
+    mockRequireAuth.mockResolvedValueOnce({
+      error: null,
+      user: {
+        id: 'mock-user-id',
+        walletAddress: '0xabc',
+        piUid: 'mock-pi-uid',
+        piUsername: 'mockuser',
+        kycStatus: 'PENDING',
+        xp: 0,
+        tier: 'Beginner',
+      },
+    });
+    (mockPrisma.piPayment.findFirst as jest.Mock).mockResolvedValueOnce({ id: 'pay-1' });
+    mockPrisma.$queryRaw.mockResolvedValueOnce([{
+      id: 'agent-1',
+      publicId: 'pub-agent-1',
+      status: 'ACTIVE',
+    }]);
+
+    const req = mockPostRequest({});
+    const res = await POST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.agentId).toBe('agent-1');
+    expect(data.status).toBe('ACTIVE');
   });
 });
