@@ -24,6 +24,7 @@ export default function OnboardingPage() {
   const [agentName, setAgentName] = useState("");
   const [creatingAgent, setCreatingAgent] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
   const [isSelfVerified, setIsSelfVerified] = useState(false);
   const [googleIdentity, setGoogleIdentity] = useState<GoogleIdentity | null>(null);
 
@@ -34,6 +35,30 @@ export default function OnboardingPage() {
   const handleGoogleConnected = (identity: GoogleIdentity) => {
     setGoogleIdentity(identity);
     toast.success(t("onboarding_google_connected"));
+  };
+
+  // Activation is gated server-side on KYC (or a completed activation payment),
+  // so it runs only once verification has succeeded. A failed attempt leaves
+  // the user on step 3 where "Continue" retries activation.
+  const activateAndAdvance = async () => {
+    if (user?.agent?.status === "ACTIVE") {
+      handleNextStep();
+      return;
+    }
+    setIsActivating(true);
+    try {
+      const activated = await activateAgent();
+      if (activated) {
+        handleNextStep();
+      } else {
+        toast.error(t("onboarding_agent_failed"));
+      }
+    } catch (err) {
+      logger.error("Agent activation failed:", err);
+      toast.error(t("onboarding_agent_failed"));
+    } finally {
+      setIsActivating(false);
+    }
   };
 
   const handleVerify = async () => {
@@ -53,7 +78,7 @@ export default function OnboardingPage() {
         if (kyaData.kycStatus === "VERIFIED") {
           setIsSelfVerified(true);
           toast.success(t("onboarding_seal_verified"));
-          handleNextStep();
+          await activateAndAdvance();
         } else {
           toast.error("KYC verification pending");
         }
@@ -70,7 +95,7 @@ export default function OnboardingPage() {
 
   const handleVerifyClick = async () => {
     if (verified || user?.kycStatus === "VERIFIED") {
-      handleNextStep();
+      await activateAndAdvance();
       return;
     }
     await handleVerify();
@@ -78,10 +103,12 @@ export default function OnboardingPage() {
 
   // Auto-advance returning users who have already provisioned an agent.
   // First-time connections stay on step 1 so the "Continue" button is used.
+  // Only skip to the final step once the agent is actually active; otherwise
+  // land on step 3 so verification/activation can be completed or retried.
   useEffect(() => {
     if (!user || !user.agent || didAutoAdvance.current) return;
     didAutoAdvance.current = true;
-    const targetStep = user.kycStatus === "VERIFIED" ? 4 : 3;
+    const targetStep = user.kycStatus === "VERIFIED" && user.agent.status === "ACTIVE" ? 4 : 3;
     const timer = setTimeout(() => {
       setStep((prev) => (prev !== targetStep ? targetStep : prev));
     }, 0);
@@ -99,14 +126,10 @@ export default function OnboardingPage() {
   const handleCreateAgent = async () => {
     setCreatingAgent(true);
     try {
+      // Only provision here — activation requires verification and happens at step 3.
       const ok = await createAgent(agentName || t("onboarding_default_agent_name"));
       if (ok) {
-        const activated = await activateAgent();
-        if (activated) {
-          handleNextStep();
-        } else {
-          toast.error(t("onboarding_agent_failed"));
-        }
+        handleNextStep();
       } else {
         toast.error(t("onboarding_agent_failed"));
       }
@@ -308,13 +331,13 @@ export default function OnboardingPage() {
                     </div>
                     <button 
                       onClick={handleVerifyClick} 
-                      disabled={isVerifying}
+                      disabled={isVerifying || isActivating}
                       className="btn-primary w-full py-3 text-xs font-mono font-bold flex items-center justify-center gap-2"
                     >
-                      {isVerifying ? (
+                      {isVerifying || isActivating ? (
                         <>
                           <span className="animate-spin">⟳</span>
-                          <span>{tText("Verifying...", "جارٍ التحقق...")}</span>
+                          <span>{isVerifying ? tText("Verifying...", "جارٍ التحقق...") : t("onboarding_provisioning")}</span>
                         </>
                       ) : (
                         <>
