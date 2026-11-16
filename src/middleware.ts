@@ -9,7 +9,12 @@ const RESERVED_SUBDOMAINS = new Set([
   "www", "api", "mail", "app", "admin", "dashboard",
   "docs", "openid", "blog", "status", "cdn", "assets", "static", "build",
   "memory", "harness", "gspace", "skills", "earn", "hub", "auth",
-  "aip", "ppp", "mcp", "testnet"
+  "aip", "ppp", "mcp", "testnet",
+  "index", "node", "learn", "agdp", "piverify", "signaling",
+  "verifier", "verify", "discover", "agent", "dev-portal", "deploy",
+  "jobs", "email", "pai-docs", "pai-website", "connect", "pay",
+  "youtube", "facebook", "twitter", "images", "video", "truth",
+  "horizon", "scope", "send"
 ]);
 
 const PRODUCTION_PREVIEW_ANCHOR = "axiomid-app-axiom-id.vercel.app";

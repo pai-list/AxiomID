@@ -400,6 +400,23 @@ describe("middleware — reserved subdomains (PR change: 'build' added to RESERV
     }
   });
 
+  it("returns 404 for newly reserved infrastructure, capability, and alias subdomains", () => {
+    const newReserved = [
+      "index", "node", "learn", "agdp", "piverify", "signaling",
+      "verifier", "verify", "discover", "agent", "dev-portal", "deploy",
+      "jobs", "email", "pai-docs", "pai-website", "connect", "pay",
+      "youtube", "facebook", "twitter", "images", "video", "truth",
+      "horizon", "scope", "send",
+    ];
+    for (const sub of newReserved) {
+      const req = makeRequest(`https://${sub}.axiomid.app/`, {
+        headers: { host: `${sub}.axiomid.app` },
+      });
+      const res = middleware(req);
+      expect(res.status).toBe(404);
+    }
+  });
+
   it("allows normal agent subdomain rewrite for non-reserved names like 'moe'", () => {
     const req = makeRequest("https://moe.axiomid.app/profile", {
       headers: { host: "moe.axiomid.app" },

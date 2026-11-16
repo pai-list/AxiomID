@@ -32,9 +32,9 @@ export function WorkspaceGrid() {
   const capabilities: Capability[] = [
     { key: "earn", route: "https://earn.axiomid.app", icon: Wallet, status: "live" },
     { key: "skills", route: "https://skills.axiomid.app", icon: Zap, status: "live" },
-    { key: "memory", route: "https://memory.axiomid.app", icon: Database, status: "pending" },
-    { key: "mcp", route: "https://mcp.axiomid.app", icon: Plug, status: "pending" },
-    { key: "agdp", route: "https://agdp.axiomid.app", icon: Sparkles, status: "pending" },
+    { key: "memory", route: "https://memory.axiomid.app", icon: Database, status: "live" },
+    { key: "mcp", route: "https://mcp.axiomid.app", icon: Plug, status: "live" },
+    { key: "agdp", route: "https://agdp.axiomid.app", icon: Sparkles, status: "live" },
     { key: "identity", route: "https://openid.axiomid.app", icon: FileKey, status: "live" },
   ];
 
