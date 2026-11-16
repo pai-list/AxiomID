@@ -9,7 +9,6 @@ import Footer from "@/components/Footer";
 import { Wallet, ShieldCheck, CheckCircle2, ChevronRight, Zap } from "lucide-react";
 import InteractivePassportCard from "@/components/ui/InteractivePassportCard";
 import { GoogleConnectButton, type GoogleIdentity } from "@/components/os/GoogleConnectButton";
-import { emit, BUS_EVENTS } from "@/components/os/agent-bus";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 
