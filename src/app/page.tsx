@@ -7,6 +7,7 @@ import { DesktopTaskbar } from "@/components/os/DesktopTaskbar";
 import { StatusBar } from "@/components/os/StatusBar";
 import { BrandStrip } from "@/components/os/BrandStrip";
 import { WallpaperMenu } from "@/components/os/WallpaperMenu";
+import { SecurityCenter } from "@/components/os/SecurityCenter";
 
 export const revalidate = 60;
 
@@ -38,7 +39,13 @@ const LABEL_KEYS = [
 export default async function Home() {
   const headersList = await headers();
   const acceptLang = headersList.get("accept-language") || "";
-  const lang = acceptLang.startsWith("ar") ? "ar" : acceptLang.startsWith("zh") ? "zh" : "en";
+  const lang = acceptLang.startsWith("ar")
+    ? "ar"
+    : acceptLang.startsWith("zh")
+      ? "zh"
+      : acceptLang.startsWith("hi")
+        ? "hi"
+        : "en";
   const t = (key: string) => getTranslation(lang, key);
 
   const labels = Object.fromEntries(LABEL_KEYS.map((k) => [k, t(`desktop_${k}`)]));
@@ -67,6 +74,8 @@ export default async function Home() {
 
       {/* Taskbar */}
       <DesktopTaskbar />
+
+      <SecurityCenter />
 
       <BrandStrip />
 

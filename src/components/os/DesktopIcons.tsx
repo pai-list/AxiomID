@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import { useLanguage } from "@/app/context/language-context";
 
 type Gradient = [string, string];
 
@@ -36,6 +37,12 @@ type Props = {
 };
 
 export function DesktopIcons({ labels }: Props) {
+  const { t, language } = useLanguage();
+  const translatedAgents = t("desktop_agents");
+  const useLiveTranslations = Boolean(translatedAgents && translatedAgents !== "desktop_agents");
+  const translatedSoon = t("desktop_soon");
+  const soonLabel =
+    useLiveTranslations && translatedSoon !== "desktop_soon" ? translatedSoon : labels.soon;
   const defs = (id: string) => `url(#g-${id})`;
 
   const items: Array<{
@@ -141,7 +148,11 @@ export function DesktopIcons({ labels }: Props) {
   return (
     <div className="flex max-h-[calc(100vh-140px)] flex-col flex-wrap items-start gap-5" role="list" aria-label="Aura OS desktop">
       {items.map(({ id, href, icon }) => {
-        const label = labels[id] ?? id;
+        const translatedLabel = t(`desktop_${id}`);
+        const label =
+          useLiveTranslations && translatedLabel !== `desktop_${id}`
+            ? translatedLabel
+            : (labels[id] ?? id);
         const soon = !href;
         return (
           <div
@@ -171,7 +182,7 @@ export function DesktopIcons({ labels }: Props) {
                 onClick={() =>
                   toast.info(
                     `${label} — ${
-                      labels.soon === "قريباً"
+                      language === "ar" || soonLabel === "قريباً"
                         ? "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم"
                         : "Under active development — launching soon in AuraOS"
                     }`,
@@ -186,7 +197,7 @@ export function DesktopIcons({ labels }: Props) {
                 <span className="text-xs font-semibold text-white/80 drop-shadow-lg text-center">
                   {label}{" "}
                   <span className="rounded bg-white/10 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300">
-                    {labels.soon}
+                    {soonLabel}
                   </span>
                 </span>
               </div>

@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/app/context/language-context";
+import { useLanguage, type Language } from "@/app/context/language-context";
 
 const GATEWAY_HEALTH_URL = "https://skills.axiomid.app/llms.txt";
+const SUPPORTED_LANGS: readonly Language[] = ["en", "ar", "zh", "hi"];
 
 type Health = "checking" | "ok" | "down";
 
 export function StatusBar() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [health, setHealth] = useState<Health>("checking");
   const dir = language === "ar" ? "rtl" : "ltr";
 
@@ -47,6 +48,7 @@ export function StatusBar() {
 
   return (
     <header
+      suppressHydrationWarning
       className="fixed top-0 left-0 right-0 z-40 px-4 py-2 pointer-events-none"
       dir={dir}
       role="banner"
@@ -57,8 +59,9 @@ export function StatusBar() {
           <span className="flex h-6 w-6 items-center justify-center rounded bg-cyan-400/20 text-cyan-400 text-[10px] font-mono font-bold">
             ◉
           </span>
-          <span className="text-[11px] font-mono text-white/80">{t("aura_os")}</span>
+          <span suppressHydrationWarning className="text-[11px] font-mono text-white/80">{t("aura_os")}</span>
           <span
+            suppressHydrationWarning
             className={`flex h-4 px-2 items-center rounded-full text-[9px] font-mono font-medium ${
               health === "ok" ? "bg-emerald-400/20 text-emerald-400" : "bg-amber-400/20 text-amber-400"
             }`}
@@ -67,10 +70,32 @@ export function StatusBar() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-mono text-white/40" aria-label="Protocol">
+          <div
+            className="flex items-center gap-1 rounded-md border border-white/10 bg-black/40 px-1.5 py-0.5 backdrop-blur-md"
+            role="group"
+            aria-label="Language selector"
+          >
+            {SUPPORTED_LANGS.map((code) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setLanguage(code)}
+                aria-pressed={language === code}
+                aria-label={`Switch language to ${code.toUpperCase()}`}
+                className={`rounded px-1.5 py-0.5 text-[9px] font-mono uppercase transition-colors ${
+                  language === code
+                    ? "bg-cyan-400/20 text-cyan-300"
+                    : "text-white/50 hover:text-white/90"
+                }`}
+              >
+                {code.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <span className="hidden sm:inline text-[10px] font-mono text-white/40" aria-label="Protocol">
             PAI v3.0
           </span>
-          <span className="text-[10px] font-mono text-white/40" aria-label="Network">
+          <span className="hidden sm:inline text-[10px] font-mono text-white/40" aria-label="Network">
             Pi Network
           </span>
         </div>
