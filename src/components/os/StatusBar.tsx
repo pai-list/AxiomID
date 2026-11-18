@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/app/context/language-context";
+import { useLanguage, type Language } from "@/app/context/language-context";
 
 const GATEWAY_HEALTH_URL = "https://skills.axiomid.app/llms.txt";
+const SUPPORTED_LANGS: ReadonlyArray<{ code: Language; label: string }> = [
+  { code: "en", label: "EN" },
+  { code: "ar", label: "العربية" },
+  { code: "zh", label: "中文" },
+  { code: "hi", label: "हिन्दी" },
+];
 
 type Health = "checking" | "ok" | "down";
 
 export function StatusBar() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [health, setHealth] = useState<Health>("checking");
   const dir = language === "ar" ? "rtl" : "ltr";
 
@@ -47,7 +53,8 @@ export function StatusBar() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-40 px-4 py-2 pointer-events-none"
+      suppressHydrationWarning
+      className="fixed top-0 left-0 right-0 z-50 px-4 py-2 pointer-events-none"
       dir={dir}
       role="banner"
       aria-label={t("aura_os")}
@@ -57,8 +64,9 @@ export function StatusBar() {
           <span className="flex h-6 w-6 items-center justify-center rounded bg-cyan-400/20 text-cyan-400 text-[10px] font-mono font-bold">
             ◉
           </span>
-          <span className="text-[11px] font-mono text-white/80">{t("aura_os")}</span>
+          <span suppressHydrationWarning className="text-[11px] font-mono text-white/80">{t("aura_os")}</span>
           <span
+            suppressHydrationWarning
             className={`flex h-4 px-2 items-center rounded-full text-[9px] font-mono font-medium ${
               health === "ok" ? "bg-emerald-400/20 text-emerald-400" : "bg-amber-400/20 text-amber-400"
             }`}
@@ -67,10 +75,33 @@ export function StatusBar() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-mono text-white/40" aria-label="Protocol">
+          <div
+            className="flex items-center gap-1 rounded-md border border-white/10 bg-black/40 px-1.5 py-0.5 backdrop-blur-md"
+            role="group"
+            aria-label="Language selector"
+          >
+            {SUPPORTED_LANGS.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                data-testid={`lang-btn-${code}`}
+                onClick={() => setLanguage(code)}
+                aria-pressed={language === code}
+                aria-label={`Switch language to ${code.toUpperCase()}`}
+                className={`rounded px-2 py-1 text-[10px] font-mono transition-colors ${
+                  language === code
+                    ? "bg-cyan-400/25 text-cyan-200 font-semibold"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <span className="hidden sm:inline text-[10px] font-mono text-white/40" aria-label="Protocol">
             PAI v3.0
           </span>
-          <span className="text-[10px] font-mono text-white/40" aria-label="Network">
+          <span className="hidden sm:inline text-[10px] font-mono text-white/40" aria-label="Network">
             Pi Network
           </span>
         </div>

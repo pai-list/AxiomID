@@ -36,13 +36,14 @@ export function BrandStrip() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-40 px-4 py-2 pointer-events-none"
+      suppressHydrationWarning
+      className="fixed bottom-24 left-1/2 -translate-x-1/2 sm:bottom-4 sm:left-auto sm:right-6 sm:translate-x-0 z-40 px-3 py-1.5 pointer-events-none"
       dir={dir}
       role="contentinfo"
       aria-label={t("technology_partners")}
     >
-      <div className="mx-auto max-w-5xl flex flex-col items-center gap-1.5">
-        <p className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
+      <div className="mx-auto max-w-5xl flex flex-col items-center sm:items-end gap-1.5">
+        <p suppressHydrationWarning className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
           {t("built_on")}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 pointer-events-auto">

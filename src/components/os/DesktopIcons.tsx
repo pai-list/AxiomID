@@ -1,6 +1,17 @@
 "use client";
 
 import { toast } from "sonner";
+import { useLanguage, type Language } from "@/app/context/language-context";
+import { BUS_EVENTS, emit } from "./agent-bus";
+
+const SOON_MESSAGES: Record<Language, string> = {
+  en: "Under active development — launching soon in AuraOS",
+  ar: "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم",
+  zh: "正在积极开发中 — 即将在 AuraOS 下次更新推出",
+  hi: "सक्रिय विकास के अधीन — AuraOS के अगले अपडेट में शीघ्र उपलब्ध",
+};
+
+const WINDOW_APPS = new Set(["agents", "notes", "terminal"]);
 
 type Gradient = [string, string];
 
@@ -36,6 +47,12 @@ type Props = {
 };
 
 export function DesktopIcons({ labels }: Props) {
+  const { t, language } = useLanguage();
+  const translatedAgents = t("desktop_agents");
+  const useLiveTranslations = Boolean(translatedAgents && translatedAgents !== "desktop_agents");
+  const translatedSoon = t("desktop_soon");
+  const soonLabel =
+    useLiveTranslations && translatedSoon !== "desktop_soon" ? translatedSoon : labels.soon;
   const defs = (id: string) => `url(#g-${id})`;
 
   const items: Array<{
@@ -141,7 +158,11 @@ export function DesktopIcons({ labels }: Props) {
   return (
     <div className="flex max-h-[calc(100vh-140px)] flex-col flex-wrap items-start gap-5" role="list" aria-label="Aura OS desktop">
       {items.map(({ id, href, icon }) => {
-        const label = labels[id] ?? id;
+        const translatedLabel = t(`desktop_${id}`);
+        const label =
+          useLiveTranslations && translatedLabel !== `desktop_${id}`
+            ? translatedLabel
+            : (labels[id] ?? id);
         const soon = !href;
         return (
           <div
@@ -156,6 +177,12 @@ export function DesktopIcons({ labels }: Props) {
             {href ? (
               <a
                 href={href}
+                onClick={(e) => {
+                  if (WINDOW_APPS.has(id) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    emit(BUS_EVENTS.openApp, id);
+                  }
+                }}
                 className="flex flex-col items-center gap-3 rounded-xl text-cyan-400 transition-transform duration-200 group-hover:scale-105"
                 aria-label={label}
               >
@@ -171,9 +198,7 @@ export function DesktopIcons({ labels }: Props) {
                 onClick={() =>
                   toast.info(
                     `${label} — ${
-                      labels.soon === "قريباً"
-                        ? "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم"
-                        : "Under active development — launching soon in AuraOS"
+                      soonLabel === "قريباً" ? SOON_MESSAGES.ar : (SOON_MESSAGES[language] ?? SOON_MESSAGES.en)
                     }`,
                   )
                 }
@@ -186,7 +211,7 @@ export function DesktopIcons({ labels }: Props) {
                 <span className="text-xs font-semibold text-white/80 drop-shadow-lg text-center">
                   {label}{" "}
                   <span className="rounded bg-white/10 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300">
-                    {labels.soon}
+                    {soonLabel}
                   </span>
                 </span>
               </div>

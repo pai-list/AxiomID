@@ -138,7 +138,12 @@ export function LanguageProvider({
 }) {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("axiomid-language") as Language) || defaultLanguage;
+      const saved =
+        localStorage.getItem("axiomid-language") ||
+        localStorage.getItem("aix_language");
+      if (saved && saved in LANGUAGE_CONFIGS) {
+        return saved as Language;
+      }
     }
     return defaultLanguage;
   });
@@ -147,6 +152,7 @@ export function LanguageProvider({
 
   const applyLanguageDOM = useCallback((lang: Language) => {
     localStorage.setItem("axiomid-language", lang);
+    document.cookie = `axiomid-language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
 
     // Apply CSS variables to document root (agent-readable)
     const config = LANGUAGE_CONFIGS[lang] ?? LANGUAGE_CONFIGS.en;
