@@ -37,4 +37,6 @@ export const BUS_EVENTS = {
   googleConnected: "agent.connected.google",
   piConnected: "agent.connected.pi",
   shieldAlert: "shield.alert",
+  openApp: "aura:open-app",
+  windowState: "aura:window-state",
 } as const;

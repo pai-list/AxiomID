@@ -1,8 +1,12 @@
 import React from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { SecurityCenter } from "@/components/os/SecurityCenter";
+import { DesktopIcons } from "@/components/os/DesktopIcons";
+import { DesktopWindowManager } from "@/components/os/DesktopWindowManager";
+import { StatusBar } from "@/components/os/StatusBar";
 import { BUS_EVENTS, emit } from "@/components/os/agent-bus";
 import { useLanguage } from "@/app/context/language-context";
+import { getTranslation } from "@/i18n";
 import { toast } from "sonner";
 import { GET as getLlmsTxt } from "@/app/llms.txt/route";
 
@@ -123,5 +127,88 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
     expect(res.headers.get("Content-Type")).toContain("text/plain");
     const body = await res.text();
     expect(body).toContain("/api/telemetry");
+  });
+
+  it("opens AI Terminal, AI Notes, and AI Agents AuraOS desktop windows when clicked", async () => {
+    render(
+      <>
+        <DesktopIcons
+          labels={{
+            agents: "AI Agents",
+            notes: "AI Notes",
+            terminal: "AI Terminal",
+            settings: "Settings",
+            soon: "Soon",
+          }}
+        />
+        <DesktopWindowManager />
+      </>,
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: "AI Terminal" }));
+    expect(screen.getByTestId("desktop-window-terminal")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "truth-check" }));
+    });
+    expect(screen.getByText(/PASS \/api\/telemetry -> HTTP 200/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("link", { name: "AI Notes" }));
+    expect(screen.getByTestId("desktop-window-notes")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Note title/i), {
+      target: { value: "Quantum Note" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Write knowledge/i), {
+      target: { value: "Stored locally in AuraOS" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save Note" }));
+    expect(screen.getByText("Quantum Note")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("link", { name: "AI Agents" }));
+    expect(screen.getByTestId("desktop-window-agents")).toBeInTheDocument();
+  });
+
+  it("triggers quad-lingual EN/AR/ZH/HI switches in StatusBar and renders Arabic & Hindi desktop labels", () => {
+    const setLanguage = jest.fn();
+    (useLanguage as jest.Mock).mockImplementation(() => ({
+      language: "ar",
+      setLanguage,
+      t: (k: string) => getTranslation("ar", k),
+      allConfigs: { en: {}, ar: {}, zh: {}, hi: {} },
+    }));
+
+    const { rerender } = render(
+      <>
+        <StatusBar />
+        <DesktopIcons labels={{ agents: "Agents", soon: "Soon" }} />
+      </>,
+    );
+
+    expect(screen.getByRole("link", { name: "الطرفية الذكية" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "ملاحظات الذكاء الاصطناعي" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "وكلاء الذكاء الاصطناعي" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("lang-btn-zh"));
+    fireEvent.click(screen.getByTestId("lang-btn-hi"));
+    fireEvent.click(screen.getByTestId("lang-btn-en"));
+    expect(setLanguage).toHaveBeenCalledWith("zh");
+    expect(setLanguage).toHaveBeenCalledWith("hi");
+    expect(setLanguage).toHaveBeenCalledWith("en");
+
+    (useLanguage as jest.Mock).mockImplementation(() => ({
+      language: "hi",
+      setLanguage,
+      t: (k: string) => getTranslation("hi", k),
+      allConfigs: { en: {}, ar: {}, zh: {}, hi: {} },
+    }));
+
+    rerender(
+      <>
+        <StatusBar />
+        <DesktopIcons labels={{ agents: "Agents", soon: "Soon" }} />
+      </>,
+    );
+    expect(screen.getByRole("link", { name: "AI टर्मिनल" })).toBeInTheDocument();
   });
 });

@@ -1,30 +1,59 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useLanguage } from "@/app/context/language-context";
-import { Wallet, Zap, Database, FileKey, LayoutGrid, ExternalLink, Cpu } from "lucide-react";
+import { useLanguage, type Language } from "@/app/context/language-context";
+import { Wallet, Zap, Database, FileKey, LayoutGrid, ExternalLink, Cpu, Globe } from "lucide-react";
+import { BUS_EVENTS, emit, on } from "./agent-bus";
 
 const LAUNCHERS = [
-  { label: "Earn", href: "https://earn.axiomid.app", icon: Wallet },
-  { label: "Skills", href: "https://skills.axiomid.app", icon: Zap },
-  { label: "Memory", href: "https://memory.axiomid.app", icon: Database },
-  { label: "Identity", href: "https://openid.axiomid.app", icon: FileKey },
-  { label: "Control Center", href: "/dashboard", icon: LayoutGrid },
-  { label: "Plans", href: "/plans", icon: Cpu },
-  { label: "GitHub", href: "https://github.com/pai-list", icon: ExternalLink },
+  { key: "earn", label: "Earn", href: "https://earn.axiomid.app", icon: Wallet },
+  { key: "skills", label: "Skills", href: "https://skills.axiomid.app", icon: Zap },
+  { key: "memory", label: "Memory", href: "https://memory.axiomid.app", icon: Database },
+  { key: "identity", label: "Identity", href: "https://openid.axiomid.app", icon: FileKey },
+  { key: "control_center", label: "Control Center", href: "/dashboard", icon: LayoutGrid },
+  { key: "plans", label: "Plans", href: "/plans", icon: Cpu },
+  { key: "github", label: "GitHub", href: "https://github.com/pai-list", icon: ExternalLink },
 ];
 
+const LANG_ORDER: readonly Language[] = ["en", "ar", "zh", "hi"];
+const APP_TITLE_KEYS: Record<string, string> = {
+  terminal: "desktop_terminal",
+  notes: "desktop_notes",
+  agents: "desktop_agents",
+};
+const DATE_LOCALES: Record<Language, string> = {
+  en: "en-US",
+  ar: "ar-SA",
+  zh: "zh-CN",
+  hi: "hi-IN",
+};
+
 export function DesktopTaskbar() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [now, setNow] = useState("");
   const [cpu, setCpu] = useState<string | null>(null);
   const [launcherOpen, setLauncherOpen] = useState(false);
+  const [windowState, setWindowState] = useState<{ openApps: string[]; activeApp: string | null }>({
+    openApps: [],
+    activeApp: null,
+  });
   const launcherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    return on<{ openApps?: string[]; activeApp?: string | null }>(BUS_EVENTS.windowState, (payload) => {
+      if (!payload) return;
+      setWindowState({
+        openApps: Array.isArray(payload.openApps) ? payload.openApps : [],
+        activeApp: payload.activeApp ?? null,
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    const locale = DATE_LOCALES[language] ?? "en-US";
     const tick = () =>
       setNow(
-        new Date().toLocaleDateString(language === "ar" ? "ar-SA" : "en-US", {
+        new Date().toLocaleDateString(locale, {
           month: "short",
           day: "numeric",
           hour: "2-digit",
@@ -85,28 +114,38 @@ export function DesktopTaskbar() {
           role="menu"
           aria-label="PAI Ecosystem Launchers"
         >
-          {LAUNCHERS.map(({ label, href, icon: Icon }) => (
-            <a
-              key={label}
-              href={href}
-              target={href.startsWith("http") ? "_blank" : undefined}
-              rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-              onClick={() => setLauncherOpen(false)}
-              className="group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-400"
-            >
-              <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 group-hover:bg-cyan-400/20 group-hover:scale-105 transition-all text-cyan-400">
-                <Icon className="h-5 w-5" />
-                {href.startsWith("http") && (
-                  <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-cyan-400/20 text-[7px] text-cyan-200">
-                    ↗
-                  </span>
-                )}
-              </span>
-              <span className="text-[10px] font-mono text-white/80 whitespace-nowrap">
-                {label}
-              </span>
-            </a>
-          ))}
+          {LAUNCHERS.map(({ key, label, href, icon: Icon }) => {
+            const translated = t(key);
+            const displayLabel = translated && translated !== key ? translated : label;
+            return (
+              <a
+                key={label}
+                href={href}
+                target={href.startsWith("http") ? "_blank" : undefined}
+                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                onClick={(e) => {
+                  setLauncherOpen(false);
+                  if (key === "memory" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    emit(BUS_EVENTS.openApp, "notes");
+                  }
+                }}
+                className="group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-400"
+              >
+                <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 group-hover:bg-cyan-400/20 group-hover:scale-105 transition-all text-cyan-400">
+                  <Icon className="h-5 w-5" />
+                  {href.startsWith("http") && (
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-cyan-400/20 text-[7px] text-cyan-200">
+                      ↗
+                    </span>
+                  )}
+                </span>
+                <span className="text-[10px] font-mono text-white/80 whitespace-nowrap">
+                  {displayLabel}
+                </span>
+              </a>
+            );
+          })}
         </div>
       )}
 
@@ -140,10 +179,65 @@ export function DesktopTaskbar() {
         </div>
 
         <div className="h-10 w-px bg-white/30" aria-hidden="true" />
-        <span className="px-4 text-xs text-slate-400">{t("desktop_no_apps")}</span>
+        {windowState.openApps.length === 0 ? (
+          <span className="px-4 text-xs text-slate-400">{t("desktop_no_apps")}</span>
+        ) : (
+          <div className="flex items-center gap-1.5 px-1" role="tablist" aria-label="Open apps">
+            {windowState.openApps.map((appId) => {
+              const titleKey = APP_TITLE_KEYS[appId] ?? appId;
+              const translatedTitle = t(titleKey);
+              const label = translatedTitle !== titleKey ? translatedTitle : appId;
+              const isActive = windowState.activeApp === appId;
+              return (
+                <div
+                  key={appId}
+                  role="tab"
+                  tabIndex={0}
+                  aria-selected={isActive}
+                  onClick={() => emit(BUS_EVENTS.openApp, appId)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      emit(BUS_EVENTS.openApp, appId);
+                    }
+                  }}
+                  className={`cursor-pointer rounded-xl px-2.5 py-1.5 font-mono text-[11px] transition-colors ${
+                    isActive
+                      ? "border border-cyan-400/40 bg-cyan-400/20 text-cyan-200"
+                      : "border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
+        )}
         <div className="h-10 w-px bg-white/30" aria-hidden="true" />
 
         <div className="flex items-center gap-2">
+          <div
+            tabIndex={0}
+            aria-label="Cycle display language"
+            data-testid="taskbar-lang-cycle"
+            onClick={() => {
+              const idx = LANG_ORDER.indexOf(language);
+              const next = LANG_ORDER[(idx + 1) % LANG_ORDER.length];
+              setLanguage(next);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const idx = LANG_ORDER.indexOf(language);
+                const next = LANG_ORDER[(idx + 1) % LANG_ORDER.length];
+                setLanguage(next);
+              }
+            }}
+            className="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-white/5 px-2.5 text-xs font-mono uppercase text-white/75 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          >
+            <Globe className="h-3.5 w-3.5 text-cyan-400" aria-hidden="true" />
+            <span>{(language || "en").toUpperCase()}</span>
+          </div>
           <div className="flex h-10 items-center gap-2 rounded-xl bg-cyan-400/10 px-3 transition-colors hover:bg-cyan-400/20">
             <svg viewBox="0 0 24 24" className="h-4 w-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <rect width="16" height="16" x="4" y="4" rx="2" />

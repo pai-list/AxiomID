@@ -1,7 +1,17 @@
 "use client";
 
 import { toast } from "sonner";
-import { useLanguage } from "@/app/context/language-context";
+import { useLanguage, type Language } from "@/app/context/language-context";
+import { BUS_EVENTS, emit } from "./agent-bus";
+
+const SOON_MESSAGES: Record<Language, string> = {
+  en: "Under active development — launching soon in AuraOS",
+  ar: "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم",
+  zh: "正在积极开发中 — 即将在 AuraOS 下次更新推出",
+  hi: "सक्रिय विकास के अधीन — AuraOS के अगले अपडेट में शीघ्र उपलब्ध",
+};
+
+const WINDOW_APPS = new Set(["agents", "notes", "terminal"]);
 
 type Gradient = [string, string];
 
@@ -167,6 +177,12 @@ export function DesktopIcons({ labels }: Props) {
             {href ? (
               <a
                 href={href}
+                onClick={(e) => {
+                  if (WINDOW_APPS.has(id) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                    e.preventDefault();
+                    emit(BUS_EVENTS.openApp, id);
+                  }
+                }}
                 className="flex flex-col items-center gap-3 rounded-xl text-cyan-400 transition-transform duration-200 group-hover:scale-105"
                 aria-label={label}
               >
@@ -182,9 +198,7 @@ export function DesktopIcons({ labels }: Props) {
                 onClick={() =>
                   toast.info(
                     `${label} — ${
-                      language === "ar" || soonLabel === "قريباً"
-                        ? "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم"
-                        : "Under active development — launching soon in AuraOS"
+                      soonLabel === "قريباً" ? SOON_MESSAGES.ar : (SOON_MESSAGES[language] ?? SOON_MESSAGES.en)
                     }`,
                   )
                 }
