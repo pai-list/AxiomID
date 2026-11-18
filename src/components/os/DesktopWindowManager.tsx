@@ -5,8 +5,10 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Bot,
+  Compass,
   Database,
   ExternalLink,
+  LayoutGrid,
   NotebookPen,
   Play,
   Plus,
@@ -17,8 +19,14 @@ import {
 } from "lucide-react";
 import { useLanguage, type Language } from "@/app/context/language-context";
 import { BUS_EVENTS, emit, on } from "./agent-bus";
+import {
+  SUBDOMAINS_CATALOG,
+  SUBDOMAIN_CATEGORY_LABELS,
+  resolveSubdomainHref,
+  type SubdomainCategory,
+} from "./subdomains-catalog";
 
-export type DesktopAppId = "terminal" | "notes" | "agents";
+export type DesktopAppId = "terminal" | "notes" | "agents" | "subdomains";
 
 interface TerminalLine {
   id: string;
@@ -45,7 +53,7 @@ interface AgentFleetItem {
 interface WindowCopy {
   close: string;
   openFullPage: string;
-  openLocalMirror: string;
+  openLiveSubdomain: string;
   terminal: {
     title: string;
     subtitle: string;
@@ -79,13 +87,23 @@ interface WindowCopy {
     statusReady: string;
     statusStandby: string;
   };
+  subdomains: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    loopTitle: string;
+    openInOs: string;
+    openExternal: string;
+    liveLabel: string;
+    empty: string;
+  };
 }
 
 const COPY: Record<Language, WindowCopy> = {
   en: {
     close: "Close window",
     openFullPage: "Open Full View",
-    openLocalMirror: "Worker Mirror (:8787)",
+    openLiveSubdomain: "Live Portal ↗",
     terminal: {
       title: "AI Terminal — Harness Forge",
       subtitle: "harness.axiomid.app · Local Forge Shell & Verification Gates",
@@ -129,11 +147,21 @@ const COPY: Record<Language, WindowCopy> = {
         { id: "telemetry", name: "Global Workspace Sentinel", layer: "L7 Mesh", endpoint: "/api/telemetry", role: "Live health & AuraOS defense bus" },
       ],
     },
+    subdomains: {
+      title: "PAI Universe — Live Subdomains Directory",
+      subtitle: "16 Live *.axiomid.app Services, Workers & Protocol Surfaces",
+      searchPlaceholder: "Filter subdomains, protocols, or descriptions...",
+      loopTitle: "Autonomous Loop",
+      openInOs: "Open Window",
+      openExternal: "Open ↗",
+      liveLabel: "LIVE",
+      empty: "No subdomains matched your filter.",
+    },
   },
   ar: {
     close: "إغلاق النافذة",
     openFullPage: "فتح الصفحة الكاملة",
-    openLocalMirror: "مرآة العامل المحلي (:8787)",
+    openLiveSubdomain: "البوابة الحية ↗",
     terminal: {
       title: "الطرفية الذكية — Harness Forge",
       subtitle: "harness.axiomid.app · طرفية التحقق والاختبارات المحلية",
@@ -177,11 +205,21 @@ const COPY: Record<Language, WindowCopy> = {
         { id: "telemetry", name: "حارس مساحة العمل", layer: "L7 المراقبة", endpoint: "/api/telemetry", role: "القياس الحي وتنبيهات الدفاع السيبراني" },
       ],
     },
+    subdomains: {
+      title: "منظومة باي — دليل النطاقات الفرعية الحية",
+      subtitle: "16 خدمة وعامل حافة نشط عبر نطاقات *.axiomid.app",
+      searchPlaceholder: "ابحث في النطاقات الفرعية أو البروتوكولات...",
+      loopTitle: "الدورة الذاتية",
+      openInOs: "فتح كنافذة",
+      openExternal: "فتح ↗",
+      liveLabel: "مباشر",
+      empty: "لا توجد نطاقات مطابقة لبحثك.",
+    },
   },
   zh: {
     close: "关闭窗口",
     openFullPage: "打开完整页面",
-    openLocalMirror: "本地 Worker (:8787)",
+    openLiveSubdomain: "实时门户 ↗",
     terminal: {
       title: "AI 终端 — Harness Forge",
       subtitle: "harness.axiomid.app · 本地验证网关与沙盒终端",
@@ -225,11 +263,21 @@ const COPY: Record<Language, WindowCopy> = {
         { id: "telemetry", name: "全局工作区哨兵", layer: "L7 遥测层", endpoint: "/api/telemetry", role: "实时健康度与安全总线告警" },
       ],
     },
+    subdomains: {
+      title: "PAI Universe — 实时子域目录中心",
+      subtitle: "16 个活跃运行中的 *.axiomid.app 协议服务与工作区入口",
+      searchPlaceholder: "搜索子域、协议或能力描述...",
+      loopTitle: "生态闭环",
+      openInOs: "窗口内打开",
+      openExternal: "打开 ↗",
+      liveLabel: "在线",
+      empty: "未找到匹配的子域。",
+    },
   },
   hi: {
     close: "विंडो बंद करें",
     openFullPage: "पूरा पेज खोलें",
-    openLocalMirror: "लोकल Worker (:8787)",
+    openLiveSubdomain: "लाइव पोर्टल ↗",
     terminal: {
       title: "AI टर्मिनल — Harness Forge",
       subtitle: "harness.axiomid.app · लोकल सत्यापन शेल और सैंडबॉक्स गेट",
@@ -272,6 +320,16 @@ const COPY: Record<Language, WindowCopy> = {
         { id: "harness", name: "Harness Forge वेरिफायर", layer: "L3 हार्नेस", endpoint: "/mcp.json", role: "Eval सूट और सैंडबॉक्स गेट्स" },
         { id: "telemetry", name: "ग्लोबल वर्कस्पेस सेंटिनल", layer: "L7 टेलीमेट्री", endpoint: "/api/telemetry", role: "लाइव हेल्थ और डिफेंस अलर्ट बस" },
       ],
+    },
+    subdomains: {
+      title: "PAI यूनिवर्स — लाइव सबडोमेन निर्देशिका",
+      subtitle: "16 सक्रिय *.axiomid.app सेवाएं और प्रोटोकॉल पोर्टल",
+      searchPlaceholder: "सबडोमेन या प्रोटोकॉल खोजें...",
+      loopTitle: "स्वायत्त लूप",
+      openInOs: "विंडो में खोलें",
+      openExternal: "खोलें ↗",
+      liveLabel: "लाइव",
+      empty: "कोई मिलता-जुलता सबडोमेन नहीं मिला।",
     },
   },
 };
@@ -324,7 +382,7 @@ function saveNotes(notes: AiNote[]): void {
 }
 
 function isDesktopAppId(value: unknown): value is DesktopAppId {
-  return value === "terminal" || value === "notes" || value === "agents";
+  return value === "terminal" || value === "notes" || value === "agents" || value === "subdomains";
 }
 
 export function DesktopWindowManager({
@@ -361,6 +419,26 @@ export function DesktopWindowManager({
   // Agents probe state
   const [probingFleet, setProbingFleet] = useState(false);
   const [fleetStatus, setFleetStatus] = useState<Record<string, { ok: boolean; status: number }>>({});
+
+  // Subdomains directory filter state
+  const [subdomainQuery, setSubdomainQuery] = useState("");
+  const [subdomainCategory, setSubdomainCategory] = useState<"all" | SubdomainCategory>("all");
+
+  const filteredSubdomains = useMemo(() => {
+    const q = subdomainQuery.trim().toLowerCase();
+    return SUBDOMAINS_CATALOG.filter((entry) => {
+      if (subdomainCategory !== "all" && entry.category !== subdomainCategory) return false;
+      if (!q) return true;
+      const localized = entry.locales[lang];
+      return (
+        entry.host.toLowerCase().includes(q) ||
+        entry.shortTag.toLowerCase().includes(q) ||
+        localized.name.toLowerCase().includes(q) ||
+        localized.tagline.toLowerCase().includes(q) ||
+        entry.locales.en.name.toLowerCase().includes(q)
+      );
+    });
+  }, [lang, subdomainCategory, subdomainQuery]);
 
   useEffect(() => {
     emit(BUS_EVENTS.windowState, { openApps, activeApp });
@@ -564,14 +642,18 @@ export function DesktopWindowManager({
       ? copy.terminal.title
       : activeApp === "notes"
         ? copy.notes.title
-        : copy.agents.title;
+        : activeApp === "subdomains"
+          ? copy.subdomains.title
+          : copy.agents.title;
 
   const subtitle =
     activeApp === "terminal"
       ? copy.terminal.subtitle
       : activeApp === "notes"
         ? copy.notes.subtitle
-        : copy.agents.subtitle;
+        : activeApp === "subdomains"
+          ? copy.subdomains.subtitle
+          : copy.agents.subtitle;
 
   return (
     <section
@@ -593,6 +675,7 @@ export function DesktopWindowManager({
             {activeApp === "terminal" && <Terminal className="h-4 w-4" />}
             {activeApp === "notes" && <NotebookPen className="h-4 w-4" />}
             {activeApp === "agents" && <Bot className="h-4 w-4" />}
+            {activeApp === "subdomains" && <Compass className="h-4 w-4" />}
           </span>
           <div className="min-w-0">
             <h2 className="truncate font-mono text-xs font-bold text-white">{title}</h2>
@@ -619,12 +702,12 @@ export function DesktopWindowManager({
                 <ExternalLink className="h-3 w-3" />
               </a>
               <a
-                href="http://localhost:8787/harness"
+                href={resolveSubdomainHref("harness")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/70 hover:bg-white/10"
               >
-                {copy.openLocalMirror}
+                {copy.openLiveSubdomain}
               </a>
             </>
           )}
@@ -638,14 +721,25 @@ export function DesktopWindowManager({
                 <ExternalLink className="h-3 w-3" />
               </a>
               <a
-                href="http://localhost:8787/memory"
+                href={resolveSubdomainHref("memory")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/70 hover:bg-white/10"
               >
-                {copy.openLocalMirror}
+                {copy.openLiveSubdomain}
               </a>
             </>
+          )}
+          {activeApp === "subdomains" && (
+            <a
+              href={resolveSubdomainHref("index")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/20"
+            >
+              index.axiomid.app
+              <ExternalLink className="h-3 w-3" />
+            </a>
           )}
           {activeApp === "agents" && (
             <a
@@ -928,6 +1022,123 @@ export function DesktopWindowManager({
                 );
               })}
             </div>
+          </>
+        )}
+
+        {activeApp === "subdomains" && (
+          <>
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-white/40" />
+                <input
+                  type="search"
+                  value={subdomainQuery}
+                  onChange={(e) => setSubdomainQuery(e.target.value)}
+                  placeholder={copy.subdomains.searchPlaceholder}
+                  aria-label={copy.subdomains.searchPlaceholder}
+                  data-testid="subdomains-search-input"
+                  className="w-full rounded-xl border border-white/15 bg-black/50 pl-9 pr-3 py-2 font-mono text-xs text-white placeholder:text-white/40 focus:border-cyan-400/60 focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Subdomain categories">
+                {(["all", "workspace", "ai-loop", "identity", "protocol"] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    data-testid={`subdomain-cat-${cat}`}
+                    onClick={() => setSubdomainCategory(cat)}
+                    className={`rounded-lg px-2.5 py-1.5 font-mono text-[10px] transition-colors ${
+                      subdomainCategory === cat
+                        ? "border border-cyan-400/40 bg-cyan-500/20 text-cyan-200"
+                        : "border border-white/10 bg-white/5 text-white/65 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {SUBDOMAIN_CATEGORY_LABELS[lang][cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cyan-400/20 bg-gradient-to-r from-cyan-500/10 via-emerald-500/10 to-amber-500/10 px-3 py-2 font-mono text-[10px]">
+              <span className="flex items-center gap-1.5 text-cyan-200 font-semibold">
+                <LayoutGrid className="h-3.5 w-3.5" />
+                {copy.subdomains.loopTitle}
+              </span>
+              <div className="flex flex-wrap items-center gap-2 text-white/80">
+                <a href="https://learn.axiomid.app" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-300 underline decoration-white/25">
+                  learn.axiomid.app
+                </a>
+                <span aria-hidden="true">→</span>
+                <a href="https://earn.axiomid.app" target="_blank" rel="noopener noreferrer" className="hover:text-amber-300 underline decoration-white/25">
+                  earn.axiomid.app
+                </a>
+                <span aria-hidden="true">→</span>
+                <a href="https://skills.axiomid.app" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-300 underline decoration-white/25">
+                  skills.axiomid.app
+                </a>
+              </div>
+            </div>
+
+            {filteredSubdomains.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-black/40 p-4 text-center font-mono text-xs text-white/50">
+                {copy.subdomains.empty}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {filteredSubdomains.map((entry) => {
+                  const [gStart, gEnd] = entry.gradient;
+                  const localized = entry.locales[lang];
+                  return (
+                    <div
+                      key={entry.id}
+                      className="group flex flex-col justify-between gap-2 rounded-xl border border-white/10 bg-black/45 p-3 transition-colors hover:border-cyan-400/35"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className="rounded-md border border-white/15 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white"
+                            style={{
+                              background: `linear-gradient(135deg, ${gStart}33 0%, ${gEnd}22 100%)`,
+                            }}
+                          >
+                            {entry.shortTag}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-mono text-[9px] text-emerald-300">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                            {copy.subdomains.liveLabel}
+                          </span>
+                        </div>
+                        <h3 className="font-mono text-xs font-bold text-white">{localized.name}</h3>
+                        <p className="font-mono text-[11px] text-white/65 leading-relaxed">{localized.tagline}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                        <span className="truncate font-mono text-[10px] text-cyan-300/80">{entry.host}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {entry.windowApp && (
+                            <button
+                              type="button"
+                              onClick={() => setActiveApp(entry.windowApp!)}
+                              className="rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-2 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/25"
+                            >
+                              {copy.subdomains.openInOs}
+                            </button>
+                          )}
+                          <a
+                            href={resolveSubdomainHref(entry.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-lg border border-white/15 bg-white/5 px-2 py-1 font-mono text-[10px] text-white/85 hover:bg-white/15"
+                          >
+                            {copy.subdomains.openExternal}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
       </div>

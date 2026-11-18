@@ -2,24 +2,56 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useLanguage, type Language } from "@/app/context/language-context";
-import { Wallet, Zap, Database, FileKey, LayoutGrid, ExternalLink, Cpu, Globe } from "lucide-react";
+import {
+  Compass,
+  Cpu,
+  Database,
+  ExternalLink,
+  Globe,
+  LayoutGrid,
+  NotebookPen,
+  Terminal,
+} from "lucide-react";
 import { BUS_EVENTS, emit, on } from "./agent-bus";
+import { SUBDOMAINS_CATALOG, resolveSubdomainHref } from "./subdomains-catalog";
 
 const LAUNCHERS = [
-  { key: "earn", label: "Earn", href: "https://earn.axiomid.app", icon: Wallet },
-  { key: "skills", label: "Skills", href: "https://skills.axiomid.app", icon: Zap },
-  { key: "memory", label: "Memory", href: "https://memory.axiomid.app", icon: Database },
-  { key: "identity", label: "Identity", href: "https://openid.axiomid.app", icon: FileKey },
-  { key: "control_center", label: "Control Center", href: "/dashboard", icon: LayoutGrid },
+  { key: "control_center", label: "Control Center", href: "/dashboard", icon: LayoutGrid, app: "agents" as const },
   { key: "plans", label: "Plans", href: "/plans", icon: Cpu },
+  { key: "desktop_terminal", label: "AI Terminal", href: "https://harness.axiomid.app", icon: Terminal, app: "terminal" as const },
+  { key: "desktop_notes", label: "AI Notes", href: "https://memory.axiomid.app", icon: NotebookPen, app: "notes" as const },
+  { key: "desktop_subdomains", label: "Subdomains", href: "https://index.axiomid.app", icon: Compass, app: "subdomains" as const },
   { key: "github", label: "GitHub", href: "https://github.com/pai-list", icon: ExternalLink },
 ];
+
+const LAUNCHER_SUBDOMAIN_IDS = new Set([
+  "gspace",
+  "skills",
+  "mcp",
+  "earn",
+  "learn",
+  "openid",
+  "aip",
+  "ppp",
+  "node",
+  "agdp",
+  "mail",
+  "piverify",
+]);
+
+const SUBDOMAINS_SECTION_LABEL: Record<Language, { core: string; mesh: string; subdomainsTab: string }> = {
+  en: { core: "AuraOS Core", mesh: "Live *.axiomid.app Subdomains", subdomainsTab: "Subdomains" },
+  ar: { core: "تطبيقات النظام", mesh: "النطاقات الفرعية الحية", subdomainsTab: "كل النطاقات" },
+  zh: { core: "核心桌面应用", mesh: "实时子域服务网", subdomainsTab: "全部子域" },
+  hi: { core: "कोर ऐप्स", mesh: "लाइव सबडोमेन नेटवर्क", subdomainsTab: "सबडोमेन" },
+};
 
 const LANG_ORDER: readonly Language[] = ["en", "ar", "zh", "hi"];
 const APP_TITLE_KEYS: Record<string, string> = {
   terminal: "desktop_terminal",
   notes: "desktop_notes",
   agents: "desktop_agents",
+  subdomains: "desktop_subdomains",
 };
 const DATE_LOCALES: Record<Language, string> = {
   en: "en-US",
@@ -105,47 +137,91 @@ export function DesktopTaskbar() {
     };
   }, [launcherOpen]);
 
+  const lang: Language = language in SUBDOMAINS_SECTION_LABEL ? language : "en";
+  const sectionLabels = SUBDOMAINS_SECTION_LABEL[lang];
+  const meshLaunchers = SUBDOMAINS_CATALOG.filter((entry) => LAUNCHER_SUBDOMAIN_IDS.has(entry.id));
+
   return (
     <div ref={launcherRef} className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2">
       {/* App Launcher popup */}
       {launcherOpen && (
         <div
-          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-3 rounded-2xl bg-[#0d0d16]/95 backdrop-blur-2xl border border-cyan-400/30 shadow-[0_0_50px_rgba(0,240,255,0.25)] animate-in fade-in zoom-in-95 duration-150"
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50 w-[min(92vw,540px)] space-y-3 p-3.5 rounded-2xl bg-[#0d0d16]/95 backdrop-blur-2xl border border-cyan-400/30 shadow-[0_0_50px_rgba(0,240,255,0.25)] animate-in fade-in zoom-in-95 duration-150"
           role="menu"
           aria-label="PAI Ecosystem Launchers"
         >
-          {LAUNCHERS.map(({ key, label, href, icon: Icon }) => {
-            const translated = t(key);
-            const displayLabel = translated && translated !== key ? translated : label;
-            return (
-              <a
-                key={label}
-                href={href}
-                target={href.startsWith("http") ? "_blank" : undefined}
-                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                onClick={(e) => {
-                  setLauncherOpen(false);
-                  if (key === "memory" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                    e.preventDefault();
-                    emit(BUS_EVENTS.openApp, "notes");
-                  }
-                }}
-                className="group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-400"
-              >
-                <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 group-hover:bg-cyan-400/20 group-hover:scale-105 transition-all text-cyan-400">
-                  <Icon className="h-5 w-5" />
-                  {href.startsWith("http") && (
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-cyan-400/20 text-[7px] text-cyan-200">
-                      ↗
-                    </span>
-                  )}
-                </span>
-                <span className="text-[10px] font-mono text-white/80 whitespace-nowrap">
-                  {displayLabel}
-                </span>
-              </a>
-            );
-          })}
+          <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-300/80 px-1">
+            {sectionLabels.core}
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+            {LAUNCHERS.map(({ key, label, href, icon: Icon, app }) => {
+              const translated = t(key);
+              const fallback = key === "desktop_subdomains" ? sectionLabels.subdomainsTab : label;
+              const displayLabel = translated && translated !== key ? translated : fallback;
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  onClick={(e) => {
+                    setLauncherOpen(false);
+                    if (app && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                      e.preventDefault();
+                      emit(BUS_EVENTS.openApp, app);
+                    }
+                  }}
+                  className="group relative flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-400"
+                >
+                  <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/10 group-hover:bg-cyan-400/20 group-hover:scale-105 transition-all text-cyan-400">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="text-[10px] font-mono text-white/85 text-center leading-tight">
+                    {displayLabel}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-white/10 pt-2.5">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-white/60">
+                <Database className="h-3 w-3 text-emerald-400" aria-hidden="true" />
+                {sectionLabels.mesh}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-52 overflow-y-auto">
+              {meshLaunchers.map((entry) => {
+                const [gStart, gEnd] = entry.gradient;
+                const localized = entry.locales[lang];
+                return (
+                  <a
+                    key={entry.id}
+                    href={resolveSubdomainHref(entry.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setLauncherOpen(false)}
+                    className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-2.5 py-2 transition-colors hover:border-cyan-400/40 hover:bg-white/[0.08]"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${gStart}, ${gEnd})` }}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate font-mono text-[10px] font-semibold text-white">
+                        {localized.name}
+                      </div>
+                      <div className="truncate font-mono text-[9px] text-cyan-300/70">
+                        {entry.host}
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
@@ -186,7 +262,9 @@ export function DesktopTaskbar() {
             {windowState.openApps.map((appId) => {
               const titleKey = APP_TITLE_KEYS[appId] ?? appId;
               const translatedTitle = t(titleKey);
-              const label = translatedTitle !== titleKey ? translatedTitle : appId;
+              const fallback =
+                appId === "subdomains" ? sectionLabels.subdomainsTab : appId;
+              const label = translatedTitle !== titleKey ? translatedTitle : fallback;
               const isActive = windowState.activeApp === appId;
               return (
                 <div

@@ -4,6 +4,7 @@ import { SecurityCenter } from "@/components/os/SecurityCenter";
 import { DesktopIcons } from "@/components/os/DesktopIcons";
 import { DesktopWindowManager } from "@/components/os/DesktopWindowManager";
 import { StatusBar } from "@/components/os/StatusBar";
+import { SUBDOMAINS_CATALOG } from "@/components/os/subdomains-catalog";
 import { BUS_EVENTS, emit } from "@/components/os/agent-bus";
 import { useLanguage } from "@/app/context/language-context";
 import { getTranslation } from "@/i18n";
@@ -210,5 +211,66 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
       </>,
     );
     expect(screen.getByRole("link", { name: "AI टर्मिनल" })).toBeInTheDocument();
+  });
+
+  it("renders flagship live subdomain desktop icons and interactive Subdomains Explorer in 4 languages", () => {
+    expect(SUBDOMAINS_CATALOG).toHaveLength(16);
+    for (const entry of SUBDOMAINS_CATALOG) {
+      for (const locale of ["en", "ar", "zh", "hi"] as const) {
+        expect(entry.locales[locale].name.trim().length).toBeGreaterThan(0);
+        expect(entry.locales[locale].tagline.trim().length).toBeGreaterThan(0);
+      }
+    }
+
+    (useLanguage as jest.Mock).mockImplementation(() => ({
+      language: "en",
+      setLanguage: jest.fn(),
+      t: (k: string) => getTranslation("en", k),
+      allConfigs: { en: {}, ar: {}, zh: {}, hi: {} },
+    }));
+
+    render(
+      <>
+        <DesktopIcons labels={{ agents: "AI Agents", soon: "Soon" }} />
+        <DesktopWindowManager />
+      </>,
+    );
+
+    expect(screen.getByRole("link", { name: "PAI Gspace" })).toHaveAttribute(
+      "href",
+      "https://gspace.axiomid.app",
+    );
+    expect(screen.getByRole("link", { name: "PAI Skills" })).toHaveAttribute(
+      "href",
+      "https://skills.axiomid.app",
+    );
+    expect(screen.getByRole("link", { name: "MCP Gateway" })).toHaveAttribute(
+      "href",
+      "https://mcp.axiomid.app",
+    );
+    expect(screen.getByRole("link", { name: "PAI Earn" })).toHaveAttribute(
+      "href",
+      "https://earn.axiomid.app",
+    );
+    expect(screen.getByRole("link", { name: "PAI Learn" })).toHaveAttribute(
+      "href",
+      "https://learn.axiomid.app",
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: "Subdomains" }));
+    expect(screen.getByTestId("desktop-window-subdomains")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("subdomains-search-input"), {
+      target: { value: "gspace.axiomid.app" },
+    });
+    expect(screen.getAllByText("gspace.axiomid.app").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("mail.axiomid.app")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("subdomains-search-input"), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByTestId("subdomain-cat-protocol"));
+    expect(screen.getAllByText("ppp.axiomid.app").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("auth.axiomid.app")).not.toBeInTheDocument();
   });
 });
