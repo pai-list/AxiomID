@@ -1,15 +1,16 @@
-// PAI Internationalization - 3 Languages: Arabic, English, Chinese
+// PAI Internationalization - 4 Languages: English, Arabic, Chinese, Hindi
 // src/lib/i18n/config.ts
 
 export const LOCALES = {
   en: { name: 'English', native: 'English', dir: 'ltr', flag: '🇺🇸' },
   ar: { name: 'Arabic', native: 'العربية', dir: 'rtl', flag: '🇸🇦' },
   zh: { name: 'Chinese', native: '中文', dir: 'ltr', flag: '🇨🇳' },
+  hi: { name: 'Hindi', native: 'हिन्दी', dir: 'ltr', flag: '🇮🇳' },
 } as const;
 
 export type Locale = keyof typeof LOCALES;
 export const DEFAULT_LOCALE: Locale = 'en';
-export const LOCALES_LIST: Locale[] = ['en', 'ar', 'zh'];
+export const LOCALES_LIST: Locale[] = ['en', 'ar', 'zh', 'hi'];
 
 // Route mapping for localized URLs
 export const ROUTE_TRANSLATIONS = {
@@ -39,5 +40,14 @@ export const ROUTE_TRANSLATIONS = {
     pricing: '/定价',
     about: '/关于',
     blog: '/博客',
+  },
+  hi: {
+    home: '/',
+    docs: '/दस्तावेज़',
+    skills: '/कौशल',
+    playground: '/प्लेग्राउंड',
+    pricing: '/मूल्य-निर्धारण',
+    about: '/हमारे-बारे-में',
+    blog: '/ब्लॉग',
   },
 };

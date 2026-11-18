@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { getTranslation } from "@/i18n";
 
-export type Language = "en" | "ar" | "zh";
+export type Language = "en" | "ar" | "zh" | "hi";
 
 export interface FontConfig {
   family: string;
@@ -87,6 +87,20 @@ const LANGUAGE_CONFIGS: Record<Language, LanguageConfig> = {
       size: { base: 16, scale: 1.2 },
       lineHeight: { tight: 1.15, normal: 1.55, relaxed: 1.8 }
     }
+  },
+  hi: {
+    code: "hi",
+    name: "Hindi",
+    nativeName: "हिन्दी",
+    dir: "ltr",
+    flag: "🇮🇳",
+    locale: "hi-IN",
+    font: {
+      family: "'Noto Sans Devanagari', 'Inter', system-ui, sans-serif",
+      weight: { regular: 400, medium: 500, bold: 700 },
+      size: { base: 16, scale: 1.2 },
+      lineHeight: { tight: 1.2, normal: 1.6, relaxed: 1.85 }
+    }
   }
 };
 
@@ -131,43 +145,45 @@ export function LanguageProvider({
   
   const [agentMode, setAgentMode] = useState(enableAgentMode);
 
-  const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
+  const applyLanguageDOM = useCallback((lang: Language) => {
     localStorage.setItem("axiomid-language", lang);
-    
+
     // Apply CSS variables to document root (agent-readable)
-    const config = LANGUAGE_CONFIGS[lang];
+    const config = LANGUAGE_CONFIGS[lang] ?? LANGUAGE_CONFIGS.en;
     const cssVars = generateCSSVariables(config);
     Object.entries(cssVars).forEach(([key, value]) => {
       document.documentElement.style.setProperty(key, value);
     });
-    
+
     // Set document direction
     document.documentElement.dir = config.dir;
     document.documentElement.lang = config.locale;
-    
+
     // Dispatch custom event for agents listening
     window.dispatchEvent(new CustomEvent("axiomid:language-changed", {
       detail: { language: lang, config, timestamp: Date.now() }
     }));
   }, []);
 
-  // Initialize on mount
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    applyLanguageDOM(lang);
+  }, [applyLanguageDOM]);
+
+  // Initialize on mount and subscribe to agent-initiated language changes
   useEffect(() => {
-    setLanguage(language);
-    
-    // Listen for agent-initiated language changes
-    const handleAgentLanguageChange = (event: CustomEvent) => {
+    applyLanguageDOM(language);
+
+    const handleAgentLanguageChange = (event: CustomEvent<{ source?: string; language?: Language }>) => {
       if (event.detail?.source === "agent" && event.detail?.language) {
         setLanguage(event.detail.language);
       }
     };
-    
+
     window.addEventListener("axiomid:agent-set-language", handleAgentLanguageChange as EventListener);
     return () => window.removeEventListener("axiomid:agent-set-language", handleAgentLanguageChange as EventListener);
-  }, [language, setLanguage]);
+  }, [language, applyLanguageDOM, setLanguage]);
 
-  // Translation function
   // Translation function
   const t = useCallback((key: string) => {
     return getTranslation(language, key);
@@ -200,13 +216,42 @@ export function useLanguage() {
 
 // ─── Agent API (Exposed globally for agent access) ───
 
+export interface AxiomIdLanguageApi {
+  get: () => Language;
+  set: (lang: Language) => void;
+  getConfig: (lang?: Language) => LanguageConfig;
+  getAllConfigs: () => Record<Language, LanguageConfig>;
+  subscribe: (callback: (lang: Language) => void) => () => void;
+}
+
+export interface AxiomIdFontsApi {
+  getLoaded: () => string[];
+  isReady: (lang: string) => boolean;
+  preload: (lang: string) => Promise<void>;
+}
+
+declare global {
+  interface Window {
+    axiomid?: {
+      language?: AxiomIdLanguageApi;
+      fonts?: AxiomIdFontsApi;
+      getFontStatus?: () => {
+        currentLanguage: string;
+        fontsLoaded: string;
+        direction: string;
+      };
+      [key: string]: unknown;
+    };
+  }
+}
+
 if (typeof window !== "undefined") {
-  // Agent can call: window.axiomid.language.set("ar")
-  (window as any).axiomid = (window as any).axiomid || {};
-  (window as any).axiomid.language = {
+  // Agent can call: window.axiomid?.language?.set("ar")
+  window.axiomid = window.axiomid ?? {};
+  window.axiomid.language = {
     get: () => {
-      const stored = typeof localStorage !== "undefined" ? (localStorage.getItem("axiomid-language") as Language) : null;
-      return stored || "en";
+      const stored = typeof localStorage !== "undefined" ? localStorage.getItem("axiomid-language") : null;
+      return stored && stored in LANGUAGE_CONFIGS ? (stored as Language) : "en";
     },
     set: (lang: Language) => {
       window.dispatchEvent(new CustomEvent("axiomid:agent-set-language", {
@@ -214,12 +259,12 @@ if (typeof window !== "undefined") {
       }));
     },
     getConfig: (lang?: Language) => {
-      const targetLang = lang || (window as any).axiomid.language.get();
-      return LANGUAGE_CONFIGS[targetLang as Language];
+      const targetLang = lang || window.axiomid?.language?.get() || "en";
+      return LANGUAGE_CONFIGS[targetLang] ?? LANGUAGE_CONFIGS.en;
     },
     getAllConfigs: () => LANGUAGE_CONFIGS,
     subscribe: (callback: (lang: Language) => void) => {
-      const handler = (e: CustomEvent) => callback(e.detail.language);
+      const handler = (e: CustomEvent<{ language: Language }>) => callback(e.detail.language);
       window.addEventListener("axiomid:language-changed", handler as EventListener);
       return () => window.removeEventListener("axiomid:language-changed", handler as EventListener);
     }

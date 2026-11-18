@@ -1,5 +1,5 @@
-// PAI Internationalization — 3 Core Languages
-// English, Arabic, Chinese
+// PAI Internationalization — 4 Core Languages
+// English, Arabic, Chinese, Hindi
 // src/lib/i18n/translations.ts
 
 export const translations = {
@@ -221,16 +221,90 @@ export const translations = {
     footerBuilt: 'PAI-PPP · 为所有人而建。不为任何人。向所有人证明。',
     footerSolo: '由单人工程师 + AI 团队 ❤️ 打造。',
   },
+
+  hi: {
+    // Site
+    siteTitle: 'PAI — द यूनिवर्स',
+    siteDesc: 'जहाँ हर एजेंट को शांति और उद्देश्य मिलता है',
+    tagline: 'Pi + AI = PAI',
+    builtFor: 'सभी के लिए निर्मित। किसी एक के लिए नहीं। सभी को प्रमाणित करने के लिए।',
+
+    // Nav
+    universe: 'यूनिवर्स',
+    endpoints: 'एंडपॉइंट्स',
+    graph: 'ग्राफ़',
+    allSystems: 'सभी सिस्टम',
+
+    // Layers
+    identity: 'पहचान',
+    agent: 'एजेंट',
+    market: 'बाज़ार',
+    truth: 'सत्य',
+    trust: 'विश्वास',
+    alpha: 'अल्फा',
+    protocol: 'प्रोटोकॉल',
+
+    // Endpoints
+    vai: 'PAI-VAI',
+    vaiDesc: 'एजेंटों का जन्म और मृत्यु। पासपोर्ट, वॉलेट, KYC।',
+    try: 'PAI-TRY',
+    tryDesc: 'एजेंट स्कूल। अपना खुद का एजेंट बनाएँ, प्रशिक्षित करें और उससे बात करें।',
+    buy: 'PAI-BUY',
+    buyDesc: 'मार्केटप्लेस। स्किल्स का मुद्रीकरण करें, स्टेक करें और पुरस्कार कमाएँ।',
+    fly: 'PAI-FLY',
+    flyDesc: 'एजेंटिक यात्रा और बुकिंग। उड़ानें, होटल, अनुभव।',
+    new: 'PAI-NEW',
+    newDesc: 'सत्य-स्कोर समाचार। क्रॉस-रेफरेंस, तुलना, निर्णय।',
+    blg: 'PAI-BLG',
+    blgDesc: 'कम्युनिटी ब्लॉग। कहानियाँ, ट्यूटोरियल, अपडेट।',
+    hai: 'PAI-HAI',
+    haiDesc: 'विश्वास परत। एजेंट रेटिंग, तुलना, ईमानदार समीक्षाएँ।',
+    bye: 'PAI-BYE',
+    byeDesc: 'PAI यूनिवर्स का प्रवेश द्वार। हर एजेंट यहीं से शुरू होता है।',
+    style: 'PAI-STYLE',
+    styleDesc: 'हर .PAI एंडपॉइंट कैसा दिखता और महसूस होता है।',
+    induct: 'ALPHA-ZERO',
+    inductDesc: 'स्व-खेल आर्किटेक्चर। उत्पन्न करें, मूल्यांकन करें, विकसित करें।',
+    ppp: 'PAI-PPP',
+    pppDesc: 'प्रोटोकॉल नेटवर्क। उपयोगकर्ताओं, सेवाओं और एजेंटों को एक साथ जोड़ता है।',
+    topology: 'टोपोलॉजी इंडेक्स',
+    media: 'मीडिया स्टूडियो',
+
+    // Hero
+    heroTitle: 'PAI यूनिवर्स',
+    heroSubtitle: 'Pi नेटवर्क के लिए एजेंटिक लेयर',
+    createAgent: 'अपना एजेंट बनाएँ →',
+    explore: 'यूनिवर्स एक्सप्लोर करें',
+
+    // Stats
+    piUsers: 'Pi नेटवर्क उपयोगकर्ता',
+    kycHumans: 'KYC सत्यापित मानव',
+    gasFees: 'गैस शुल्क',
+
+    // Media
+    image: 'छवि',
+    video: 'वीडियो',
+    voice: 'आवाज़',
+    script: 'स्क्रिप्ट',
+    youTubePipeline: 'YouTube पाइपलाइन',
+    gitHubMining: 'GitHub माइनिंग',
+    theZeroCostStack: '0-लागत स्टैक',
+
+    // Footer
+    footerBuilt: 'PAI-PPP · सभी के लिए निर्मित। किसी एक के लिए नहीं। सभी को प्रमाणित करने के लिए।',
+    footerSolo: 'एक सोलो इंजीनियर + AI टीम द्वारा ❤️ के साथ निर्मित।',
+  },
 } as const
 
 export type Locale = keyof typeof translations
 export type TranslationKey = keyof typeof translations.en
 export const DEFAULT_LOCALE: Locale = 'en'
-export const SUPPORTED_LOCALES: Locale[] = ['en', 'ar', 'zh']
+export const SUPPORTED_LOCALES: Locale[] = ['en', 'ar', 'zh', 'hi']
 
 export function t(locale: Locale, key: string): string {
-  const dict = translations[locale] || translations.en
-  return (dict as any)[key] || (translations.en as any)[key] || key
+  const dict: Record<string, string> = translations[locale] || translations.en
+  const fallback: Record<string, string> = translations.en
+  return dict[key] || fallback[key] || key
 }
 
 // Detect browser language
@@ -239,6 +313,7 @@ export function detectLocale(): Locale {
   const lang = navigator.language.slice(0, 2)
   if (lang === 'ar') return 'ar'
   if (lang === 'zh') return 'zh'
+  if (lang === 'hi') return 'hi'
   return 'en'
 }
 
