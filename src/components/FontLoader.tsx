@@ -25,6 +25,14 @@ const FONT_CONFIGS = {
       { name: "JetBrains Mono", weights: [400, 500, 700], display: "swap" }
     ],
     subsets: ["chinese-simplified"]
+  },
+  hi: {
+    families: [
+      { name: "Noto Sans Devanagari", weights: [400, 500, 700], display: "swap" },
+      { name: "Inter", weights: [400, 500, 700], display: "swap" },
+      { name: "JetBrains Mono", weights: [400, 500, 700], display: "swap" }
+    ],
+    subsets: ["devanagari", "latin"]
   }
 };
 
@@ -33,7 +41,8 @@ const FONT_URLS = {
   "JetBrains Mono": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap",
   "Noto Naskh Arabic": "https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;700&display=swap",
   "Cairo": "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700&display=swap",
-  "Noto Sans SC": "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"
+  "Noto Sans SC": "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap",
+  "Noto Sans Devanagari": "https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&display=swap"
 };
 
 export function FontLoader() {
@@ -82,8 +91,8 @@ export function FontLoader() {
 
   // Agent API: expose font loading status
   useEffect(() => {
-    (window as any).axiomid = (window as any).axiomid || {};
-    (window as any).axiomid.fonts = {
+    window.axiomid = window.axiomid ?? {};
+    window.axiomid.fonts = {
       getLoaded: () => Array.from(loadedFonts),
       isReady: (lang: string) => {
         const config = FONT_CONFIGS[lang as keyof typeof FONT_CONFIGS];
@@ -124,8 +133,8 @@ export function useFontStatus(lang?: string) {
 
   if (!config) return { ready: true, loaded: [], pending: [] };
 
-  const loaded: string[] = typeof window !== "undefined" && (window as any).axiomid?.fonts
-    ? (window as any).axiomid.fonts.getLoaded()
+  const loaded: string[] = typeof window !== "undefined" && window.axiomid?.fonts
+    ? window.axiomid.fonts.getLoaded()
     : [];
 
   return {
@@ -137,8 +146,8 @@ export function useFontStatus(lang?: string) {
 
 // Global font status for agents
 if (typeof window !== "undefined") {
-  (window as any).axiomid = (window as any).axiomid || {};
-  (window as any).axiomid.getFontStatus = () => {
+  window.axiomid = window.axiomid ?? {};
+  window.axiomid.getFontStatus = () => {
     const root = document.documentElement;
     return {
       currentLanguage: root.getAttribute("data-language") || "en",
