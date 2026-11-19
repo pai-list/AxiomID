@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLanguage, type Language } from "@/app/context/language-context";
+import { WALLPAPERS, WALLPAPER_STORAGE_KEY, getWallpaper } from "@/lib/wallpapers";
 
 const GATEWAY_HEALTH_URL = "https://skills.axiomid.app/llms.txt";
 const SUPPORTED_LANGS: ReadonlyArray<{ code: Language; label: string }> = [
@@ -16,7 +17,22 @@ type Health = "checking" | "ok" | "down";
 export function StatusBar() {
   const { t, language, setLanguage } = useLanguage();
   const [health, setHealth] = useState<Health>("checking");
+  const [theme, setTheme] = useState(() => {
+    try {
+      return getWallpaper(localStorage.getItem(WALLPAPER_STORAGE_KEY));
+    } catch {
+      return WALLPAPERS[0];
+    }
+  });
   const dir = language === "ar" ? "rtl" : "ltr";
+
+  useEffect(() => {
+    const onTheme = (e: Event) => {
+      setTheme(getWallpaper((e as CustomEvent<string>).detail));
+    };
+    window.addEventListener("aura:wallpaper", onTheme);
+    return () => window.removeEventListener("aura:wallpaper", onTheme);
+  }, []);
 
   useEffect(() => {
     if (process.env.NODE_ENV === "test") return;
@@ -75,6 +91,24 @@ export function StatusBar() {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            data-testid="theme-switcher-btn"
+            aria-label="Change AuraOS background theme"
+            onClick={() => window.dispatchEvent(new CustomEvent("aura:wallpaper-menu-toggle"))}
+            className="flex items-center gap-1.5 rounded-md border border-white/10 bg-black/40 px-2 py-1 text-[10px] font-mono text-white/80 backdrop-blur-md transition-colors hover:border-cyan-400/40 hover:bg-white/10 hover:text-white"
+          >
+            <span
+              suppressHydrationWarning
+              aria-hidden="true"
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: theme.palette.accent,
+                boxShadow: `0 0 8px ${theme.palette.accent}`,
+              }}
+            />
+            <span suppressHydrationWarning className="hidden sm:inline">{theme.name}</span>
+          </button>
           <div
             className="flex items-center gap-1 rounded-md border border-white/10 bg-black/40 px-1.5 py-0.5 backdrop-blur-md"
             role="group"

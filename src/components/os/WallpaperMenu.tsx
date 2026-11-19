@@ -47,6 +47,13 @@ export function WallpaperMenu() {
       e.preventDefault();
       openAt(e.clientX, e.clientY, false);
     };
+    const onToggle = () => {
+      if (open) {
+        setOpen(false);
+        return;
+      }
+      openAt(window.innerWidth - MENU_W - 16, 48, false);
+    };
     const onKey = (e: KeyboardEvent) => {
       if ((e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) && !open) {
         e.preventDefault();
@@ -54,9 +61,11 @@ export function WallpaperMenu() {
       }
     };
     window.addEventListener("contextmenu", onContext);
+    window.addEventListener("aura:wallpaper-menu-toggle", onToggle);
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("contextmenu", onContext);
+      window.removeEventListener("aura:wallpaper-menu-toggle", onToggle);
       window.removeEventListener("keydown", onKey);
     };
   }, [open, openAt]);
@@ -67,7 +76,9 @@ export function WallpaperMenu() {
       if (e.key === "Escape") setOpen(false);
     };
     const onDown = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement)?.closest("[data-wallpaper-menu]")) setOpen(false);
+      if (!(e.target as HTMLElement)?.closest("[data-wallpaper-menu], [data-testid='theme-switcher-btn']")) {
+        setOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("mousedown", onDown);
@@ -149,6 +160,11 @@ export function WallpaperMenu() {
             height={36}
             unoptimized
             className="h-9 w-16 shrink-0 rounded border border-white/10 object-cover"
+          />
+          <span
+            aria-hidden="true"
+            className="h-2 w-2 shrink-0 rounded-full border border-white/25"
+            style={{ backgroundColor: w.palette.accent }}
           />
           <span className="truncate">{w.name}</span>
           {w.id === selected && <span className="ml-auto text-cyan-400" aria-hidden="true">●</span>}

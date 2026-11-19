@@ -5,6 +5,8 @@ import { DesktopIcons } from "@/components/os/DesktopIcons";
 import { DesktopTaskbar } from "@/components/os/DesktopTaskbar";
 import { DesktopWindowManager } from "@/components/os/DesktopWindowManager";
 import { StatusBar } from "@/components/os/StatusBar";
+import { WallpaperMenu } from "@/components/os/WallpaperMenu";
+import { WALLPAPER_STORAGE_KEY } from "@/lib/wallpapers";
 import { SUBDOMAINS_CATALOG } from "@/components/os/subdomains-catalog";
 import { BUS_EVENTS, emit } from "@/components/os/agent-bus";
 import { useLanguage } from "@/app/context/language-context";
@@ -289,5 +291,63 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
 
     fireEvent.click(screen.getByRole("tab", { name: "AI Terminal" }));
     expect(screen.getByTestId("desktop-window-terminal")).toBeInTheDocument();
+  });
+
+  it("opens PAI Gspace natively from desktop icon and switches themes via StatusBar button", async () => {
+    const dispatched: string[] = [];
+    const onTheme = (e: Event) => dispatched.push((e as CustomEvent<string>).detail);
+    window.addEventListener("aura:wallpaper", onTheme);
+
+    (useLanguage as jest.Mock).mockImplementation(() => ({
+      language: "en",
+      setLanguage: jest.fn(),
+      t: (k: string) => getTranslation("en", k),
+      allConfigs: { en: {}, ar: {}, zh: {}, hi: {} },
+    }));
+
+    render(
+      <>
+        <StatusBar />
+        <DesktopIcons labels={{ agents: "AI Agents", soon: "Soon" }} />
+        <DesktopWindowManager />
+        <DesktopTaskbar />
+        <WallpaperMenu />
+      </>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    fireEvent.click(screen.getByRole("link", { name: "PAI Gspace" }));
+    expect(screen.getByTestId("desktop-window-gspace")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "PAI Gspace" })).toHaveAttribute("aria-selected", "true");
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Sync Telemetry" }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByTestId("desktop-window-gspace")).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "PAI Gspace" })).toHaveAttribute("aria-selected", "false");
+
+    fireEvent.click(screen.getByRole("tab", { name: "PAI Gspace" }));
+    expect(screen.getByTestId("desktop-window-gspace")).toBeInTheDocument();
+
+    const themeBtn = screen.getByTestId("theme-switcher-btn");
+    expect(themeBtn).toHaveTextContent("Aurora");
+    fireEvent.click(themeBtn);
+    const wallpaperMenu = screen.getByRole("menu", { name: "Wallpaper" });
+    expect(wallpaperMenu).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Deep Space" }));
+    expect(localStorage.getItem(WALLPAPER_STORAGE_KEY)).toBe("deep-space");
+    expect(dispatched).toEqual(["deep-space"]);
+    expect(themeBtn).toHaveTextContent("Deep Space");
+
+    window.removeEventListener("aura:wallpaper", onTheme);
   });
 });

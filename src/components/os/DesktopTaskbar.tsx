@@ -17,6 +17,7 @@ import { SUBDOMAINS_CATALOG, resolveSubdomainHref } from "./subdomains-catalog";
 
 const LAUNCHERS = [
   { key: "control_center", label: "Control Center", href: "/dashboard", icon: LayoutGrid, app: "agents" as const },
+  { key: "desktop_gspace", label: "PAI Gspace", href: "https://gspace.axiomid.app", icon: Globe, app: "gspace" as const },
   { key: "plans", label: "Plans", href: "/plans", icon: Cpu },
   { key: "desktop_terminal", label: "AI Terminal", href: "https://harness.axiomid.app", icon: Terminal, app: "terminal" as const },
   { key: "desktop_notes", label: "AI Notes", href: "https://memory.axiomid.app", icon: NotebookPen, app: "notes" as const },
@@ -25,7 +26,6 @@ const LAUNCHERS = [
 ];
 
 const LAUNCHER_SUBDOMAIN_IDS = new Set([
-  "gspace",
   "skills",
   "mcp",
   "earn",
@@ -51,6 +51,7 @@ const APP_TITLE_KEYS: Record<string, string> = {
   terminal: "desktop_terminal",
   notes: "desktop_notes",
   agents: "desktop_agents",
+  gspace: "desktop_gspace",
   subdomains: "desktop_subdomains",
 };
 const DATE_LOCALES: Record<Language, string> = {

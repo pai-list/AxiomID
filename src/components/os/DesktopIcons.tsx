@@ -21,8 +21,8 @@ const EXTRA_LABELS: Record<string, Record<Language, string>> = {
   },
 };
 
-const WINDOW_APPS = new Set(["agents", "notes", "terminal", "subdomains"]);
-const SUBDOMAIN_SHORTCUT_IDS = ["gspace", "skills", "mcp", "earn", "learn"] as const;
+const WINDOW_APPS = new Set(["agents", "gspace", "notes", "terminal", "subdomains"]);
+const SUBDOMAIN_SHORTCUT_IDS = ["skills", "mcp", "earn", "learn"] as const;
 
 type Gradient = readonly [string, string];
 
@@ -60,15 +60,6 @@ function Icon({ id, children }: { id: string; children: React.ReactNode }) {
 }
 
 function getExtraGlyph(id: (typeof SUBDOMAIN_SHORTCUT_IDS)[number], defs: (k: string) => string) {
-  if (id === "gspace") {
-    return (
-      <Icon id="gspace">
-        <circle cx="12" cy="12" r="8" stroke={defs("gspace")} strokeWidth="1.8" fill={defs("gspace")} fillOpacity="0.12" />
-        <ellipse cx="12" cy="12" rx="8" ry="3.2" stroke={defs("gspace")} strokeWidth="1.5" />
-        <circle cx="12" cy="12" r="2.2" fill={defs("gspace")} />
-      </Icon>
-    );
-  }
   if (id === "skills") {
     return (
       <Icon id="skills">
@@ -124,6 +115,7 @@ export function DesktopIcons({ labels }: Props) {
     href?: string;
     hostHint?: string;
     isExternal?: boolean;
+    featured?: boolean;
     icon: React.ReactNode;
   }> = [
     {
@@ -135,6 +127,24 @@ export function DesktopIcons({ labels }: Props) {
           <path d="M12 11v4m0 0l-3 3m3-3l3 3M6 8a6 6 0 0112 0" stroke={defs("agents")} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="6" cy="18" r="2" fill={defs("agents")} opacity="0.7" />
           <circle cx="18" cy="18" r="2" fill={defs("agents")} opacity="0.7" />
+        </Icon>
+      ),
+    },
+    {
+      id: "gspace",
+      href: "https://gspace.axiomid.app",
+      hostHint: "gspace",
+      isExternal: true,
+      featured: true,
+      icon: (
+        <Icon id="gspace">
+          <circle cx="12" cy="12" r="8.5" stroke={defs("gspace")} strokeWidth="1.75" fill={defs("gspace")} fillOpacity="0.14" />
+          <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(-24 12 12)" stroke={defs("gspace")} strokeWidth="1.5" />
+          <ellipse cx="12" cy="12" rx="3.4" ry="8.5" transform="rotate(18 12 12)" stroke={defs("gspace")} strokeWidth="1.1" opacity="0.6" />
+          <circle cx="12" cy="12" r="2.4" fill={defs("gspace")} />
+          <circle cx="18.2" cy="8.2" r="1.35" fill="#34d399" />
+          <circle cx="5.8" cy="15.8" r="1.2" fill="#22d3ee" />
+          <circle cx="16.5" cy="17.5" r="1.15" fill="#818cf8" />
         </Icon>
       ),
     },
@@ -257,7 +267,7 @@ export function DesktopIcons({ labels }: Props) {
       role="list"
       aria-label="Aura OS desktop"
     >
-      {items.map(({ id, href, hostHint, isExternal, icon }) => {
+      {items.map(({ id, href, hostHint, isExternal, featured, icon }) => {
         const translatedLabel = t(`desktop_${id}`);
         const catalogLabel = subdomainById[id]?.locales[lang]?.name ?? EXTRA_LABELS[id]?.[lang];
         const label =
@@ -295,7 +305,11 @@ export function DesktopIcons({ labels }: Props) {
                 aria-label={label}
               >
                 <div
-                  className="relative flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all group-hover:border-cyan-400/50"
+                  className={`relative flex h-16 w-16 items-center justify-center rounded-[20px] border backdrop-blur-xl transition-all group-hover:border-cyan-400/50 ${
+                    featured
+                      ? "border-cyan-400/45 ring-1 ring-inset ring-cyan-300/30 shadow-[0_0_28px_rgba(34,211,238,0.28)]"
+                      : "border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.45)]"
+                  }`}
                   style={{
                     background: `linear-gradient(135deg, ${gradStart}26 0%, ${gradEnd}12 100%)`,
                   }}

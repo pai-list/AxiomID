@@ -14,7 +14,7 @@ export interface SubdomainEntry {
   category: SubdomainCategory;
   gradient: readonly [string, string];
   shortTag: string;
-  windowApp?: "terminal" | "notes";
+  windowApp?: "terminal" | "notes" | "gspace";
   protocolStub?: boolean;
   locales: Record<Language, SubdomainLocaleText>;
 }
@@ -27,6 +27,7 @@ export const SUBDOMAINS_CATALOG: readonly SubdomainEntry[] = [
     category: "workspace",
     gradient: ["#22d3ee", "#6366f1"],
     shortTag: "GWT",
+    windowApp: "gspace",
     locales: {
       en: { name: "PAI Gspace", tagline: "Global Workspace Interpretability & Live Mesh Telemetry" },
       ar: { name: "مساحة باي", tagline: "مراقبة مساحة العمل العالمية والقياس الحي للشبكة" },
