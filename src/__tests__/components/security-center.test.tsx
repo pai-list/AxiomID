@@ -2,6 +2,7 @@ import React from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { SecurityCenter } from "@/components/os/SecurityCenter";
 import { DesktopIcons } from "@/components/os/DesktopIcons";
+import { DesktopTaskbar } from "@/components/os/DesktopTaskbar";
 import { DesktopWindowManager } from "@/components/os/DesktopWindowManager";
 import { StatusBar } from "@/components/os/StatusBar";
 import { SUBDOMAINS_CATALOG } from "@/components/os/subdomains-catalog";
@@ -233,6 +234,7 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
       <>
         <DesktopIcons labels={{ agents: "AI Agents", soon: "Soon" }} />
         <DesktopWindowManager />
+        <DesktopTaskbar />
       </>,
     );
 
@@ -272,5 +274,20 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
     fireEvent.click(screen.getByTestId("subdomain-cat-protocol"));
     expect(screen.getAllByText("ppp.axiomid.app").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText("auth.axiomid.app")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("subdomain-cat-all"));
+    fireEvent.change(screen.getByTestId("subdomains-search-input"), {
+      target: { value: "harness.axiomid.app" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open Window" }));
+    expect(screen.getByTestId("desktop-window-terminal")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "AI Terminal" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByTestId("desktop-window-terminal")).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "AI Terminal" })).toHaveAttribute("aria-selected", "false");
+
+    fireEvent.click(screen.getByRole("tab", { name: "AI Terminal" }));
+    expect(screen.getByTestId("desktop-window-terminal")).toBeInTheDocument();
   });
 });

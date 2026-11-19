@@ -444,13 +444,17 @@ export function DesktopWindowManager({
     emit(BUS_EVENTS.windowState, { openApps, activeApp });
   }, [openApps, activeApp]);
 
+  const openApp = useCallback((id: DesktopAppId) => {
+    setOpenApps((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setActiveApp(id);
+  }, []);
+
   useEffect(() => {
     return on<unknown>(BUS_EVENTS.openApp, (payload) => {
       if (!isDesktopAppId(payload)) return;
-      setOpenApps((prev) => (prev.includes(payload) ? prev : [...prev, payload]));
-      setActiveApp(payload);
+      openApp(payload);
     });
-  }, []);
+  }, [openApp]);
 
   useEffect(() => {
     if (!activeApp || standalone) return;
@@ -521,14 +525,12 @@ export function DesktopWindowManager({
       }
 
       if (cmd === "memory") {
-        setOpenApps((prev) => (prev.includes("notes") ? prev : [...prev, "notes"]));
-        setActiveApp("notes");
+        openApp("notes");
         return;
       }
 
       if (cmd === "agents") {
-        setOpenApps((prev) => (prev.includes("agents") ? prev : [...prev, "agents"]));
-        setActiveApp("agents");
+        openApp("agents");
         return;
       }
 
@@ -565,7 +567,7 @@ export function DesktopWindowManager({
         },
       ]);
     },
-    [appendTerminal, copy.terminal.suites, copy.terminal.welcome],
+    [appendTerminal, copy.terminal.suites, copy.terminal.welcome, openApp],
   );
 
   const filteredNotes = useMemo(() => {
@@ -972,7 +974,7 @@ export function DesktopWindowManager({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveApp("terminal")}
+                onClick={() => openApp("terminal")}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2 font-mono text-xs text-white/80 hover:bg-white/10"
               >
                 <Terminal className="h-3.5 w-3.5" />
@@ -980,7 +982,7 @@ export function DesktopWindowManager({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveApp("notes")}
+                onClick={() => openApp("notes")}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3 py-2 font-mono text-xs text-white/80 hover:bg-white/10"
               >
                 <NotebookPen className="h-3.5 w-3.5" />
@@ -1118,7 +1120,7 @@ export function DesktopWindowManager({
                           {entry.windowApp && (
                             <button
                               type="button"
-                              onClick={() => setActiveApp(entry.windowApp!)}
+                              onClick={() => openApp(entry.windowApp!)}
                               className="rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-2 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/25"
                             >
                               {copy.subdomains.openInOs}
