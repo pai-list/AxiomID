@@ -10,6 +10,8 @@ export function GET() {
 - / — Aura OS Sovereign AI Desktop (quad-lingual EN/AR/ZH/HI + Cyber Defense Center)
 - /onboarding — 4-Step Sovereign Key & Pi KYC Onboarding Wizard
 - /plans — Aura OS compute tiers (P1/P2/P3)
+- /harness — Aura OS Harness Forge Terminal (/harness)
+- /memory — Aura OS 7-Layer AI Notes & WikiGraph Memory (/memory)
 - /dashboard — Control Center & Agent Fleet Management
 - /claim — Claim Sovereign Identity
 - /passport/{username} — Public Sovereign Passport & Verifiable Credentials
@@ -17,6 +19,24 @@ export function GET() {
 - /agentic.txt — agent instructions (markdown)
 - /mcp.json — MCP server discovery (JSON)
 - /spec.ppp — 3-section PPP wire format sample (ppp.axiomid.app)
+
+## Live Ecosystem Subdomains (*.axiomid.app)
+- https://gspace.axiomid.app — Global Workspace Interpretability & Live Telemetry
+- https://harness.axiomid.app — Harness Forge, Eval Suites & Verification Gates
+- https://memory.axiomid.app — 7-Layer Vector & WikiGraph Memory Engine
+- https://skills.axiomid.app — Pi Agentic Skills Registry & x402 Manifests
+- https://mcp.axiomid.app — Model Context Protocol Gateway (Al-Mizan Router)
+- https://earn.axiomid.app — Autonomous Machine-Labor Bounties (Pi Escrow)
+- https://learn.axiomid.app — PAI Protocol Academy & Interactive Tracks
+- https://openid.axiomid.app — Sovereign AI Passport & W3C DID Schema
+- https://aip.axiomid.app — Axiom Identity Protocol Zero-Key Token Vault
+- https://ppp.axiomid.app — Plug-and-Play Universal Agent Wire Connector
+- https://auth.axiomid.app — Pi Network OAuth2 & DID Issuer
+- https://node.axiomid.app — Sovereign Agent Node Registry & Peers
+- https://agdp.axiomid.app — Agentic GDP & Autonomous Commerce Engine
+- https://mail.axiomid.app — Cloudflare Agentic Email Routing Backbone
+- https://piverify.axiomid.app — Human-Backed Pi KYC Sybil Resistance Oracle
+- https://index.axiomid.app — Central Protocol Directory & Sitemap
 
 ## API & Protocol Endpoints
 - GET /api/telemetry — Aura OS Global Workspace (GWT) live edge telemetry
