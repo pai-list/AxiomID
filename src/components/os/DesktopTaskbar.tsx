@@ -13,6 +13,7 @@ import {
   Terminal,
 } from "lucide-react";
 import { BUS_EVENTS, emit, on } from "./agent-bus";
+import { MCP_APPS_CATALOG, isDesktopAppId } from "./mcp-apps-catalog";
 import { SUBDOMAINS_CATALOG, resolveSubdomainHref } from "./subdomains-catalog";
 
 const LAUNCHERS = [
@@ -53,6 +54,16 @@ const APP_TITLE_KEYS: Record<string, string> = {
   agents: "desktop_agents",
   gspace: "desktop_gspace",
   subdomains: "desktop_subdomains",
+  skills: "desktop_skills",
+  mcp: "desktop_mcp",
+  earn: "desktop_earn",
+  learn: "desktop_learn",
+  settings: "desktop_settings",
+  code: "desktop_code",
+  files: "desktop_files",
+  automation: "desktop_automation",
+  autopilot: "desktop_autopilot",
+  assistant: "desktop_assistant",
 };
 const DATE_LOCALES: Record<Language, string> = {
   en: "en-US",
@@ -263,8 +274,13 @@ export function DesktopTaskbar() {
             {windowState.openApps.map((appId) => {
               const titleKey = APP_TITLE_KEYS[appId] ?? appId;
               const translatedTitle = t(titleKey);
+              const catalogName = isDesktopAppId(appId)
+                ? MCP_APPS_CATALOG[appId].locales[lang].name
+                : undefined;
               const fallback =
-                appId === "subdomains" ? sectionLabels.subdomainsTab : appId;
+                appId === "subdomains"
+                  ? sectionLabels.subdomainsTab
+                  : (catalogName ?? appId);
               const label = translatedTitle !== titleKey ? translatedTitle : fallback;
               const isActive = windowState.activeApp === appId;
               return (

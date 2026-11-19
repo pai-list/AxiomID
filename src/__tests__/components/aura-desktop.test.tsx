@@ -287,11 +287,17 @@ describe("BrandStrip — self-contained SVG partner icons", () => {
     }
   });
 });
-describe("DesktopIcons — app launcher grid", () => {
-  it("renders linked apps and 'soon' apps with their labels", () => {
+describe("DesktopIcons — MCP app launcher grid", () => {
+  it("renders all 15 desktop icons as live MCP apps with ecosystem badges", () => {
     render(<DesktopIcons labels={{ agents: "Agents", code: "Code", soon: "soon" }} />);
     expect(screen.getByRole("link", { name: "Agents" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getAllByText("soon")).toHaveLength(5);
+    expect(screen.getByRole("link", { name: "Code" })).toHaveAttribute(
+      "href",
+      "https://harness.axiomid.app",
+    );
+    expect(screen.getAllByRole("listitem")).toHaveLength(15);
+    expect(screen.getAllByText("MCP")).toHaveLength(15);
+    expect(screen.queryByText("soon")).not.toBeInTheDocument();
   });
 
   it("falls back to the id when a label is missing", () => {

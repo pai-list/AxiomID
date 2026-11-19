@@ -7,6 +7,7 @@ import { DesktopWindowManager } from "@/components/os/DesktopWindowManager";
 import { StatusBar } from "@/components/os/StatusBar";
 import { WallpaperMenu } from "@/components/os/WallpaperMenu";
 import { WALLPAPER_STORAGE_KEY } from "@/lib/wallpapers";
+import { DESKTOP_APP_IDS, MCP_APPS_CATALOG } from "@/components/os/mcp-apps-catalog";
 import { SUBDOMAINS_CATALOG } from "@/components/os/subdomains-catalog";
 import { BUS_EVENTS, emit } from "@/components/os/agent-bus";
 import { useLanguage } from "@/app/context/language-context";
@@ -42,6 +43,16 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
+      }
+      if (url === "/mcp.json") {
+        return new Response(
+          JSON.stringify({
+            name: "pai-universe-hub",
+            protocol: "publicmcp",
+            ecosystems: ["vercel", "cloudflare", "pi-network", "google"],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
       }
       if (url === "/api/telemetry") {
         return new Response(
@@ -349,5 +360,71 @@ describe("SecurityCenter — 4-Team Cyber Simulation & Desktop Notifications", (
     expect(themeBtn).toHaveTextContent("Deep Space");
 
     window.removeEventListener("aura:wallpaper", onTheme);
+  });
+
+  it("opens all 15 desktop icons as MCP App Windows with Vercel, Cloudflare, Pi Network, and Google tools", async () => {
+    expect(DESKTOP_APP_IDS).toHaveLength(15);
+    for (const appId of DESKTOP_APP_IDS) {
+      const spec = MCP_APPS_CATALOG[appId];
+      expect(spec.mcpServer).toMatch(/^mcp:\/\//);
+      expect(["vercel", "cloudflare", "pi-network", "google"]).toContain(spec.primaryEcosystem);
+      for (const locale of ["en", "ar", "zh", "hi"] as const) {
+        expect(spec.locales[locale].windowTitle.length).toBeGreaterThan(0);
+        expect(spec.locales[locale].mcpSummary.length).toBeGreaterThan(0);
+      }
+    }
+
+    (useLanguage as jest.Mock).mockImplementation(() => ({
+      language: "en",
+      setLanguage: jest.fn(),
+      t: (k: string) => getTranslation("en", k),
+      allConfigs: { en: {}, ar: {}, zh: {}, hi: {} },
+    }));
+
+    render(
+      <>
+        <DesktopIcons
+          labels={{
+            agents: "AI Agents",
+            code: "AI Code",
+            files: "Cloud Files",
+            automation: "Automation",
+            autopilot: "Autopilot",
+            assistant: "AI Assistant",
+            soon: "Soon",
+          }}
+        />
+        <DesktopWindowManager />
+        <DesktopTaskbar />
+      </>,
+    );
+
+    // Click PAI Skills icon -> opens MCP App Studio Window for Skills
+    fireEvent.click(screen.getByRole("link", { name: "PAI Skills" }));
+    expect(screen.getByTestId("desktop-window-skills")).toBeInTheDocument();
+    expect(screen.getByTestId("mcp-app-toolbar")).toHaveTextContent("mcp://pai-skills/registry");
+    expect(screen.getByTestId("mcp-studio-skills")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("run-mcp-tool-btn"));
+    });
+    expect(screen.getByTestId("mcp-jsonrpc-output")).toHaveTextContent("JSON-RPC 2.0 OK (200)");
+    expect(screen.getByTestId("mcp-jsonrpc-output")).toHaveTextContent("pi_kyc_verify");
+
+    // Click AI Code Editor icon -> opens Vercel Sandbox & MCP Tool Studio
+    fireEvent.click(screen.getByRole("link", { name: "AI Code Editor" }));
+    expect(screen.getByTestId("desktop-window-code")).toBeInTheDocument();
+    expect(screen.getByTestId("mcp-code-preview")).toBeInTheDocument();
+
+    // Click AI Assistant icon -> opens Google Gemini & Vercel AI Gateway Copilot
+    fireEvent.click(screen.getByRole("link", { name: "AI Assistant" }));
+    expect(screen.getByTestId("desktop-window-assistant")).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId("mcp-assistant-input"), {
+      target: { value: "Check Cloudflare & Pi Network MCP readiness" },
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByTestId("mcp-assistant-form"));
+    });
+    expect(screen.getByTestId("mcp-jsonrpc-output")).toHaveTextContent("context_get");
   });
 });

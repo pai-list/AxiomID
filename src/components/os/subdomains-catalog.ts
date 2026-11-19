@@ -1,4 +1,5 @@
 import type { Language } from "@/app/context/language-context";
+import type { DesktopAppId } from "./mcp-apps-catalog";
 
 export type SubdomainCategory = "workspace" | "ai-loop" | "identity" | "protocol";
 
@@ -14,7 +15,7 @@ export interface SubdomainEntry {
   category: SubdomainCategory;
   gradient: readonly [string, string];
   shortTag: string;
-  windowApp?: "terminal" | "notes" | "gspace";
+  windowApp?: DesktopAppId;
   protocolStub?: boolean;
   locales: Record<Language, SubdomainLocaleText>;
 }
@@ -74,6 +75,7 @@ export const SUBDOMAINS_CATALOG: readonly SubdomainEntry[] = [
     category: "ai-loop",
     gradient: ["#38bdf8", "#10b981"],
     shortTag: "LEARN",
+    windowApp: "learn",
     protocolStub: true,
     locales: {
       en: { name: "PAI Learn", tagline: "Interactive protocol tracks, specs & agent onboarding" },
@@ -89,6 +91,7 @@ export const SUBDOMAINS_CATALOG: readonly SubdomainEntry[] = [
     category: "ai-loop",
     gradient: ["#fbbf24", "#f97316"],
     shortTag: "PI BOUNTY",
+    windowApp: "earn",
     protocolStub: true,
     locales: {
       en: { name: "PAI Earn", tagline: "Pi Network machine-labor bounties & escrow settlements" },
@@ -104,6 +107,7 @@ export const SUBDOMAINS_CATALOG: readonly SubdomainEntry[] = [
     category: "ai-loop",
     gradient: ["#10b981", "#22d3ee"],
     shortTag: "SKILLS",
+    windowApp: "skills",
     locales: {
       en: { name: "PAI Skills", tagline: "Agentic skills registry, SKILL.md specs & x402 manifests" },
       ar: { name: "متجر المهارات", tagline: "سجل مهارات الوكلاء الذكية ومواصفات x402" },
@@ -118,6 +122,7 @@ export const SUBDOMAINS_CATALOG: readonly SubdomainEntry[] = [
     category: "protocol",
     gradient: ["#8b5cf6", "#06b6d4"],
     shortTag: "MCP",
+    windowApp: "mcp",
     locales: {
       en: { name: "MCP Gateway", tagline: "Model Context Protocol hub with Al-Mizan router & DO" },
       ar: { name: "بوابة MCP", tagline: "بوابة بروتوكول السياق وموجّه الميزان للوكلاء" },
