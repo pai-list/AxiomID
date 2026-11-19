@@ -1,16 +1,14 @@
 "use client";
 
-import { toast } from "sonner";
 import { useLanguage, type Language } from "@/app/context/language-context";
 import { BUS_EVENTS, emit } from "./agent-bus";
+import {
+  DESKTOP_APP_IDS,
+  ECOSYSTEM_PROVIDERS,
+  MCP_APPS_CATALOG,
+  type DesktopAppId,
+} from "./mcp-apps-catalog";
 import { SUBDOMAINS_CATALOG } from "./subdomains-catalog";
-
-const SOON_MESSAGES: Record<Language, string> = {
-  en: "Under active development — launching soon in AuraOS",
-  ar: "قيد التطوير، سيتوفر قريباً في تحديث AuraOS القادم",
-  zh: "正在积极开发中 — 即将在 AuraOS 下次更新推出",
-  hi: "सक्रिय विकास के अधीन — AuraOS के अगले अपडेट में शीघ्र उपलब्ध",
-};
 
 const EXTRA_LABELS: Record<string, Record<Language, string>> = {
   subdomains: {
@@ -21,8 +19,8 @@ const EXTRA_LABELS: Record<string, Record<Language, string>> = {
   },
 };
 
-const WINDOW_APPS = new Set(["agents", "notes", "terminal", "subdomains"]);
-const SUBDOMAIN_SHORTCUT_IDS = ["gspace", "skills", "mcp", "earn", "learn"] as const;
+const WINDOW_APPS = new Set<string>(DESKTOP_APP_IDS);
+const SUBDOMAIN_SHORTCUT_IDS = ["skills", "mcp", "earn", "learn"] as const;
 
 type Gradient = readonly [string, string];
 
@@ -60,19 +58,17 @@ function Icon({ id, children }: { id: string; children: React.ReactNode }) {
 }
 
 function getExtraGlyph(id: (typeof SUBDOMAIN_SHORTCUT_IDS)[number], defs: (k: string) => string) {
-  if (id === "gspace") {
-    return (
-      <Icon id="gspace">
-        <circle cx="12" cy="12" r="8" stroke={defs("gspace")} strokeWidth="1.8" fill={defs("gspace")} fillOpacity="0.12" />
-        <ellipse cx="12" cy="12" rx="8" ry="3.2" stroke={defs("gspace")} strokeWidth="1.5" />
-        <circle cx="12" cy="12" r="2.2" fill={defs("gspace")} />
-      </Icon>
-    );
-  }
   if (id === "skills") {
     return (
       <Icon id="skills">
-        <path d="M12 2L4 6.5v11L12 22l8-4.5v-11L12 2z" stroke={defs("skills")} strokeWidth="1.8" fill={defs("skills")} fillOpacity="0.14" strokeLinejoin="round" />
+        <path
+          d="M12 2L4 6.5v11L12 22l8-4.5v-11L12 2z"
+          stroke={defs("skills")}
+          strokeWidth="1.8"
+          fill={defs("skills")}
+          fillOpacity="0.14"
+          strokeLinejoin="round"
+        />
         <path d="M13 7l-4 5h3l-1 5 4-5h-3l1-5z" fill={defs("skills")} />
       </Icon>
     );
@@ -97,7 +93,14 @@ function getExtraGlyph(id: (typeof SUBDOMAIN_SHORTCUT_IDS)[number], defs: (k: st
   }
   return (
     <Icon id="learn">
-      <path d="M4 5.5A2.5 2.5 0 016.5 3H12v16H6.5A2.5 2.5 0 004 21.5V5.5zM20 5.5A2.5 2.5 0 0017.5 3H12v16h5.5A2.5 2.5 0 0120 21.5V5.5z" stroke={defs("learn")} strokeWidth="1.8" fill={defs("learn")} fillOpacity="0.14" strokeLinejoin="round" />
+      <path
+        d="M4 5.5A2.5 2.5 0 016.5 3H12v16H6.5A2.5 2.5 0 004 21.5V5.5zM20 5.5A2.5 2.5 0 0017.5 3H12v16h5.5A2.5 2.5 0 0120 21.5V5.5z"
+        stroke={defs("learn")}
+        strokeWidth="1.8"
+        fill={defs("learn")}
+        fillOpacity="0.14"
+        strokeLinejoin="round"
+      />
       <circle cx="12" cy="8" r="1.4" fill={defs("learn")} />
     </Icon>
   );
@@ -109,26 +112,25 @@ type Props = {
 
 export function DesktopIcons({ labels }: Props) {
   const { t, language } = useLanguage();
-  const lang: Language = language in SOON_MESSAGES ? language : "en";
+  const lang: Language = language === "ar" || language === "zh" || language === "hi" ? language : "en";
   const translatedAgents = t("desktop_agents");
   const useLiveTranslations = Boolean(translatedAgents && translatedAgents !== "desktop_agents");
-  const translatedSoon = t("desktop_soon");
-  const soonLabel =
-    useLiveTranslations && translatedSoon !== "desktop_soon" ? translatedSoon : labels.soon;
   const defs = (id: string) => `url(#g-${id})`;
 
   const subdomainById = Object.fromEntries(SUBDOMAINS_CATALOG.map((item) => [item.id, item]));
 
   const items: Array<{
-    id: string;
-    href?: string;
+    id: DesktopAppId;
+    href: string;
     hostHint?: string;
     isExternal?: boolean;
+    featured?: boolean;
     icon: React.ReactNode;
   }> = [
     {
       id: "agents",
       href: "/dashboard",
+      hostHint: "Gemini · Pi DID",
       icon: (
         <Icon id="agents">
           <circle cx="12" cy="8" r="3" stroke={defs("agents")} strokeWidth="2" fill={defs("agents")} fillOpacity="0.18" />
@@ -139,9 +141,27 @@ export function DesktopIcons({ labels }: Props) {
       ),
     },
     {
+      id: "gspace",
+      href: "https://gspace.axiomid.app",
+      hostHint: "Vercel · CF Mesh",
+      isExternal: true,
+      featured: true,
+      icon: (
+        <Icon id="gspace">
+          <circle cx="12" cy="12" r="8.5" stroke={defs("gspace")} strokeWidth="1.75" fill={defs("gspace")} fillOpacity="0.14" />
+          <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(-24 12 12)" stroke={defs("gspace")} strokeWidth="1.5" />
+          <ellipse cx="12" cy="12" rx="3.4" ry="8.5" transform="rotate(18 12 12)" stroke={defs("gspace")} strokeWidth="1.1" opacity="0.6" />
+          <circle cx="12" cy="12" r="2.4" fill={defs("gspace")} />
+          <circle cx="18.2" cy="8.2" r="1.35" fill="#34d399" />
+          <circle cx="5.8" cy="15.8" r="1.2" fill="#22d3ee" />
+          <circle cx="16.5" cy="17.5" r="1.15" fill="#818cf8" />
+        </Icon>
+      ),
+    },
+    {
       id: "notes",
       href: "https://memory.axiomid.app",
-      hostHint: "memory",
+      hostHint: "CF D1 · Vectorize",
       icon: (
         <Icon id="notes">
           <rect x="4" y="4" width="16" height="16" rx="3" stroke={defs("notes")} strokeWidth="2" fill={defs("notes")} fillOpacity="0.14" />
@@ -153,7 +173,7 @@ export function DesktopIcons({ labels }: Props) {
     {
       id: "terminal",
       href: "https://harness.axiomid.app",
-      hostHint: "harness",
+      hostHint: "Vercel Sandbox",
       icon: (
         <Icon id="terminal">
           <rect x="2" y="4" width="20" height="16" rx="3" stroke={defs("terminal")} strokeWidth="2" fill={defs("terminal")} fillOpacity="0.14" />
@@ -175,7 +195,7 @@ export function DesktopIcons({ labels }: Props) {
     {
       id: "subdomains",
       href: "https://index.axiomid.app",
-      hostHint: "16 live",
+      hostHint: "16 *.axiomid.app",
       icon: (
         <Icon id="subdomains">
           <rect x="3" y="3" width="5" height="5" rx="1.5" stroke={defs("subdomains")} strokeWidth="1.8" fill={defs("subdomains")} fillOpacity="0.22" />
@@ -193,6 +213,7 @@ export function DesktopIcons({ labels }: Props) {
     {
       id: "settings",
       href: "/dashboard/settings",
+      hostHint: "Pi AIP · OIDC",
       icon: (
         <Icon id="settings">
           <circle cx="12" cy="12" r="3" stroke={defs("settings")} strokeWidth="2" fill={defs("settings")} fillOpacity="0.2" />
@@ -202,6 +223,8 @@ export function DesktopIcons({ labels }: Props) {
     },
     {
       id: "code",
+      href: "https://harness.axiomid.app",
+      hostHint: "Vercel AI SDK",
       icon: (
         <Icon id="code">
           <rect x="3" y="3" width="18" height="18" rx="3" stroke={defs("code")} strokeWidth="2" fill={defs("code")} fillOpacity="0.1" />
@@ -211,6 +234,8 @@ export function DesktopIcons({ labels }: Props) {
     },
     {
       id: "files",
+      href: "/llms.txt",
+      hostHint: "CF R2 · Blob",
       icon: (
         <Icon id="files">
           <path d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" stroke={defs("files")} strokeWidth="2" fill={defs("files")} fillOpacity="0.12" />
@@ -220,6 +245,8 @@ export function DesktopIcons({ labels }: Props) {
     },
     {
       id: "automation",
+      href: "https://ppp.axiomid.app",
+      hostHint: "CF Workflows",
       icon: (
         <Icon id="automation">
           <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke={defs("automation")} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={defs("automation")} fillOpacity="0.14" />
@@ -230,6 +257,8 @@ export function DesktopIcons({ labels }: Props) {
     },
     {
       id: "autopilot",
+      href: "https://agdp.axiomid.app",
+      hostHint: "Pi Worker · ADK",
       icon: (
         <Icon id="autopilot">
           <path d="M12 2l-8 8h5v10h6V10h5l-8-8z" stroke={defs("autopilot")} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={defs("autopilot")} fillOpacity="0.14" />
@@ -240,6 +269,8 @@ export function DesktopIcons({ labels }: Props) {
     },
     {
       id: "assistant",
+      href: "https://www.axiomid.app",
+      hostHint: "Google Gemini",
       icon: (
         <Icon id="assistant">
           <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke={defs("assistant")} strokeWidth="2" fill={defs("assistant")} fillOpacity="0.14" />
@@ -257,92 +288,83 @@ export function DesktopIcons({ labels }: Props) {
       role="list"
       aria-label="Aura OS desktop"
     >
-      {items.map(({ id, href, hostHint, isExternal, icon }) => {
+      {items.map(({ id, href, hostHint, isExternal, featured, icon }) => {
         const translatedLabel = t(`desktop_${id}`);
-        const catalogLabel = subdomainById[id]?.locales[lang]?.name ?? EXTRA_LABELS[id]?.[lang];
+        const catalogLabel =
+          subdomainById[id]?.locales[lang]?.name ??
+          EXTRA_LABELS[id]?.[lang] ??
+          MCP_APPS_CATALOG[id]?.locales[lang]?.name;
         const label =
           useLiveTranslations && translatedLabel !== `desktop_${id}`
             ? translatedLabel
             : useLiveTranslations && catalogLabel
               ? catalogLabel
-              : (labels[id] ?? subdomainById[id]?.locales.en.name ?? EXTRA_LABELS[id]?.en ?? id);
-        const soon = !href;
+              : (labels[id] ??
+                subdomainById[id]?.locales.en.name ??
+                EXTRA_LABELS[id]?.en ??
+                id);
         const [gradStart, gradEnd] = PAIRS[id] ?? ["#06b6d4", "#3b82f6"];
-        const resolvedHref = href;
+        const appSpec = MCP_APPS_CATALOG[id];
+        const provider = ECOSYSTEM_PROVIDERS[appSpec.primaryEcosystem];
 
         return (
           <div
             key={id}
             role="listitem"
-            className={`group flex w-24 sm:w-28 flex-col items-center gap-2 rounded-2xl p-2 transition-all duration-200 ${
-              soon
-                ? "opacity-55 hover:opacity-95 hover:bg-white/5"
-                : "hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,240,255,0.14)]"
-            }`}
+            data-testid={`desktop-icon-${id}`}
+            data-mcp-tool={appSpec.mcpTool}
+            data-ecosystem={appSpec.primaryEcosystem}
+            className="group flex w-24 sm:w-28 flex-col items-center gap-1.5 rounded-2xl p-1.5 transition-all duration-200 hover:bg-white/[0.06] hover:shadow-[0_0_24px_rgba(0,240,255,0.14)]"
           >
-            {href ? (
-              <a
-                href={resolvedHref}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-                onClick={(e) => {
-                  if (WINDOW_APPS.has(id) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                    e.preventDefault();
-                    emit(BUS_EVENTS.openApp, id);
-                  }
-                }}
-                className="flex flex-col items-center gap-1.5 rounded-xl text-cyan-400 transition-transform duration-200 group-hover:scale-105 group-hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
-                aria-label={label}
-              >
-                <div
-                  className="relative flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-all group-hover:border-cyan-400/50"
-                  style={{
-                    background: `linear-gradient(135deg, ${gradStart}26 0%, ${gradEnd}12 100%)`,
-                  }}
-                >
-                  {icon}
-                  <span
-                    aria-hidden="true"
-                    className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"
-                  />
-                </div>
-                <span className="text-[11px] font-semibold text-white drop-shadow-lg text-center leading-tight">
-                  {label}
-                </span>
-                {hostHint && (
-                  <span className="text-[9px] font-mono text-white/45 group-hover:text-cyan-300/80 truncate max-w-[92px]">
-                    {hostHint}
-                  </span>
-                )}
-              </a>
-            ) : (
-              <div
-                onClick={() =>
-                  toast.info(
-                    `${label} — ${
-                      soonLabel === "قريباً" ? SOON_MESSAGES.ar : (SOON_MESSAGES[lang] ?? SOON_MESSAGES.en)
-                    }`,
-                  )
+            <a
+              href={href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
+              onClick={(e) => {
+                if (WINDOW_APPS.has(id) && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                  e.preventDefault();
+                  emit(BUS_EVENTS.openApp, id);
                 }
-                className="flex flex-col items-center gap-1.5 w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl transition-transform duration-200 group-hover:scale-105"
-                aria-label={label}
+              }}
+              className="flex flex-col items-center gap-1.5 rounded-xl text-cyan-400 transition-transform duration-200 group-hover:scale-105 group-hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              aria-label={label}
+            >
+              <div
+                className={`relative flex h-16 w-16 items-center justify-center rounded-[20px] border backdrop-blur-xl transition-all group-hover:border-cyan-400/50 ${
+                  featured
+                    ? "border-cyan-400/45 ring-1 ring-inset ring-cyan-300/30 shadow-[0_0_28px_rgba(34,211,238,0.28)]"
+                    : "border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_10px_28px_rgba(0,0,0,0.45)]"
+                }`}
+                style={{
+                  background: `linear-gradient(135deg, ${gradStart}26 0%, ${gradEnd}12 100%)`,
+                }}
               >
-                <div
-                  className="relative flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/10 ring-1 ring-inset ring-white/5 shadow-lg backdrop-blur-xl group-hover:border-white/25"
-                  style={{
-                    background: `linear-gradient(135deg, ${gradStart}14 0%, ${gradEnd}08 100%)`,
-                  }}
+                {icon}
+                <span
+                  aria-hidden="true"
+                  className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-1.5 rounded-full border border-white/15 bg-[#080b14]/95 px-1.5 py-0.2 font-mono text-[8px] font-semibold uppercase tracking-wider text-cyan-300 shadow"
                 >
-                  {icon}
-                </div>
-                <span className="text-[11px] font-semibold text-white/80 drop-shadow-lg text-center leading-tight">
-                  {label}{" "}
-                  <span className="inline-block rounded bg-white/10 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300">
-                    {soonLabel}
-                  </span>
+                  MCP
                 </span>
               </div>
-            )}
+              <span className="mt-0.5 text-[11px] font-semibold text-white drop-shadow-lg text-center leading-tight">
+                {label}
+              </span>
+              <span
+                className={`rounded-md border px-1.5 py-0.5 font-mono text-[8px] leading-none ${provider.accentBorder} ${provider.accentBg} ${provider.accentText}`}
+              >
+                {provider.shortBadge}
+              </span>
+              {hostHint && (
+                <span className="text-[8px] font-mono text-white/45 group-hover:text-cyan-300/80 truncate max-w-[96px]">
+                  {hostHint}
+                </span>
+              )}
+            </a>
           </div>
         );
       })}

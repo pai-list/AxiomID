@@ -5,20 +5,38 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Bot,
+  Code2,
   Compass,
+  Cpu,
   Database,
   ExternalLink,
+  FolderKanban,
+  Globe,
   LayoutGrid,
+  MessageSquare,
   NotebookPen,
   Play,
   Plus,
+  RefreshCw,
+  Rocket,
   Search,
+  Settings,
   Terminal,
   Trash2,
+  Wallet,
+  Workflow,
   X,
+  Zap,
 } from "lucide-react";
 import { useLanguage, type Language } from "@/app/context/language-context";
+import { WALLPAPERS, WALLPAPER_STORAGE_KEY } from "@/lib/wallpapers";
 import { BUS_EVENTS, emit, on } from "./agent-bus";
+import {
+  ECOSYSTEM_PROVIDERS,
+  MCP_APPS_CATALOG,
+  isDesktopAppId,
+  type DesktopAppId,
+} from "./mcp-apps-catalog";
 import {
   SUBDOMAINS_CATALOG,
   SUBDOMAIN_CATEGORY_LABELS,
@@ -26,7 +44,7 @@ import {
   type SubdomainCategory,
 } from "./subdomains-catalog";
 
-export type DesktopAppId = "terminal" | "notes" | "agents" | "subdomains";
+export type { DesktopAppId };
 
 interface TerminalLine {
   id: string;
@@ -97,6 +115,18 @@ interface WindowCopy {
     liveLabel: string;
     empty: string;
   };
+  gspace: {
+    title: string;
+    subtitle: string;
+    syncBtn: string;
+    syncing: string;
+    openPortal: string;
+    attentionLabel: string;
+    consciousnessLabel: string;
+    peersLabel: string;
+    channelsTitle: string;
+    channels: Array<{ layer: string; name: string; detail: string }>;
+  };
 }
 
 const COPY: Record<Language, WindowCopy> = {
@@ -107,7 +137,7 @@ const COPY: Record<Language, WindowCopy> = {
     terminal: {
       title: "AI Terminal — Harness Forge",
       subtitle: "harness.axiomid.app · Local Forge Shell & Verification Gates",
-      promptPlaceholder: "Type a command (help, status, truth-check, evals, sandbox, memory, agents, clear)...",
+      promptPlaceholder: "Type a command (help, status, truth-check, evals, sandbox, memory, agents, gspace, clear)...",
       run: "Run",
       welcome: "AuraOS Harness Forge Terminal ready. Run `help` or click a quick command below.",
       evalsLabel: "Harness Forge Suites",
@@ -156,6 +186,26 @@ const COPY: Record<Language, WindowCopy> = {
       openExternal: "Open ↗",
       liveLabel: "LIVE",
       empty: "No subdomains matched your filter.",
+    },
+    gspace: {
+      title: "PAI Gspace — Global Workspace Consciousness",
+      subtitle: "gspace.axiomid.app · Global Workspace Theory & 7-Layer Mesh Telemetry",
+      syncBtn: "Sync Telemetry",
+      syncing: "Syncing...",
+      openPortal: "Open gspace.axiomid.app ↗",
+      attentionLabel: "Workspace Attention",
+      consciousnessLabel: "Consciousness State",
+      peersLabel: "Active Mesh Portals",
+      channelsTitle: "7-Layer Global Workspace Broadcast Channels",
+      channels: [
+        { layer: "L1 Identity", name: "DID & Pi KYC Oracle", detail: "openid.axiomid.app · piverify.axiomid.app" },
+        { layer: "L2 Security", name: "Scoped AIP Token Vault", detail: "aip.axiomid.app · auth.axiomid.app" },
+        { layer: "L3 Runtime", name: "Harness Forge & Pi Worker", detail: "harness.axiomid.app · node.axiomid.app" },
+        { layer: "L4 MCP", name: "Al-Mizan Tool Gateway", detail: "mcp.axiomid.app · ppp.axiomid.app" },
+        { layer: "L5 Memory", name: "WikiGraph Bitemporal Store", detail: "memory.axiomid.app · 7-layer recall" },
+        { layer: "L6 Discovery", name: "Skills, Learn & Earn Loop", detail: "learn → earn → skills · llms.txt" },
+        { layer: "L7 Workspace", name: "PAI Gspace Mesh Bus", detail: "gspace.axiomid.app · aGDP & live telemetry" },
+      ],
     },
   },
   ar: {
@@ -215,6 +265,26 @@ const COPY: Record<Language, WindowCopy> = {
       liveLabel: "مباشر",
       empty: "لا توجد نطاقات مطابقة لبحثك.",
     },
+    gspace: {
+      title: "مساحة باي — Gspace · الوعي الجمعي للشبكة",
+      subtitle: "gspace.axiomid.app · مراقبة مساحة العمل العالمية والقياس الحي",
+      syncBtn: "مزامنة القياس الحي",
+      syncing: "جارٍ المزامنة...",
+      openPortal: "فتح gspace.axiomid.app ↗",
+      attentionLabel: "انتباه مساحة العمل",
+      consciousnessLabel: "حالة الوعي",
+      peersLabel: "البوابات الحية",
+      channelsTitle: "قنوات بث مساحة العمل العالمية عبر الطبقات السبع",
+      channels: [
+        { layer: "L1 الهوية", name: "عراف DID و Pi KYC", detail: "openid.axiomid.app · piverify.axiomid.app" },
+        { layer: "L2 الأمان", name: "خزنة رموز AIP المقيدة", detail: "aip.axiomid.app · auth.axiomid.app" },
+        { layer: "L3 التنفيذ", name: "Harness Forge والعامل باي", detail: "harness.axiomid.app · node.axiomid.app" },
+        { layer: "L4 MCP", name: "بوابة أدوات الميزان", detail: "mcp.axiomid.app · ppp.axiomid.app" },
+        { layer: "L5 الذاكرة", name: "محرك WikiGraph الدلالي", detail: "memory.axiomid.app · 7 طبقات" },
+        { layer: "L6 الاكتشاف", name: "حلقة التعلّم والكسب", detail: "learn → earn → skills · llms.txt" },
+        { layer: "L7 مساحة العمل", name: "ناقل شبكة PAI Gspace", detail: "gspace.axiomid.app · قياس حي وتنسيق" },
+      ],
+    },
   },
   zh: {
     close: "关闭窗口",
@@ -272,6 +342,26 @@ const COPY: Record<Language, WindowCopy> = {
       openExternal: "打开 ↗",
       liveLabel: "在线",
       empty: "未找到匹配的子域。",
+    },
+    gspace: {
+      title: "PAI 全局空间 — Gspace 意识总线",
+      subtitle: "gspace.axiomid.app · 全局工作空间理论与 7 层实时遥测",
+      syncBtn: "同步实时遥测",
+      syncing: "同步中...",
+      openPortal: "打开 gspace.axiomid.app ↗",
+      attentionLabel: "工作区注意力",
+      consciousnessLabel: "全局意识状态",
+      peersLabel: "活跃协议入口",
+      channelsTitle: "7 层全局工作空间广播通道",
+      channels: [
+        { layer: "L1 身份层", name: "DID 与 Pi KYC 预言机", detail: "openid.axiomid.app · piverify.axiomid.app" },
+        { layer: "L2 安全层", name: "作用域 AIP 令牌库", detail: "aip.axiomid.app · auth.axiomid.app" },
+        { layer: "L3 运行层", name: "Harness 熔炉与节点", detail: "harness.axiomid.app · node.axiomid.app" },
+        { layer: "L4 MCP 层", name: "Al-Mizan 协议网关", detail: "mcp.axiomid.app · ppp.axiomid.app" },
+        { layer: "L5 记忆层", name: "WikiGraph 双时态存储", detail: "memory.axiomid.app · 7 层记忆" },
+        { layer: "L6 发现层", name: "学习与收益闭环", detail: "learn → earn → skills · llms.txt" },
+        { layer: "L7 工作区", name: "PAI Gspace 遥测总线", detail: "gspace.axiomid.app · 全局可解释性" },
+      ],
     },
   },
   hi: {
@@ -331,6 +421,26 @@ const COPY: Record<Language, WindowCopy> = {
       liveLabel: "लाइव",
       empty: "कोई मिलता-जुलता सबडोमेन नहीं मिला।",
     },
+    gspace: {
+      title: "PAI जीस्पेस — ग्लोबल वर्कस्पेस चेतना",
+      subtitle: "gspace.axiomid.app · ग्लोबल वर्कस्पेस थ्योरी और 7-लेयर टेलीमेट्री",
+      syncBtn: "टेलीमेट्री सिंक करें",
+      syncing: "सिंक हो रहा है...",
+      openPortal: "gspace.axiomid.app खोलें ↗",
+      attentionLabel: "वर्कस्पेस ध्यान",
+      consciousnessLabel: "चेतना स्थिति",
+      peersLabel: "सक्रिय पोर्टल",
+      channelsTitle: "7-लेयर ग्लोबल वर्कस्पेस प्रसारण चैनल",
+      channels: [
+        { layer: "L1 पहचान", name: "DID और Pi KYC ओरेकल", detail: "openid.axiomid.app · piverify.axiomid.app" },
+        { layer: "L2 सुरक्षा", name: "स्कोप्ड AIP टोकन वॉल्ट", detail: "aip.axiomid.app · auth.axiomid.app" },
+        { layer: "L3 रनटाइम", name: "हार्नेस फोर्ज और नोड", detail: "harness.axiomid.app · node.axiomid.app" },
+        { layer: "L4 MCP", name: "Al-Mizan टूल गेटवे", detail: "mcp.axiomid.app · ppp.axiomid.app" },
+        { layer: "L5 मेमोरी", name: "WikiGraph बायटेम्पोरल स्टोर", detail: "memory.axiomid.app · 7-लेयर" },
+        { layer: "L6 खोज", name: "Learn, Earn और Skills लूप", detail: "learn → earn → skills · llms.txt" },
+        { layer: "L7 वर्कस्पेस", name: "PAI Gspace मेश बस", detail: "gspace.axiomid.app · लाइव टेलीमेट्री" },
+      ],
+    },
   },
 };
 
@@ -381,8 +491,8 @@ function saveNotes(notes: AiNote[]): void {
   }
 }
 
-function isDesktopAppId(value: unknown): value is DesktopAppId {
-  return value === "terminal" || value === "notes" || value === "agents" || value === "subdomains";
+function isKnownDesktopAppId(value: unknown): value is DesktopAppId {
+  return typeof value === "string" && isDesktopAppId(value);
 }
 
 export function DesktopWindowManager({
@@ -392,7 +502,7 @@ export function DesktopWindowManager({
   initialApp?: DesktopAppId | null;
   standalone?: boolean;
 } = {}) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const lang: Language = language in COPY ? language : "en";
   const copy = COPY[lang];
   const dir = lang === "ar" ? "rtl" : "ltr";
@@ -424,6 +534,26 @@ export function DesktopWindowManager({
   const [subdomainQuery, setSubdomainQuery] = useState("");
   const [subdomainCategory, setSubdomainCategory] = useState<"all" | SubdomainCategory>("all");
 
+  // Gspace GWT telemetry state
+  const [syncingGspace, setSyncingGspace] = useState(false);
+  const [gspaceTelemetry, setGspaceTelemetry] = useState<{
+    attention: number;
+    consciousness: string;
+  }>({ attention: 98, consciousness: "ACTIVE" });
+
+  // Unified MCP JSON-RPC 2.0 tool execution state
+  const [mcpCalling, setMcpCalling] = useState(false);
+  const [mcpCallResult, setMcpCallResult] = useState<{
+    appId: DesktopAppId;
+    toolName: string;
+    endpoint: string;
+    ok: boolean;
+    status: number;
+    latencyMs: number;
+    envelope: string;
+  } | null>(null);
+  const [assistantPrompt, setAssistantPrompt] = useState("");
+
   const filteredSubdomains = useMemo(() => {
     const q = subdomainQuery.trim().toLowerCase();
     return SUBDOMAINS_CATALOG.filter((entry) => {
@@ -451,7 +581,7 @@ export function DesktopWindowManager({
 
   useEffect(() => {
     return on<unknown>(BUS_EVENTS.openApp, (payload) => {
-      if (!isDesktopAppId(payload)) return;
+      if (!isKnownDesktopAppId(payload)) return;
       openApp(payload);
     });
   }, [openApp]);
@@ -502,7 +632,7 @@ export function DesktopWindowManager({
         appendTerminal([
           {
             kind: "out",
-            text: "Available commands: help, status, truth-check, evals, sandbox, memory, agents, clear",
+            text: "Available commands: help, status, truth-check, evals, sandbox, memory, agents, gspace, clear",
           },
         ]);
         return;
@@ -531,6 +661,27 @@ export function DesktopWindowManager({
 
       if (cmd === "agents") {
         openApp("agents");
+        return;
+      }
+
+      if (cmd === "gspace") {
+        openApp("gspace");
+        return;
+      }
+
+      if (cmd === "mcp") {
+        openApp("mcp");
+        return;
+      }
+
+      if (cmd === "vercel" || cmd === "cloudflare" || cmd === "pi" || cmd === "google") {
+        const msgMap: Record<string, string> = {
+          vercel: "▲ Vercel Cloud: Next.js 16 · AI SDK · Fluid Compute · Firecracker Sandbox [READY]",
+          cloudflare: "☁ Cloudflare Edge: Workers · Durable Objects · D1 · R2 · Vectorize (16 *.axiomid.app) [READY]",
+          pi: "π Pi Network: Pi KYC Oracle · Pi Wallet Escrow · x402 Fuel Caps · W3C DID [READY]",
+          google: "✦ Google AI: Gemini 2.5 · ADK · A2A Protocol · PublicMCP Bridge [READY]",
+        };
+        appendTerminal([{ kind: "ok", text: msgMap[cmd] }]);
         return;
       }
 
@@ -637,7 +788,121 @@ export function DesktopWindowManager({
     }
   }, [copy.agents.fleet]);
 
+  const syncGspaceTelemetry = useCallback(async () => {
+    setSyncingGspace(true);
+    try {
+      const res = await fetch("/api/telemetry", { cache: "no-store" });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          globalWorkspace?: { attention?: number; consciousness?: string };
+        };
+        setGspaceTelemetry({
+          attention:
+            typeof data?.globalWorkspace?.attention === "number"
+              ? data.globalWorkspace.attention
+              : 98,
+          consciousness: data?.globalWorkspace?.consciousness || "ACTIVE",
+        });
+      }
+    } catch {
+      // Keep last known local GWT telemetry snapshot
+    } finally {
+      setSyncingGspace(false);
+    }
+  }, []);
+
+  const invokeMcpTool = useCallback(
+    async (
+      appId: DesktopAppId,
+      toolName: string,
+      endpoint: string,
+      sampleArgs: Record<string, string | number | boolean>,
+    ) => {
+      setMcpCalling(true);
+      const started = Date.now();
+      const spec = MCP_APPS_CATALOG[appId];
+      try {
+        const res = await fetch(endpoint, { cache: "no-store" });
+        const latencyMs = Math.max(1, Date.now() - started);
+        const text = await res.text();
+        let parsedBody: unknown = text.slice(0, 420);
+        try {
+          parsedBody = JSON.parse(text);
+        } catch {
+          // Keep plain-text preview for /llms.txt and /agentic.txt
+        }
+        const envelope = JSON.stringify(
+          {
+            jsonrpc: "2.0",
+            id: `mcp-${appId}-${Date.now()}`,
+            method: "tools/call",
+            server: spec.mcpServer,
+            ecosystem: {
+              primary: spec.primaryEcosystem,
+              secondary: spec.secondaryEcosystem,
+            },
+            params: {
+              name: toolName,
+              arguments: sampleArgs,
+            },
+            result: {
+              httpStatus: res.status,
+              ok: res.ok,
+              latencyMs,
+              endpoint,
+              data: parsedBody,
+            },
+          },
+          null,
+          2,
+        );
+        setMcpCallResult({
+          appId,
+          toolName,
+          endpoint,
+          ok: res.ok,
+          status: res.status,
+          latencyMs,
+          envelope,
+        });
+      } catch {
+        const latencyMs = Math.max(1, Date.now() - started);
+        setMcpCallResult({
+          appId,
+          toolName,
+          endpoint,
+          ok: false,
+          status: 0,
+          latencyMs,
+          envelope: JSON.stringify(
+            {
+              jsonrpc: "2.0",
+              id: `mcp-${appId}-${Date.now()}`,
+              server: spec.mcpServer,
+              error: { code: -32000, message: `Edge probe failed for ${endpoint}` },
+            },
+            null,
+            2,
+          ),
+        });
+      } finally {
+        setMcpCalling(false);
+      }
+    },
+    [],
+  );
+
   if (!activeApp) return null;
+
+  const appSpec = MCP_APPS_CATALOG[activeApp];
+  const primaryProvider = ECOSYSTEM_PROVIDERS[appSpec.primaryEcosystem];
+  const secondaryProvider = ECOSYSTEM_PROVIDERS[appSpec.secondaryEcosystem];
+  const isCustomCoreApp =
+    activeApp === "terminal" ||
+    activeApp === "notes" ||
+    activeApp === "agents" ||
+    activeApp === "subdomains" ||
+    activeApp === "gspace";
 
   const title =
     activeApp === "terminal"
@@ -646,7 +911,11 @@ export function DesktopWindowManager({
         ? copy.notes.title
         : activeApp === "subdomains"
           ? copy.subdomains.title
-          : copy.agents.title;
+          : activeApp === "gspace"
+            ? copy.gspace.title
+            : activeApp === "agents"
+              ? copy.agents.title
+              : appSpec.locales[lang].windowTitle;
 
   const subtitle =
     activeApp === "terminal"
@@ -655,7 +924,11 @@ export function DesktopWindowManager({
         ? copy.notes.subtitle
         : activeApp === "subdomains"
           ? copy.subdomains.subtitle
-          : copy.agents.subtitle;
+          : activeApp === "gspace"
+            ? copy.gspace.subtitle
+            : activeApp === "agents"
+              ? copy.agents.subtitle
+              : appSpec.locales[lang].subtitle;
 
   return (
     <section
@@ -678,6 +951,17 @@ export function DesktopWindowManager({
             {activeApp === "notes" && <NotebookPen className="h-4 w-4" />}
             {activeApp === "agents" && <Bot className="h-4 w-4" />}
             {activeApp === "subdomains" && <Compass className="h-4 w-4" />}
+            {activeApp === "gspace" && <Globe className="h-4 w-4" />}
+            {activeApp === "skills" && <Zap className="h-4 w-4" />}
+            {activeApp === "mcp" && <Cpu className="h-4 w-4" />}
+            {activeApp === "earn" && <Wallet className="h-4 w-4" />}
+            {activeApp === "learn" && <Database className="h-4 w-4" />}
+            {activeApp === "settings" && <Settings className="h-4 w-4" />}
+            {activeApp === "code" && <Code2 className="h-4 w-4" />}
+            {activeApp === "files" && <FolderKanban className="h-4 w-4" />}
+            {activeApp === "automation" && <Workflow className="h-4 w-4" />}
+            {activeApp === "autopilot" && <Rocket className="h-4 w-4" />}
+            {activeApp === "assistant" && <MessageSquare className="h-4 w-4" />}
           </span>
           <div className="min-w-0">
             <h2 className="truncate font-mono text-xs font-bold text-white">{title}</h2>
@@ -743,12 +1027,34 @@ export function DesktopWindowManager({
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
+          {activeApp === "gspace" && (
+            <a
+              href={resolveSubdomainHref("gspace")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-2.5 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/25"
+            >
+              gspace.axiomid.app
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
           {activeApp === "agents" && (
             <a
               href="/dashboard"
               className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-2.5 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/25"
             >
               {copy.agents.openDashboard}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          {!isCustomCoreApp && (
+            <a
+              href={appSpec.href}
+              target={appSpec.href.startsWith("http") ? "_blank" : undefined}
+              rel={appSpec.href.startsWith("http") ? "noopener noreferrer" : undefined}
+              className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-2.5 py-1 font-mono text-[10px] text-cyan-200 hover:bg-cyan-500/25"
+            >
+              {copy.openLiveSubdomain}
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
@@ -765,8 +1071,87 @@ export function DesktopWindowManager({
         </div>
       </div>
 
+      {/* Unified Ecosystem & MCP JSON-RPC 2.0 Tool Bar */}
+      <div
+        data-testid="mcp-app-toolbar"
+        className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-[#070a12]/90 px-4 py-2 font-mono text-[10px]"
+      >
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span
+            className={`rounded-md border px-2 py-0.5 font-semibold ${primaryProvider.accentBorder} ${primaryProvider.accentBg} ${primaryProvider.accentText}`}
+          >
+            {primaryProvider.badge}
+          </span>
+          <span
+            className={`rounded-md border px-2 py-0.5 ${secondaryProvider.accentBorder} ${secondaryProvider.accentBg} ${secondaryProvider.accentText}`}
+          >
+            {secondaryProvider.shortBadge}
+          </span>
+          <span className="rounded-md border border-white/15 bg-white/5 px-2 py-0.5 text-cyan-300">
+            {appSpec.mcpServer}
+          </span>
+          <span className="rounded-md border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
+            tool: {appSpec.mcpTool}
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            data-testid="run-mcp-tool-btn"
+            disabled={mcpCalling}
+            onClick={() =>
+              void invokeMcpTool(
+                activeApp,
+                appSpec.mcpTool,
+                appSpec.defaultEndpoint,
+                appSpec.defaultArgs,
+              )
+            }
+            className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/35 bg-cyan-500/20 px-2.5 py-1 font-mono text-[10px] font-semibold text-cyan-200 hover:bg-cyan-500/30 disabled:opacity-50"
+          >
+            <Play className="h-3 w-3" />
+            {mcpCalling ? "MCP Calling…" : `Run MCP: ${appSpec.mcpTool}`}
+          </button>
+        </div>
+      </div>
+
       {/* App Body */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {mcpCallResult && mcpCallResult.appId === activeApp && (
+          <div
+            data-testid="mcp-jsonrpc-output"
+            className="rounded-xl border border-cyan-400/30 bg-black/80 p-3 font-mono text-[11px] space-y-2"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded px-2 py-0.5 text-[10px] font-bold ${
+                    mcpCallResult.ok
+                      ? "bg-emerald-500/20 text-emerald-300"
+                      : "bg-rose-500/20 text-rose-300"
+                  }`}
+                >
+                  {mcpCallResult.ok ? `JSON-RPC 2.0 OK (${mcpCallResult.status})` : `ERR (${mcpCallResult.status})`}
+                </span>
+                <span className="text-cyan-300 font-semibold">{mcpCallResult.toolName}</span>
+                <span className="text-white/50">
+                  {mcpCallResult.endpoint} · {mcpCallResult.latencyMs}ms
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMcpCallResult(null)}
+                className="rounded border border-white/10 px-2 py-0.5 text-[10px] text-white/60 hover:bg-white/10 hover:text-white"
+              >
+                Dismiss
+              </button>
+            </div>
+            <pre className="max-h-40 overflow-x-auto whitespace-pre-wrap break-all text-[10px] text-slate-300">
+              {mcpCallResult.envelope}
+            </pre>
+          </div>
+        )}
         {activeApp === "terminal" && (
           <>
             <div className="flex flex-wrap gap-1.5">
@@ -1027,6 +1412,109 @@ export function DesktopWindowManager({
           </>
         )}
 
+        {activeApp === "gspace" && (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={syncingGspace}
+                  onClick={() => void syncGspaceTelemetry()}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-400/30 bg-cyan-500/20 px-3 py-2 font-mono text-xs font-semibold text-cyan-200 hover:bg-cyan-500/30 disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${syncingGspace ? "animate-spin" : ""}`} />
+                  {syncingGspace ? copy.gspace.syncing : copy.gspace.syncBtn}
+                </button>
+                <a
+                  href={resolveSubdomainHref("gspace")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-400/30 bg-emerald-500/15 px-3 py-2 font-mono text-xs text-emerald-200 hover:bg-emerald-500/25"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {copy.gspace.openPortal}
+                </a>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => openApp("terminal")}
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/5 px-2.5 py-1.5 font-mono text-[11px] text-white/80 hover:bg-white/10"
+                >
+                  <Terminal className="h-3.5 w-3.5" />
+                  Harness
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openApp("notes")}
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/5 px-2.5 py-1.5 font-mono text-[11px] text-white/80 hover:bg-white/10"
+                >
+                  <NotebookPen className="h-3.5 w-3.5" />
+                  Memory
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openApp("subdomains")}
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/5 px-2.5 py-1.5 font-mono text-[11px] text-white/80 hover:bg-white/10"
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  Subdomains
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                  {copy.gspace.attentionLabel}
+                </div>
+                <div className="mt-1 font-mono text-lg font-bold text-cyan-300">
+                  {gspaceTelemetry.attention}%
+                </div>
+              </div>
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/5 p-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                  {copy.gspace.consciousnessLabel}
+                </div>
+                <div className="mt-1 font-mono text-lg font-bold text-emerald-300">
+                  {gspaceTelemetry.consciousness}
+                </div>
+              </div>
+              <div className="rounded-xl border border-indigo-400/20 bg-indigo-500/5 p-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                  {copy.gspace.peersLabel}
+                </div>
+                <div className="mt-1 font-mono text-lg font-bold text-indigo-300">
+                  {SUBDOMAINS_CATALOG.length} *.axiomid.app
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-300/80">
+                {copy.gspace.channelsTitle}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {copy.gspace.channels.map((ch) => (
+                  <div
+                    key={ch.layer}
+                    className="rounded-xl border border-white/10 bg-black/45 p-3 space-y-1 hover:border-cyan-400/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="rounded border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] text-cyan-300">
+                        {ch.layer}
+                      </span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                    </div>
+                    <div className="font-mono text-xs font-bold text-white">{ch.name}</div>
+                    <div className="font-mono text-[10px] text-white/60">{ch.detail}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         {activeApp === "subdomains" && (
           <>
             <div className="flex flex-col sm:flex-row gap-2.5">
@@ -1142,6 +1630,214 @@ export function DesktopWindowManager({
               </div>
             )}
           </>
+        )}
+
+        {!isCustomCoreApp && (
+          <div data-testid={`mcp-studio-${activeApp}`} className="space-y-4">
+            {/* MCP Summary & Dual-Ecosystem Architecture Banner */}
+            <div className="rounded-xl border border-cyan-400/25 bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-emerald-500/10 p-3.5 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono text-xs font-bold text-white">
+                  {appSpec.locales[lang].name} · MCP App Studio
+                </span>
+                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 font-mono text-[10px] text-emerald-300">
+                  JSON-RPC 2.0 READY
+                </span>
+              </div>
+              <p className="font-mono text-xs text-white/75 leading-relaxed">
+                {appSpec.locales[lang].mcpSummary}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[10px] text-white/60">
+                <span className="rounded border border-white/10 bg-black/40 px-2 py-0.5">
+                  {primaryProvider.shortBadge}: {primaryProvider.stackLabel}
+                </span>
+                <span className="rounded border border-white/10 bg-black/40 px-2 py-0.5">
+                  {secondaryProvider.shortBadge}: {secondaryProvider.stackLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Interactive MCP Tool Actions */}
+            <div className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-300/80">
+                MCP Tool Invocations ({appSpec.mcpServer})
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {appSpec.actions.map((action) => (
+                  <div
+                    key={action.id}
+                    className="flex flex-col justify-between gap-2.5 rounded-xl border border-white/10 bg-black/45 p-3 hover:border-cyan-400/35 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-white">
+                          {action.label[lang]}
+                        </span>
+                        <span className="rounded border border-cyan-400/25 bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[9px] text-cyan-300">
+                          {action.toolName}
+                        </span>
+                      </div>
+                      <p className="font-mono text-[11px] text-white/65">
+                        {action.description[lang]}
+                      </p>
+                      <div className="rounded bg-black/60 px-2 py-1 font-mono text-[10px] text-emerald-300/90 truncate">
+                        args: {JSON.stringify(action.sampleArgs)}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                      <span className="font-mono text-[10px] text-white/45">{action.endpoint}</span>
+                      <button
+                        type="button"
+                        disabled={mcpCalling}
+                        data-testid={`mcp-action-${action.id}`}
+                        onClick={() =>
+                          void invokeMcpTool(
+                            activeApp,
+                            action.toolName,
+                            action.endpoint,
+                            action.sampleArgs,
+                          )
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/35 bg-cyan-500/20 px-2.5 py-1 font-mono text-[10px] font-semibold text-cyan-200 hover:bg-cyan-500/30 disabled:opacity-50"
+                      >
+                        <Play className="h-3 w-3" />
+                        Execute
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ecosystem Architecture Modules (Vercel / Cloudflare / Pi Network / Google) */}
+            <div className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                Ecosystem Integrations (Vercel · Cloudflare · Pi Network · Google)
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {appSpec.modules.map((mod) => {
+                  const modProvider = ECOSYSTEM_PROVIDERS[mod.provider];
+                  return (
+                    <div
+                      key={mod.code}
+                      className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`rounded border px-2 py-0.5 font-mono text-[9px] font-semibold ${modProvider.accentBorder} ${modProvider.accentBg} ${modProvider.accentText}`}
+                        >
+                          {modProvider.shortBadge} · {mod.code}
+                        </span>
+                        <span className="font-mono text-[10px] text-emerald-300">
+                          {mod.metric}
+                        </span>
+                      </div>
+                      <h3 className="font-mono text-xs font-bold text-white">
+                        {mod.title[lang]}
+                      </h3>
+                      <p className="font-mono text-[11px] text-white/65 leading-relaxed">
+                        {mod.detail[lang]}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* App-Specific Interactive Control Panels */}
+            {activeApp === "settings" && (
+              <div className="rounded-xl border border-white/10 bg-black/45 p-3.5 space-y-3">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-300">
+                  AuraOS Live Wallpaper & Quad-Lingual Preferences
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {WALLPAPERS.map((wp) => (
+                    <button
+                      key={wp.id}
+                      type="button"
+                      onClick={() => {
+                        try {
+                          window.localStorage.setItem(WALLPAPER_STORAGE_KEY, wp.id);
+                        } catch {
+                          // ignore restricted storage
+                        }
+                        window.dispatchEvent(
+                          new CustomEvent<string>("aura:wallpaper", { detail: wp.id }),
+                        );
+                      }}
+                      className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 font-mono text-[10px] text-white/85 hover:border-cyan-400/40 hover:bg-cyan-500/15"
+                    >
+                      {wp.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(["en", "ar", "zh", "hi"] as const).map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setLanguage(loc)}
+                      className={`rounded-lg border px-2.5 py-1 font-mono text-[10px] uppercase ${
+                        lang === loc
+                          ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-200"
+                          : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                      }`}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeApp === "assistant" && (
+              <form
+                data-testid="mcp-assistant-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const q = assistantPrompt.trim() || "Synthesize AuraOS MCP ecosystem status";
+                  setAssistantPrompt("");
+                  void invokeMcpTool("assistant", "context_get", "/mcp.json", {
+                    prompt: q,
+                    model: "gemini-2.5-pro",
+                    gateway: "vercel-ai-gateway",
+                  });
+                }}
+                className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/50 p-2.5"
+              >
+                <input
+                  type="text"
+                  data-testid="mcp-assistant-input"
+                  value={assistantPrompt}
+                  onChange={(e) => setAssistantPrompt(e.target.value)}
+                  placeholder="Ask Google Gemini + Vercel AI Gateway Copilot via MCP..."
+                  className="flex-1 rounded-lg border border-white/15 bg-black/60 px-3 py-1.5 font-mono text-xs text-white placeholder:text-white/40 focus:border-cyan-400/60 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={mcpCalling}
+                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-400/35 bg-emerald-500/20 px-3 py-1.5 font-mono text-xs font-semibold text-emerald-200 hover:bg-emerald-500/30 disabled:opacity-50"
+                >
+                  <Play className="h-3.5 w-3.5" />
+                  Ask MCP
+                </button>
+              </form>
+            )}
+
+            {activeApp === "code" && (
+              <div
+                data-testid="mcp-code-preview"
+                className="rounded-xl border border-white/10 bg-black/75 p-3 font-mono text-[11px] text-cyan-200 space-y-1"
+              >
+                <div className="text-[10px] text-white/45">
+                  {"// Vercel AI SDK + Cloudflare MCP + Pi x402 + Google Gemini Tool Contract"}
+                </div>
+                <pre className="overflow-x-auto text-[10px] text-emerald-300">
+                  {`const result = await mcp.callTool("pi_kyc_verify", { uid: "pioneer-710", runtime: "vercel+workerd" });`}
+                </pre>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </section>

@@ -20,7 +20,16 @@ describe("wallpaper registry", () => {
     expect(WALLPAPERS).toHaveLength(5);
     const ids = WALLPAPERS.map((w) => w.id);
     expect(new Set(ids).size).toBe(5);
-    WALLPAPERS.forEach((w) => expect(w.name.length).toBeGreaterThan(0));
+    WALLPAPERS.forEach((w) => {
+      expect(w.name.length).toBeGreaterThan(0);
+      expect(w.tagline.length).toBeGreaterThan(0);
+      expect(w.palette.bg).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(w.palette.accent).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(w.palette.particle.length).toBeGreaterThan(0);
+      expect(w.palette.constellation.length).toBeGreaterThan(0);
+      expect(w.palette.orbA.length).toBeGreaterThan(0);
+      expect(w.palette.grid.length).toBeGreaterThan(0);
+    });
     expect(WALLPAPERS[0].id).toBe("aurora");
   });
 
